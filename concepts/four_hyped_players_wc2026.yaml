@@ -1,0 +1,83 @@
+concept_id: four_hyped_players_wc2026
+title: "Four Most Hyped Players of World Cup 2026 — Explained"
+target_duration_sec: 120
+
+context: |
+  Publication during the 2026 World Cup group stage.
+  Each player represents a different type of hype: legacy, history, youth, arrival.
+  Not a simple ranking of the four best players.
+
+stats:
+  messi_age: 39
+  messi_wc_goals: 18
+  messi_wc_win: 2022
+  mbappe_wc_goals_entering: 12
+  mbappe_wc_goals_current: 16
+  mbappe_wc_2022_goals: 8
+  yamal_age: 18
+  haaland_qualification_goals: 16
+  haaland_wc_goals_first_two: 4
+  norway_last_wc: 1998
+
+extraction:
+  clips_per_video: 4
+  clip_duration: 7
+  topics:
+    - "Lionel Messi Argentina World Cup 2026"
+    - "Kylian Mbappe France World Cup goals"
+    - "Lamine Yamal Spain World Cup 2026"
+    - "Erling Haaland Norway World Cup 2026"
+
+sections:
+  - id: hook
+    type: hook
+    duration_sec: 10
+    beat_style: rapid
+    beat_count: 5
+    keyword: "FOUR DIFFERENT PRESSURES"
+
+  - id: messi
+    type: entity_block
+    entity_name: Lionel Messi
+    theme: "The Final Chapter"
+    keyword: "THE LEGACY"
+    duration_sec: 22
+    min_clips: 1
+    max_clips: 2
+
+  - id: mbappe
+    type: entity_block
+    entity_name: Kylian Mbappe
+    theme: "The Record Chase"
+    keyword: "THE RECORD CHASE"
+    duration_sec: 23
+    min_clips: 1
+    max_clips: 2
+
+  - id: yamal
+    type: entity_block
+    entity_name: Lamine Yamal
+    theme: "The Future"
+    keyword: "THE FUTURE"
+    duration_sec: 23
+    min_clips: 1
+    max_clips: 2
+
+  - id: haaland
+    type: entity_block
+    entity_name: Erling Haaland
+    theme: "The Long-Awaited Arrival"
+    keyword: "THE ARRIVAL"
+    duration_sec: 23
+    min_clips: 1
+    max_clips: 2
+
+  - id: comparison
+    type: comparison
+    duration_sec: 14
+    keyword: "FOUR DIFFERENT PRESSURES"
+
+  - id: cta
+    type: cta
+    duration_sec: 5
+    keyword: ""

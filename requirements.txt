@@ -1,0 +1,15 @@
+scenedetect[opencv]>=0.6.4
+faster-whisper>=1.1.0
+librosa>=0.10.2
+numpy>=1.26.0
+pydantic>=2.7.0
+pydantic-settings>=2.3.0
+typer>=0.12.0
+python-dotenv>=1.0.0
+pytest>=8.0.0
+openai>=1.40.0
+elevenlabs>=1.0.0
+httpx>=0.27.0
+moviepy>=2.0.0
+Pillow>=10.0.0
+PyYAML>=6.0.0
