@@ -1,10 +1,17 @@
 from __future__ import annotations
 
+from datetime import datetime
 from uuid import UUID
 
 from psycopg import Connection
+from psycopg.types.json import Jsonb
 
-from src.domain.render_manifest_models import RenderManifestDocument, RenderManifestRecord
+from src.domain.render_manifest_models import (
+    ManifestAssetReference,
+    RenderManifestCreate,
+    RenderManifestDocument,
+    RenderManifestRecord,
+)
 from src.domain.render_status import RenderManifestStatus
 
 
@@ -57,6 +64,79 @@ class RenderManifestRepository:
         ).fetchone()
         return self._record(row) if row else None
 
+    def create_draft(self, data: RenderManifestCreate) -> RenderManifestRecord:
+        document = data.document
+        row = self.conn.execute(
+            """
+            INSERT INTO football_brief.render_manifests (
+                content_item_id, workflow_run_id, manifest_version, mode,
+                platform, aspect_ratio, script_version, storyboard_version,
+                brand_version, policy_version, ai_disclosure_required,
+                ai_disclosure_reason, manifest, manifest_hash,
+                parent_manifest_id, schema_version, status,
+                material_input_hash, script_hash, storyboard_hash,
+                brand_hash, policy_hash, rights_gate_evaluation_id,
+                not_for_publication, watermark_text, output_metadata
+            ) VALUES (
+                %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
+                %s, %s, %s, %s, %s, %s, 'draft', %s, %s, %s,
+                %s, %s, %s, %s, %s, %s
+            ) RETURNING *
+            """,
+            (
+                document.content_item_id,
+                document.workflow_run_id,
+                document.manifest_version,
+                document.mode.value,
+                document.platform,
+                document.aspect_ratio,
+                document.script.version,
+                document.storyboard.version,
+                document.brand.version,
+                document.policy.version,
+                any(item.required for item in document.disclosures),
+                ",".join(item.code for item in document.disclosures if item.required) or None,
+                Jsonb(document.model_dump(mode="json")),
+                data.manifest_hash,
+                data.parent_manifest_id,
+                document.schema_version,
+                data.material_input_hash,
+                document.script.content_hash,
+                document.storyboard.content_hash,
+                document.brand.content_hash,
+                document.policy.content_hash,
+                document.rights_evaluation.evaluation_id if document.rights_evaluation else None,
+                document.not_for_publication,
+                document.watermark_text,
+                Jsonb(document.output_metadata),
+            ),
+        ).fetchone()
+        if row is None:
+            raise RuntimeError("Render manifest draft was not persisted")
+        return self._record(row)
+
+    def add_asset(self, manifest_id: UUID, asset: ManifestAssetReference) -> None:
+        if asset.asset_id is None or asset.asset_sha256 is None:
+            return
+        self.conn.execute(
+            """
+            INSERT INTO football_brief.render_manifest_assets (
+                render_manifest_id, asset_id, asset_rights_id, asset_sha256,
+                asset_role, sequence_number, rights_evidence_ids, metadata
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+            """,
+            (
+                manifest_id,
+                asset.asset_id,
+                asset.asset_rights_id,
+                asset.asset_sha256,
+                asset.role.value,
+                asset.sequence_number,
+                list(asset.rights_evidence_ids),
+                Jsonb(asset.metadata),
+            ),
+        )
+
     def get(self, manifest_id: UUID) -> RenderManifestRecord:
         row = self.conn.execute(
             "SELECT * FROM football_brief.render_manifests WHERE id = %s",
@@ -69,8 +149,7 @@ class RenderManifestRepository:
     def list_assets(self, manifest_id: UUID) -> list[dict]:
         return self.conn.execute(
             """
-            SELECT *
-            FROM football_brief.render_manifest_assets
+            SELECT * FROM football_brief.render_manifest_assets
             WHERE render_manifest_id = %s
             ORDER BY sequence_number, asset_role, asset_id
             """,
