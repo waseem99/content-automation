@@ -12,6 +12,7 @@ on:
       - "src/infrastructure/database/**"
       - "tests/unit/assets/**"
       - "tests/integration/test_asset_registry.py"
+      - "tests/integration/test_asset_registry_edges.py"
       - "tests/integration/test_asset_pipeline.py"
       - "tests/integration/test_evidence_and_voice_registry.py"
       - "tests/integration/test_database_foundation.py"
@@ -106,6 +107,7 @@ jobs:
           pytest -vv -m integration \
             tests/integration/test_database_foundation.py \
             tests/integration/test_asset_registry.py \
+            tests/integration/test_asset_registry_edges.py \
             tests/integration/test_asset_pipeline.py \
             tests/integration/test_evidence_and_voice_registry.py 2>&1 | tee asset-integration-tests.log
 
