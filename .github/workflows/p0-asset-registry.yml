@@ -12,6 +12,7 @@ on:
       - "src/infrastructure/database/**"
       - "tests/unit/assets/**"
       - "tests/integration/test_asset_registry.py"
+      - "tests/integration/test_asset_pipeline.py"
       - "tests/integration/test_database_foundation.py"
       - "tests/acceptance/test_migration_contracts.py"
       - ".github/workflows/p0-asset-registry.yml"
@@ -102,7 +103,8 @@ jobs:
           set -o pipefail
           pytest -vv -m integration \
             tests/integration/test_database_foundation.py \
-            tests/integration/test_asset_registry.py 2>&1 | tee asset-integration-tests.log
+            tests/integration/test_asset_registry.py \
+            tests/integration/test_asset_pipeline.py 2>&1 | tee asset-integration-tests.log
 
       - name: Upload validation logs
         if: always()
