@@ -7,7 +7,12 @@ from src.application.manifests.exceptions import ManifestRenderError
 from src.application.manifests.integrity import ManifestIntegrityVerifier
 from src.application.manifests.models import ManifestRenderContext
 from src.application.rights.enforcement import RenderStartGuard
-from src.application.rights.enums import RightsGatePoint, RightsPlatform
+from src.application.rights.enums import (
+    RightsDecisionOutcome,
+    RightsGatePoint,
+    RightsPlatform,
+)
+from src.application.rights.exceptions import RightsGateBlocked, RightsReviewRequired
 from src.application.rights.request_models import RightsGateRequest
 from src.domain.render_status import RenderMode
 from src.infrastructure.database.connection import Database
@@ -34,7 +39,11 @@ class ManifestRendererAdapter:
         document = record.document
 
         if document.mode == RenderMode.PUBLISH:
-            self.render_start_guard.revalidate(self._rights_request(record))
+            decision = self.render_start_guard.revalidate(self._rights_request(record))
+            if decision.outcome == RightsDecisionOutcome.BLOCK:
+                raise RightsGateBlocked(decision.evaluation_id, decision.reason_codes)
+            if decision.outcome == RightsDecisionOutcome.HUMAN_REVIEW_REQUIRED:
+                raise RightsReviewRequired(decision.evaluation_id, decision.reason_codes)
 
         with unit_of_work(self.database) as uow:
             job = uow.render_jobs.create(manifest_id)
@@ -58,7 +67,7 @@ class ManifestRendererAdapter:
             output_asset_id = renderer(context)
         except Exception as exc:
             with unit_of_work(self.database) as uow:
-                failed = uow.render_jobs.set_failed(job["id"], str(exc))
+                uow.render_jobs.set_failed(job["id"], str(exc))
             raise ManifestRenderError(
                 f"Renderer failed for manifest {manifest_id}: {exc}"
             ) from exc
