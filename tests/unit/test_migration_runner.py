@@ -34,6 +34,8 @@ def test_discover_migrations_rejects_empty_directory(tmp_path: Path) -> None:
 
 def test_strip_outer_transaction_preserves_function_body() -> None:
     sql = """
+    -- migration description
+    /* release metadata */
     BEGIN;
     CREATE FUNCTION example() RETURNS void LANGUAGE plpgsql AS $$
     BEGIN
@@ -41,6 +43,7 @@ def test_strip_outer_transaction_preserves_function_body() -> None:
     END;
     $$;
     COMMIT;
+    -- trailing note
     """
     body = _strip_outer_transaction(sql)
     assert "CREATE FUNCTION" in body
@@ -51,4 +54,4 @@ def test_strip_outer_transaction_preserves_function_body() -> None:
 
 def test_strip_outer_transaction_rejects_unbalanced_wrapper() -> None:
     with pytest.raises(MigrationError, match="both outer BEGIN and COMMIT"):
-        _strip_outer_transaction("BEGIN; SELECT 1;")
+        _strip_outer_transaction("-- comment\nBEGIN; SELECT 1;")
