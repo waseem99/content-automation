@@ -6,10 +6,9 @@ BEGIN;
 ALTER TABLE football_brief.rights_evidence
     ADD COLUMN evidence_asset_id uuid;
 
--- Backfill any pre-existing evidence rows by registering their stored bytes as
--- canonical evidence assets. The existing rights-evidence SHA-256 remains the
--- identity source for this one-time migration only; all new registrations hash
--- the bytes in the application service before insertion.
+-- Backfill any pre-existing evidence rows by registering one deterministic
+-- canonical asset per SHA-256. The stored SHA-256 is trusted only for this
+-- one-time migration; all new registrations hash the bytes in the service.
 INSERT INTO football_brief.assets (
     asset_type,
     source_type,
@@ -19,7 +18,7 @@ INSERT INTO football_brief.assets (
     metadata,
     created_by
 )
-SELECT DISTINCT
+SELECT DISTINCT ON (evidence.sha256)
     'license_evidence',
     'unknown',
     'internal_only',
@@ -31,6 +30,7 @@ SELECT DISTINCT
     ),
     evidence.uploaded_by
 FROM football_brief.rights_evidence AS evidence
+ORDER BY evidence.sha256, evidence.created_at, evidence.id
 ON CONFLICT (sha256) DO NOTHING;
 
 UPDATE football_brief.rights_evidence AS evidence
@@ -69,6 +69,6 @@ CREATE UNIQUE INDEX rights_evidence_unique_link_idx
     );
 
 COMMENT ON COLUMN football_brief.rights_evidence.evidence_asset_id IS
-    'Canonical license_evidence asset containing the evidence bytes.';
+    'Canonical asset containing the evidence bytes.';
 
 COMMIT;
