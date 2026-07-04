@@ -98,12 +98,12 @@ class BackfillService:
     ) -> BackfillReport:
         resolved_root = root.expanduser().resolve(strict=True)
         parent_candidates = self._parent_candidates(resolved_root)
+        source_paths = set(parent_candidates.values())
         files = list(self._iter_files(resolved_root, include, exclude))
+        files.sort(key=lambda path: (path not in source_paths, str(path)))
         if max_files is not None:
             files = files[:max_files]
 
-        source_paths = set(parent_candidates.values())
-        files.sort(key=lambda path: (path not in source_paths, str(path)))
         entries: list[BackfillEntry] = []
         registered: dict[Path, UUID] = {}
 
@@ -113,7 +113,11 @@ class BackfillService:
             parent_asset_id: UUID | None = None
             try:
                 inspection = inspect_file(path)
-                classification = self._classify(path, parent_path)
+                classification = (
+                    self.policy.classify(AssetContext.SOURCE_MATCH_VIDEO, path)
+                    if path in source_paths
+                    else self._classify(path, parent_path)
+                )
                 with unit_of_work(self.database) as uow:
                     existing = uow.assets.get_by_sha256(inspection.sha256)
 
@@ -125,7 +129,10 @@ class BackfillService:
                             parent_asset = uow.assets.get_by_sha256(parent_inspection.sha256)
                         parent_asset_id = parent_asset.id if parent_asset else None
                         if commit and parent_asset_id is None:
-                            parent_classification = self._classify(parent_path, None)
+                            parent_classification = self.policy.classify(
+                                AssetContext.SOURCE_MATCH_VIDEO,
+                                parent_path,
+                            )
                             parent_result = self.registry.register_file(
                                 RegisterFileRequest(
                                     path=parent_path,
