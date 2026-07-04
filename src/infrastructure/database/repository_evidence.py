@@ -23,10 +23,7 @@ class RightsEvidenceRepository(BaseRepository[RightsEvidence]):
                 uploaded_by
             ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
             ON CONFLICT (asset_id, evidence_asset_id, evidence_type)
-            DO UPDATE SET
-                source_url = EXCLUDED.source_url,
-                metadata = EXCLUDED.metadata,
-                uploaded_by = EXCLUDED.uploaded_by
+            DO NOTHING
             RETURNING *
             """,
             (
@@ -40,7 +37,19 @@ class RightsEvidenceRepository(BaseRepository[RightsEvidence]):
                 data.uploaded_by,
             ),
         ).fetchone()
-        return self.required(row, RightsEvidence, "rights evidence")
+        if row:
+            return RightsEvidence.model_validate(row)
+        existing = self.conn.execute(
+            """
+            SELECT *
+            FROM football_brief.rights_evidence
+            WHERE asset_id = %s
+              AND evidence_asset_id = %s
+              AND evidence_type = %s
+            """,
+            (data.asset_id, data.evidence_asset_id, data.evidence_type.value),
+        ).fetchone()
+        return self.required(existing, RightsEvidence, "rights evidence")
 
     def get(self, evidence_id: UUID) -> RightsEvidence:
         row = self.conn.execute(
