@@ -1,13 +1,15 @@
-from src.application.rights.gate import RightsGateService
-from src.application.rights.models import (
+from src.application.rights.decision_models import (
     AssetRightsDecision,
-    RightsDecisionOutcome,
     RightsGateDecision,
-    RightsGatePoint,
-    RightsGateRequest,
     RightsObligations,
+)
+from src.application.rights.enums import (
+    RightsDecisionOutcome,
+    RightsGatePoint,
     RightsPlatform,
 )
+from src.application.rights.gate import RightsGateService
+from src.application.rights.request_models import RightsGateRequest
 
 __all__ = [
     "AssetRightsDecision",
