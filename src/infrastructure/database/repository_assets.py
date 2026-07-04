@@ -8,6 +8,22 @@ from src.infrastructure.database.repository_base import BaseRepository
 
 
 class AssetRepository(BaseRepository[Asset]):
+    @staticmethod
+    def _params(data: AssetCreate) -> tuple:
+        return (
+            data.asset_type.value,
+            data.source_type.value,
+            data.lifecycle_status.value,
+            data.original_filename,
+            data.storage_uri,
+            data.sha256,
+            data.mime_type,
+            data.size_bytes,
+            data.parent_asset_id,
+            Jsonb(data.metadata),
+            data.created_by,
+        )
+
     def create(self, data: AssetCreate) -> Asset:
         row = self.conn.execute(
             """
@@ -18,19 +34,7 @@ class AssetRepository(BaseRepository[Asset]):
             ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             RETURNING *
             """,
-            (
-                data.asset_type.value,
-                data.source_type.value,
-                data.lifecycle_status.value,
-                data.original_filename,
-                data.storage_uri,
-                data.sha256,
-                data.mime_type,
-                data.size_bytes,
-                data.parent_asset_id,
-                Jsonb(data.metadata),
-                data.created_by,
-            ),
+            self._params(data),
         ).fetchone()
         return self.required(row, Asset, "asset")
 
@@ -41,6 +45,13 @@ class AssetRepository(BaseRepository[Asset]):
         ).fetchone()
         return self.required(row, Asset, "asset")
 
+    def get_optional(self, asset_id: UUID) -> Asset | None:
+        row = self.conn.execute(
+            "SELECT * FROM football_brief.assets WHERE id = %s",
+            (asset_id,),
+        ).fetchone()
+        return Asset.model_validate(row) if row else None
+
     def get_by_sha256(self, sha256: str) -> Asset | None:
         row = self.conn.execute(
             "SELECT * FROM football_brief.assets WHERE sha256 = %s",
@@ -49,10 +60,24 @@ class AssetRepository(BaseRepository[Asset]):
         return Asset.model_validate(row) if row else None
 
     def create_or_get(self, data: AssetCreate) -> tuple[Asset, bool]:
+        row = self.conn.execute(
+            """
+            INSERT INTO football_brief.assets (
+                asset_type, source_type, lifecycle_status, original_filename,
+                storage_uri, sha256, mime_type, size_bytes, parent_asset_id,
+                metadata, created_by
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            ON CONFLICT (sha256) DO NOTHING
+            RETURNING *
+            """,
+            self._params(data),
+        ).fetchone()
+        if row:
+            return Asset.model_validate(row), True
         existing = self.get_by_sha256(data.sha256)
-        if existing:
-            return existing, False
-        return self.create(data), True
+        if existing is None:
+            raise RuntimeError("Asset deduplication conflict did not return an existing row")
+        return existing, False
 
 
 class AssetRightsRepository(BaseRepository[AssetRights]):
