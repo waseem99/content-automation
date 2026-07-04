@@ -81,6 +81,8 @@ def test_rights_evidence_has_its_own_canonical_asset() -> None:
         "alter column evidence_asset_id set not null",
         "foreign key (evidence_asset_id)",
         "references football_brief.assets(id)",
+        "rights_evidence_target_not_evidence",
+        "check (asset_id <> evidence_asset_id)",
         "rights_evidence_unique_link_idx",
     )
     for fragment in required_fragments:
