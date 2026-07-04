@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from datetime import datetime
 from uuid import UUID
 
 from src.application.manifests.exceptions import ManifestValidationError
@@ -29,11 +28,7 @@ class ManifestEvidenceLoader:
         if request.approval_review_id is None:
             return None
         row = self.uow.conn.execute(
-            """
-            SELECT *
-            FROM football_brief.human_reviews
-            WHERE id = %s
-            """,
+            "SELECT * FROM football_brief.human_reviews WHERE id = %s",
             (request.approval_review_id,),
         ).fetchone()
         if row is None:
@@ -42,6 +37,7 @@ class ManifestEvidenceLoader:
             raise ManifestValidationError("Approval review belongs to another workflow")
         if row["decision"] != "approved":
             raise ManifestValidationError("Approval review is not approved")
+        self._validate_approval_subject(row["checklist"] or {}, request)
         return ManifestApprovalReference(
             human_review_id=row["id"],
             reviewer=row["reviewer"],
@@ -119,6 +115,28 @@ class ManifestEvidenceLoader:
                     )
                 )
         return tuple(disclosures)
+
+    @staticmethod
+    def _validate_approval_subject(
+        checklist: dict,
+        request: RenderManifestBuildRequest,
+    ) -> None:
+        expected = {
+            "script_hash": request.script.content_hash,
+            "storyboard_hash": request.storyboard.content_hash,
+            "brand_hash": request.brand.content_hash,
+            "policy_hash": request.policy.content_hash,
+            "asset_ids": sorted(
+                str(item.asset_id)
+                for item in request.assets
+                if item.asset_id is not None
+            ),
+        }
+        for key, value in expected.items():
+            if checklist.get(key) != value:
+                raise ManifestValidationError(
+                    f"Approval review does not match manifest input: {key}"
+                )
 
     def _enrich_asset(
         self,
