@@ -39,6 +39,25 @@ def test_unknown_uri_scheme_is_rejected(tmp_path) -> None:
         resolver.to_path("https://example.com/file.mp4")
 
 
+def test_managed_uri_round_trip(tmp_path) -> None:
+    resolver = StorageUriResolver(tmp_path, tmp_path / "store")
+    sha256 = "a" * 64
+
+    uri = resolver.managed_uri(sha256)
+
+    assert uri == f"managed:///aa/{sha256}"
+    assert resolver.to_path(uri) == (tmp_path / "store" / "aa" / sha256).resolve()
+
+
+def test_noncanonical_managed_hash_is_rejected(tmp_path) -> None:
+    resolver = StorageUriResolver(tmp_path, tmp_path / "store")
+
+    with pytest.raises(ValueError):
+        resolver.managed_uri("not-a-sha256")
+    with pytest.raises(UnsupportedStorageUri):
+        resolver.to_path("managed:///aa/" + "b" * 64)
+
+
 def test_match_clips_and_web_images_fail_closed() -> None:
     policy = AssetClassificationPolicy()
 
