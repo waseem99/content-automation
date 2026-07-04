@@ -1,0 +1,19 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: football_brief_dev
+      POSTGRES_USER: football_brief
+      POSTGRES_PASSWORD: football_brief_dev_only
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U football_brief -d football_brief_dev"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - football_brief_postgres:/var/lib/postgresql/data
+
+volumes:
+  football_brief_postgres:
