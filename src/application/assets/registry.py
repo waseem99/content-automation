@@ -2,7 +2,11 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from src.application.assets.exceptions import InvalidAssetPath, InvalidParentAsset
+from src.application.assets.exceptions import (
+    FileChangedDuringHashing,
+    InvalidAssetPath,
+    InvalidParentAsset,
+)
 from src.application.assets.hashing import inspect_file
 from src.application.assets.models import (
     AssetRegistrationResult,
@@ -52,6 +56,14 @@ class AssetRegistryService:
         if inspection.path != requested_path:
             raise InvalidAssetPath(
                 "File inspection does not belong to the requested registration path"
+            )
+        current = requested_path.stat()
+        if (
+            current.st_size != inspection.size_bytes
+            or current.st_mtime_ns != inspection.mtime_ns
+        ):
+            raise FileChangedDuringHashing(
+                f"File changed after inspection and before registration: {requested_path}"
             )
         if request.parent_asset_id is not None:
             parent = uow.assets.get_optional(request.parent_asset_id)
