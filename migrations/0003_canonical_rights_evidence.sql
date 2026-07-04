@@ -56,9 +56,7 @@ ALTER TABLE football_brief.rights_evidence
     ADD CONSTRAINT rights_evidence_canonical_asset_fk
         FOREIGN KEY (evidence_asset_id)
         REFERENCES football_brief.assets(id)
-        ON DELETE RESTRICT,
-    ADD CONSTRAINT rights_evidence_target_not_evidence
-        CHECK (asset_id <> evidence_asset_id);
+        ON DELETE RESTRICT;
 
 CREATE INDEX rights_evidence_evidence_asset_idx
     ON football_brief.rights_evidence (evidence_asset_id);
