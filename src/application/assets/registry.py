@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from dataclasses import replace
+from pathlib import Path
 
-from src.application.assets.exceptions import InvalidParentAsset
+from src.application.assets.exceptions import InvalidAssetPath, InvalidParentAsset
 from src.application.assets.hashing import inspect_file
 from src.application.assets.models import (
     AssetRegistrationResult,
@@ -48,6 +48,11 @@ class AssetRegistryService:
         request: RegisterFileRequest,
         inspection: FileInspection,
     ) -> AssetRegistrationResult:
+        requested_path = request.path.expanduser().resolve(strict=True)
+        if inspection.path != requested_path:
+            raise InvalidAssetPath(
+                "File inspection does not belong to the requested registration path"
+            )
         if request.parent_asset_id is not None:
             parent = uow.assets.get_optional(request.parent_asset_id)
             if parent is None:
@@ -84,7 +89,7 @@ class AssetRegistryService:
         self,
         request: RegisterFileRequest,
         inspection: FileInspection,
-    ) -> tuple:
+    ) -> tuple[Path, str]:
         if request.storage_mode == StorageMode.COPY_TO_MANAGED_STORE:
             return self.managed_store.copy(inspection)
         uri = self.storage_resolver.workspace_uri(inspection.path)
