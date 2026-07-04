@@ -8,7 +8,11 @@ from src.infrastructure.database.connection import Database
 from src.infrastructure.database.repository_assets import AssetRepository, AssetRightsRepository
 from src.infrastructure.database.repository_content import ContentItemRepository
 from src.infrastructure.database.repository_evidence import RightsEvidenceRepository
+from src.infrastructure.database.repository_rights_decisions import RightsGateEvaluationRepository
+from src.infrastructure.database.repository_rights_links import AssetRightsEvidenceLinkRepository
+from src.infrastructure.database.repository_rights_state import RightsStateRepository
 from src.infrastructure.database.repository_voices import ApprovedVoiceRepository
+from src.infrastructure.database.repository_workflow_events import WorkflowEventRepository
 from src.infrastructure.database.repository_workflows import (
     StageExecutionRepository,
     WorkflowRunRepository,
@@ -21,19 +25,27 @@ class PostgresUnitOfWork:
     content_items: ContentItemRepository = field(init=False)
     assets: AssetRepository = field(init=False)
     asset_rights: AssetRightsRepository = field(init=False)
+    rights_state: RightsStateRepository = field(init=False)
     rights_evidence: RightsEvidenceRepository = field(init=False)
+    rights_evidence_links: AssetRightsEvidenceLinkRepository = field(init=False)
+    rights_gate_evaluations: RightsGateEvaluationRepository = field(init=False)
     approved_voices: ApprovedVoiceRepository = field(init=False)
     workflow_runs: WorkflowRunRepository = field(init=False)
     stage_executions: StageExecutionRepository = field(init=False)
+    workflow_events: WorkflowEventRepository = field(init=False)
 
     def __post_init__(self) -> None:
         self.content_items = ContentItemRepository(self.conn)
         self.assets = AssetRepository(self.conn)
         self.asset_rights = AssetRightsRepository(self.conn)
+        self.rights_state = RightsStateRepository(self.conn)
         self.rights_evidence = RightsEvidenceRepository(self.conn)
+        self.rights_evidence_links = AssetRightsEvidenceLinkRepository(self.conn)
+        self.rights_gate_evaluations = RightsGateEvaluationRepository(self.conn)
         self.approved_voices = ApprovedVoiceRepository(self.conn)
         self.workflow_runs = WorkflowRunRepository(self.conn)
         self.stage_executions = StageExecutionRepository(self.conn)
+        self.workflow_events = WorkflowEventRepository(self.conn)
 
 
 @contextmanager
