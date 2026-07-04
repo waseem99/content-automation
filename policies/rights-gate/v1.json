@@ -1,0 +1,42 @@
+{
+  "policy_name": "football-brief-rights-gate",
+  "version": "1.0.0",
+  "supported_platforms": ["youtube", "facebook", "tiktok", "instagram"],
+  "territory_rules": {
+    "worldwide_token": "worldwide",
+    "country_code_format": "ISO-3166-1-alpha-2-uppercase",
+    "empty_scope_means": "none"
+  },
+  "campaign_semantics": {
+    "empty_scope_means": "unrestricted",
+    "populated_scope_requires_exact_normalized_match": true
+  },
+  "evidence_requirement": {
+    "approved_rights_require_linked_evidence": true
+  },
+  "review_due_behavior": "human_review_required",
+  "match_footage_behavior": {
+    "default_outcome_without_applicable_rights": "block",
+    "reason_code": "UNAPPROVED_MATCH_FOOTAGE"
+  },
+  "reason_priority": [
+    "ASSET_UNAVAILABLE",
+    "ASSET_HASH_MISMATCH",
+    "UNAPPROVED_MATCH_FOOTAGE",
+    "RIGHTS_REVOKED",
+    "RIGHTS_EXPIRED",
+    "RIGHTS_NOT_YET_VALID",
+    "RIGHTS_NOT_APPROVED",
+    "RIGHTS_EVIDENCE_MISSING",
+    "PLATFORM_NOT_ALLOWED",
+    "TERRITORY_NOT_ALLOWED",
+    "CAMPAIGN_NOT_ALLOWED",
+    "COMMERCIAL_USE_NOT_ALLOWED",
+    "EDITORIAL_USE_NOT_ALLOWED",
+    "MODIFICATION_NOT_ALLOWED",
+    "SYNTHETIC_EDIT_NOT_ALLOWED",
+    "ATTRIBUTION_MISSING",
+    "RIGHTS_REVIEW_DUE",
+    "MULTIPLE_APPLICABLE_RIGHTS"
+  ]
+}
