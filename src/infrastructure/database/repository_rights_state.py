@@ -24,3 +24,32 @@ class RightsStateRepository:
             (rights_id,),
         ).fetchone()
         return AssetRights.model_validate(row) if row else None
+
+    def list_unsuperseded_for_asset(self, asset_id: UUID) -> list[AssetRights]:
+        rows = self.conn.execute(
+            """
+            SELECT rights.*
+            FROM football_brief.asset_rights AS rights
+            WHERE rights.asset_id = %s
+              AND NOT EXISTS (
+                  SELECT 1
+                  FROM football_brief.asset_rights AS newer
+                  WHERE newer.supersedes_rights_id = rights.id
+              )
+            ORDER BY rights.created_at DESC, rights.id DESC
+            """,
+            (asset_id,),
+        ).fetchall()
+        return [AssetRights.model_validate(row) for row in rows]
+
+    def get_superseding_records(self, rights_id: UUID) -> list[AssetRights]:
+        rows = self.conn.execute(
+            """
+            SELECT *
+            FROM football_brief.asset_rights
+            WHERE supersedes_rights_id = %s
+            ORDER BY created_at, id
+            """,
+            (rights_id,),
+        ).fetchall()
+        return [AssetRights.model_validate(row) for row in rows]
