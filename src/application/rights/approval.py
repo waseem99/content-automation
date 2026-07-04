@@ -5,6 +5,7 @@ from uuid import UUID
 
 from src.application.rights.exceptions import RightsApprovalError
 from src.application.rights.reason_codes import RightsReasonCode
+from src.application.rights.validation import validate_rights_scopes
 from src.domain.asset_status import ApprovalStatus, AssetLifecycleStatus
 from src.domain.rights_models import AssetRights, AssetRightsCreate
 from src.infrastructure.database.connection import Database
@@ -69,6 +70,7 @@ class RightsApprovalService:
             state = RightsStateRepository(uow.conn)
             links = AssetRightsEvidenceLinkRepository(uow.conn)
             rights = state.get(rights_id)
+            validate_rights_scopes(rights)
             if links.count_for_rights(rights_id) < 1:
                 raise RightsApprovalError(
                     RightsReasonCode.RIGHTS_EVIDENCE_MISSING,
