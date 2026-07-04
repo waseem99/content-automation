@@ -1,0 +1,170 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://football-brief.local/schemas/render-manifest-v1.schema.json",
+  "title": "Football Brief Render Manifest v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "content_item_id",
+    "workflow_run_id",
+    "manifest_version",
+    "mode",
+    "platform",
+    "aspect_ratio",
+    "script",
+    "storyboard",
+    "brand",
+    "policy",
+    "preset",
+    "assets",
+    "disclosures",
+    "not_for_publication",
+    "output_metadata"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "content_item_id": {"type": "string", "format": "uuid"},
+    "workflow_run_id": {"type": "string", "format": "uuid"},
+    "manifest_version": {"type": "integer", "minimum": 1},
+    "mode": {"enum": ["preview", "publish"]},
+    "platform": {"type": "string", "minLength": 1},
+    "aspect_ratio": {"type": "string", "minLength": 1},
+    "script": {"$ref": "#/$defs/versionedHash"},
+    "storyboard": {"$ref": "#/$defs/versionedHash"},
+    "brand": {"$ref": "#/$defs/versionedHash"},
+    "policy": {"$ref": "#/$defs/versionedHash"},
+    "preset": {"$ref": "#/$defs/preset"},
+    "voice_asset_id": {"type": ["string", "null"], "format": "uuid"},
+    "music_asset_id": {"type": ["string", "null"], "format": "uuid"},
+    "assets": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/asset"}
+    },
+    "disclosures": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/disclosure"}
+    },
+    "rights_evaluation": {
+      "oneOf": [{"$ref": "#/$defs/rightsEvaluation"}, {"type": "null"}]
+    },
+    "approval": {
+      "oneOf": [{"$ref": "#/$defs/approval"}, {"type": "null"}]
+    },
+    "not_for_publication": {"type": "boolean"},
+    "watermark_text": {"type": ["string", "null"]},
+    "output_metadata": {"type": "object"}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"mode": {"const": "preview"}}},
+      "then": {
+        "properties": {
+          "not_for_publication": {"const": true},
+          "watermark_text": {"type": "string", "minLength": 1},
+          "rights_evaluation": {"type": "null"},
+          "approval": {"type": "null"}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"mode": {"const": "publish"}}},
+      "then": {
+        "properties": {
+          "not_for_publication": {"const": false},
+          "watermark_text": {"type": "null"},
+          "rights_evaluation": {"$ref": "#/$defs/rightsEvaluation"},
+          "approval": {"$ref": "#/$defs/approval"}
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "versionedHash": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["version", "content_hash"],
+      "properties": {
+        "version": {"type": "string", "minLength": 1},
+        "content_hash": {"$ref": "#/$defs/sha256"},
+        "storage_uri": {"type": ["string", "null"]}
+      }
+    },
+    "preset": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "preset_id",
+        "width",
+        "height",
+        "fps",
+        "hook_starts_at_frame_one",
+        "pre_hook_intro_duration_sec",
+        "logo_sting_duration_sec",
+        "logo_sting_placement"
+      ],
+      "properties": {
+        "preset_id": {"type": "string"},
+        "width": {"type": "integer", "minimum": 1},
+        "height": {"type": "integer", "minimum": 1},
+        "fps": {"type": "integer", "minimum": 1},
+        "hook_starts_at_frame_one": {"const": true},
+        "pre_hook_intro_duration_sec": {"const": 0},
+        "logo_sting_duration_sec": {"type": "number", "minimum": 0.3, "maximum": 0.7},
+        "logo_sting_placement": {"const": "inside_or_after_hook"}
+      }
+    },
+    "asset": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "role",
+        "sequence_number",
+        "rights_evidence_ids",
+        "metadata"
+      ],
+      "properties": {
+        "asset_id": {"type": ["string", "null"], "format": "uuid"},
+        "asset_sha256": {"oneOf": [{"$ref": "#/$defs/sha256"}, {"type": "null"}]},
+        "asset_rights_id": {"type": ["string", "null"], "format": "uuid"},
+        "rights_evidence_ids": {"type": "array", "items": {"type": "string", "format": "uuid"}},
+        "role": {"type": "string"},
+        "sequence_number": {"type": "integer", "minimum": 0},
+        "parent_asset_id": {"type": ["string", "null"], "format": "uuid"},
+        "placeholder_key": {"type": ["string", "null"]},
+        "metadata": {"type": "object"}
+      }
+    },
+    "disclosure": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code", "text", "required"],
+      "properties": {
+        "code": {"type": "string", "minLength": 1},
+        "text": {"type": "string", "minLength": 1},
+        "required": {"type": "boolean"}
+      }
+    },
+    "rightsEvaluation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["evaluation_id", "policy_version", "policy_hash"],
+      "properties": {
+        "evaluation_id": {"type": "string", "format": "uuid"},
+        "policy_version": {"type": "string"},
+        "policy_hash": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "approval": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["human_review_id", "reviewer", "approved_at"],
+      "properties": {
+        "human_review_id": {"type": "string", "format": "uuid"},
+        "reviewer": {"type": "string", "minLength": 1},
+        "approved_at": {"type": "string", "format": "date-time"}
+      }
+    }
+  }
+}
