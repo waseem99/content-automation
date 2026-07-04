@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
+from psycopg.errors import RaiseException
 
 from src.application.assets.classification import AssetContext
 from src.application.assets.exceptions import AssetHashMismatch
@@ -14,6 +15,7 @@ from src.application.rights.enforcement import RenderStartGuard
 from src.application.rights.exceptions import RightsGateBlocked
 from src.application.rights.status import RightsStatusService
 from src.domain.render_status import RenderMode
+from src.infrastructure.database.uow import unit_of_work
 from tests.integration.manifest_support import (
     build_request,
     create_approval_review,
@@ -132,3 +134,40 @@ def test_revoked_rights_block_before_callback(database, tmp_path: Path) -> None:
     with pytest.raises(RightsGateBlocked):
         _adapter(database, tmp_path).start(manifest.id, renderer)
     assert called is False
+
+
+def test_preview_job_cannot_enter_release_reference(database, tmp_path: Path) -> None:
+    register_manifest_versions(database)
+    content_id, workflow_id = create_manifest_workflow(database)
+    manifest = RenderManifestBuilder(database).build(
+        build_request(
+            content_id=content_id,
+            workflow_id=workflow_id,
+            mode=RenderMode.PREVIEW,
+        )
+    )
+    job = _adapter(database, tmp_path).start(manifest.id, lambda context: None)
+    assert job["not_for_publication"] is True
+    assert job["watermark_text"] == "PREVIEW - NOT FOR PUBLICATION"
+
+    with pytest.raises(RaiseException, match="cannot enter"):
+        with unit_of_work(database) as uow:
+            uow.release_references.create(
+                manifest_id=manifest.id,
+                render_job_id=job["id"],
+                package_hash="a" * 64,
+                created_by="pytest",
+            )
+
+
+def test_publish_job_can_create_release_reference(database, tmp_path: Path) -> None:
+    manifest, _, _ = _publish_manifest(database, tmp_path)
+    job = _adapter(database, tmp_path).start(manifest.id, lambda context: None)
+    with unit_of_work(database) as uow:
+        reference = uow.release_references.create(
+            manifest_id=manifest.id,
+            render_job_id=job["id"],
+            package_hash="f" * 64,
+            created_by="pytest",
+        )
+    assert reference["render_manifest_id"] == manifest.id
