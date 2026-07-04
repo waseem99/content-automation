@@ -3,6 +3,8 @@ from __future__ import annotations
 from pathlib import Path
 from uuid import UUID
 
+from psycopg.types.json import Jsonb
+
 from src.application.manifests.models import (
     ManifestAssetInput,
     RenderManifestBuildRequest,
@@ -52,7 +54,20 @@ def create_manifest_workflow(database) -> tuple[UUID, UUID]:
     return workflow.content_item_id, workflow_id
 
 
-def create_approval_review(database, workflow_id: UUID) -> UUID:
+def create_approval_review(
+    database,
+    workflow_id: UUID,
+    asset_ids: list[UUID],
+    *,
+    script_hash: str = SCRIPT_HASH,
+) -> UUID:
+    checklist = {
+        "script_hash": script_hash,
+        "storyboard_hash": STORYBOARD_HASH,
+        "brand_hash": BRAND_HASH,
+        "policy_hash": POLICY_HASH,
+        "asset_ids": sorted(str(item) for item in asset_ids),
+    }
     with database.transaction() as conn:
         row = conn.execute(
             """
@@ -60,10 +75,10 @@ def create_approval_review(database, workflow_id: UUID) -> UUID:
                 workflow_run_id, review_type, decision, reviewer, rationale, checklist
             ) VALUES (
                 %s, 'render_manifest', 'approved', 'pytest-reviewer',
-                'Approved for publish manifest', '{"approved":true}'::jsonb
+                'Approved for exact manifest inputs', %s
             ) RETURNING id
             """,
-            (workflow_id,),
+            (workflow_id, Jsonb(checklist)),
         ).fetchone()
     return row["id"]
 
