@@ -29,3 +29,29 @@ def validate_asset_roles(request: RenderManifestBuildRequest) -> None:
             raise ManifestValidationError("Music asset must be included in manifest assets")
         if ManifestAssetRole.MUSIC not in role_by_asset[request.music_asset_id]:
             raise ManifestValidationError("Music asset must use the music role")
+
+
+def validate_brand_version(conn, version: str, content_hash: str) -> None:
+    row = conn.execute(
+        """
+        SELECT content_hash
+        FROM football_brief.brand_versions
+        WHERE version = %s
+        """,
+        (version,),
+    ).fetchone()
+    if row is None or row["content_hash"] != content_hash:
+        raise ManifestValidationError("Brand version/hash is not registered")
+
+
+def validate_policy_version(conn, version: str, content_hash: str) -> None:
+    row = conn.execute(
+        """
+        SELECT content_hash
+        FROM football_brief.policy_versions
+        WHERE version = %s
+        """,
+        (version,),
+    ).fetchone()
+    if row is None or row["content_hash"] != content_hash:
+        raise ManifestValidationError("Policy version/hash is not registered")
