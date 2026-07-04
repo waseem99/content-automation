@@ -64,6 +64,9 @@ class RightsEvaluationReference(FrozenRecord):
     evaluation_id: UUID
     policy_version: str = Field(min_length=1)
     policy_hash: str = Field(pattern=r"^[0-9a-f]{64}$")
+    territory: str = Field(min_length=1)
+    campaign: str | None = None
+    requested_uses: tuple[str, ...] = ()
 
 
 class ShortFormRenderPreset(FrozenRecord):
