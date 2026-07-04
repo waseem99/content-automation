@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 
 from src.config import Settings
+from src.domain.render_status import RenderMode
 from src.generator.match_context import build_match_context
 from src.generator.models import ProductionPlan
 from src.generator.script_generator import generate_production_plan
@@ -60,6 +61,8 @@ def run_production(
     skip_assembly: bool = False,
     regenerate_script: bool = False,
     plan_path: Path | None = None,
+    render_mode: RenderMode = RenderMode.PREVIEW,
+    watermark_text: str | None = None,
 ) -> dict:
     run_dir = run_dir.resolve()
     manifest_path = run_dir / "manifest.json"
@@ -123,19 +126,22 @@ def run_production(
             if path.exists():
                 narration_paths[segment.order] = path
 
-    final_video_path = production_dir / "final_video.mp4"
+    output_name = "preview_video.mp4" if render_mode == RenderMode.PREVIEW else "publish_video.mp4"
+    final_video_path = production_dir / output_name
     if not skip_assembly:
-        from src.assembler.video_assembler import assemble_video
+        from src.assembler.mode_assembler import assemble_mode_video
 
-        _progress("Assembling final video (often 5-15 min on CPU — progress bar below)...")
-        assemble_video(
+        _progress(f"Assembling {render_mode.value} video...")
+        assemble_mode_video(
             plan=plan,
             run_dir=run_dir,
             image_paths=image_paths,
             narration_paths=narration_paths,
             output_path=final_video_path,
             settings=settings,
-            manifest=manifest,
+            source_manifest=manifest,
+            mode=render_mode,
+            watermark_text=watermark_text,
         )
 
     return {
@@ -144,4 +150,6 @@ def run_production(
         "final_video": final_video_path if not skip_assembly else None,
         "image_paths": image_paths,
         "narration_paths": narration_paths,
+        "render_mode": render_mode.value,
+        "not_for_publication": render_mode == RenderMode.PREVIEW,
     }
