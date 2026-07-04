@@ -1,9 +1,4 @@
-"""Static acceptance contracts for the Phase 0 and Phase 1 SQL migrations.
-
-These tests run without a database and protect the initial migration files from
-accidental removal of required audit, rights, idempotency, and render controls.
-A PostgreSQL integration suite must be added when the database runtime is wired.
-"""
+"""Static acceptance contracts for the Phase 0 and Phase 1 SQL migrations."""
 
 from __future__ import annotations
 
@@ -16,6 +11,7 @@ import pytest
 ROOT = Path(__file__).resolve().parents[2]
 PHASE_0 = ROOT / "migrations" / "0001_phase0_asset_rights.sql"
 PHASE_1 = ROOT / "migrations" / "0002_phase1_workflow_foundation.sql"
+CANONICAL_EVIDENCE = ROOT / "migrations" / "0003_canonical_rights_evidence.sql"
 
 
 def _sql(path: Path) -> str:
@@ -25,7 +21,7 @@ def _sql(path: Path) -> str:
 
 @pytest.mark.acceptance
 def test_migrations_are_transactional_and_forward_only() -> None:
-    for path in (PHASE_0, PHASE_1):
+    for path in (PHASE_0, PHASE_1, CANONICAL_EVIDENCE):
         sql = _sql(path)
         assert sql.startswith("-- football brief")
         assert " begin;" in f" {sql}"
@@ -73,6 +69,23 @@ def test_phase_0_does_not_default_assets_or_rights_to_approved() -> None:
     assert "lifecycle_status text not null default 'candidate'" in sql
     assert "approval_status text not null default 'pending'" in sql
     assert "commercial_use_allowed boolean not null default false" in sql
+
+
+@pytest.mark.acceptance
+def test_rights_evidence_has_its_own_canonical_asset() -> None:
+    sql = _sql(CANONICAL_EVIDENCE)
+    required_fragments = (
+        "add column evidence_asset_id uuid",
+        "asset_type, source_type, lifecycle_status",
+        "'license_evidence', 'unknown', 'internal_only'",
+        "alter column evidence_asset_id set not null",
+        "foreign key (evidence_asset_id)",
+        "references football_brief.assets(id)",
+        "rights_evidence_target_not_evidence",
+        "rights_evidence_unique_link_idx",
+    )
+    for fragment in required_fragments:
+        assert fragment in sql
 
 
 @pytest.mark.acceptance
