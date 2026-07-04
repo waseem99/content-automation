@@ -77,6 +77,42 @@ def test_missing_evidence_target_creates_no_asset(runtime, tmp_path: Path) -> No
     assert evidence_count == 0
 
 
+def test_evidence_target_cannot_be_its_own_evidence_asset(runtime) -> None:
+    database, _ = runtime
+    with pytest.raises(CheckViolation):
+        with database.transaction() as conn:
+            asset_id = conn.execute(
+                """
+                INSERT INTO football_brief.assets (
+                    asset_type,
+                    source_type,
+                    lifecycle_status,
+                    storage_uri,
+                    sha256
+                ) VALUES ('license_evidence', 'client_supplied', 'internal_only', %s, %s)
+                RETURNING id
+                """,
+                ("workspace:///self-link.pdf", "a" * 64),
+            ).fetchone()["id"]
+            conn.execute(
+                """
+                INSERT INTO football_brief.rights_evidence (
+                    asset_id,
+                    evidence_asset_id,
+                    evidence_type,
+                    storage_uri,
+                    sha256
+                ) VALUES (%s, %s, 'license', %s, %s)
+                """,
+                (
+                    asset_id,
+                    asset_id,
+                    "workspace:///self-link.pdf",
+                    "a" * 64,
+                ),
+            )
+
+
 def test_pending_premade_voice_round_trips(runtime) -> None:
     database, _ = runtime
     with unit_of_work(database) as uow:
