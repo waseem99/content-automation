@@ -24,9 +24,13 @@ DEFAULT_EXCLUDES = (
     "*/asset_store/*",
     ".git/*",
     "*/.git/*",
+    "__pycache__/*",
     "*/__pycache__/*",
+    "asset-backfill-report.json",
     "*/asset-backfill-report.json",
+    "asset-verification-report.json",
     "*/asset-verification-report.json",
+    "asset_registry.json",
     "*/asset_registry.json",
 )
 
