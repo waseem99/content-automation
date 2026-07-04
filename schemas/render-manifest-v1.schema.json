@@ -37,14 +37,8 @@
     "preset": {"$ref": "#/$defs/preset"},
     "voice_asset_id": {"type": ["string", "null"], "format": "uuid"},
     "music_asset_id": {"type": ["string", "null"], "format": "uuid"},
-    "assets": {
-      "type": "array",
-      "items": {"$ref": "#/$defs/asset"}
-    },
-    "disclosures": {
-      "type": "array",
-      "items": {"$ref": "#/$defs/disclosure"}
-    },
+    "assets": {"type": "array", "items": {"$ref": "#/$defs/asset"}},
+    "disclosures": {"type": "array", "items": {"$ref": "#/$defs/disclosure"}},
     "rights_evaluation": {
       "oneOf": [{"$ref": "#/$defs/rightsEvaluation"}, {"type": "null"}]
     },
@@ -118,12 +112,7 @@
     "asset": {
       "type": "object",
       "additionalProperties": false,
-      "required": [
-        "role",
-        "sequence_number",
-        "rights_evidence_ids",
-        "metadata"
-      ],
+      "required": ["role", "sequence_number", "rights_evidence_ids", "metadata"],
       "properties": {
         "asset_id": {"type": ["string", "null"], "format": "uuid"},
         "asset_sha256": {"oneOf": [{"$ref": "#/$defs/sha256"}, {"type": "null"}]},
@@ -149,11 +138,20 @@
     "rightsEvaluation": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["evaluation_id", "policy_version", "policy_hash"],
+      "required": [
+        "evaluation_id",
+        "policy_version",
+        "policy_hash",
+        "territory",
+        "requested_uses"
+      ],
       "properties": {
         "evaluation_id": {"type": "string", "format": "uuid"},
         "policy_version": {"type": "string"},
-        "policy_hash": {"$ref": "#/$defs/sha256"}
+        "policy_hash": {"$ref": "#/$defs/sha256"},
+        "territory": {"type": "string", "minLength": 1},
+        "campaign": {"type": ["string", "null"]},
+        "requested_uses": {"type": "array", "items": {"type": "string"}}
       }
     },
     "approval": {
