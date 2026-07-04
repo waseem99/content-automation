@@ -6,37 +6,49 @@ These migrations establish the Phase 0 and Phase 1 platform foundation for Footb
 
 - PostgreSQL 15+
 - A database role allowed to create the `football_brief` schema
-- The `pgcrypto` extension for `gen_random_uuid()`
+- Permission to enable the `pgcrypto` extension for `gen_random_uuid()`
 
 ## Order
 
 1. `0001_phase0_asset_rights.sql`
 2. `0002_phase1_workflow_foundation.sql`
 
-Apply migrations only in numeric order.
+Migrations are applied only in numeric filename order.
 
 ## Local execution
 
+Configure `DATABASE_URL`, then run the application migration command:
+
 ```bash
-createdb football_brief_dev
-psql football_brief_dev -v ON_ERROR_STOP=1 -f migrations/0001_phase0_asset_rights.sql
-psql football_brief_dev -v ON_ERROR_STOP=1 -f migrations/0002_phase1_workflow_foundation.sql
+python -m src.infrastructure.database.cli migrate
 ```
+
+The runner:
+
+1. Discovers numbered SQL files.
+2. Hashes the exact file bytes with SHA-256.
+3. Executes each pending migration atomically.
+4. Records filename and checksum in `football_brief.schema_migrations`.
+5. Rejects an applied migration whose file checksum later changes.
+
+Do not apply these migrations manually with `psql` in a managed environment because doing so bypasses migration history and checksum enforcement.
 
 ## Verification
 
 ```bash
-psql football_brief_dev -c "\dt football_brief.*"
+python -m src.infrastructure.database.cli status
+python -m src.infrastructure.database.cli health
 pytest -m acceptance tests/acceptance/test_migration_contracts.py
 ```
 
-The acceptance suite should later include a PostgreSQL integration job that:
+For a live PostgreSQL integration run:
 
-1. Starts an empty PostgreSQL database.
-2. Applies every migration with `ON_ERROR_STOP=1`.
-3. Runs constraint and transaction tests.
-4. Applies representative seed data.
-5. Verifies publish-mode blocking behavior through the application service layer.
+```bash
+export FOOTBALL_BRIEF_TEST_DATABASE_URL=postgresql://localhost/football_brief_test
+pytest -m integration tests/integration/test_database_foundation.py
+```
+
+The test database must be disposable because the fixture drops and recreates the `football_brief` schema.
 
 ## Migration policy
 
