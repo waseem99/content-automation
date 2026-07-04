@@ -36,8 +36,15 @@ class MigrationStatus:
     checksum_matches: bool | None
 
 
-_OUTER_BEGIN = re.compile(r"^\s*BEGIN\s*;", re.IGNORECASE)
-_OUTER_COMMIT = re.compile(r"COMMIT\s*;\s*$", re.IGNORECASE)
+_IGNORABLE_SQL = r"(?:\s|--[^\r\n]*(?:\r?\n|\Z)|/\*.*?\*/)*"
+_OUTER_BEGIN = re.compile(
+    rf"\A{_IGNORABLE_SQL}BEGIN\s*;",
+    re.IGNORECASE | re.DOTALL,
+)
+_OUTER_COMMIT = re.compile(
+    rf"COMMIT\s*;{_IGNORABLE_SQL}\Z",
+    re.IGNORECASE | re.DOTALL,
+)
 
 
 def _canonical_bytes(path: Path) -> bytes:
@@ -50,7 +57,7 @@ def _strip_outer_transaction(sql: str) -> str:
     Foundation migrations carry their own transaction markers so they can also
     be applied manually with psql. The runner removes only that outer pair and
     executes the body together with the migration-history insert in one driver
-    transaction.
+    transaction. Leading and trailing SQL comments are tolerated.
     """
 
     without_begin, begin_count = _OUTER_BEGIN.subn("", sql, count=1)
