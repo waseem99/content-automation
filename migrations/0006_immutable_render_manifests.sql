@@ -4,11 +4,12 @@
 BEGIN;
 
 ALTER TABLE football_brief.render_manifests
+    DROP CONSTRAINT publish_manifest_requires_approval,
     ADD COLUMN parent_manifest_id uuid
         REFERENCES football_brief.render_manifests(id) ON DELETE RESTRICT,
     ADD COLUMN schema_version text NOT NULL DEFAULT '1.0.0',
     ADD COLUMN status text NOT NULL DEFAULT 'draft'
-        CHECK (status IN ('draft', 'approved')),
+        CHECK (status IN ('draft', 'sealed', 'approved')),
     ADD COLUMN material_input_hash char(64),
     ADD COLUMN script_hash char(64),
     ADD COLUMN storyboard_hash char(64),
@@ -23,7 +24,10 @@ ALTER TABLE football_brief.render_manifests
     ADD COLUMN output_metadata jsonb NOT NULL DEFAULT '{}'::jsonb;
 
 UPDATE football_brief.render_manifests
-SET status = CASE WHEN approved_at IS NULL THEN 'draft' ELSE 'approved' END,
+SET status = CASE
+        WHEN mode = 'preview' THEN 'sealed'
+        ELSE 'approved'
+    END,
     material_input_hash = manifest_hash,
     script_hash = manifest_hash,
     storyboard_hash = manifest_hash,
@@ -34,10 +38,9 @@ SET status = CASE WHEN approved_at IS NULL THEN 'draft' ELSE 'approved' END,
         WHEN mode = 'preview' THEN 'PREVIEW - NOT FOR PUBLICATION'
         ELSE NULL
     END,
-    output_metadata = CASE
-        WHEN mode = 'preview' THEN '{"NOT_FOR_PUBLICATION":true}'::jsonb
-        ELSE '{"NOT_FOR_PUBLICATION":false}'::jsonb
-    END;
+    output_metadata = jsonb_build_object(
+        'NOT_FOR_PUBLICATION', mode = 'preview'
+    );
 
 ALTER TABLE football_brief.render_manifests
     ALTER COLUMN material_input_hash SET NOT NULL,
@@ -51,19 +54,17 @@ ALTER TABLE football_brief.render_manifests
         CHECK (parent_manifest_id IS NULL OR parent_manifest_id <> id),
     ADD CONSTRAINT preview_manifest_is_non_publishable CHECK (
         mode <> 'preview' OR (
-            not_for_publication = true
+            status IN ('draft', 'sealed')
+            AND not_for_publication = true
             AND watermark_text IS NOT NULL
             AND length(trim(watermark_text)) > 0
         )
     ),
-    ADD CONSTRAINT publish_manifest_is_approved CHECK (
+    ADD CONSTRAINT publish_manifest_metadata CHECK (
         mode <> 'publish' OR (
-            status = 'approved'
+            status IN ('draft', 'approved')
             AND not_for_publication = false
-            AND approved_by IS NOT NULL
-            AND approved_at IS NOT NULL
-            AND approval_review_id IS NOT NULL
-            AND rights_gate_evaluation_id IS NOT NULL
+            AND watermark_text IS NULL
         )
     );
 
@@ -91,30 +92,51 @@ CREATE TABLE football_brief.publication_packages (
     created_at timestamptz NOT NULL DEFAULT now()
 );
 
-CREATE OR REPLACE FUNCTION football_brief.reject_manifest_mutation()
+CREATE OR REPLACE FUNCTION football_brief.enforce_manifest_sealing()
 RETURNS trigger LANGUAGE plpgsql AS $$
 BEGIN
-    RAISE EXCEPTION 'Render manifests and manifest assets are append-only';
-    RETURN NULL;
+    IF TG_OP = 'DELETE' THEN
+        RAISE EXCEPTION 'Render manifests are append-only';
+    END IF;
+
+    IF OLD.status = 'draft'
+       AND NEW.status IN ('sealed', 'approved')
+       AND (to_jsonb(NEW) - ARRAY[
+            'status', 'approved_by', 'approved_at', 'approval_review_id'
+       ]) = (to_jsonb(OLD) - ARRAY[
+            'status', 'approved_by', 'approved_at', 'approval_review_id'
+       ]) THEN
+        RETURN NEW;
+    END IF;
+
+    RAISE EXCEPTION 'Sealed or approved render manifests are immutable';
 END;
 $$;
 
 CREATE TRIGGER render_manifests_immutable
 BEFORE UPDATE OR DELETE ON football_brief.render_manifests
-FOR EACH ROW EXECUTE FUNCTION football_brief.reject_manifest_mutation();
+FOR EACH ROW EXECUTE FUNCTION football_brief.enforce_manifest_sealing();
+
+CREATE OR REPLACE FUNCTION football_brief.reject_manifest_asset_mutation()
+RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+    RAISE EXCEPTION 'Render manifest assets are append-only';
+    RETURN NULL;
+END;
+$$;
 
 CREATE TRIGGER render_manifest_assets_immutable
 BEFORE UPDATE OR DELETE ON football_brief.render_manifest_assets
-FOR EACH ROW EXECUTE FUNCTION football_brief.reject_manifest_mutation();
+FOR EACH ROW EXECUTE FUNCTION football_brief.reject_manifest_asset_mutation();
 
 CREATE OR REPLACE FUNCTION football_brief.validate_manifest_asset_insert()
 RETURNS trigger LANGUAGE plpgsql AS $$
 BEGIN
-    IF EXISTS (
+    IF NOT EXISTS (
         SELECT 1 FROM football_brief.render_manifests
-        WHERE id = NEW.render_manifest_id AND status = 'approved'
+        WHERE id = NEW.render_manifest_id AND status = 'draft'
     ) THEN
-        RAISE EXCEPTION 'Approved manifest assets cannot be changed';
+        RAISE EXCEPTION 'Assets can only be added while a manifest is draft';
     END IF;
     RETURN NEW;
 END;
@@ -124,22 +146,90 @@ CREATE TRIGGER render_manifest_assets_insert_guard
 BEFORE INSERT ON football_brief.render_manifest_assets
 FOR EACH ROW EXECUTE FUNCTION football_brief.validate_manifest_asset_insert();
 
-CREATE OR REPLACE FUNCTION football_brief.derive_render_job_mode()
+CREATE OR REPLACE FUNCTION football_brief.validate_manifest_final_state()
 RETURNS trigger LANGUAGE plpgsql AS $$
 DECLARE
-    manifest_mode text;
-    manifest_watermark text;
-    manifest_metadata jsonb;
+    review_decision text;
+    review_workflow_id uuid;
+    gate_outcome text;
+    gate_workflow_id uuid;
 BEGIN
-    SELECT mode, watermark_text, output_metadata
-      INTO manifest_mode, manifest_watermark, manifest_metadata
-    FROM football_brief.render_manifests
-    WHERE id = NEW.render_manifest_id;
+    IF NEW.status = 'draft' THEN
+        RAISE EXCEPTION 'Render manifest must be sealed before commit';
+    END IF;
 
-    NEW.mode := manifest_mode;
-    NEW.not_for_publication := (manifest_mode = 'preview');
-    NEW.watermark_text := manifest_watermark;
-    NEW.output_metadata := manifest_metadata;
+    IF NEW.mode = 'preview' THEN
+        IF NEW.status <> 'sealed' OR NOT NEW.not_for_publication THEN
+            RAISE EXCEPTION 'Preview manifest must be sealed and non-publishable';
+        END IF;
+        RETURN NEW;
+    END IF;
+
+    IF NEW.status <> 'approved'
+       OR NEW.approved_by IS NULL
+       OR NEW.approved_at IS NULL
+       OR NEW.approval_review_id IS NULL
+       OR NEW.rights_gate_evaluation_id IS NULL THEN
+        RAISE EXCEPTION 'Publish manifest requires approval and a passing rights evaluation';
+    END IF;
+
+    SELECT decision, workflow_run_id
+      INTO review_decision, review_workflow_id
+    FROM football_brief.human_reviews
+    WHERE id = NEW.approval_review_id;
+
+    IF review_decision <> 'approved' OR review_workflow_id <> NEW.workflow_run_id THEN
+        RAISE EXCEPTION 'Publish manifest approval review is invalid';
+    END IF;
+
+    SELECT outcome, workflow_run_id
+      INTO gate_outcome, gate_workflow_id
+    FROM football_brief.rights_gate_evaluations
+    WHERE id = NEW.rights_gate_evaluation_id;
+
+    IF gate_outcome <> 'pass' OR gate_workflow_id <> NEW.workflow_run_id THEN
+        RAISE EXCEPTION 'Publish manifest rights evaluation is invalid';
+    END IF;
+
+    IF NOT EXISTS (
+        SELECT 1 FROM football_brief.render_manifest_assets
+        WHERE render_manifest_id = NEW.id
+    ) THEN
+        RAISE EXCEPTION 'Publish manifest requires at least one asset';
+    END IF;
+
+    IF EXISTS (
+        SELECT 1
+        FROM football_brief.render_manifest_assets AS manifest_asset
+        JOIN football_brief.assets AS asset ON asset.id = manifest_asset.asset_id
+        WHERE manifest_asset.render_manifest_id = NEW.id
+          AND (
+              manifest_asset.asset_rights_id IS NULL
+              OR manifest_asset.asset_sha256 <> asset.sha256
+          )
+    ) THEN
+        RAISE EXCEPTION 'Publish manifest assets require rights and matching hashes';
+    END IF;
+    RETURN NEW;
+END;
+$$;
+
+CREATE CONSTRAINT TRIGGER render_manifest_final_state
+AFTER INSERT OR UPDATE ON football_brief.render_manifests
+DEFERRABLE INITIALLY DEFERRED
+FOR EACH ROW EXECUTE FUNCTION football_brief.validate_manifest_final_state();
+
+CREATE OR REPLACE FUNCTION football_brief.derive_render_job_mode()
+RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+    SELECT mode, (mode = 'preview'), watermark_text, output_metadata
+      INTO NEW.mode, NEW.not_for_publication, NEW.watermark_text, NEW.output_metadata
+    FROM football_brief.render_manifests
+    WHERE id = NEW.render_manifest_id AND status IN ('sealed', 'approved');
+
+    IF NEW.mode IS NULL THEN
+        RAISE EXCEPTION 'Render job requires a sealed or approved manifest';
+    END IF;
     RETURN NEW;
 END;
 $$;
