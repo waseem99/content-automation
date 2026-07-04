@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import os
 from pathlib import Path
+from uuid import UUID
 
 import pytest
 from pydantic import SecretStr
@@ -79,16 +80,17 @@ def test_extraction_manifest_receives_canonical_asset_ids(runtime, tmp_path: Pat
         created_by="pytest",
     )
 
-    source_id = updated["source_asset_id"]
+    source_id = UUID(updated["source_asset_id"])
     clip_entry = updated["clips"][0]
+    clip_id = UUID(clip_entry["asset_id"])
     assert updated["registry_status"] == "registered"
-    assert clip_entry["parent_asset_id"] == source_id
+    assert UUID(clip_entry["parent_asset_id"]) == source_id
     with unit_of_work(database) as uow:
         source_asset = uow.assets.get(source_id)
-        clip_asset = uow.assets.get(clip_entry["asset_id"])
+        clip_asset = uow.assets.get(clip_id)
     assert source_asset.lifecycle_status.value == "internal_only"
     assert clip_asset.lifecycle_status.value == "internal_only"
-    assert str(clip_asset.parent_asset_id) == source_id
+    assert clip_asset.parent_asset_id == source_id
 
 
 def test_web_image_pair_preserves_original_and_derivative(runtime, tmp_path: Path) -> None:
