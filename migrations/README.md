@@ -12,8 +12,11 @@ These migrations establish the Phase 0 and Phase 1 platform foundation for Footb
 
 1. `0001_phase0_asset_rights.sql`
 2. `0002_phase1_workflow_foundation.sql`
+3. `0003_canonical_rights_evidence.sql`
 
 Migrations are applied only in numeric filename order.
+
+Migration 0003 registers legacy evidence bytes as canonical `license_evidence` assets and then requires every evidence record to reference that canonical asset.
 
 ## Local execution
 
@@ -45,10 +48,14 @@ For a live PostgreSQL integration run:
 
 ```bash
 export FOOTBALL_BRIEF_TEST_DATABASE_URL=postgresql://localhost/football_brief_test
-pytest -m integration tests/integration/test_database_foundation.py
+pytest -m integration \
+  tests/integration/test_database_foundation.py \
+  tests/integration/test_asset_registry.py \
+  tests/integration/test_asset_pipeline.py \
+  tests/integration/test_evidence_and_voice_registry.py
 ```
 
-The test database must be disposable because the fixture drops and recreates the `football_brief` schema.
+The test database must be disposable because the fixtures drop and recreate the `football_brief` schema.
 
 ## Migration policy
 
@@ -56,7 +63,7 @@ The test database must be disposable because the fixture drops and recreates the
 - Add a new numbered migration for every schema change.
 - Migrations must run inside a transaction unless PostgreSQL prohibits the operation.
 - Destructive changes require a data migration, rollback plan, and backup verification.
-- Store media in object storage; store only references and hashes in PostgreSQL.
+- Store media outside PostgreSQL; store references, hashes, rights links, and audit records in PostgreSQL.
 - Do not store provider secrets or raw confidential payloads.
 - Treat approval, workflow-event, provider-call, cost, and manifest records as audit evidence.
 

@@ -1,0 +1,127 @@
+name: P0 Canonical Asset Registry
+
+on:
+  pull_request:
+    branches:
+      - test
+    paths:
+      - "migrations/**"
+      - "src/application/assets/**"
+      - "src/commands/assets.py"
+      - "src/domain/**"
+      - "src/infrastructure/database/**"
+      - "tests/unit/assets/**"
+      - "tests/integration/test_asset_registry.py"
+      - "tests/integration/test_asset_registry_edges.py"
+      - "tests/integration/test_asset_pipeline.py"
+      - "tests/integration/test_canonical_evidence_migration.py"
+      - "tests/integration/test_evidence_and_voice_registry.py"
+      - "tests/integration/test_database_foundation.py"
+      - "tests/acceptance/test_migration_contracts.py"
+      - ".github/workflows/p0-asset-registry.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  asset-registry:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: football_brief_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d football_brief_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/football_brief_test
+      DATABASE_REQUIRE_SCHEMA: "false"
+      DATABASE_MIGRATIONS_DIR: migrations
+      FOOTBALL_BRIEF_TEST_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/football_brief_test
+      PYTHONUNBUFFERED: "1"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install focused dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install \
+            "pydantic>=2.7.0" \
+            "pydantic-settings>=2.3.0" \
+            "typer>=0.12.0" \
+            "pytest>=8.0.0" \
+            "Pillow>=10.0.0" \
+            "psycopg[binary]>=3.2.0,<4.0" \
+            "psycopg-pool>=3.2.0,<4.0"
+
+      - name: Compile registry modules
+        run: |
+          python -m compileall -q \
+            src/application/assets \
+            src/commands \
+            src/domain \
+            src/infrastructure/database \
+            tests/unit/assets \
+            tests/integration
+
+      - name: Run registry unit tests
+        run: |
+          set -o pipefail
+          pytest -vv tests/unit/assets 2>&1 | tee asset-unit-tests.log
+
+      - name: Run migration contracts
+        run: |
+          set -o pipefail
+          pytest -vv tests/acceptance/test_migration_contracts.py 2>&1 | tee migration-contracts.log
+
+      - name: Apply and verify migrations
+        run: |
+          set -o pipefail
+          {
+            python -m src.infrastructure.database.cli migrate
+            python -m src.infrastructure.database.cli status
+            python -m src.infrastructure.database.cli health --json
+          } 2>&1 | tee migration-runtime.log
+
+      - name: Run live PostgreSQL registry tests
+        run: |
+          set -o pipefail
+          pytest -vv -m integration \
+            tests/integration/test_database_foundation.py \
+            tests/integration/test_asset_registry.py \
+            tests/integration/test_asset_registry_edges.py \
+            tests/integration/test_asset_pipeline.py \
+            tests/integration/test_canonical_evidence_migration.py \
+            tests/integration/test_evidence_and_voice_registry.py 2>&1 | tee asset-integration-tests.log
+
+      - name: Upload validation logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p0-asset-registry-logs
+          if-no-files-found: ignore
+          retention-days: 7
+          path: |
+            asset-unit-tests.log
+            migration-contracts.log
+            migration-runtime.log
+            asset-integration-tests.log
