@@ -30,6 +30,13 @@ class RightsApprovalService:
                     RightsReasonCode.ASSET_UNAVAILABLE,
                     "Rights require an available asset",
                 )
+            if data.supersedes_rights_id is not None:
+                previous = RightsStateRepository(uow.conn).get(data.supersedes_rights_id)
+                if previous.asset_id != data.asset_id:
+                    raise RightsApprovalError(
+                        RightsReasonCode.RIGHTS_NOT_APPROVED,
+                        "A rights version may supersede only the same asset",
+                    )
             return uow.asset_rights.create(data)
 
     def link_evidence(
