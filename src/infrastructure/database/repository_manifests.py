@@ -31,6 +31,32 @@ class RenderManifestRepository:
             return 1, None
         return int(row["manifest_version"]) + 1, row["id"]
 
+    def find_by_material_hash(
+        self,
+        *,
+        workflow_run_id: UUID,
+        mode: str,
+        platform: str,
+        aspect_ratio: str,
+        material_input_hash: str,
+    ) -> RenderManifestRecord | None:
+        row = self.conn.execute(
+            """
+            SELECT *
+            FROM football_brief.render_manifests
+            WHERE workflow_run_id = %s
+              AND mode = %s
+              AND platform = %s
+              AND aspect_ratio = %s
+              AND material_input_hash = %s
+              AND status IN ('sealed', 'approved')
+            ORDER BY manifest_version DESC
+            LIMIT 1
+            """,
+            (workflow_run_id, mode, platform, aspect_ratio, material_input_hash),
+        ).fetchone()
+        return self._record(row) if row else None
+
     def get(self, manifest_id: UUID) -> RenderManifestRecord:
         row = self.conn.execute(
             "SELECT * FROM football_brief.render_manifests WHERE id = %s",
