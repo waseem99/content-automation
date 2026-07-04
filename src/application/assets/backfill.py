@@ -20,10 +20,13 @@ from src.infrastructure.database.uow import unit_of_work
 
 
 DEFAULT_EXCLUDES = (
+    "asset_store/*",
     "*/asset_store/*",
+    ".git/*",
     "*/.git/*",
     "*/__pycache__/*",
     "*/asset-backfill-report.json",
+    "*/asset-verification-report.json",
     "*/asset_registry.json",
 )
 
@@ -37,6 +40,7 @@ class BackfillEntry:
     source_type: str | None
     lifecycle_status: str | None
     parent_candidate: str | None
+    parent_asset_id: str | None
     asset_id: str | None
     action: str
     reason: str | None = None
@@ -94,18 +98,44 @@ class BackfillService:
         if max_files is not None:
             files = files[:max_files]
 
-        files.sort(key=lambda path: (path in parent_candidates.values(), str(path)))
+        source_paths = set(parent_candidates.values())
+        files.sort(key=lambda path: (path not in source_paths, str(path)))
         entries: list[BackfillEntry] = []
         registered: dict[Path, UUID] = {}
 
         for path in files:
             relative = path.relative_to(resolved_root).as_posix()
             parent_path = parent_candidates.get(path)
+            parent_asset_id: UUID | None = None
             try:
                 inspection = inspect_file(path)
                 classification = self._classify(path, parent_path)
                 with unit_of_work(self.database) as uow:
                     existing = uow.assets.get_by_sha256(inspection.sha256)
+
+                if parent_path:
+                    parent_asset_id = registered.get(parent_path)
+                    if parent_asset_id is None and parent_path.is_file():
+                        parent_inspection = inspect_file(parent_path)
+                        with unit_of_work(self.database) as uow:
+                            parent_asset = uow.assets.get_by_sha256(parent_inspection.sha256)
+                        parent_asset_id = parent_asset.id if parent_asset else None
+                        if commit and parent_asset_id is None:
+                            parent_classification = self._classify(parent_path, None)
+                            parent_result = self.registry.register_file(
+                                RegisterFileRequest(
+                                    path=parent_path,
+                                    asset_type=parent_classification.asset_type,
+                                    source_type=parent_classification.source_type,
+                                    lifecycle_status=parent_classification.lifecycle_status,
+                                    storage_mode=StorageMode.REFERENCE_IN_PLACE,
+                                    created_by=created_by,
+                                    metadata={"auto_registered_as_parent": True},
+                                )
+                            )
+                            parent_asset_id = parent_result.asset.id
+                            registered[parent_path] = parent_asset_id
+
                 if not commit:
                     entries.append(
                         BackfillEntry(
@@ -115,23 +145,13 @@ class BackfillService:
                             asset_type=classification.asset_type.value,
                             source_type=classification.source_type.value,
                             lifecycle_status=classification.lifecycle_status.value,
-                            parent_candidate=(
-                                parent_path.relative_to(resolved_root).as_posix()
-                                if parent_path and self._is_within(parent_path, resolved_root)
-                                else str(parent_path) if parent_path else None
-                            ),
+                            parent_candidate=self._display_parent(parent_path, resolved_root),
+                            parent_asset_id=str(parent_asset_id) if parent_asset_id else None,
                             asset_id=str(existing.id) if existing else None,
                             action="deduplicate" if existing else "create",
                         )
                     )
                     continue
-
-                parent_asset_id = registered.get(parent_path) if parent_path else None
-                if parent_path and parent_asset_id is None:
-                    parent_inspection = inspect_file(parent_path)
-                    with unit_of_work(self.database) as uow:
-                        parent_asset = uow.assets.get_by_sha256(parent_inspection.sha256)
-                    parent_asset_id = parent_asset.id if parent_asset else None
 
                 result = self.registry.register_file(
                     RegisterFileRequest(
@@ -157,10 +177,11 @@ class BackfillService:
                         asset_type=result.asset.asset_type.value,
                         source_type=result.asset.source_type.value,
                         lifecycle_status=result.asset.lifecycle_status.value,
-                        parent_candidate=(
-                            parent_path.relative_to(resolved_root).as_posix()
-                            if parent_path and self._is_within(parent_path, resolved_root)
-                            else str(parent_path) if parent_path else None
+                        parent_candidate=self._display_parent(parent_path, resolved_root),
+                        parent_asset_id=(
+                            str(result.asset.parent_asset_id)
+                            if result.asset.parent_asset_id
+                            else None
                         ),
                         asset_id=str(result.asset.id),
                         action="create" if result.created else "deduplicate",
@@ -175,7 +196,8 @@ class BackfillService:
                         asset_type=None,
                         source_type=None,
                         lifecycle_status=None,
-                        parent_candidate=str(parent_path) if parent_path else None,
+                        parent_candidate=self._display_parent(parent_path, resolved_root),
+                        parent_asset_id=str(parent_asset_id) if parent_asset_id else None,
                         asset_id=None,
                         action="conflict",
                         reason=str(exc),
@@ -203,8 +225,12 @@ class BackfillService:
     ) -> AssetClassification:
         name = path.name.lower()
         parts = {part.lower() for part in path.parts}
-        if parent_path is not None:
+        if parent_path is not None and "_source." in parent_path.name.lower():
+            context = AssetContext.WEB_IMAGE_DERIVATIVE
+        elif parent_path is not None:
             context = AssetContext.EXTRACTED_MATCH_CLIP
+        elif "_source." in name:
+            context = AssetContext.WEB_IMAGE_SOURCE
         elif name.startswith("narration_"):
             context = AssetContext.GENERATED_VOICEOVER
         elif name in {"final_video.mp4", "preview.mp4"}:
@@ -240,6 +266,14 @@ class BackfillService:
                         candidates[(manifest_path.parent / clip_name).resolve()] = source_path
             except (OSError, ValueError, TypeError, json.JSONDecodeError):
                 continue
+
+        for source_path in root.rglob("*_source.*"):
+            normalized_stem = source_path.name.split("_source.", 1)[0]
+            for extension in (".png", ".jpg", ".jpeg", ".webp"):
+                normalized = source_path.with_name(f"{normalized_stem}{extension}")
+                if normalized.is_file():
+                    candidates[normalized.resolve()] = source_path.resolve()
+                    break
         return candidates
 
     @staticmethod
@@ -268,7 +302,7 @@ class BackfillService:
             folder = relative.parent
             by_folder.setdefault(folder, {})[relative.name] = {
                 "asset_id": entry.asset_id,
-                "parent_candidate": entry.parent_candidate,
+                "parent_asset_id": entry.parent_asset_id,
             }
         for folder, assets in by_folder.items():
             sidecar = root / folder / "asset_registry.json"
@@ -278,9 +312,10 @@ class BackfillService:
             )
 
     @staticmethod
-    def _is_within(path: Path, root: Path) -> bool:
+    def _display_parent(path: Path | None, root: Path) -> str | None:
+        if path is None:
+            return None
         try:
-            path.relative_to(root)
-            return True
+            return path.relative_to(root).as_posix()
         except ValueError:
-            return False
+            return str(path)
