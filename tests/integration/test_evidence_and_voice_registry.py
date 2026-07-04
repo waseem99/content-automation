@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+from datetime import datetime, timezone
 from pathlib import Path
 from uuid import uuid4
 
@@ -109,5 +110,6 @@ def test_approved_cloned_voice_requires_consent(runtime) -> None:
                     voice_type=VoiceType.CLONED,
                     approval_status=ApprovalStatus.APPROVED,
                     approved_by="pytest",
+                    approved_at=datetime.now(timezone.utc),
                 )
             )
