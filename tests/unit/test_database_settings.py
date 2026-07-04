@@ -10,7 +10,7 @@ from src.infrastructure.database.settings import (
 
 
 def test_database_url_is_required_only_when_used() -> None:
-    settings = DatabaseSettings(_env_file=None)
+    settings = DatabaseSettings(_env_file=None, url=SecretStr(""))
     with pytest.raises(DatabaseConfigurationError, match="DATABASE_URL"):
         settings.require_dsn()
 
