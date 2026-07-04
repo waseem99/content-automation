@@ -137,6 +137,44 @@ class RenderManifestRepository:
             ),
         )
 
+    def seal_preview(self, manifest_id: UUID) -> RenderManifestRecord:
+        row = self.conn.execute(
+            """
+            UPDATE football_brief.render_manifests
+            SET status = 'sealed'
+            WHERE id = %s AND mode = 'preview' AND status = 'draft'
+            RETURNING *
+            """,
+            (manifest_id,),
+        ).fetchone()
+        if row is None:
+            raise RuntimeError("Preview manifest could not be sealed")
+        return self._record(row)
+
+    def approve_publish(
+        self,
+        *,
+        manifest_id: UUID,
+        review_id: UUID,
+        reviewer: str,
+        approved_at: datetime,
+    ) -> RenderManifestRecord:
+        row = self.conn.execute(
+            """
+            UPDATE football_brief.render_manifests
+            SET status = 'approved',
+                approval_review_id = %s,
+                approved_by = %s,
+                approved_at = %s
+            WHERE id = %s AND mode = 'publish' AND status = 'draft'
+            RETURNING *
+            """,
+            (review_id, reviewer, approved_at, manifest_id),
+        ).fetchone()
+        if row is None:
+            raise RuntimeError("Publish manifest could not be approved")
+        return self._record(row)
+
     def get(self, manifest_id: UUID) -> RenderManifestRecord:
         row = self.conn.execute(
             "SELECT * FROM football_brief.render_manifests WHERE id = %s",
