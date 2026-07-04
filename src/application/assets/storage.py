@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import re
 import shutil
 import tempfile
 from dataclasses import dataclass
@@ -15,6 +16,9 @@ from src.application.assets.exceptions import (
 )
 from src.application.assets.hashing import inspect_file
 from src.application.assets.models import FileInspection
+
+
+_SHA256_PATTERN = re.compile(r"^[0-9a-f]{64}$")
 
 
 @dataclass(frozen=True, slots=True)
@@ -37,25 +41,49 @@ class StorageUriResolver:
         return f"workspace:///{quote(relative.as_posix())}"
 
     def managed_uri(self, sha256: str) -> str:
-        if len(sha256) != 64:
-            raise ValueError("Managed asset SHA-256 must contain 64 hexadecimal characters")
-        return f"managed:///{sha256[:2]}/{sha256}"
+        validated = self._validate_sha256(sha256)
+        return f"managed:///{validated[:2]}/{validated}"
 
     def managed_path(self, sha256: str) -> Path:
-        return self.managed_root / sha256[:2] / sha256
+        validated = self._validate_sha256(sha256)
+        return self.managed_root / validated[:2] / validated
 
     def to_path(self, uri: str) -> Path:
         parsed = urlsplit(uri)
+        if parsed.netloc or parsed.query or parsed.fragment:
+            raise UnsupportedStorageUri(
+                f"Storage URI must not contain authority, query, or fragment: {uri}"
+            )
         relative = unquote(parsed.path.lstrip("/"))
+        if not relative:
+            raise UnsupportedStorageUri(f"Storage URI has no asset path: {uri}")
         if parsed.scheme == "workspace":
             target = (self.workspace_root / relative).resolve()
             self._ensure_within(target, self.workspace_root)
             return target
         if parsed.scheme == "managed":
-            target = (self.managed_root / relative).resolve()
+            parts = relative.split("/")
+            if len(parts) != 2:
+                raise UnsupportedStorageUri(f"Invalid managed asset URI: {uri}")
+            prefix, sha256 = parts
+            try:
+                validated = self._validate_sha256(sha256)
+            except ValueError as exc:
+                raise UnsupportedStorageUri(f"Invalid managed asset URI: {uri}") from exc
+            if prefix != validated[:2]:
+                raise UnsupportedStorageUri(f"Managed asset prefix does not match hash: {uri}")
+            target = (self.managed_root / prefix / validated).resolve()
             self._ensure_within(target, self.managed_root)
             return target
         raise UnsupportedStorageUri(f"Unsupported asset storage URI: {uri}")
+
+    @staticmethod
+    def _validate_sha256(sha256: str) -> str:
+        if not _SHA256_PATTERN.fullmatch(sha256):
+            raise ValueError(
+                "Managed asset SHA-256 must be 64 lowercase hexadecimal characters"
+            )
+        return sha256
 
     @staticmethod
     def _ensure_within(target: Path, root: Path) -> None:
