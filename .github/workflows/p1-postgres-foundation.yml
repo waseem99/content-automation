@@ -71,20 +71,51 @@ jobs:
       - name: Compile foundation modules
         run: python -m compileall -q src/domain src/infrastructure/database tests
 
-      - name: Run unit and static acceptance tests
+      - name: Run database unit tests
+        id: unit_tests
         run: |
-          pytest -q \
+          set -o pipefail
+          pytest -vv \
             tests/unit/test_database_settings.py \
-            tests/unit/test_migration_runner.py \
-            tests/acceptance/test_migration_contracts.py
+            tests/unit/test_migration_runner.py 2>&1 | tee unit-tests.log
+
+      - name: Run static migration-contract tests
+        id: migration_contracts
+        run: |
+          set -o pipefail
+          pytest -vv tests/acceptance/test_migration_contracts.py 2>&1 | tee migration-contracts.log
 
       - name: Apply migrations through application runner
-        run: python -m src.infrastructure.database.cli migrate
+        id: migrate
+        run: |
+          set -o pipefail
+          python -m src.infrastructure.database.cli migrate 2>&1 | tee migrate.log
 
       - name: Verify migration status and health
+        id: database_health
         run: |
-          python -m src.infrastructure.database.cli status
-          python -m src.infrastructure.database.cli health --json
+          set -o pipefail
+          {
+            python -m src.infrastructure.database.cli status
+            python -m src.infrastructure.database.cli health --json
+          } 2>&1 | tee database-health.log
 
       - name: Run live PostgreSQL integration tests
-        run: pytest -q -m integration tests/integration/test_database_foundation.py
+        id: integration_tests
+        run: |
+          set -o pipefail
+          pytest -vv -m integration tests/integration/test_database_foundation.py 2>&1 | tee integration-tests.log
+
+      - name: Upload foundation test logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p1-postgres-foundation-logs
+          if-no-files-found: ignore
+          retention-days: 7
+          path: |
+            unit-tests.log
+            migration-contracts.log
+            migrate.log
+            database-health.log
+            integration-tests.log
