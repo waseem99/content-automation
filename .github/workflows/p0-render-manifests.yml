@@ -1,0 +1,147 @@
+name: P0 Render Manifests
+
+on:
+  pull_request:
+    branches:
+      - test
+    paths:
+      - "migrations/**"
+      - "schemas/render-manifest-v1.schema.json"
+      - "src/application/manifests/**"
+      - "src/assembler/**"
+      - "src/commands/manifests.py"
+      - "src/domain/render_*.py"
+      - "src/infrastructure/database/**"
+      - "src/producer.py"
+      - "tests/unit/manifests/**"
+      - "tests/integration/manifest_support.py"
+      - "tests/integration/test_manifest_builder.py"
+      - "tests/integration/manifest_runtime_cases.py"
+      - "tests/acceptance/test_manifest_migration_contracts.py"
+      - ".github/workflows/p0-render-manifests.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  render-manifests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: football_brief_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d football_brief_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/football_brief_test
+      DATABASE_REQUIRE_SCHEMA: "false"
+      DATABASE_MIGRATIONS_DIR: migrations
+      FOOTBALL_BRIEF_TEST_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/football_brief_test
+      PYTHONUNBUFFERED: "1"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install focused dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install \
+            "pydantic>=2.7.0" \
+            "pydantic-settings>=2.3.0" \
+            "typer>=0.12.0" \
+            "pytest>=8.0.0" \
+            "psycopg[binary]>=3.2.0,<4.0" \
+            "psycopg-pool>=3.2.0,<4.0" \
+            "moviepy>=2.0.0" \
+            "Pillow>=10.0.0" \
+            "numpy>=1.26.0"
+
+      - name: Compile manifest modules
+        run: |
+          python -m compileall -q \
+            src/application/manifests \
+            src/assembler \
+            src/commands/manifests.py \
+            src/domain \
+            src/infrastructure/database \
+            src/producer.py \
+            tests/unit/manifests \
+            tests/integration
+
+      - name: Run manifest unit tests
+        run: |
+          set -o pipefail
+          pytest -vv tests/unit/manifests 2>&1 | tee manifest-unit-tests.log
+
+      - name: Run migration and schema contracts
+        run: |
+          set -o pipefail
+          pytest -vv \
+            tests/acceptance/test_migration_contracts.py \
+            tests/acceptance/test_rights_gate_migration_contracts.py \
+            tests/acceptance/test_manifest_migration_contracts.py \
+            2>&1 | tee manifest-contracts.log
+
+      - name: Apply and verify all migrations
+        run: |
+          set -o pipefail
+          {
+            python -m src.infrastructure.database.cli migrate
+            python -m src.infrastructure.database.cli status
+            python -m src.infrastructure.database.cli health --json
+          } 2>&1 | tee manifest-migrations.log
+
+      - name: Run manifest PostgreSQL integration tests
+        run: |
+          set -o pipefail
+          pytest -vv -m integration \
+            tests/integration/test_manifest_builder.py \
+            tests/integration/manifest_runtime_cases.py \
+            2>&1 | tee manifest-integration-tests.log
+
+      - name: Run existing compliance regressions
+        run: |
+          set -o pipefail
+          pytest -q -m integration \
+            tests/integration/test_database_foundation.py \
+            tests/integration/test_asset_registry.py \
+            tests/integration/test_asset_pipeline.py \
+            tests/integration/test_evidence_and_voice_registry.py \
+            tests/integration/test_rights_approval.py \
+            tests/integration/test_rights_gate.py \
+            tests/integration/test_rights_gate_revalidation.py \
+            tests/integration/test_rights_status_services.py \
+            2>&1 | tee manifest-regression-tests.log
+
+      - name: Upload validation logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p0-render-manifest-logs
+          if-no-files-found: ignore
+          retention-days: 7
+          path: |
+            manifest-unit-tests.log
+            manifest-contracts.log
+            manifest-migrations.log
+            manifest-integration-tests.log
+            manifest-regression-tests.log

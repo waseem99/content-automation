@@ -8,6 +8,9 @@ from src.infrastructure.database.connection import Database
 from src.infrastructure.database.repository_assets import AssetRepository, AssetRightsRepository
 from src.infrastructure.database.repository_content import ContentItemRepository
 from src.infrastructure.database.repository_evidence import RightsEvidenceRepository
+from src.infrastructure.database.repository_manifests import RenderManifestRepository
+from src.infrastructure.database.repository_release_refs import ReleaseReferenceRepository
+from src.infrastructure.database.repository_render_jobs import RenderJobRepository
 from src.infrastructure.database.repository_rights_decisions import RightsGateEvaluationRepository
 from src.infrastructure.database.repository_rights_links import AssetRightsEvidenceLinkRepository
 from src.infrastructure.database.repository_rights_state import RightsStateRepository
@@ -33,6 +36,9 @@ class PostgresUnitOfWork:
     workflow_runs: WorkflowRunRepository = field(init=False)
     stage_executions: StageExecutionRepository = field(init=False)
     workflow_events: WorkflowEventRepository = field(init=False)
+    render_manifests: RenderManifestRepository = field(init=False)
+    render_jobs: RenderJobRepository = field(init=False)
+    release_references: ReleaseReferenceRepository = field(init=False)
 
     def __post_init__(self) -> None:
         self.content_items = ContentItemRepository(self.conn)
@@ -46,6 +52,9 @@ class PostgresUnitOfWork:
         self.workflow_runs = WorkflowRunRepository(self.conn)
         self.stage_executions = StageExecutionRepository(self.conn)
         self.workflow_events = WorkflowEventRepository(self.conn)
+        self.render_manifests = RenderManifestRepository(self.conn)
+        self.render_jobs = RenderJobRepository(self.conn)
+        self.release_references = ReleaseReferenceRepository(self.conn)
 
 
 @contextmanager
