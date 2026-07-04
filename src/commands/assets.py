@@ -6,6 +6,7 @@ from pathlib import Path
 import typer
 
 from src.application.assets.backfill import BackfillService, DEFAULT_EXCLUDES
+from src.application.assets.pipeline import register_extraction_manifest
 from src.application.assets.registry import AssetRegistryService
 from src.application.assets.storage import ManagedAssetStore, StorageUriResolver
 from src.infrastructure.database import Database, get_database_settings
@@ -14,7 +15,10 @@ from src.infrastructure.database import Database, get_database_settings
 app = typer.Typer(help="Canonical asset registry operations.")
 
 
-def _services(workspace_root: Path, managed_root: Path) -> tuple[Database, BackfillService]:
+def _services(
+    workspace_root: Path,
+    managed_root: Path,
+) -> tuple[Database, AssetRegistryService, BackfillService]:
     database = Database(get_database_settings())
     database.open()
     resolver = StorageUriResolver(workspace_root=workspace_root, managed_root=managed_root)
@@ -23,7 +27,49 @@ def _services(workspace_root: Path, managed_root: Path) -> tuple[Database, Backf
         storage_resolver=resolver,
         managed_store=ManagedAssetStore(resolver),
     )
-    return database, BackfillService(database=database, registry=registry)
+    return database, registry, BackfillService(database=database, registry=registry)
+
+
+@app.command("register-run")
+def register_run(
+    manifest: Path = typer.Option(..., "--manifest", exists=True, dir_okay=False),
+    source_video: Path | None = typer.Option(None, "--source-video"),
+    workspace_root: Path = typer.Option(Path.cwd(), "--workspace-root"),
+    managed_root: Path = typer.Option(Path("data/asset_store"), "--managed-root"),
+    created_by: str | None = typer.Option(None, "--created-by"),
+) -> None:
+    manifest_path = manifest.expanduser().resolve()
+    payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+    source = source_video or Path(payload["source_video"])
+    if not source.is_absolute():
+        source = (manifest_path.parent / source).resolve()
+    clip_paths = [
+        (manifest_path.parent / entry["file"]).resolve()
+        for entry in payload.get("clips", [])
+    ]
+
+    database, registry, _ = _services(workspace_root.resolve(), managed_root)
+    try:
+        updated = register_extraction_manifest(
+            manifest_path=manifest_path,
+            source_video=source,
+            clip_paths=clip_paths,
+            registry=registry,
+            created_by=created_by,
+        )
+        typer.echo(
+            json.dumps(
+                {
+                    "manifest": str(manifest_path),
+                    "source_asset_id": updated["source_asset_id"],
+                    "clip_count": len(updated.get("clips", [])),
+                    "registry_status": updated["registry_status"],
+                },
+                indent=2,
+            )
+        )
+    finally:
+        database.close()
 
 
 @app.command("backfill")
@@ -45,7 +91,7 @@ def backfill(
     workspace_root = Path.cwd().resolve()
     resolved_root = root.expanduser().resolve()
     report = report_path or resolved_root / "asset-backfill-report.json"
-    database, service = _services(workspace_root, managed_root)
+    database, _, service = _services(workspace_root, managed_root)
     try:
         result = service.run(
             root=resolved_root,
@@ -76,7 +122,7 @@ def verify(
     workspace_root = Path.cwd().resolve()
     resolved_root = root.expanduser().resolve()
     report = report_path or resolved_root / "asset-verification-report.json"
-    database, service = _services(workspace_root, managed_root)
+    database, _, service = _services(workspace_root, managed_root)
     try:
         result = service.run(root=resolved_root, commit=False, report_path=report)
         unresolved = [entry for entry in result.entries if entry.action != "deduplicate"]
