@@ -1,0 +1,136 @@
+name: P1 Budget Controls
+
+on:
+  pull_request:
+    branches:
+      - test
+    paths:
+      - "migrations/**"
+      - "src/application/budget/**"
+      - "src/application/workers/models.py"
+      - "src/domain/budget_models.py"
+      - "src/infrastructure/database/repository_budget.py"
+      - "tests/unit/test_budget_pricing.py"
+      - "tests/integration/budget_support.py"
+      - "tests/integration/test_budget_dispatcher.py"
+      - "tests/acceptance/test_budget_contracts.py"
+      - "docs/implementation/budget-controls.md"
+      - ".github/workflows/p1-budget-controls.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  budget-controls:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: football_brief_test
+          POSTGRES_USER: postgres
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d football_brief_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql://postgres@localhost:5432/football_brief_test
+      DATABASE_REQUIRE_SCHEMA: "false"
+      DATABASE_MIGRATIONS_DIR: migrations
+      FOOTBALL_BRIEF_TEST_DATABASE_URL: postgresql://postgres@localhost:5432/football_brief_test
+      PYTHONUNBUFFERED: "1"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install focused dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install \
+            "pydantic>=2.7.0" \
+            "pydantic-settings>=2.3.0" \
+            "typer>=0.12.0" \
+            "pytest>=8.0.0" \
+            "psycopg[binary]>=3.2.0,<4.0" \
+            "psycopg-pool>=3.2.0,<4.0" \
+            "moviepy>=2.0.0" \
+            "Pillow>=10.0.0" \
+            "numpy>=1.26.0"
+
+      - name: Compile budget modules
+        run: |
+          python -m compileall -q \
+            src/application/budget \
+            src/application/workers/models.py \
+            src/domain/budget_models.py \
+            src/infrastructure/database/repository_budget.py \
+            tests/unit/test_budget_pricing.py \
+            tests/integration/budget_support.py \
+            tests/integration/test_budget_dispatcher.py
+
+      - name: Run budget unit tests
+        run: |
+          pytest -vv tests/unit/test_budget_pricing.py
+
+      - name: Run migration contracts
+        run: |
+          set -o pipefail
+          pytest -vv \
+            tests/acceptance/test_migration_contracts.py \
+            tests/acceptance/test_budget_contracts.py \
+            2>&1 | tee budget-contracts.log
+
+      - name: Apply and verify all migrations
+        run: |
+          set -o pipefail
+          {
+            python -m src.infrastructure.database.cli migrate
+            python -m src.infrastructure.database.cli status
+            python -m src.infrastructure.database.cli health --json
+          } 2>&1 | tee budget-migrations.log
+
+      - name: Run budget integration tests
+        run: |
+          set -o pipefail
+          pytest -vv -m integration tests/integration/test_budget_dispatcher.py 2>&1 | tee budget-integration-tests.log
+
+      - name: Run related regressions
+        run: |
+          set -o pipefail
+          pytest -q -m integration \
+            tests/integration/test_worker_execution.py \
+            tests/integration/test_worker_duplicate.py \
+            tests/integration/test_gate_stage_decisions.py \
+            tests/integration/test_flow_events.py \
+            tests/integration/test_provider_lineage.py \
+            tests/integration/test_quality_package_guard.py \
+            tests/integration/test_rights_gate.py \
+            2>&1 | tee budget-regression-tests.log
+
+      - name: Upload validation logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p1-budget-controls-logs
+          if-no-files-found: ignore
+          retention-days: 7
+          path: |
+            budget-contracts.log
+            budget-migrations.log
+            budget-integration-tests.log
+            budget-regression-tests.log
