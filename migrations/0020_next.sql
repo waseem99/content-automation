@@ -1,5 +1,18 @@
 BEGIN;
 
+CREATE TABLE football_brief.source_output_reviews (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    workflow_run_id uuid NOT NULL REFERENCES football_brief.workflow_runs(id) ON DELETE RESTRICT,
+    source_output_id uuid NOT NULL,
+    packet_id uuid NOT NULL REFERENCES football_brief.research_packets(id) ON DELETE RESTRICT,
+    status text NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'changes_requested')),
+    reviewed_by text,
+    rationale text,
+    created_at timestamptz NOT NULL DEFAULT now(),
+    reviewed_at timestamptz,
+    UNIQUE (workflow_run_id, source_output_id)
+);
+
 CREATE TABLE football_brief.step_plans (
     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     workflow_run_id uuid NOT NULL REFERENCES football_brief.workflow_runs(id) ON DELETE RESTRICT,
