@@ -45,6 +45,7 @@ class RenderManifestBuildRequest(FrozenRecord):
     preset: ShortFormRenderPreset = Field(default_factory=ShortFormRenderPreset)
     voice_asset_id: UUID | None = None
     music_asset_id: UUID | None = None
+    approved_voice_id: UUID | None = None
     rights_gate_evaluation_id: UUID | None = None
     approval_review_id: UUID | None = None
     created_by: str = Field(min_length=1)
@@ -56,6 +57,8 @@ class RenderManifestBuildRequest(FrozenRecord):
                 raise ValueError("Publish build requires rights evaluation and approval review")
             if any(item.asset_id is None for item in self.assets):
                 raise ValueError("Publish build cannot contain placeholders")
+            if self.voice_asset_id is not None and self.approved_voice_id is None:
+                raise ValueError("Publish voice assets require approved voice")
         else:
             if self.rights_gate_evaluation_id is not None or self.approval_review_id is not None:
                 raise ValueError("Preview build cannot claim publish approval")
