@@ -1,0 +1,138 @@
+name: P1 Acceptance Harness
+
+on:
+  pull_request:
+    branches:
+      - test
+    paths:
+      - ".github/workflows/p1-acceptance-harness.yml"
+      - "docs/acceptance/**"
+      - "docs/operations/**"
+      - "migrations/**"
+      - "pytest.ini"
+      - "requirements.txt"
+      - "src/**"
+      - "tests/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  acceptance-harness:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: football_brief_test
+          POSTGRES_USER: postgres
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d football_brief_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql://postgres@localhost:5432/football_brief_test
+      DATABASE_REQUIRE_SCHEMA: "false"
+      DATABASE_MIGRATIONS_DIR: migrations
+      FOOTBALL_BRIEF_TEST_DATABASE_URL: postgresql://postgres@localhost:5432/football_brief_test
+      PYTHONUNBUFFERED: "1"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+
+      - name: Dependency consistency check
+        run: |
+          set -o pipefail
+          python -m pip check 2>&1 | tee dependency-check.log
+
+      - name: Compile source and tests
+        run: |
+          set -o pipefail
+          python -m compileall -q src tests 2>&1 | tee compile.log
+
+      - name: Static acceptance and compliance checks
+        run: |
+          set -o pipefail
+          pytest -vv -m "acceptance and not integration" \
+            tests/acceptance/test_acceptance_matrix.py \
+            tests/acceptance/test_migration_lock.py \
+            tests/acceptance/test_fixture_provenance.py \
+            tests/acceptance/test_sensitive_pattern_scan.py \
+            tests/acceptance/test_migration_contracts.py \
+            tests/acceptance/test_rights_gate_migration_contracts.py \
+            tests/acceptance/test_manifest_migration_contracts.py \
+            tests/acceptance/test_voice_media_policy_contracts.py \
+            tests/acceptance/test_provider_lineage_contracts.py \
+            tests/acceptance/test_quality_gate_contracts.py \
+            tests/acceptance/test_state_machine_contracts.py \
+            tests/acceptance/test_human_gate_contracts.py \
+            tests/acceptance/test_budget_contracts.py \
+            2>&1 | tee acceptance-static.log
+
+      - name: Apply and verify migrations on PostgreSQL
+        run: |
+          set -o pipefail
+          {
+            python -m src.infrastructure.database.cli migrate
+            python -m src.infrastructure.database.cli status
+            python -m src.infrastructure.database.cli health --json
+          } 2>&1 | tee migration-apply.log
+
+      - name: PostgreSQL acceptance and regressions
+        run: |
+          set -o pipefail
+          pytest -vv -m "integration" \
+            tests/integration/test_migration_checksum_guard.py \
+            tests/integration/test_database_foundation.py \
+            tests/integration/test_asset_registry.py \
+            tests/integration/test_rights_gate.py \
+            tests/integration/test_rights_gate_revalidation.py \
+            tests/integration/test_manifest_builder.py \
+            tests/integration/manifest_runtime_cases.py \
+            tests/integration/test_quality_package_guard.py \
+            tests/integration/test_quality_media_and_disclosure.py \
+            tests/integration/test_flow_events.py \
+            tests/integration/test_flow_retry_resume.py \
+            tests/integration/test_worker_execution.py \
+            tests/integration/test_worker_race.py \
+            tests/integration/test_gate_contracts.py \
+            tests/integration/test_gate_blocking_checks.py \
+            tests/integration/test_budget_dispatcher.py \
+            2>&1 | tee postgres-acceptance.log
+
+      - name: Upload acceptance artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p1-acceptance-harness-artifacts
+          if-no-files-found: ignore
+          retention-days: 14
+          path: |
+            dependency-check.log
+            compile.log
+            acceptance-static.log
+            migration-apply.log
+            postgres-acceptance.log
+            docs/acceptance/scenario-test-matrix.md
+            docs/operations/migration-lock.json
+            tests/fixtures/provenance.json
