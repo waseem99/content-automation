@@ -51,9 +51,21 @@ class OperatorGateService:
         return request
 
     def record_decision(self, data: ReviewDecisionCreate) -> HumanReview:
+        request = None
+        if data.review_request_id:
+            with unit_of_work(self.database) as uow:
+                request = OperatorGateRequestRepository(uow.conn).get(data.review_request_id)
+            data = data.model_copy(
+                update={
+                    "workflow_run_id": request.workflow_run_id,
+                    "stage_execution_id": data.stage_execution_id or request.stage_execution_id,
+                    "target_type": data.target_type or request.target_type,
+                    "target_id": data.target_id or request.target_id,
+                    "review_type": data.review_type or request.review_type,
+                }
+            )
         self._guard_positive_decision(data)
         with unit_of_work(self.database) as uow:
-            request = OperatorGateRequestRepository(uow.conn).get(data.review_request_id) if data.review_request_id else None
             decision = OperatorGateDecisionRepository(uow.conn).create(data)
             uow.workflow_events.create(
                 workflow_run_id=data.workflow_run_id,
@@ -87,13 +99,7 @@ class OperatorGateService:
         if stage.status != StageStatus.RUNNING:
             raise GateServiceError("Only running stages can be gated")
         self.state_machine.transition_stage(
-            StageTransitionRequest(
-                stage_execution_id=stage_execution_id,
-                target_status=StageStatus.AWAITING_HUMAN,
-                actor=actor,
-                actor_type=TransitionActorType.OPERATOR,
-                reason=reason,
-            )
+            StageTransitionRequest(stage_execution_id=stage_execution_id, target_status=StageStatus.AWAITING_HUMAN, actor=actor, actor_type=TransitionActorType.OPERATOR, reason=reason)
         )
 
     def _apply_stage_decision(self, stage_execution_id: UUID, data: ReviewDecisionCreate) -> None:
@@ -125,11 +131,6 @@ class OperatorGateService:
             return
         target_type = data.target_type
         target_id = data.target_id
-        if data.review_request_id and (target_type is None or target_id is None):
-            with unit_of_work(self.database) as uow:
-                request = OperatorGateRequestRepository(uow.conn).get(data.review_request_id)
-                target_type = target_type or request.target_type
-                target_id = target_id or request.target_id
         if target_type == ReviewTargetType.QUALITY_REPORT and target_id:
             with unit_of_work(self.database) as uow:
                 row = uow.conn.execute("SELECT overall_status FROM football_brief.quality_reports WHERE id = %s", (target_id,)).fetchone()
