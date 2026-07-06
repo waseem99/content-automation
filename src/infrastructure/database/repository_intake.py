@@ -43,3 +43,10 @@ class IntakeRepository:
         if row is None:
             raise RuntimeError("intake was not persisted")
         return IntakeRecord(**row)
+
+    def find_existing(self, workflow_run_id: UUID, digest: str) -> IntakeRecord | None:
+        row = self.conn.execute(
+            "SELECT * FROM football_brief.content_intakes WHERE workflow_run_id = %s AND canonical_input_hash = %s",
+            (workflow_run_id, digest),
+        ).fetchone()
+        return IntakeRecord(**row) if row else None
