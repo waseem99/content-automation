@@ -40,8 +40,8 @@ Use this checklist before starting Phase 2 content-intelligence or editorial age
 
 - [x] Readiness report committed.
 - [x] Closeout checklist committed.
-- [x] Negative pilot test committed.
-- [x] Traceability/readiness test committed.
+- [x] Negative pilot evidence covered by closeout regression suite.
+- [x] Traceability/readiness acceptance test committed.
 - [x] Closeout workflow committed.
 - [ ] Closeout workflow green on exact PR head.
 - [ ] P1 Acceptance Harness green on exact PR head.
