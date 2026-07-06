@@ -37,6 +37,9 @@ class DerivativeRegistrationRequest(FrozenRecord):
     prompt_version: str | None = None
     prompt_hash: str | None = Field(default=None, pattern=r"^[0-9a-f]{64}$")
     provider_call: ProviderCallCreate
+    platform: str = Field(default="youtube", min_length=1)
+    territory: str = Field(default="worldwide", min_length=1)
+    campaign: str | None = None
     created_by: str = Field(min_length=1)
     metadata: dict[str, Any] = Field(default_factory=dict)
     allow_reuse: bool = True
