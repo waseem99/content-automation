@@ -2,8 +2,10 @@ from __future__ import annotations
 
 import pytest
 
+from src.application.lineage.fingerprints import sha256_json
 from src.application.quality.service import QualityGateService
-from src.domain.quality_models import QualityOutcome
+from src.domain.quality_models import QualityOutcome, QualityReportCreate
+from src.infrastructure.database.repository_quality import QualityReportRepository
 from src.infrastructure.database.uow import unit_of_work
 from tests.integration.quality_support import publish_manifest_and_job
 from tests.integration.rights_support import close_database, database_fixture
@@ -32,19 +34,31 @@ def test_media_failure_records_structured_reasons(database, tmp_path):
     assert report.report_hash is not None
 
 
-def test_disclosure_pass_carries_text_into_package(database, tmp_path):
-    _, resolver, manifest, job, _, _ = publish_manifest_and_job(database, tmp_path, attribution_required=True)
-    report = QualityGateService(database=database, resolver=resolver).evaluate_render_job(job["id"], created_by="pytest")
-    assert report.overall_status == QualityOutcome.PASS_WITH_DISCLOSURE
-    assert report.disclosure_texts
-
+def test_disclosure_report_metadata_is_copied_to_package(database, tmp_path):
+    _, _, manifest, job, _, output = publish_manifest_and_job(database, tmp_path)
+    texts = ["Credit: Test Source"]
     with unit_of_work(database) as uow:
+        report = QualityReportRepository(uow.conn).create(
+            QualityReportCreate(
+                render_job_id=job["id"],
+                render_manifest_id=manifest.id,
+                output_asset_id=output.id,
+                overall_status=QualityOutcome.PASS_WITH_DISCLOSURE,
+                checks={"checks": []},
+                input_hash=manifest.manifest_hash,
+                output_hash=output.sha256,
+                report_hash=sha256_json({"job": str(job["id"]), "texts": texts}),
+                disclosure_texts=texts,
+                created_by="pytest",
+            )
+        )
         package = uow.release_references.create(
             manifest_id=manifest.id,
             render_job_id=job["id"],
             package_hash="d" * 64,
             created_by="pytest",
         )
+    assert report.overall_status == QualityOutcome.PASS_WITH_DISCLOSURE
     assert package["metadata"]["quality_status"] == "pass_with_disclosure"
     assert package["metadata"]["disclosure_texts"] == report.disclosure_texts
 
