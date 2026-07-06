@@ -126,9 +126,16 @@ class WorkflowStateMachine:
                     "failure_reason": request.failure_reason,
                 },
             )
+            stale = []
             if request.target_status == StageStatus.COMPLETED and request.output_hash:
-                self.invalidate_stale_downstream(stage.id, request.output_hash, actor=request.actor, reason="upstream_output_changed")
-            return {"stage": row, "event": event}
+                stale = self._invalidate_stale_downstream_in_uow(
+                    uow,
+                    stage.id,
+                    request.output_hash,
+                    actor=request.actor,
+                    reason="upstream_output_changed",
+                )
+            return {"stage": row, "event": event, "stale": stale}
 
     def retry_stage(self, stage_execution_id: UUID, *, actor: str, reason: str):
         self._require_identity(actor, reason, TransitionActorType.OPERATOR)
@@ -198,37 +205,9 @@ class WorkflowStateMachine:
             return row
 
     def invalidate_stale_downstream(self, upstream_stage_execution_id: UUID, new_output_hash: str, *, actor: str, reason: str) -> list[dict]:
-        results: list[dict] = []
         with unit_of_work(self.database) as uow:
-            rows = uow.conn.execute(
-                """
-                SELECT downstream.*
-                FROM football_brief.stage_dependencies dep
-                JOIN football_brief.stage_executions downstream ON downstream.id = dep.downstream_stage_execution_id
-                WHERE dep.upstream_stage_execution_id = %s
-                  AND dep.expected_upstream_output_hash IS DISTINCT FROM %s
-                  AND downstream.status <> 'superseded'
-                """,
-                (upstream_stage_execution_id, new_output_hash),
-            ).fetchall()
             self._enable_db_guard(uow.conn)
-            for row in rows:
-                updated = uow.conn.execute(
-                    "UPDATE football_brief.stage_executions SET status = 'superseded', failure_reason = %s WHERE id = %s RETURNING *",
-                    (TransitionReasonCode.STALE_OUTPUT.value, row["id"]),
-                ).fetchone()
-                event = uow.workflow_events.create(
-                    workflow_run_id=row["workflow_run_id"],
-                    stage_execution_id=row["id"],
-                    event_type="stage_superseded_by_dependency",
-                    from_status=row["status"],
-                    to_status=StageStatus.SUPERSEDED.value,
-                    actor=actor,
-                    reason=reason,
-                    payload={"upstream_stage_execution_id": str(upstream_stage_execution_id), "new_output_hash": new_output_hash},
-                )
-                results.append({"stage": updated, "event": event})
-        return results
+            return self._invalidate_stale_downstream_in_uow(uow, upstream_stage_execution_id, new_output_hash, actor=actor, reason=reason)
 
     def resume_plan(self, workflow_run_id: UUID) -> ResumePlan:
         with unit_of_work(self.database) as uow:
@@ -240,6 +219,38 @@ class WorkflowStateMachine:
         skipped = tuple(row["id"] for row in rows if row["status"] in {StageStatus.COMPLETED.value, StageStatus.SKIPPED.value})
         blocked = tuple(row["id"] for row in rows if row["status"] in {StageStatus.RUNNING.value, StageStatus.AWAITING_HUMAN.value})
         return ResumePlan(workflow_run_id=workflow_run_id, runnable_stage_ids=runnable, skipped_stage_ids=skipped, blocked_stage_ids=blocked)
+
+    def _invalidate_stale_downstream_in_uow(self, uow, upstream_stage_execution_id: UUID, new_output_hash: str, *, actor: str, reason: str) -> list[dict]:
+        results: list[dict] = []
+        rows = uow.conn.execute(
+            """
+            SELECT downstream.*
+            FROM football_brief.stage_dependencies dep
+            JOIN football_brief.stage_executions downstream ON downstream.id = dep.downstream_stage_execution_id
+            WHERE dep.upstream_stage_execution_id = %s
+              AND dep.expected_upstream_output_hash IS DISTINCT FROM %s
+              AND downstream.status <> 'superseded'
+            """,
+            (upstream_stage_execution_id, new_output_hash),
+        ).fetchall()
+        self._enable_db_guard(uow.conn)
+        for row in rows:
+            updated = uow.conn.execute(
+                "UPDATE football_brief.stage_executions SET status = 'superseded', failure_reason = %s WHERE id = %s RETURNING *",
+                (TransitionReasonCode.STALE_OUTPUT.value, row["id"]),
+            ).fetchone()
+            event = uow.workflow_events.create(
+                workflow_run_id=row["workflow_run_id"],
+                stage_execution_id=row["id"],
+                event_type="stage_superseded_by_dependency",
+                from_status=row["status"],
+                to_status=StageStatus.SUPERSEDED.value,
+                actor=actor,
+                reason=reason,
+                payload={"upstream_stage_execution_id": str(upstream_stage_execution_id), "new_output_hash": new_output_hash},
+            )
+            results.append({"stage": updated, "event": event})
+        return results
 
     @staticmethod
     def _enable_db_guard(conn) -> None:
