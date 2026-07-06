@@ -1,3 +1,0 @@
-# Step One
-
-Initial note.
