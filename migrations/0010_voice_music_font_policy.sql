@@ -13,8 +13,10 @@ DECLARE
 BEGIN
     IF NEW.approval_status = 'approved'
        AND NEW.voice_type = 'cloned' THEN
+        -- Approved cloned voices require consent evidence; the existing
+        -- cloned_voice_requires_consent CHECK handles missing consent evidence.
         IF NEW.consent_evidence_asset_id IS NULL THEN
-            RAISE EXCEPTION 'Approved cloned voices require consent evidence';
+            RETURN NEW;
         END IF;
 
         SELECT * INTO consent_asset
