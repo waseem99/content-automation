@@ -119,6 +119,7 @@ jobs:
             tests/integration/test_review_prerequisites.py \
             tests/integration/test_stage_product.py \
             tests/integration/test_step_plan.py \
+            tests/integration/test_operator_tools.py \
             tests/integration/test_asset_registry.py \
             tests/integration/test_rights_gate.py \
             tests/integration/test_rights_gate_revalidation.py \
