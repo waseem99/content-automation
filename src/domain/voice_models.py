@@ -31,6 +31,7 @@ class ApprovedVoiceCreate(FrozenRecord):
     expires_at: datetime | None = None
     approved_by: str | None = None
     approved_at: datetime | None = None
+    preview_only: bool = False
     metadata: dict[str, Any] = Field(default_factory=dict)
 
 
