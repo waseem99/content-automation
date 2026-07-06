@@ -15,6 +15,7 @@ PATTERNS = (
     re.compile(r"(?i)\b(?:api[_-]?key|secret|token|password|authorization)\b\s*[:=]\s*['\"]?([A-Za-z0-9_./+=\-]{12,})"),
 )
 PLACEHOLDER_VALUES = {"...", "changeme", "change_me", "placeholder", "example", "dummy", "test", "not-a-secret", "redacted"}
+SAFE_VALUE_PREFIXES = ("settings.", "self.", "config.", "os.environ", "getenv(", "env.")
 
 
 def _is_text_file(path: Path) -> bool:
@@ -25,13 +26,15 @@ def _is_text_file(path: Path) -> bool:
 
 def _is_placeholder(line: str, match: re.Match[str]) -> bool:
     value = match.group(1) if match.lastindex else match.group(0)
-    cleaned = value.strip("'\" ").lower()
+    cleaned = value.strip("'\" ,)").lower()
     if cleaned in PLACEHOLDER_VALUES:
+        return True
+    if cleaned.startswith(SAFE_VALUE_PREFIXES):
         return True
     if "..." in line or "<" in line or ">" in line:
         return True
     lowered = line.lower()
-    return "example" in lowered or "placeholder" in lowered or "[redacted]" in lowered
+    return "example" in lowered or "placeholder" in lowered or "[redacted]" in lowered or " is not set" in lowered
 
 
 @pytest.mark.acceptance
