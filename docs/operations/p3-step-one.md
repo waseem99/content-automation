@@ -31,4 +31,4 @@ P3-02 should add the approval gate before package preparation can consume option
 
 ## Validation
 
-Covered by `tests/integration/test_p3_step_one.py` through the P1 Acceptance Harness.
+Covered by the P3 step-one integration regression inside the P1 Acceptance Harness.
