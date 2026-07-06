@@ -9,9 +9,9 @@ from psycopg.errors import RaiseException
 
 from src.application.assets.classification import AssetContext
 from src.application.lineage.exceptions import DerivativeRegistrationError
+from src.application.lineage.fingerprints import request_fingerprint
 from src.application.lineage.models import DerivativeRegistrationRequest, ProviderCallCreate
 from src.application.lineage.service import AssetLineageService
-from src.application.lineage.fingerprints import request_fingerprint
 from src.application.manifests.builder import RenderManifestBuilder
 from src.domain.asset_enums import AssetType
 from src.domain.asset_models import AssetCreate
@@ -122,7 +122,7 @@ def _request(workflow_id, stage_id, parent, output_path: Path, *, provider_reque
             units=1,
             unit_name="image",
             cost_usd=0,
-            metadata={"secret": None, "safe": True},
+            metadata={"safe": True},
         ),
         created_by="pytest",
         metadata={"purpose": "lineage-test"},
@@ -209,8 +209,10 @@ def test_multigeneration_lineage_returns_source_to_render_chain(database, tmp_pa
     registry, parent, _ = _source_asset(database, tmp_path)
     first_output = tmp_path / "first.png"
     second_output = tmp_path / "second.png"
+    first_license = tmp_path / "first-license.pdf"
     first_output.write_bytes(b"first-output")
     second_output.write_bytes(b"second-output")
+    first_license.write_bytes(b"first-license")
     service = AssetLineageService(database=database, registry=registry, rights_gate=gate_for(database, tmp_path))
     first = service.register_derivative(_request(workflow_id, first_stage.id, parent, first_output, provider_request_id="req-first"))
 
@@ -218,13 +220,12 @@ def test_multigeneration_lineage_returns_source_to_render_chain(database, tmp_pa
         database=database,
         registry=registry,
         asset_id=first.asset_id,
-        evidence_path=tmp_path / "first-license.pdf",
+        evidence_path=first_license,
         modification=True,
         synthetic_edit=True,
         territories=["worldwide"],
         platforms=["youtube"],
     )
-    (tmp_path / "first-license.pdf").write_bytes(b"first-license")
     with unit_of_work(database) as uow:
         first_asset = uow.assets.get(first.asset_id)
     second = service.register_derivative(_request(workflow_id, second_stage.id, first_asset, second_output, provider_request_id="req-second"))
@@ -243,15 +244,14 @@ def test_generated_publish_asset_requires_provider_evidence(database, tmp_path: 
     license_path = tmp_path / "generated-license.pdf"
     generated_path.write_bytes(b"generated-without-evidence")
     license_path.write_bytes(b"license")
-    generated = register_asset(registry, generated_path, AssetContext.WEB_IMAGE_SOURCE)
     with unit_of_work(database) as uow:
         generated = uow.assets.create(
             AssetCreate(
                 asset_type=AssetType.IMAGE,
                 source_type=AssetSourceType.AI_GENERATED,
                 lifecycle_status=AssetLifecycleStatus.INTERNAL_ONLY,
-                storage_uri="workspace:///generated-without-evidence.png",
-                sha256="9" * 64,
+                storage_uri=registry.storage_resolver.workspace_uri(generated_path),
+                sha256=_sha(generated_path),
                 created_by="pytest",
             )
         )
@@ -263,7 +263,6 @@ def test_generated_publish_asset_requires_provider_evidence(database, tmp_path: 
         territories=["worldwide"],
         platforms=["youtube"],
     )
-    content_id = None
     with unit_of_work(database) as uow:
         content_id = uow.workflow_runs.get(workflow_id).content_item_id
     gate_id = create_passing_gate(database, tmp_path, workflow_id, generated.id)
