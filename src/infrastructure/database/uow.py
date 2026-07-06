@@ -9,6 +9,7 @@ from src.infrastructure.database.repository_assets import AssetRepository, Asset
 from src.infrastructure.database.repository_content import ContentItemRepository
 from src.infrastructure.database.repository_evidence import RightsEvidenceRepository
 from src.infrastructure.database.repository_manifests import RenderManifestRepository
+from src.infrastructure.database.repository_narration import NarrationOutputRepository
 from src.infrastructure.database.repository_release_refs import ReleaseReferenceRepository
 from src.infrastructure.database.repository_render_jobs import RenderJobRepository
 from src.infrastructure.database.repository_rights_decisions import RightsGateEvaluationRepository
@@ -16,10 +17,7 @@ from src.infrastructure.database.repository_rights_links import AssetRightsEvide
 from src.infrastructure.database.repository_rights_state import RightsStateRepository
 from src.infrastructure.database.repository_voices import ApprovedVoiceRepository
 from src.infrastructure.database.repository_workflow_events import WorkflowEventRepository
-from src.infrastructure.database.repository_workflows import (
-    StageExecutionRepository,
-    WorkflowRunRepository,
-)
+from src.infrastructure.database.repository_workflows import StageExecutionRepository, WorkflowRunRepository
 
 
 @dataclass(slots=True)
@@ -39,6 +37,7 @@ class PostgresUnitOfWork:
     render_manifests: RenderManifestRepository = field(init=False)
     render_jobs: RenderJobRepository = field(init=False)
     release_references: ReleaseReferenceRepository = field(init=False)
+    narration_outputs: NarrationOutputRepository = field(init=False)
 
     def __post_init__(self) -> None:
         self.content_items = ContentItemRepository(self.conn)
@@ -55,6 +54,7 @@ class PostgresUnitOfWork:
         self.render_manifests = RenderManifestRepository(self.conn)
         self.render_jobs = RenderJobRepository(self.conn)
         self.release_references = ReleaseReferenceRepository(self.conn)
+        self.narration_outputs = NarrationOutputRepository(self.conn)
 
 
 @contextmanager
