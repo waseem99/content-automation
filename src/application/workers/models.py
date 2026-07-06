@@ -62,6 +62,8 @@ class WorkerExecutionRequest(FrozenRecord):
     provider: str | None = None
     operation: str | None = None
     provider_request_id: str | None = None
+    provider_model_id: str | None = None
+    provider_units: Decimal = Field(default=Decimal("1"), ge=0)
     cost_usd: Decimal = Field(default=Decimal("0"), ge=0)
 
 
