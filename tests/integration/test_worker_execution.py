@@ -4,7 +4,7 @@ import pytest
 
 from src.application.workers.models import WorkerExecutionRequest, WorkerOutcome
 from tests.integration.rights_support import close_database, create_workflow, database_fixture
-from tests.integration.worker_support import dispatcher
+from tests.integration.worker_support import definition, dispatcher
 
 
 pytestmark = pytest.mark.integration
@@ -40,7 +40,7 @@ def test_worker_success_creates_stage_and_reuses_result(database):
 def test_different_worker_version_gets_different_key(database):
     workflow_id = create_workflow(database)
     service1, _ = dispatcher(database)
-    service2, _ = dispatcher(database, worker_definition=__import__("tests.integration.worker_support", fromlist=["definition"]).definition(version="2"))
+    service2, _ = dispatcher(database, worker_definition=definition(version="2"))
     first = service1.execute(
         WorkerExecutionRequest(workflow_run_id=workflow_id, worker_name="demo_worker", worker_version="1", input_payload={"value": "same"}, actor="pytest")
     )
