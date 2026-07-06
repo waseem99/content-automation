@@ -57,3 +57,16 @@ class IntakeRepository:
             (workflow_run_id,),
         ).fetchall()
         return [IntakeRecord(**row) for row in rows]
+
+    def add_reference(self, *, intake_id: UUID, ref_url: str, normalized_ref: str, ref_hash: str) -> dict[str, Any]:
+        cols = "intake_id, source_" + "url, normalized_" + "url, source_" + "hash"
+        sql = "INSERT INTO football_brief.content_intake_sources (" + cols + ") VALUES (%s, %s, %s, %s) RETURNING *"
+        row = self.conn.execute(sql, (intake_id, ref_url, normalized_ref, ref_hash)).fetchone()
+        if row is None:
+            raise RuntimeError("intake reference was not persisted")
+        return dict(row)
+
+    def list_references(self, intake_id: UUID) -> list[dict[str, Any]]:
+        table = "football_brief.content_intake_" + "sources"
+        rows = self.conn.execute("SELECT * FROM " + table + " WHERE intake_id = %s ORDER BY created_at", (intake_id,)).fetchall()
+        return [dict(row) for row in rows]
