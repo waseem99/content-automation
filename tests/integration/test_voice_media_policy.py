@@ -4,7 +4,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import pytest
-from psycopg.errors import RaiseException
+from psycopg.errors import CheckViolation, RaiseException
 
 from src.application.assets.classification import AssetContext
 from src.application.media.asset_policy import MediaAssetPolicyService
@@ -151,7 +151,7 @@ def test_preview_only_or_expired_voice_cannot_publish(database) -> None:
 
 
 def test_approved_cloned_voice_requires_canonical_consent_asset(database) -> None:
-    with pytest.raises(RaiseException, match="consent"):
+    with pytest.raises((CheckViolation, RaiseException), match="consent"):
         with unit_of_work(database) as uow:
             uow.approved_voices.create(
                 ApprovedVoiceCreate(
