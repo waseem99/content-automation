@@ -14,7 +14,7 @@ from src.application.workers.models import (
     WorkerOutcome,
 )
 from src.application.workers.registry import WorkerRegistry
-from src.domain.workflow_models import StageExecutionCreate
+from src.domain.workflow_models import StageExecution, StageExecutionCreate
 from src.domain.workflow_state_models import StageTransitionRequest, TransitionActorType
 from src.domain.workflow_status import StageStatus
 from src.infrastructure.database.connection import Database
@@ -91,7 +91,7 @@ class WorkerDispatcher:
             attempt=stage.attempt,
         )
 
-    def _create_stage(self, request: WorkerExecutionRequest, definition, idempotency_key: str, input_hash: str):
+    def _create_stage(self, request: WorkerExecutionRequest, definition, idempotency_key: str, input_hash: str) -> StageExecution:
         try:
             with unit_of_work(self.database) as uow:
                 return uow.stage_executions.create(
@@ -114,7 +114,7 @@ class WorkerDispatcher:
                 return existing
             raise
 
-    def _reuse_or_report_existing(self, stage, idempotency_key: str, input_hash: str, actor: str) -> WorkerExecutionResult:
+    def _reuse_or_report_existing(self, stage: StageExecution, idempotency_key: str, input_hash: str, actor: str) -> WorkerExecutionResult:
         if stage.status == StageStatus.COMPLETED and stage.output_hash:
             self._event(stage.workflow_run_id, stage.id, "worker_result_reused", actor, "idempotency_hit", {"output_hash": stage.output_hash})
             return WorkerExecutionResult(
@@ -166,13 +166,13 @@ class WorkerDispatcher:
             failure_reason=message,
         )
 
-    def _get_stage_by_idempotency(self, idempotency_key: str):
+    def _get_stage_by_idempotency(self, idempotency_key: str) -> StageExecution | None:
         with unit_of_work(self.database) as uow:
             row = uow.conn.execute(
                 "SELECT * FROM football_brief.stage_executions WHERE idempotency_key = %s",
                 (idempotency_key,),
             ).fetchone()
-            return uow.stage_executions.required(row, type(uow.stage_executions).model_type, "stage execution") if row else None
+            return StageExecution.model_validate(row) if row else None
 
     def _record_provider_call_if_requested(self, request: WorkerExecutionRequest, stage_id, idempotency_key: str, input_hash: str, response_hash: str, result: WorkerHandlerResult) -> None:
         if not request.provider or not request.operation:
