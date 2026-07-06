@@ -36,7 +36,10 @@ class WorkerDispatcher:
         if existing is not None:
             return self._reuse_or_report_existing(existing, idempotency_key, input_hash, request.actor)
 
-        stage = self._create_stage(request, definition, idempotency_key, input_hash)
+        stage, created = self._create_stage(request, definition, idempotency_key, input_hash)
+        if not created:
+            return self._reuse_or_report_existing(stage, idempotency_key, input_hash, request.actor)
+
         self.state_machine.transition_stage(
             StageTransitionRequest(
                 stage_execution_id=stage.id,
@@ -84,7 +87,7 @@ class WorkerDispatcher:
             attempt=stage.attempt,
         )
 
-    def _create_stage(self, request: WorkerExecutionRequest, definition, idempotency_key: str, input_hash: str) -> StageExecution:
+    def _create_stage(self, request: WorkerExecutionRequest, definition, idempotency_key: str, input_hash: str) -> tuple[StageExecution, bool]:
         stage_name = request.stage_name or definition.name
         try:
             with unit_of_work(self.database) as uow:
@@ -92,7 +95,7 @@ class WorkerDispatcher:
                     "SELECT COALESCE(MAX(attempt), 0) + 1 AS next_attempt FROM football_brief.stage_executions WHERE workflow_run_id = %s AND stage_name = %s",
                     (request.workflow_run_id, stage_name),
                 ).fetchone()["next_attempt"]
-                return uow.stage_executions.create(
+                stage = uow.stage_executions.create(
                     StageExecutionCreate(
                         workflow_run_id=request.workflow_run_id,
                         stage_name=stage_name,
@@ -107,10 +110,11 @@ class WorkerDispatcher:
                         operator=request.actor,
                     )
                 )
+                return stage, True
         except UniqueViolation:
             existing = self._get_stage_by_idempotency(idempotency_key)
             if existing is not None:
-                return existing
+                return existing, False
             raise
 
     def _reuse_or_report_existing(self, stage: StageExecution, idempotency_key: str, input_hash: str, actor: str) -> WorkerExecutionResult:
@@ -126,7 +130,7 @@ class WorkerDispatcher:
                 attempt=stage.attempt,
                 reused=True,
             )
-        if stage.status == StageStatus.RUNNING:
+        if stage.status in {StageStatus.PENDING, StageStatus.RUNNING}:
             return WorkerExecutionResult(
                 outcome=WorkerOutcome.ALREADY_RUNNING,
                 stage_execution_id=stage.id,
