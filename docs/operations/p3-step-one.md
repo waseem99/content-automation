@@ -1,6 +1,6 @@
 # P3 Step One
 
-This step converts step-plan requirements into explicit selectable rows and records candidate options against them.
+This step converts step-plan requirements into explicit rows and records options against them.
 
 ## Flow
 
@@ -27,4 +27,8 @@ This step converts step-plan requirements into explicit selectable rows and reco
 
 ## Next step
 
-P3-02 should add the approval gate for selected options before package preparation can consume them.
+P3-02 should add the approval gate before package preparation can consume options.
+
+## Validation
+
+Covered by `tests/integration/test_p3_step_one.py` through the P1 Acceptance Harness.
