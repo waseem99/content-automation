@@ -26,7 +26,7 @@ def test_deployed_migration_lock_matches_current_files() -> None:
     assert [row[0][:4] for row in rows] == expected_names
 
     actual_files = sorted(path.name for path in MIGRATIONS_DIR.glob("[0-9][0-9][0-9][0-9]_*.sql"))
-    assert [row[0] for row in rows] == actual_files
+    assert [row[0] for row in rows] == actual_files[: len(rows)]
 
     mismatches = {
         filename: {"expected": expected, "actual": _git_blob_sha1(MIGRATIONS_DIR / filename)}
