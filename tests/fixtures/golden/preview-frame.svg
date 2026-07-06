@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" role="img" aria-label="Generated safe football brief preview frame">
+  <rect width="1280" height="720" fill="#0b1f33"/>
+  <circle cx="640" cy="360" r="180" fill="#1f7a4d"/>
+  <path d="M460 360h360M640 180v360" stroke="#f7f7f7" stroke-width="18" stroke-linecap="round"/>
+  <text x="640" y="655" text-anchor="middle" font-family="Arial, sans-serif" font-size="44" fill="#f7f7f7">Football Brief Generated Test Fixture</text>
+</svg>
