@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "policy": "Every committed golden fixture used by acceptance or integration tests must be owned, generated-safe, public-domain, or explicitly licensed.",
+  "fixtures": [
+    {
+      "path": "tests/fixtures/golden/preview-frame.svg",
+      "purpose": "Rights-safe generated visual fixture for preview and publish acceptance harness tests.",
+      "source_type": "generated_safe",
+      "license_status": "owned_by_project",
+      "created_by": "Codistan test harness",
+      "created_at": "2026-07-06",
+      "sha256": "b37d9362af59fe9fedf4fa919c24412a150a199e0cb80963d5f15cda6299eda9",
+      "notes": "Synthetic SVG created from geometric shapes; no third-party image, logo, face, clip, player likeness, or broadcast frame."
+    }
+  ]
+}
