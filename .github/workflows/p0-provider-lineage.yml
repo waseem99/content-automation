@@ -1,0 +1,131 @@
+name: P0 Provider Lineage
+
+on:
+  pull_request:
+    branches:
+      - test
+    paths:
+      - "migrations/**"
+      - "src/application/lineage/**"
+      - "src/domain/provider_lineage_models.py"
+      - "src/infrastructure/database/repository_provider_generation.py"
+      - "src/commands/lineage.py"
+      - "tests/integration/test_provider_lineage.py"
+      - "tests/integration/test_lineage_image_adapter.py"
+      - "tests/acceptance/test_provider_lineage_contracts.py"
+      - "docs/implementation/provider-lineage-backfill.md"
+      - ".github/workflows/p0-provider-lineage.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  provider-lineage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: football_brief_test
+          POSTGRES_USER: postgres
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d football_brief_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql://postgres@localhost:5432/football_brief_test
+      DATABASE_REQUIRE_SCHEMA: "false"
+      DATABASE_MIGRATIONS_DIR: migrations
+      FOOTBALL_BRIEF_TEST_DATABASE_URL: postgresql://postgres@localhost:5432/football_brief_test
+      PYTHONUNBUFFERED: "1"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install focused dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install \
+            "pydantic>=2.7.0" \
+            "pydantic-settings>=2.3.0" \
+            "typer>=0.12.0" \
+            "pytest>=8.0.0" \
+            "psycopg[binary]>=3.2.0,<4.0" \
+            "psycopg-pool>=3.2.0,<4.0" \
+            "moviepy>=2.0.0" \
+            "Pillow>=10.0.0" \
+            "numpy>=1.26.0"
+
+      - name: Compile lineage modules
+        run: |
+          python -m compileall -q \
+            src/application/lineage \
+            src/commands/lineage.py \
+            src/domain \
+            src/infrastructure/database \
+            tests/integration/test_provider_lineage.py \
+            tests/integration/test_lineage_image_adapter.py
+
+      - name: Run migration contracts
+        run: |
+          set -o pipefail
+          pytest -vv \
+            tests/acceptance/test_migration_contracts.py \
+            tests/acceptance/test_provider_lineage_contracts.py \
+            2>&1 | tee provider-lineage-contracts.log
+
+      - name: Apply and verify all migrations
+        run: |
+          set -o pipefail
+          {
+            python -m src.infrastructure.database.cli migrate
+            python -m src.infrastructure.database.cli status
+            python -m src.infrastructure.database.cli health --json
+          } 2>&1 | tee provider-lineage-migrations.log
+
+      - name: Run provider lineage integration tests
+        run: |
+          set -o pipefail
+          pytest -vv -m integration \
+            tests/integration/test_provider_lineage.py \
+            tests/integration/test_lineage_image_adapter.py \
+            2>&1 | tee provider-lineage-integration-tests.log
+
+      - name: Run related compliance regressions
+        run: |
+          set -o pipefail
+          pytest -q -m integration \
+            tests/integration/test_asset_registry.py \
+            tests/integration/test_rights_gate.py \
+            tests/integration/test_manifest_builder.py \
+            tests/integration/manifest_runtime_cases.py \
+            tests/integration/test_voice_media_policy.py \
+            2>&1 | tee provider-lineage-regression-tests.log
+
+      - name: Upload validation logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p0-provider-lineage-logs
+          if-no-files-found: ignore
+          retention-days: 7
+          path: |
+            provider-lineage-contracts.log
+            provider-lineage-migrations.log
+            provider-lineage-integration-tests.log
+            provider-lineage-regression-tests.log
