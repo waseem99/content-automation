@@ -66,7 +66,7 @@ class ReviewDecisionCreate(FrozenRecord):
     decision: ReviewDecision
     reviewer: str = Field(min_length=1)
     rationale: str = Field(min_length=1)
-    checklist: dict[str, Any] = Field(min_length=1)
+    checklist: dict[str, Any] = Field(default_factory=dict)
     target_type: ReviewTargetType | None = None
     target_id: UUID | None = None
     supersedes_review_id: UUID | None = None
