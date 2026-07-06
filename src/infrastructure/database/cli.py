@@ -6,12 +6,14 @@ from uuid import UUID
 import typer
 
 from src.application.intake_service import CreateIntakeRequest, IntakeValidationError, SourceIntakeService
+from src.application.operator_review_tools import OperatorReviewTools
 from src.infrastructure.database.connection import Database
 from src.infrastructure.database.migrations import apply_migrations, migration_status
 from src.infrastructure.database.settings import get_database_settings
 
 app = typer.Typer(help="Football Brief database commands")
 intake_app = typer.Typer(help="Content intake commands")
+operator_app = typer.Typer(help="Operator review commands")
 
 
 def _open() -> tuple[object, Database]:
@@ -19,6 +21,10 @@ def _open() -> tuple[object, Database]:
     database = Database(settings)
     database.open(require_schema=False)
     return settings, database
+
+
+def _json_default(value: object) -> str:
+    return str(value)
 
 
 @app.command()
@@ -147,7 +153,95 @@ def intake_list(
         database.close()
 
 
+@operator_app.command("queue")
+def operator_queue(
+    workflow_run_id: str = typer.Option(..., "--workflow-run-id"),
+    output_json: bool = typer.Option(False, "--json"),
+) -> None:
+    _settings, database = _open()
+    try:
+        rows = OperatorReviewTools(database).queue(UUID(workflow_run_id))
+        payload = [
+            {
+                "type": row.item_type,
+                "id": str(row.id),
+                "workflow_run_id": str(row.workflow_run_id),
+                "status": row.status,
+                "title": row.title,
+                "created_at": row.created_at.isoformat(),
+                "metadata": row.metadata,
+            }
+            for row in rows
+        ]
+        typer.echo(json.dumps(payload, indent=2, default=_json_default) if output_json else "\n".join(str(item) for item in payload))
+    finally:
+        database.close()
+
+
+@operator_app.command("approve-packet")
+def operator_approve_packet(
+    workflow_run_id: str = typer.Option(..., "--workflow-run-id"),
+    packet_id: str = typer.Option(..., "--packet-id"),
+    reviewed_by: str = typer.Option("operator", "--reviewed-by"),
+    rationale: str | None = typer.Option(None, "--rationale"),
+    output_json: bool = typer.Option(False, "--json"),
+) -> None:
+    _settings, database = _open()
+    try:
+        row = OperatorReviewTools(database).approve_packet(
+            workflow_run_id=UUID(workflow_run_id),
+            packet_id=UUID(packet_id),
+            reviewed_by=reviewed_by,
+            rationale=rationale,
+        )
+        payload = {"id": str(row.id), "packet_id": str(row.packet_id), "status": row.status, "reviewed_by": row.reviewed_by}
+        typer.echo(json.dumps(payload, indent=2) if output_json else str(payload))
+    finally:
+        database.close()
+
+
+@operator_app.command("request-output")
+def operator_request_output(
+    workflow_run_id: str = typer.Option(..., "--workflow-run-id"),
+    source_output_id: str = typer.Option(..., "--source-output-id"),
+    output_json: bool = typer.Option(False, "--json"),
+) -> None:
+    _settings, database = _open()
+    try:
+        row = OperatorReviewTools(database).request_output_review(
+            workflow_run_id=UUID(workflow_run_id),
+            source_output_id=UUID(source_output_id),
+        )
+        payload = {"id": str(row.id), "source_output_id": str(row.source_output_id), "status": row.status}
+        typer.echo(json.dumps(payload, indent=2) if output_json else str(payload))
+    finally:
+        database.close()
+
+
+@operator_app.command("approve-output")
+def operator_approve_output(
+    workflow_run_id: str = typer.Option(..., "--workflow-run-id"),
+    source_output_id: str = typer.Option(..., "--source-output-id"),
+    reviewed_by: str = typer.Option("operator", "--reviewed-by"),
+    rationale: str | None = typer.Option(None, "--rationale"),
+    output_json: bool = typer.Option(False, "--json"),
+) -> None:
+    _settings, database = _open()
+    try:
+        row = OperatorReviewTools(database).approve_output(
+            workflow_run_id=UUID(workflow_run_id),
+            source_output_id=UUID(source_output_id),
+            reviewed_by=reviewed_by,
+            rationale=rationale,
+        )
+        payload = {"id": str(row.id), "source_output_id": str(row.source_output_id), "status": row.status, "reviewed_by": row.reviewed_by}
+        typer.echo(json.dumps(payload, indent=2) if output_json else str(payload))
+    finally:
+        database.close()
+
+
 app.add_typer(intake_app, name="intake")
+app.add_typer(operator_app, name="operator")
 
 
 if __name__ == "__main__":
