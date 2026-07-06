@@ -47,27 +47,20 @@ DECLARE
     call_row football_brief.provider_calls%ROWTYPE;
     stage_row football_brief.stage_executions%ROWTYPE;
 BEGIN
-    SELECT * INTO output_asset
-    FROM football_brief.assets
-    WHERE id = NEW.output_asset_id;
+    SELECT * INTO output_asset FROM football_brief.assets WHERE id = NEW.output_asset_id;
 
     IF output_asset.id IS NULL THEN
         RAISE EXCEPTION 'Provider generation output asset does not exist';
     END IF;
-
     IF output_asset.sha256 IS DISTINCT FROM NEW.output_asset_sha256 THEN
         RAISE EXCEPTION 'Provider generation output hash does not match asset';
     END IF;
-
     IF output_asset.parent_asset_id IS DISTINCT FROM NEW.parent_asset_id THEN
         RAISE EXCEPTION 'Provider generation parent does not match output asset parent';
     END IF;
 
     IF NEW.parent_asset_id IS NOT NULL THEN
-        SELECT * INTO parent_asset
-        FROM football_brief.assets
-        WHERE id = NEW.parent_asset_id;
-
+        SELECT * INTO parent_asset FROM football_brief.assets WHERE id = NEW.parent_asset_id;
         IF parent_asset.id IS NULL THEN
             RAISE EXCEPTION 'Provider generation parent asset does not exist';
         END IF;
@@ -76,10 +69,7 @@ BEGIN
         END IF;
     END IF;
 
-    SELECT * INTO call_row
-    FROM football_brief.provider_calls
-    WHERE id = NEW.provider_call_id;
-
+    SELECT * INTO call_row FROM football_brief.provider_calls WHERE id = NEW.provider_call_id;
     IF call_row.id IS NULL
        OR call_row.status <> 'succeeded'
        OR call_row.provider IS DISTINCT FROM NEW.provider
@@ -91,12 +81,8 @@ BEGIN
         RAISE EXCEPTION 'Provider generation evidence does not match succeeded provider call';
     END IF;
 
-    SELECT * INTO stage_row
-    FROM football_brief.stage_executions
-    WHERE id = NEW.stage_execution_id;
-
-    IF stage_row.id IS NULL
-       OR stage_row.workflow_run_id IS DISTINCT FROM NEW.workflow_run_id THEN
+    SELECT * INTO stage_row FROM football_brief.stage_executions WHERE id = NEW.stage_execution_id;
+    IF stage_row.id IS NULL OR stage_row.workflow_run_id IS DISTINCT FROM NEW.workflow_run_id THEN
         RAISE EXCEPTION 'Provider generation workflow does not match stage execution';
     END IF;
 
@@ -123,15 +109,21 @@ CREATE OR REPLACE FUNCTION football_brief.require_publish_generated_asset_eviden
 RETURNS trigger LANGUAGE plpgsql AS $$
 DECLARE
     asset_row football_brief.assets%ROWTYPE;
+    manifest_mode text;
 BEGIN
-    SELECT * INTO asset_row
-    FROM football_brief.assets
-    WHERE id = NEW.asset_id;
+    SELECT mode INTO manifest_mode
+    FROM football_brief.render_manifests
+    WHERE id = NEW.render_manifest_id;
+
+    IF manifest_mode <> 'publish' THEN
+        RETURN NEW;
+    END IF;
+
+    SELECT * INTO asset_row FROM football_brief.assets WHERE id = NEW.asset_id;
 
     IF asset_row.source_type = 'ai_generated'
        AND NOT EXISTS (
-           SELECT 1
-           FROM football_brief.provider_generation_evidence
+           SELECT 1 FROM football_brief.provider_generation_evidence
            WHERE output_asset_id = NEW.asset_id
        ) THEN
         RAISE EXCEPTION 'Generated assets require provider generation evidence before publish manifest use';
