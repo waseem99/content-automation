@@ -18,6 +18,7 @@ class ReleaseReferenceRepository:
         package_hash: str,
         created_by: str,
         metadata: dict | None = None,
+        quality_report_id: UUID | None = None,
     ) -> dict:
         row = self.conn.execute(
             """
@@ -26,11 +27,19 @@ class ReleaseReferenceRepository:
                 render_job_id,
                 package_hash,
                 metadata,
-                created_by
-            ) VALUES (%s, %s, %s, %s, %s)
+                created_by,
+                quality_report_id
+            ) VALUES (%s, %s, %s, %s, %s, %s)
             RETURNING *
             """,
-            (manifest_id, render_job_id, package_hash, Jsonb(metadata or {}), created_by),
+            (
+                manifest_id,
+                render_job_id,
+                package_hash,
+                Jsonb(metadata or {}),
+                created_by,
+                quality_report_id,
+            ),
         ).fetchone()
         if row is None:
             raise RuntimeError("Release reference was not created")
