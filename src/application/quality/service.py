@@ -84,6 +84,10 @@ class QualityGateService:
             asset = uow.assets.get(row["asset_id"])
             if asset.sha256 != row["asset_sha256"]:
                 checks.append(fail("ASSET_HASH_MISMATCH", "Manifest asset hash does not match registry"))
+            try:
+                self.resolver.resolve(asset.id, verify_hash=True)
+            except (AssetHashMismatch, AssetStorageMissing) as exc:
+                checks.append(fail("ASSET_HASH_MISMATCH", str(exc)))
             if asset.lifecycle_status in {AssetLifecycleStatus.DELETED, AssetLifecycleStatus.EXPIRED}:
                 checks.append(fail("RIGHTS_NOT_APPROVED", "Manifest asset is unavailable"))
             if row["asset_rights_id"] is None:
