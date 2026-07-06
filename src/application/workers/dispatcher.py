@@ -58,14 +58,7 @@ class WorkerDispatcher:
             try:
                 handler_result = WorkerHandlerResult.model_validate(handler_result)
             except Exception as exc:
-                return self._handle_failure(
-                    stage.id,
-                    idempotency_key,
-                    input_hash,
-                    WorkerFailureClass.SCHEMA_VALIDATION_FAILED,
-                    str(exc),
-                    request.actor,
-                )
+                return self._handle_failure(stage.id, idempotency_key, input_hash, WorkerFailureClass.SCHEMA_VALIDATION_FAILED, str(exc), request.actor)
         computed_output_hash = output_hash(handler_result.output)
         self._record_provider_call_if_requested(request, stage.id, idempotency_key, input_hash, computed_output_hash, handler_result)
         self.state_machine.transition_stage(
@@ -92,13 +85,19 @@ class WorkerDispatcher:
         )
 
     def _create_stage(self, request: WorkerExecutionRequest, definition, idempotency_key: str, input_hash: str) -> StageExecution:
+        stage_name = request.stage_name or definition.name
         try:
             with unit_of_work(self.database) as uow:
+                next_attempt = uow.conn.execute(
+                    "SELECT COALESCE(MAX(attempt), 0) + 1 AS next_attempt FROM football_brief.stage_executions WHERE workflow_run_id = %s AND stage_name = %s",
+                    (request.workflow_run_id, stage_name),
+                ).fetchone()["next_attempt"]
                 return uow.stage_executions.create(
                     StageExecutionCreate(
                         workflow_run_id=request.workflow_run_id,
-                        stage_name=request.stage_name or definition.name,
+                        stage_name=stage_name,
                         stage_version=definition.version,
+                        attempt=next_attempt,
                         idempotency_key=idempotency_key,
                         input_hash=input_hash,
                         model_or_tool=definition.name,
@@ -168,10 +167,7 @@ class WorkerDispatcher:
 
     def _get_stage_by_idempotency(self, idempotency_key: str) -> StageExecution | None:
         with unit_of_work(self.database) as uow:
-            row = uow.conn.execute(
-                "SELECT * FROM football_brief.stage_executions WHERE idempotency_key = %s",
-                (idempotency_key,),
-            ).fetchone()
+            row = uow.conn.execute("SELECT * FROM football_brief.stage_executions WHERE idempotency_key = %s", (idempotency_key,)).fetchone()
             return StageExecution.model_validate(row) if row else None
 
     def _record_provider_call_if_requested(self, request: WorkerExecutionRequest, stage_id, idempotency_key: str, input_hash: str, response_hash: str, result: WorkerHandlerResult) -> None:
@@ -187,28 +183,9 @@ class WorkerDispatcher:
                 ) VALUES (%s, %s, %s, %s, %s, 'succeeded', %s, %s, %s, %s, %s, now(), %s)
                 ON CONFLICT (provider, idempotency_key) DO NOTHING
                 """,
-                (
-                    stage_id,
-                    request.provider,
-                    request.operation,
-                    result.provider_request_id or request.provider_request_id,
-                    idempotency_key,
-                    input_hash,
-                    response_hash,
-                    result.units,
-                    result.unit_name,
-                    result.cost_usd,
-                    Jsonb(result.metadata),
-                ),
+                (stage_id, request.provider, request.operation, result.provider_request_id or request.provider_request_id, idempotency_key, input_hash, response_hash, result.units, result.unit_name, result.cost_usd, Jsonb(result.metadata)),
             )
 
     def _event(self, workflow_run_id, stage_id, event_type: str, actor: str, reason: str, payload: dict) -> None:
         with unit_of_work(self.database) as uow:
-            uow.workflow_events.create(
-                workflow_run_id=workflow_run_id,
-                stage_execution_id=stage_id,
-                event_type=event_type,
-                actor=actor,
-                reason=reason,
-                payload=payload,
-            )
+            uow.workflow_events.create(workflow_run_id=workflow_run_id, stage_execution_id=stage_id, event_type=event_type, actor=actor, reason=reason, payload=payload)
