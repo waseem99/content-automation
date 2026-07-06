@@ -115,6 +115,7 @@ jobs:
             tests/integration/test_migration_checksum_guard.py \
             tests/integration/test_database_foundation.py \
             tests/integration/test_source_intake.py \
+            tests/integration/test_brief_builder.py \
             tests/integration/test_asset_registry.py \
             tests/integration/test_rights_gate.py \
             tests/integration/test_rights_gate_revalidation.py \
