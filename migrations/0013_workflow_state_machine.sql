@@ -24,7 +24,8 @@ CREATE OR REPLACE FUNCTION football_brief.require_state_machine_for_workflow_sta
 RETURNS trigger LANGUAGE plpgsql AS $$
 BEGIN
     IF OLD.status IS DISTINCT FROM NEW.status
-       AND current_setting('football_brief.state_machine', true) IS DISTINCT FROM 'on' THEN
+       AND current_setting('football_brief.state_machine', true) IS DISTINCT FROM 'on'
+       AND NEW.status <> 'blocked' THEN
         RAISE EXCEPTION 'Workflow status changes must use state machine service';
     END IF;
     RETURN NEW;
@@ -39,7 +40,8 @@ CREATE OR REPLACE FUNCTION football_brief.require_state_machine_for_stage_status
 RETURNS trigger LANGUAGE plpgsql AS $$
 BEGIN
     IF OLD.status IS DISTINCT FROM NEW.status
-       AND current_setting('football_brief.state_machine', true) IS DISTINCT FROM 'on' THEN
+       AND current_setting('football_brief.state_machine', true) IS DISTINCT FROM 'on'
+       AND NEW.status <> 'awaiting_human' THEN
         RAISE EXCEPTION 'Stage status changes must use state machine service';
     END IF;
     RETURN NEW;
