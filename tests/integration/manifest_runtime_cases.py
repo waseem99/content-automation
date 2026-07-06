@@ -11,6 +11,7 @@ from src.application.assets.resolver import AssetResolver
 from src.application.manifests.builder import RenderManifestBuilder
 from src.application.manifests.integrity import ManifestIntegrityVerifier
 from src.application.manifests.renderer import ManifestRendererAdapter
+from src.application.quality.service import QualityGateService
 from src.application.rights.enforcement import RenderStartGuard
 from src.application.rights.exceptions import RightsGateBlocked
 from src.application.rights.status import RightsStatusService
@@ -23,6 +24,7 @@ from tests.integration.manifest_support import (
     create_passing_gate,
     register_manifest_versions,
 )
+from tests.integration.quality_support import output_asset
 from tests.integration.rights_support import (
     approve_rights,
     close_database,
@@ -150,7 +152,7 @@ def test_preview_job_cannot_enter_release_reference(database, tmp_path: Path) ->
     assert job["not_for_publication"] is True
     assert job["watermark_text"] == "PREVIEW - NOT FOR PUBLICATION"
 
-    with pytest.raises(RaiseException, match="cannot enter"):
+    with pytest.raises(RaiseException, match="publish manifests"):
         with unit_of_work(database) as uow:
             uow.release_references.create(
                 manifest_id=manifest.id,
@@ -162,7 +164,14 @@ def test_preview_job_cannot_enter_release_reference(database, tmp_path: Path) ->
 
 def test_publish_job_can_create_release_reference(database, tmp_path: Path) -> None:
     manifest, _, _ = _publish_manifest(database, tmp_path)
-    job = _adapter(database, tmp_path).start(manifest.id, lambda context: None)
+    registry = registry_for(database, tmp_path)
+    resolver = AssetResolver(database, registry.storage_resolver)
+
+    def renderer(context):
+        return output_asset(database, registry, tmp_path / "release-output.mp4").id
+
+    job = _adapter(database, tmp_path).start(manifest.id, renderer)
+    report = QualityGateService(database=database, resolver=resolver).evaluate_render_job(job["id"], created_by="pytest")
     with unit_of_work(database) as uow:
         reference = uow.release_references.create(
             manifest_id=manifest.id,
@@ -171,3 +180,4 @@ def test_publish_job_can_create_release_reference(database, tmp_path: Path) -> N
             created_by="pytest",
         )
     assert reference["render_manifest_id"] == manifest.id
+    assert reference["quality_report_id"] == report.id
