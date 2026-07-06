@@ -54,13 +54,14 @@ def _sha(path: Path) -> str:
 
 
 def _stage(database, workflow_id):
+    unique = uuid4()
     with unit_of_work(database) as uow:
         return uow.stage_executions.create(
             StageExecutionCreate(
                 workflow_run_id=workflow_id,
-                stage_name="image-edit",
+                stage_name=f"image-edit-{unique}",
                 stage_version="1",
-                idempotency_key=f"stage-{uuid4()}",
+                idempotency_key=f"stage-{unique}",
                 input_hash="1" * 64,
                 model_or_tool="test-provider",
                 prompt_version="v1",
