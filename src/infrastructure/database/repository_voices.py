@@ -14,20 +14,11 @@ class ApprovedVoiceRepository(BaseRepository[ApprovedVoice]):
         row = self.conn.execute(
             """
             INSERT INTO football_brief.approved_voices (
-                provider,
-                provider_voice_id,
-                display_name,
-                voice_type,
-                approval_status,
-                consent_evidence_asset_id,
-                allowed_languages,
-                allowed_platforms,
-                prohibited_uses,
-                expires_at,
-                approved_by,
-                approved_at,
-                metadata
-            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                provider, provider_voice_id, display_name, voice_type,
+                approval_status, consent_evidence_asset_id, allowed_languages,
+                allowed_platforms, prohibited_uses, expires_at, approved_by,
+                approved_at, preview_only, metadata
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             ON CONFLICT (provider, provider_voice_id)
             DO UPDATE SET
                 display_name = EXCLUDED.display_name,
@@ -40,6 +31,7 @@ class ApprovedVoiceRepository(BaseRepository[ApprovedVoice]):
                 expires_at = EXCLUDED.expires_at,
                 approved_by = EXCLUDED.approved_by,
                 approved_at = EXCLUDED.approved_at,
+                preview_only = EXCLUDED.preview_only,
                 metadata = EXCLUDED.metadata
             RETURNING *
             """,
@@ -56,6 +48,7 @@ class ApprovedVoiceRepository(BaseRepository[ApprovedVoice]):
                 data.expires_at,
                 data.approved_by,
                 data.approved_at,
+                data.preview_only,
                 Jsonb(data.metadata),
             ),
         ).fetchone()
@@ -68,15 +61,10 @@ class ApprovedVoiceRepository(BaseRepository[ApprovedVoice]):
         ).fetchone()
         return self.required(row, ApprovedVoice, "approved voice")
 
-    def get_by_provider_voice_id(
-        self,
-        provider: str,
-        provider_voice_id: str,
-    ) -> ApprovedVoice | None:
+    def get_by_provider_voice_id(self, provider: str, provider_voice_id: str) -> ApprovedVoice | None:
         row = self.conn.execute(
             """
-            SELECT *
-            FROM football_brief.approved_voices
+            SELECT * FROM football_brief.approved_voices
             WHERE provider = %s AND provider_voice_id = %s
             """,
             (provider, provider_voice_id),
@@ -86,8 +74,7 @@ class ApprovedVoiceRepository(BaseRepository[ApprovedVoice]):
     def list_by_status(self, status: ApprovalStatus) -> list[ApprovedVoice]:
         rows = self.conn.execute(
             """
-            SELECT *
-            FROM football_brief.approved_voices
+            SELECT * FROM football_brief.approved_voices
             WHERE approval_status = %s
             ORDER BY provider, display_name
             """,
