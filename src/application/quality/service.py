@@ -16,6 +16,9 @@ from src.infrastructure.database.repository_quality import QualityReportReposito
 from src.infrastructure.database.uow import unit_of_work
 
 
+MATCH_FOOTAGE_CONTEXTS = {"source_match_video", "extracted_match_clip", "broadcast_match", "match_footage"}
+
+
 class QualityGateService:
     registry_version = "quality-gate-v1"
 
@@ -92,8 +95,8 @@ class QualityGateService:
                 checks.append(fail("RIGHTS_NOT_APPROVED", "Manifest asset is unavailable"))
             if row["asset_rights_id"] is None:
                 checks.append(fail("RIGHTS_NOT_APPROVED", "Manifest asset has no selected rights"))
-            if asset.source_type == AssetSourceType.EXTRACTED_BROADCAST:
-                checks.append(fail("UNAPPROVED_MATCH_FOOTAGE", "Broadcast footage requires explicit rights"))
+            if (asset.metadata or {}).get("asset_context") in MATCH_FOOTAGE_CONTEXTS:
+                checks.append(fail("UNAPPROVED_MATCH_FOOTAGE", "Match footage requires explicit rights"))
             if asset.source_type == AssetSourceType.AI_GENERATED:
                 evidence = ProviderGenerationEvidenceRepository(uow.conn).get_for_output_asset(asset.id)
                 if evidence is None:
