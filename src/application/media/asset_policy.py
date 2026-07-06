@@ -8,8 +8,6 @@ from src.application.rights.enums import RightsDecisionOutcome, RightsGatePoint,
 from src.application.rights.gate import RightsGateService
 from src.application.rights.request_models import RightsGateRequest
 from src.domain.asset_enums import AssetType
-from src.domain.asset_status import AssetLifecycleStatus
-from src.domain.render_status import RenderMode
 from src.infrastructure.database.connection import Database
 from src.infrastructure.database.uow import unit_of_work
 
@@ -59,5 +57,3 @@ class MediaAssetPolicyService:
                 asset = uow.assets.get(asset_id)
                 if asset.asset_type != expected_type:
                     raise MediaAssetPolicyFailure("Media asset type does not match role")
-                if asset.lifecycle_status not in {AssetLifecycleStatus.APPROVED, AssetLifecycleStatus.INTERNAL_ONLY}:
-                    raise MediaAssetPolicyFailure("Media asset is not available for policy evaluation")
