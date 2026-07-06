@@ -4,6 +4,7 @@ from collections.abc import Callable
 from decimal import Decimal
 from enum import StrEnum
 from typing import Any
+from uuid import UUID
 
 from pydantic import Field, model_validator
 
@@ -52,7 +53,7 @@ class WorkerDefinition(FrozenRecord):
 
 
 class WorkerExecutionRequest(FrozenRecord):
-    workflow_run_id: str
+    workflow_run_id: UUID
     worker_name: str = Field(min_length=1)
     worker_version: str = Field(min_length=1)
     input_payload: dict[str, Any]
@@ -76,7 +77,7 @@ class WorkerOutputEnvelope(FrozenRecord):
 
 class WorkerExecutionResult(FrozenRecord):
     outcome: WorkerOutcome
-    stage_execution_id: str | None = None
+    stage_execution_id: UUID | None = None
     idempotency_key: str
     input_hash: str
     output_hash: str | None = None
