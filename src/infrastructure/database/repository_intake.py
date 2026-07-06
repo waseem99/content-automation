@@ -50,3 +50,10 @@ class IntakeRepository:
             (workflow_run_id, digest),
         ).fetchone()
         return IntakeRecord(**row) if row else None
+
+    def list_for_workflow(self, workflow_run_id: UUID) -> list[IntakeRecord]:
+        rows = self.conn.execute(
+            "SELECT * FROM football_brief.content_intakes WHERE workflow_run_id = %s ORDER BY created_at DESC",
+            (workflow_run_id,),
+        ).fetchall()
+        return [IntakeRecord(**row) for row in rows]
