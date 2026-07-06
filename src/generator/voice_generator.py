@@ -4,10 +4,14 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from pathlib import Path
+from uuid import UUID
 
 from elevenlabs import ElevenLabs
 
+from src.application.media.models import VoiceUseRequest
+from src.application.media.voice_policy import VoicePolicyService
 from src.config import Settings
+from src.domain.render_status import RenderMode
 from src.extractor.ffmpeg_clipper import is_valid_audio_file
 from src.generator.models import ExplainerPlan, ProductionPlan
 
@@ -113,17 +117,64 @@ def _synthesize_segment(
         raise
 
 
+def _voice_for_mode(
+    *,
+    settings: Settings,
+    mode: RenderMode,
+    platform: str,
+    approved_voice_id: UUID | None,
+    voice_policy: VoicePolicyService | None,
+) -> tuple[str, str]:
+    if mode == RenderMode.PUBLISH:
+        if voice_policy is None or approved_voice_id is None:
+            raise ValueError("Publish voiceover requires an approved internal voice ID")
+        decision = voice_policy.authorize(
+            VoiceUseRequest(
+                mode=mode,
+                provider="elevenlabs",
+                approved_voice_id=approved_voice_id,
+                language="en",
+                platform=platform,
+                requested_by="voice-generator",
+            )
+        )
+        return decision.provider_voice_id, decision.voice.display_name if decision.voice else decision.provider_voice_id
+
+    if voice_policy is not None and approved_voice_id is not None:
+        decision = voice_policy.authorize(
+            VoiceUseRequest(
+                mode=mode,
+                provider="elevenlabs",
+                approved_voice_id=approved_voice_id,
+                language="en",
+                platform=platform,
+                requested_by="voice-generator",
+            )
+        )
+        return decision.provider_voice_id, decision.voice.display_name if decision.voice else decision.provider_voice_id
+
+    return resolve_voice_id(settings.elevenlabs_api_key, settings.elevenlabs_voice_id or None)
+
+
 def generate_voiceovers(
     plan: ProductionPlan,
     output_dir: Path,
     settings: Settings,
     force_regenerate: bool = False,
+    mode: RenderMode = RenderMode.PREVIEW,
+    approved_voice_id: UUID | None = None,
+    voice_policy: VoicePolicyService | None = None,
+    platform: str = "youtube",
 ) -> dict[int, Path]:
     if not settings.elevenlabs_api_key:
         raise ValueError("ELEVENLABS_API_KEY is not set. Add it to your .env file.")
 
-    voice_id, voice_name = resolve_voice_id(
-        settings.elevenlabs_api_key, settings.elevenlabs_voice_id or None
+    voice_id, voice_name = _voice_for_mode(
+        settings=settings,
+        mode=mode,
+        platform=platform,
+        approved_voice_id=approved_voice_id,
+        voice_policy=voice_policy,
     )
     settings.elevenlabs_voice_id = voice_id
     print(f"  Using voice: {voice_name} ({voice_id})", flush=True)
@@ -135,11 +186,7 @@ def generate_voiceovers(
     for segment in plan.narrated_segments():
         order = segment.order
         out_path = output_dir / f"narration_{order:02d}.mp3"
-        if (
-            not force_regenerate
-            and out_path.exists()
-            and is_valid_audio_file(out_path)
-        ):
+        if not force_regenerate and out_path.exists() and is_valid_audio_file(out_path):
             print(f"  Reusing voice: narration_{order:02d}.mp3", flush=True)
             paths[order] = out_path
             continue
@@ -183,11 +230,7 @@ def generate_explainer_voiceovers(
 
     for section in plan.narrated_sections():
         out_path = output_dir / f"narration_{section.id}.mp3"
-        if (
-            not force_regenerate
-            and out_path.exists()
-            and is_valid_audio_file(out_path)
-        ):
+        if not force_regenerate and out_path.exists() and is_valid_audio_file(out_path):
             print(f"  Reusing voice: narration_{section.id}.mp3", flush=True)
             paths[section.id] = out_path
             if on_section_complete:
