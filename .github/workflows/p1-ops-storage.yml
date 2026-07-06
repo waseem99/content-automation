@@ -1,0 +1,61 @@
+name: P1 Ops Storage
+
+on:
+  pull_request:
+    branches:
+      - test
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ops-storage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: football_brief_test
+          POSTGRES_USER: postgres
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d football_brief_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql://postgres@localhost:5432/football_brief_test
+      DATABASE_REQUIRE_SCHEMA: "false"
+      DATABASE_MIGRATIONS_DIR: migrations
+      FOOTBALL_BRIEF_TEST_DATABASE_URL: postgresql://postgres@localhost:5432/football_brief_test
+      PYTHONUNBUFFERED: "1"
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install "pydantic>=2.7.0" "pydantic-settings>=2.3.0" "typer>=0.12.0" "pytest>=8.0.0" "psycopg[binary]>=3.2.0,<4.0" "psycopg-pool>=3.2.0,<4.0" "moviepy>=2.0.0" "Pillow>=10.0.0" "numpy>=1.26.0"
+      - name: Compile
+        run: python -m compileall -q src/application/storage src/application/secrets src/application/observability src/commands/storage.py src/commands/health.py tests/unit tests/integration/test_ops_asset_resolution.py
+      - name: Unit tests
+        run: pytest -vv tests/unit/test_ops_storage.py tests/unit/test_ops_secrets_observability.py tests/unit/test_ops_upload_health.py
+      - name: Migrate database
+        run: |
+          python -m src.infrastructure.database.cli migrate
+          python -m src.infrastructure.database.cli status
+          python -m src.infrastructure.database.cli health --json
+      - name: Integration tests
+        run: pytest -vv -m integration tests/integration/test_ops_asset_resolution.py
+      - name: Related regressions
+        run: pytest -q -m integration tests/integration/test_worker_execution.py tests/integration/test_budget_dispatcher.py tests/integration/test_gate_stage_decisions.py tests/integration/test_asset_registry.py tests/integration/test_rights_gate.py tests/integration/manifest_runtime_cases.py
