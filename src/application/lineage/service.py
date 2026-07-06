@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from src.application.assets.exceptions import FileChangedDuringHashing
+from psycopg.types.json import Jsonb
+
 from src.application.assets.models import RegisterFileRequest, StorageMode
 from src.application.assets.registry import AssetRegistryService
 from src.application.lineage.exceptions import DerivativeRegistrationError, ProviderCallError
@@ -32,11 +33,7 @@ class AssetLineageService:
                 input_asset_sha256=parent.sha256,
             )
             if existing is not None and request.allow_reuse:
-                return DerivativeRegistrationResult(
-                    asset_id=existing.output_asset_id,
-                    evidence_id=existing.id,
-                    reused=True,
-                )
+                return DerivativeRegistrationResult(asset_id=existing.output_asset_id, evidence_id=existing.id, reused=True)
 
         inspection = self.registry.inspect(
             RegisterFileRequest(
@@ -182,7 +179,7 @@ class AssetLineageService:
                 request.provider_call.units,
                 request.provider_call.unit_name,
                 request.provider_call.cost_usd,
-                request.provider_call.metadata,
+                Jsonb(request.provider_call.metadata),
             ),
         ).fetchone()
         if row is None or row["status"] != "succeeded":
