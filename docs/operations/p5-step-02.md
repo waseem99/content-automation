@@ -1,10 +1,10 @@
 # P5 Step 02
 
-This step adds API auth and operator identity for the operator API skeleton.
+This step adds API key access and operator identity for the operator API skeleton.
 
-## Auth model
+## Access model
 
-`OperatorAuthSettings` configures bearer-token access for protected routes.
+`OperatorAuthSettings` configures internal operator keys for protected routes.
 
 Default behavior is fail-closed:
 
@@ -12,7 +12,7 @@ Default behavior is fail-closed:
 create_app(database)
 ```
 
-With no configured API keys, protected routes reject requests with `401`.
+With no configured keys, protected routes reject requests with `401`.
 
 Test/runtime configuration can pass explicit keys:
 
@@ -21,7 +21,7 @@ from src.operator_api.auth import OperatorAuthSettings
 
 app = create_app(
     database,
-    auth_settings=OperatorAuthSettings(api_keys={"token-value": "operator-id"}),
+    auth_settings=OperatorAuthSettings(api_keys={"key-value": "operator-id"}),
 )
 ```
 
@@ -29,19 +29,19 @@ app = create_app(
 
 - `GET /health`
 
-The health route remains public and reports whether auth is required.
+The health route remains public and reports whether protected access is required.
 
 ## Protected routes
 
-All operator, demo, dashboard, approval, and audit routes require:
+All operator, demo, dashboard, approval, and audit routes require the internal header:
 
 ```text
-Authorization: Bearer <token>
+X-Operator-Key: <key>
 ```
 
 ## Operator identity
 
-Authenticated tokens resolve to `OperatorIdentity`.
+Valid keys resolve to `OperatorIdentity`.
 
 The API uses the authenticated operator id for:
 
@@ -54,7 +54,7 @@ Caller-supplied reviewer fields are no longer trusted by API route handlers.
 
 ## Explicit local test mode
 
-Tests can opt into disabled auth explicitly:
+Tests can opt into disabled access checks explicitly:
 
 ```python
 OperatorAuthSettings.disabled_for_local_tests(operator_id="local-operator")
@@ -65,8 +65,8 @@ This is not the default path. It must be requested explicitly.
 ## Guardrails
 
 - Health stays public.
-- Protected routes fail closed without a valid token.
-- Invalid tokens fail closed.
+- Protected routes fail closed without a valid key.
+- Invalid keys fail closed.
 - Approval actions record authenticated operator identity.
 - No publishing, scheduling, rendering, or external export is added.
 - Existing P4 review gates remain authoritative.
