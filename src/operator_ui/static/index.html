@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Content Automation Operator</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <main class="shell" data-ui-contract="p5-operator-ui">
+    <header class="hero">
+      <p class="eyebrow">Operator Runtime</p>
+      <h1>Content Automation Operator</h1>
+      <p>Static screen skeleton for the P5 operator API contracts. This page contains no hidden business logic.</p>
+    </header>
+
+    <section id="runtime-status" class="panel" data-screen="runtime-status" data-routes="GET /health|GET /runtime/config">
+      <div class="panel-heading">
+        <p class="eyebrow">Screen 1</p>
+        <h2>Runtime status</h2>
+      </div>
+      <dl class="fields">
+        <div><dt>Service</dt><dd data-field="service">Waiting for /health</dd></div>
+        <div><dt>Version</dt><dd data-field="version">Waiting for /health</dd></div>
+        <div><dt>Database configured</dt><dd data-field="database_configured">Waiting for /health</dd></div>
+        <div><dt>Access required</dt><dd data-field="auth_required">Waiting for /health</dd></div>
+        <div><dt>Runtime config</dt><dd data-field="runtime">Waiting for /runtime/config</dd></div>
+      </dl>
+    </section>
+
+    <section id="queue" class="panel" data-screen="queue" data-routes="GET /workflows/{workflow_run_id}/queue|GET /workflows/{workflow_run_id}/dashboard/queue">
+      <div class="panel-heading">
+        <p class="eyebrow">Screen 2</p>
+        <h2>Queue</h2>
+      </div>
+      <dl class="fields">
+        <div><dt>Workflow id</dt><dd data-field="workflow_run_id">Required input</dd></div>
+        <div><dt>Operator id</dt><dd data-field="operator">From API response</dd></div>
+        <div><dt>Item count</dt><dd data-field="count">From dashboard queue</dd></div>
+      </dl>
+      <article class="card" data-component="queue-card">
+        <p class="eyebrow">Queue card</p>
+        <h3 data-field="title">Review item title</h3>
+        <p data-field="subtitle">Review item subtitle</p>
+        <ul>
+          <li data-field="card_id">card id</li>
+          <li data-field="resource_id">resource id</li>
+          <li data-field="item_type">item type</li>
+          <li data-field="status">status</li>
+          <li data-field="actions">actions</li>
+        </ul>
+      </article>
+    </section>
+
+    <section id="demo-run" class="panel" data-screen="demo-run" data-routes="GET /demo/scenario|POST /demo/{workflow_run_id}/start|POST /demo/{workflow_run_id}/approve-current|GET /demo/{workflow_run_id}/status">
+      <div class="panel-heading">
+        <p class="eyebrow">Screen 3</p>
+        <h2>Demo run</h2>
+      </div>
+      <dl class="fields">
+        <div><dt>Scenario id</dt><dd data-field="scenario_id">From scenario route</dd></div>
+        <div><dt>Topic</dt><dd data-field="topic">From scenario route</dd></div>
+        <div><dt>Expected stop points</dt><dd data-field="expected_stop_points">From scenario route</dd></div>
+        <div><dt>Next action</dt><dd data-field="next_action">From start/status route</dd></div>
+        <div><dt>Operator id</dt><dd data-field="operator">From protected route response</dd></div>
+      </dl>
+      <div class="actions" data-component="demo-actions">
+        <button type="button" data-action="start-demo">Start demo</button>
+        <button type="button" data-action="approve-current">Approve current item</button>
+        <button type="button" data-action="refresh-status">Refresh status</button>
+      </div>
+    </section>
+
+    <section id="audit-report" class="panel" data-screen="audit-report" data-routes="GET /workflows/{workflow_run_id}/audit">
+      <div class="panel-heading">
+        <p class="eyebrow">Screen 4</p>
+        <h2>Audit report</h2>
+      </div>
+      <div class="grid" data-component="audit-sections">
+        <article>Workflow summary</article>
+        <article>Status summary</article>
+        <article>Event timeline</article>
+        <article>Stage executions</article>
+        <article>Reviews</article>
+        <article>Queue cards</article>
+        <article>Packages</article>
+        <article>Manifests</article>
+      </div>
+    </section>
+
+    <section id="guardrails" class="panel" data-screen="guardrails">
+      <div class="panel-heading">
+        <p class="eyebrow">Contract guardrails</p>
+        <h2>No hidden business logic</h2>
+      </div>
+      <ul>
+        <li>No publishing action is present.</li>
+        <li>No scheduling action is present.</li>
+        <li>No rendering action is present.</li>
+        <li>No external export action is present.</li>
+        <li>No workflow gate is bypassed by this static shell.</li>
+      </ul>
+    </section>
+  </main>
+</body>
+</html>
