@@ -1,10 +1,8 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Annotated
 
-from fastapi import Depends, HTTPException, status
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from fastapi import HTTPException, Request, status
 
 
 @dataclass(frozen=True, slots=True)
@@ -28,20 +26,19 @@ class OperatorAuthSettings:
         return cls(disabled=True, disabled_operator_id=operator_id)
 
 
-_bearer = HTTPBearer(auto_error=False)
-
-
 def build_operator_auth(settings: OperatorAuthSettings):
-    def authenticate(credentials: Annotated[HTTPAuthorizationCredentials | None, Depends(_bearer)]) -> OperatorIdentity:
+    def authenticate(request: Request) -> OperatorIdentity:
         if settings.disabled:
             return OperatorIdentity(operator_id=settings.disabled_operator_id, token_name="disabled-local-test")
-        if credentials is None or not credentials.credentials:
+        header = request.headers.get("authorization", "")
+        scheme, _, token = header.partition(" ")
+        if scheme.lower() != "bearer" or not token:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="operator auth token is required",
                 headers={"WWW-Authenticate": "Bearer"},
             )
-        operator_id = settings.api_keys.get(credentials.credentials)
+        operator_id = settings.api_keys.get(token)
         if operator_id is None:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
