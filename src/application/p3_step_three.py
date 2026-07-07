@@ -8,7 +8,7 @@ from uuid import UUID
 
 from psycopg.types.json import Jsonb
 
-from src.application.p3_step_two import P3StepTwoError, P3StepTwoService
+from src.application.p3_step_two import P3StepTwoService
 from src.application.workers.dispatcher import WorkerDispatcher
 from src.application.workers.models import WorkerDefinition, WorkerExecutionRequest, WorkerExecutionResult, WorkerHandlerResult, WorkerOutcome
 from src.application.workers.registry import WorkerRegistry
@@ -144,9 +144,9 @@ class P3PackageWorker:
         step_plan_id = UUID(payload["step_plan_id"])
         option_ids = [UUID(value) for value in payload["option_ids"]]
         with unit_of_work(self.database) as uow:
-            plan = _plan_for_workflow(uow.conn, workflow_id, step_plan_id)
+            _plan_for_workflow(uow.conn, workflow_id, step_plan_id)
             options = _options_for_plan(uow.conn, workflow_id, step_plan_id, option_ids)
-        scene_map = _scene_map(plan, options)
+        scene_map = _scene_map(options)
         lineage = {
             "step_plan_id": str(step_plan_id),
             "option_ids": [str(option["id"]) for option in options],
@@ -265,9 +265,11 @@ def _plan_for_workflow(conn, workflow_run_id: UUID, step_plan_id: UUID):
 def _options_for_plan(conn, workflow_run_id: UUID, step_plan_id: UUID, option_ids: list[UUID]) -> list[dict[str, Any]]:
     rows = conn.execute(
         """
-        SELECT * FROM football_brief.p3_options
-        WHERE workflow_run_id = %s AND step_plan_id = %s AND id = ANY(%s)
-        ORDER BY id
+        SELECT o.*, r.requirement_index, r.scene_number, r.item_type, r.purpose
+        FROM football_brief.p3_options o
+        JOIN football_brief.p3_requirements r ON r.id = o.requirement_id
+        WHERE o.workflow_run_id = %s AND o.step_plan_id = %s AND o.id = ANY(%s)
+        ORDER BY r.requirement_index, o.id
         """,
         (workflow_run_id, step_plan_id, option_ids),
     ).fetchall()
@@ -276,19 +278,17 @@ def _options_for_plan(conn, workflow_run_id: UUID, step_plan_id: UUID, option_id
     return [dict(row) for row in rows]
 
 
-def _scene_map(plan, options: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    by_requirement = {str(option["requirement_id"]): option for option in options}
-    rows = []
-    for item in plan["requirements"]:
-        rows.append(
-            {
-                "scene_number": item.get("scene_number"),
-                "requirement_type": item.get("type"),
-                "purpose": item.get("purpose"),
-                "approved_option_id": next((str(option["id"]) for option in options if option["reference_value"] and option["requirement_id"]), None),
-                "needs_rights_review": item.get("needs_rights_review", True),
-            }
-        )
-    if not rows:
-        rows = [{"approved_option_id": str(option["id"]), "reference_type": option["reference_type"]} for option in options]
-    return rows
+def _scene_map(options: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    return [
+        {
+            "requirement_id": str(option["requirement_id"]),
+            "requirement_index": option["requirement_index"],
+            "scene_number": option["scene_number"],
+            "requirement_type": option["item_type"],
+            "purpose": option["purpose"],
+            "approved_option_id": str(option["id"]),
+            "reference_type": option["reference_type"],
+            "reference_value": option["reference_value"],
+        }
+        for option in options
+    ]
