@@ -11,8 +11,8 @@ from tests.integration.rights_support import close_database, create_workflow, da
 pytestmark = pytest.mark.integration
 
 
-TOKEN = "test-token"
-HEADERS = {"Authorization": f"Bearer {TOKEN}"}
+KEY = "test-key"
+HEADERS = {"X-Operator-Key": KEY}
 
 
 @pytest.fixture()
@@ -25,7 +25,7 @@ def database():
 
 
 def _client(database=None) -> TestClient:
-    return TestClient(create_app(database, auth_settings=OperatorAuthSettings.for_tests(token=TOKEN, operator_id="api-operator")))
+    return TestClient(create_app(database, auth_settings=OperatorAuthSettings.for_tests(key=KEY, operator_id="api-operator")))
 
 
 def test_health_route_without_database() -> None:
@@ -42,11 +42,11 @@ def test_protected_routes_reject_missing_and_invalid_auth(database) -> None:
 
     missing = client.get(f"/workflows/{workflow_id}/queue")
     assert missing.status_code == 401
-    assert missing.json()["detail"] == "operator auth token is required"
+    assert missing.json()["detail"] == "operator key is required"
 
-    invalid = client.get(f"/workflows/{workflow_id}/queue", headers={"Authorization": "Bearer wrong-token"})
+    invalid = client.get(f"/workflows/{workflow_id}/queue", headers={"X-Operator-Key": "wrong-key"})
     assert invalid.status_code == 401
-    assert invalid.json()["detail"] == "operator auth token is invalid"
+    assert invalid.json()["detail"] == "operator key is invalid"
 
 
 def test_demo_and_dashboard_routes(database) -> None:
