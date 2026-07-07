@@ -17,7 +17,7 @@ This phase remains internal. It does not add public launch behavior, publishing,
 | #95 | Observability and logging contract | PR #101 |
 | #96 | Minimal operator frontend skeleton | PR #102 |
 | #97 | End-to-end pilot runbook | PR #103 |
-| #98 | P6 readiness closeout | This closeout PR |
+| #98 | P6 readiness closeout | PR #104 |
 
 ## Runtime entrypoint
 
@@ -126,7 +126,7 @@ P6 test files:
 - #96 / PR #102: Acceptance `28885028706`, Closeout `28885028687`, Ops `28885028631`.
 - #97 / PR #103: Acceptance `28889360485`, Closeout `28889360527`, Ops `28889360523`.
 
-This closeout PR records final CI evidence after validation.
+PR #104 records final CI evidence after validation.
 
 ## Readiness checklist
 
