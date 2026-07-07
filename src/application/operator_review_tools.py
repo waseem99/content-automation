@@ -110,6 +110,35 @@ class OperatorReviewTools:
                         },
                     )
                 )
+
+            package_rows = uow.conn.execute(
+                """
+                SELECT p.id, p.workflow_run_id, COALESCE(r.status, 'missing') AS status,
+                       p.created_at, p.step_plan_id, p.package_hash, p.option_ids
+                FROM football_brief.p3_packages p
+                LEFT JOIN football_brief.p3_package_reviews r
+                  ON r.workflow_run_id = p.workflow_run_id AND r.package_id = p.id
+                WHERE p.workflow_run_id = %s AND COALESCE(r.status, 'missing') <> 'approved'
+                ORDER BY p.created_at DESC
+                """,
+                (workflow_run_id,),
+            ).fetchall()
+            for row in package_rows:
+                rows.append(
+                    OperatorQueueItem(
+                        item_type="package_review",
+                        id=row["id"],
+                        workflow_run_id=row["workflow_run_id"],
+                        status=row["status"],
+                        title="P3 package",
+                        created_at=row["created_at"],
+                        metadata={
+                            "step_plan_id": str(row["step_plan_id"]),
+                            "package_hash": row["package_hash"],
+                            "option_ids": row["option_ids"],
+                        },
+                    )
+                )
             return sorted(rows, key=lambda item: item.created_at, reverse=True)
 
     def approve_packet(self, *, workflow_run_id: UUID, packet_id: UUID, reviewed_by: str, rationale: str | None = None):
