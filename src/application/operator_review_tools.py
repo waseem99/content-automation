@@ -5,6 +5,8 @@ from datetime import datetime
 from typing import Any
 from uuid import UUID
 
+from src.application.p3_step_four import P3PackageReviewService
+from src.application.p3_step_two import P3StepTwoService
 from src.application.review_prerequisites import ReviewPrerequisiteService
 from src.application.step_plan_service import StepPlanReviewService
 from src.infrastructure.database.connection import Database
@@ -27,6 +29,8 @@ class OperatorReviewTools:
         self.database = database
         self.packet_reviews = ReviewPrerequisiteService(database)
         self.output_reviews = StepPlanReviewService(database)
+        self.option_reviews = P3StepTwoService(database)
+        self.package_reviews = P3PackageReviewService(database)
 
     def queue(self, workflow_run_id: UUID) -> list[OperatorQueueItem]:
         with unit_of_work(self.database) as uow:
@@ -111,6 +115,38 @@ class OperatorReviewTools:
                     )
                 )
 
+            option_rows = uow.conn.execute(
+                """
+                SELECT o.id, o.workflow_run_id, COALESCE(r.status, 'missing') AS status,
+                       o.created_at, o.requirement_id, o.step_plan_id, o.option_hash,
+                       o.reference_type, o.reference_value
+                FROM football_brief.p3_options o
+                LEFT JOIN football_brief.p3_option_reviews r
+                  ON r.workflow_run_id = o.workflow_run_id AND r.option_id = o.id
+                WHERE o.workflow_run_id = %s AND COALESCE(r.status, 'missing') <> 'approved'
+                ORDER BY o.created_at DESC
+                """,
+                (workflow_run_id,),
+            ).fetchall()
+            for row in option_rows:
+                rows.append(
+                    OperatorQueueItem(
+                        item_type="p3_option_review",
+                        id=row["id"],
+                        workflow_run_id=row["workflow_run_id"],
+                        status=row["status"],
+                        title="P3 option",
+                        created_at=row["created_at"],
+                        metadata={
+                            "requirement_id": str(row["requirement_id"]),
+                            "step_plan_id": str(row["step_plan_id"]),
+                            "option_hash": row["option_hash"],
+                            "reference_type": row["reference_type"],
+                            "reference_value": row["reference_value"],
+                        },
+                    )
+                )
+
             package_rows = uow.conn.execute(
                 """
                 SELECT p.id, p.workflow_run_id, COALESCE(r.status, 'missing') AS status,
@@ -162,3 +198,68 @@ class OperatorReviewTools:
             rationale=rationale,
         )
         return approved if existing else approved
+
+    def request_option_review(self, *, workflow_run_id: UUID, option_id: UUID):
+        return self.option_reviews.request_review(workflow_run_id=workflow_run_id, option_id=option_id, actor="operator")
+
+    def approve_option(self, *, workflow_run_id: UUID, option_id: UUID, reviewed_by: str, rationale: str | None = None):
+        return self.option_reviews.decide(
+            workflow_run_id=workflow_run_id,
+            option_id=option_id,
+            status="approved",
+            reviewed_by=reviewed_by,
+            rationale=rationale,
+        )
+
+    def request_package_review(self, *, workflow_run_id: UUID, package_id: UUID):
+        return self.package_reviews.request_review(workflow_run_id=workflow_run_id, package_id=package_id, actor="operator")
+
+    def approve_package(self, *, workflow_run_id: UUID, package_id: UUID, reviewed_by: str, rationale: str | None = None):
+        return self.package_reviews.decide(
+            workflow_run_id=workflow_run_id,
+            package_id=package_id,
+            status="approved",
+            reviewed_by=reviewed_by,
+            rationale=rationale,
+        )
+
+    def package_status(self, *, workflow_run_id: UUID, package_id: UUID) -> dict[str, Any]:
+        with unit_of_work(self.database) as uow:
+            row = uow.conn.execute(
+                """
+                SELECT p.id, p.workflow_run_id, p.step_plan_id, p.package_hash,
+                       p.option_ids, p.scene_map, p.lineage_refs, p.metadata,
+                       p.created_at, COALESCE(r.status, 'missing') AS review_status,
+                       r.reviewed_by, r.rationale, r.reviewed_at
+                FROM football_brief.p3_packages p
+                LEFT JOIN football_brief.p3_package_reviews r
+                  ON r.workflow_run_id = p.workflow_run_id AND r.package_id = p.id
+                WHERE p.workflow_run_id = %s AND p.id = %s
+                """,
+                (workflow_run_id, package_id),
+            ).fetchone()
+            if row is None:
+                raise ValueError("package was not found for workflow")
+            return dict(row)
+
+    def manifest_status(self, *, workflow_run_id: UUID, package_id: UUID | None = None) -> list[dict[str, Any]]:
+        with unit_of_work(self.database) as uow:
+            if package_id is None:
+                rows = uow.conn.execute(
+                    """
+                    SELECT * FROM football_brief.p3_delivery_manifests
+                    WHERE workflow_run_id = %s
+                    ORDER BY created_at DESC
+                    """,
+                    (workflow_run_id,),
+                ).fetchall()
+            else:
+                rows = uow.conn.execute(
+                    """
+                    SELECT * FROM football_brief.p3_delivery_manifests
+                    WHERE workflow_run_id = %s AND package_id = %s
+                    ORDER BY created_at DESC
+                    """,
+                    (workflow_run_id, package_id),
+                ).fetchall()
+            return [dict(row) for row in rows]
