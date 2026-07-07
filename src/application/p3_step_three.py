@@ -192,13 +192,13 @@ class P3PackageService:
     def create_for_plan(self, *, workflow_run_id: UUID, step_plan_id: UUID, option_ids: list[UUID], actor: str) -> P3PackageResult:
         if not option_ids:
             raise P3StepThreeError("at least one approved option is required")
-        self.plan_reviews.require_approved(workflow_run_id=workflow_run_id, step_plan_id=step_plan_id)
         approved_options = []
         for option_id in option_ids:
             option = self.option_reviews.require_approved(workflow_run_id=workflow_run_id, option_id=option_id)
             if option["step_plan_id"] != step_plan_id:
                 raise P3StepThreeError("option does not belong to step plan")
             approved_options.append(option)
+        self.plan_reviews.require_approved(workflow_run_id=workflow_run_id, step_plan_id=step_plan_id)
         canonical_option_ids = sorted(str(option["id"]) for option in approved_options)
         worker_result = self.dispatcher.execute(
             WorkerExecutionRequest(
