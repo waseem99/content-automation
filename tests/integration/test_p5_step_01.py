@@ -3,8 +3,8 @@ from __future__ import annotations
 import pytest
 from fastapi.testclient import TestClient
 
-from src.operator_api import create_app
 from src.operator_api.auth import OperatorAuthSettings
+from src.operator_api.runtime_app import create_app
 from tests.integration.rights_support import close_database, create_workflow, database_fixture
 
 
