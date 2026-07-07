@@ -124,7 +124,9 @@ Expected result:
 - reviewed by value matches the operator identity;
 - workflow does not skip the next review gate.
 
-## Step 7: Resume and approve output gate
+## Step 7: Approve output gate
+
+Resume the workflow before approving the output gate.
 
 Call:
 
