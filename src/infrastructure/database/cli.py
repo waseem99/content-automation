@@ -27,6 +27,10 @@ def _json_default(value: object) -> str:
     return str(value)
 
 
+def _emit(payload: object, output_json: bool) -> None:
+    typer.echo(json.dumps(payload, indent=2, default=_json_default) if output_json else str(payload))
+
+
 @app.command()
 def migrate() -> None:
     settings, database = _open()
@@ -68,7 +72,7 @@ def health(output_json: bool = typer.Option(False, "--json")) -> None:
             "expected_migrations": list(result.expected_migrations),
             "error": result.error,
         }
-        typer.echo(json.dumps(payload, indent=2) if output_json else str(payload))
+        _emit(payload, output_json)
         if not result.ok:
             raise typer.Exit(code=1)
     finally:
@@ -120,7 +124,7 @@ def intake_create(
             "canonical_input_hash": result.intake.canonical_input_hash,
             "reference_count": len(result.references),
         }
-        typer.echo(json.dumps(payload, indent=2) if output_json else str(payload))
+        _emit(payload, output_json)
     except (ValueError, IntakeValidationError) as exc:
         typer.echo(str(exc), err=True)
         raise typer.Exit(code=2) from exc
@@ -148,7 +152,7 @@ def intake_list(
             }
             for row in rows
         ]
-        typer.echo(json.dumps(payload, indent=2) if output_json else "\n".join(str(item) for item in payload))
+        _emit(payload, output_json)
     finally:
         database.close()
 
@@ -173,7 +177,7 @@ def operator_queue(
             }
             for row in rows
         ]
-        typer.echo(json.dumps(payload, indent=2, default=_json_default) if output_json else "\n".join(str(item) for item in payload))
+        _emit(payload, output_json)
     finally:
         database.close()
 
@@ -194,8 +198,7 @@ def operator_approve_packet(
             reviewed_by=reviewed_by,
             rationale=rationale,
         )
-        payload = {"id": str(row.id), "packet_id": str(row.packet_id), "status": row.status, "reviewed_by": row.reviewed_by}
-        typer.echo(json.dumps(payload, indent=2) if output_json else str(payload))
+        _emit({"id": str(row.id), "packet_id": str(row.packet_id), "status": row.status, "reviewed_by": row.reviewed_by}, output_json)
     finally:
         database.close()
 
@@ -212,8 +215,7 @@ def operator_request_output(
             workflow_run_id=UUID(workflow_run_id),
             source_output_id=UUID(source_output_id),
         )
-        payload = {"id": str(row.id), "source_output_id": str(row.source_output_id), "status": row.status}
-        typer.echo(json.dumps(payload, indent=2) if output_json else str(payload))
+        _emit({"id": str(row.id), "source_output_id": str(row.source_output_id), "status": row.status}, output_json)
     finally:
         database.close()
 
@@ -234,8 +236,108 @@ def operator_approve_output(
             reviewed_by=reviewed_by,
             rationale=rationale,
         )
-        payload = {"id": str(row.id), "source_output_id": str(row.source_output_id), "status": row.status, "reviewed_by": row.reviewed_by}
-        typer.echo(json.dumps(payload, indent=2) if output_json else str(payload))
+        _emit({"id": str(row.id), "source_output_id": str(row.source_output_id), "status": row.status, "reviewed_by": row.reviewed_by}, output_json)
+    finally:
+        database.close()
+
+
+@operator_app.command("request-option")
+def operator_request_option(
+    workflow_run_id: str = typer.Option(..., "--workflow-run-id"),
+    option_id: str = typer.Option(..., "--option-id"),
+    output_json: bool = typer.Option(False, "--json"),
+) -> None:
+    _settings, database = _open()
+    try:
+        row = OperatorReviewTools(database).request_option_review(workflow_run_id=UUID(workflow_run_id), option_id=UUID(option_id))
+        _emit({"id": str(row.id), "option_id": str(row.option_id), "status": row.status}, output_json)
+    finally:
+        database.close()
+
+
+@operator_app.command("approve-option")
+def operator_approve_option(
+    workflow_run_id: str = typer.Option(..., "--workflow-run-id"),
+    option_id: str = typer.Option(..., "--option-id"),
+    reviewed_by: str = typer.Option("operator", "--reviewed-by"),
+    rationale: str | None = typer.Option(None, "--rationale"),
+    output_json: bool = typer.Option(False, "--json"),
+) -> None:
+    _settings, database = _open()
+    try:
+        row = OperatorReviewTools(database).approve_option(
+            workflow_run_id=UUID(workflow_run_id),
+            option_id=UUID(option_id),
+            reviewed_by=reviewed_by,
+            rationale=rationale,
+        )
+        _emit({"id": str(row.id), "option_id": str(row.option_id), "status": row.status, "reviewed_by": row.reviewed_by}, output_json)
+    finally:
+        database.close()
+
+
+@operator_app.command("request-package")
+def operator_request_package(
+    workflow_run_id: str = typer.Option(..., "--workflow-run-id"),
+    package_id: str = typer.Option(..., "--package-id"),
+    output_json: bool = typer.Option(False, "--json"),
+) -> None:
+    _settings, database = _open()
+    try:
+        row = OperatorReviewTools(database).request_package_review(workflow_run_id=UUID(workflow_run_id), package_id=UUID(package_id))
+        _emit({"id": str(row.id), "package_id": str(row.package_id), "status": row.status}, output_json)
+    finally:
+        database.close()
+
+
+@operator_app.command("approve-package")
+def operator_approve_package(
+    workflow_run_id: str = typer.Option(..., "--workflow-run-id"),
+    package_id: str = typer.Option(..., "--package-id"),
+    reviewed_by: str = typer.Option("operator", "--reviewed-by"),
+    rationale: str | None = typer.Option(None, "--rationale"),
+    output_json: bool = typer.Option(False, "--json"),
+) -> None:
+    _settings, database = _open()
+    try:
+        row = OperatorReviewTools(database).approve_package(
+            workflow_run_id=UUID(workflow_run_id),
+            package_id=UUID(package_id),
+            reviewed_by=reviewed_by,
+            rationale=rationale,
+        )
+        _emit({"id": str(row.id), "package_id": str(row.package_id), "status": row.status, "reviewed_by": row.reviewed_by}, output_json)
+    finally:
+        database.close()
+
+
+@operator_app.command("package-status")
+def operator_package_status(
+    workflow_run_id: str = typer.Option(..., "--workflow-run-id"),
+    package_id: str = typer.Option(..., "--package-id"),
+    output_json: bool = typer.Option(False, "--json"),
+) -> None:
+    _settings, database = _open()
+    try:
+        payload = OperatorReviewTools(database).package_status(workflow_run_id=UUID(workflow_run_id), package_id=UUID(package_id))
+        _emit(payload, output_json)
+    finally:
+        database.close()
+
+
+@operator_app.command("manifest-status")
+def operator_manifest_status(
+    workflow_run_id: str = typer.Option(..., "--workflow-run-id"),
+    package_id: str | None = typer.Option(None, "--package-id"),
+    output_json: bool = typer.Option(False, "--json"),
+) -> None:
+    _settings, database = _open()
+    try:
+        payload = OperatorReviewTools(database).manifest_status(
+            workflow_run_id=UUID(workflow_run_id),
+            package_id=UUID(package_id) if package_id else None,
+        )
+        _emit(payload, output_json)
     finally:
         database.close()
 
