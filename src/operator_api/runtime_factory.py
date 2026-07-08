@@ -7,6 +7,7 @@ from fastapi.responses import JSONResponse
 
 from src.infrastructure.database.connection import Database
 from src.operator_api.auth import OperatorAuthSettings
+from src.operator_api.observability import observability_contract
 from src.operator_api.runtime_app import create_app
 from src.operator_api.runtime_config import OperatorRuntimeSettings, get_operator_runtime_settings
 
@@ -30,6 +31,10 @@ def create_configured_app(
         if payload["ok"]:
             return payload
         return JSONResponse(status_code=503, content=payload)
+
+    @app.get("/runtime/observability")
+    def runtime_observability() -> dict[str, Any]:
+        return observability_contract()
 
     return app
 
