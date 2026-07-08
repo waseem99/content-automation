@@ -1,0 +1,104 @@
+{
+  "schema_version": "p24.content_package.v1",
+  "package_id": "pkg-visual-concepts-example",
+  "content_type": "short",
+  "source_topic": "Neymar 2014 World Cup injury and comeback pressure",
+  "packaging": {
+    "first_frame_options": [
+      {
+        "concept_id": "first_frame_01",
+        "concept_type": "first_frame",
+        "source_topic": "Neymar 2014 World Cup injury and comeback pressure",
+        "content_type": "short",
+        "platform_fit": ["youtube_shorts"],
+        "visual_pattern": "freeze_frame_punch_in",
+        "visual_layout": "Full-screen freeze-frame on the key football moment with a tight zoom and high-contrast caption area.",
+        "suggested_text": "THIS CHANGED NEYMAR",
+        "emotion": "shock",
+        "focal_subject": "Neymar",
+        "contrast_idea": "moment before impact versus immediate reaction",
+        "risk_notes": ["Requires editorial review before use.", "Must not imply unsupported injury, scandal, or controversy.", "Must not use unlicensed player, broadcast, logo, or match imagery without rights review.", "Must align with the script, title, hook, and source evidence."],
+        "approval_state": "not_approved"
+      },
+      {
+        "concept_id": "first_frame_02",
+        "concept_type": "first_frame",
+        "source_topic": "Neymar 2014 World Cup injury and comeback pressure",
+        "content_type": "short",
+        "platform_fit": ["youtube_shorts"],
+        "visual_pattern": "split_screen_debate",
+        "visual_layout": "Split the frame between the subject and a rival, record, or pressure symbol.",
+        "suggested_text": "WHO HAS MORE PRESSURE?",
+        "emotion": "debate",
+        "focal_subject": "Neymar",
+        "contrast_idea": "legacy side versus pressure side",
+        "risk_notes": ["Requires editorial review before use.", "Must not imply unsupported injury, scandal, or controversy.", "Must not use unlicensed player, broadcast, logo, or match imagery without rights review.", "Must align with the script, title, hook, and source evidence."],
+        "approval_state": "not_approved"
+      },
+      {
+        "concept_id": "first_frame_03",
+        "concept_type": "first_frame",
+        "source_topic": "Neymar 2014 World Cup injury and comeback pressure",
+        "content_type": "short",
+        "platform_fit": ["youtube_shorts"],
+        "visual_pattern": "injury_goal_reaction_frame",
+        "visual_layout": "Use a reaction-heavy frame with the subject, teammates, or crowd emotion as the focal point.",
+        "suggested_text": "THE MOMENT EVERYTHING SHIFTED",
+        "emotion": "tension",
+        "focal_subject": "Neymar",
+        "contrast_idea": "celebration energy versus sudden silence",
+        "risk_notes": ["Requires editorial review before use.", "Must not imply unsupported injury, scandal, or controversy.", "Must not use unlicensed player, broadcast, logo, or match imagery without rights review.", "Must align with the script, title, hook, and source evidence."],
+        "approval_state": "not_approved"
+      }
+    ],
+    "thumbnail_concepts": [
+      {
+        "concept_id": "thumbnail_01",
+        "concept_type": "thumbnail",
+        "source_topic": "Neymar 2014 World Cup injury and comeback pressure",
+        "content_type": "short",
+        "platform_fit": ["youtube_long_form", "youtube_shorts"],
+        "visual_pattern": "freeze_frame_punch_in",
+        "visual_layout": "16:9 thumbnail with subject close-up, key moment freeze-frame, and one bold arrow or circle.",
+        "suggested_text": "CHANGED FOREVER",
+        "emotion": "shock",
+        "focal_subject": "Neymar",
+        "contrast_idea": "subject emotion against the exact decisive moment",
+        "risk_notes": ["Requires editorial review before use.", "Must not imply unsupported injury, scandal, or controversy.", "Must not use unlicensed player, broadcast, logo, or match imagery without rights review.", "Must align with the script, title, hook, and source evidence."],
+        "approval_state": "not_approved"
+      },
+      {
+        "concept_id": "thumbnail_02",
+        "concept_type": "thumbnail",
+        "source_topic": "Neymar 2014 World Cup injury and comeback pressure",
+        "content_type": "short",
+        "platform_fit": ["youtube_long_form", "youtube_shorts"],
+        "visual_pattern": "stat_card_frame",
+        "visual_layout": "16:9 data-led layout with subject cutout and one oversized stat or record cue.",
+        "suggested_text": "THE RECORD?",
+        "emotion": "curiosity",
+        "focal_subject": "Neymar",
+        "contrast_idea": "data certainty versus legacy uncertainty",
+        "risk_notes": ["Requires editorial review before use.", "Must not imply unsupported injury, scandal, or controversy.", "Must not use unlicensed player, broadcast, logo, or match imagery without rights review.", "Must align with the script, title, hook, and source evidence."],
+        "approval_state": "not_approved"
+      },
+      {
+        "concept_id": "thumbnail_03",
+        "concept_type": "thumbnail",
+        "source_topic": "Neymar 2014 World Cup injury and comeback pressure",
+        "content_type": "short",
+        "platform_fit": ["youtube_long_form", "youtube_shorts"],
+        "visual_pattern": "legacy_vs_future_frame",
+        "visual_layout": "16:9 past-versus-future layout using two time periods and a clear central question.",
+        "suggested_text": "LAST CHANCE?",
+        "emotion": "legacy",
+        "focal_subject": "Neymar",
+        "contrast_idea": "historic image language versus future tournament pressure",
+        "risk_notes": ["Requires editorial review before use.", "Must not imply unsupported injury, scandal, or controversy.", "Must not use unlicensed player, broadcast, logo, or match imagery without rights review.", "Must align with the script, title, hook, and source evidence."],
+        "approval_state": "not_approved"
+      }
+    ],
+    "status": "pending_editorial_review",
+    "planned_epic": "P25"
+  }
+}
