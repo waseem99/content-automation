@@ -15,7 +15,7 @@ P13 completed disaster recovery review, backup and restore evidence, failover re
 | #186 | Failover readiness | PR #192 |
 | #187 | Capacity planning | PR #193 |
 | #188 | Resilience drill cadence | PR #194 |
-| #189 | P13 maturity and resilience closeout | This closeout PR |
+| #189 | P13 maturity and resilience closeout | PR #195 |
 
 ## Disaster recovery review
 
@@ -132,7 +132,7 @@ P13 test files:
 - #187 / PR #193: Acceptance `28932141984`, Closeout `28932141993`, Ops `28932141961`.
 - #188 / PR #194: Acceptance `28932432259`, Closeout `28932432296`, Ops `28932432364`.
 
-This closeout PR records final CI evidence after validation.
+PR #195 records final CI evidence after validation.
 
 ## Readiness checklist
 
