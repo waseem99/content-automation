@@ -27,7 +27,7 @@ def test_p9_readiness_report_records_scope_and_evidence() -> None:
         "PR #140",
         "PR #141",
         "PR #142",
-        "This closeout PR",
+        "PR #143",
         "Prior green CI evidence",
     ]:
         assert term in content
