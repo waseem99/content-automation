@@ -2,7 +2,7 @@
 
 Parent epic: #209  
 Closeout issue: #215  
-Closeout PR: PR_NUMBER_PENDING
+Closeout PR: #221
 
 ## Checklist
 
@@ -16,7 +16,7 @@ Closeout PR: PR_NUMBER_PENDING
 - [x] P15-06 readiness report created.
 - [x] P15-06 closeout checklist created.
 - [x] P15-06 final validation test created.
-- [ ] Closeout PR number patched from PR_NUMBER_PENDING.
+- [x] Closeout PR number patched to #221.
 - [ ] P1 Acceptance Harness passed on exact patched closeout head.
 - [ ] P1 Foundation Closeout passed on exact patched closeout head.
 - [ ] P1 Ops Storage passed on exact patched closeout head.
@@ -33,7 +33,7 @@ Closeout PR: PR_NUMBER_PENDING
 | #212 | Closed | #218 | P15 cost and performance review |
 | #213 | Closed | #219 | P15 support and incident trend review |
 | #214 | Closed | #220 | P15 documentation freshness review |
-| #215 | Pending | PR_NUMBER_PENDING | P15 closeout |
+| #215 | Pending | #221 | P15 closeout |
 
 ## Validation expectations
 
