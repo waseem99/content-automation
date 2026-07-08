@@ -47,10 +47,10 @@ It does:
 
 It does not:
 
-- generate titles;
-- generate thumbnails;
-- score retention;
-- score rights risk;
+- does not generate titles;
+- does not generate thumbnails;
+- does not score retention;
+- does not score rights risk;
 - verify licenses;
 - export platform folders;
 - approve editorial status;
