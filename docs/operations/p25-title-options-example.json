@@ -1,0 +1,132 @@
+{
+  "schema_version": "p24.content_package.v1",
+  "package_id": "pkg-title-options-example",
+  "content_type": "short",
+  "source_topic": "Neymar 2014 World Cup injury and comeback pressure",
+  "packaging": {
+    "title_options": [
+      {
+        "option_id": "title_01",
+        "title_text": "The Neymar Question Fans Can't Ignore",
+        "title_style": "curiosity",
+        "angle": "Open a specific unanswered football question.",
+        "emotional_trigger": "curiosity",
+        "platform_fit": ["youtube_shorts", "youtube_shorts"],
+        "source_topic": "Neymar 2014 World Cup injury and comeback pressure",
+        "content_type": "short",
+        "risk_notes": ["Requires editorial review before use.", "Must not overstate facts beyond the script or source evidence.", "Must avoid misleading clickbait and unsupported claims."],
+        "approval_state": "not_approved"
+      },
+      {
+        "option_id": "title_02",
+        "title_text": "Is Neymar Under More Pressure Than Anyone Thinks?",
+        "title_style": "debate",
+        "angle": "Invite disagreement without making an unsupported claim.",
+        "emotional_trigger": "debate",
+        "platform_fit": ["youtube_shorts", "youtube_shorts"],
+        "source_topic": "Neymar 2014 World Cup injury and comeback pressure",
+        "content_type": "short",
+        "risk_notes": ["Requires editorial review before use.", "Must not overstate facts beyond the script or source evidence.", "Must avoid misleading clickbait and unsupported claims."],
+        "approval_state": "not_approved"
+      },
+      {
+        "option_id": "title_03",
+        "title_text": "Why Neymar Still Feels Different",
+        "title_style": "nostalgia",
+        "angle": "Use memory and emotional connection around the topic.",
+        "emotional_trigger": "nostalgia",
+        "platform_fit": ["youtube_shorts", "youtube_shorts"],
+        "source_topic": "Neymar 2014 World Cup injury and comeback pressure",
+        "content_type": "short",
+        "risk_notes": ["Requires editorial review before use.", "Must not overstate facts beyond the script or source evidence.", "Must avoid misleading clickbait and unsupported claims."],
+        "approval_state": "not_approved"
+      },
+      {
+        "option_id": "title_04",
+        "title_text": "The Record Neymar Is Really Chasing",
+        "title_style": "record_chase",
+        "angle": "Frame the story around a measurable achievement that needs source review.",
+        "emotional_trigger": "ambition",
+        "platform_fit": ["youtube_shorts", "youtube_shorts"],
+        "source_topic": "Neymar 2014 World Cup injury and comeback pressure",
+        "content_type": "short",
+        "risk_notes": ["Requires editorial review before use.", "Must not overstate facts beyond the script or source evidence.", "Must avoid misleading clickbait and unsupported claims."],
+        "approval_state": "not_approved"
+      },
+      {
+        "option_id": "title_05",
+        "title_text": "The Moment That Changed Neymar",
+        "title_style": "shock",
+        "angle": "Promise a concrete moment, not vague drama.",
+        "emotional_trigger": "shock",
+        "platform_fit": ["youtube_shorts", "youtube_shorts"],
+        "source_topic": "Neymar 2014 World Cup injury and comeback pressure",
+        "content_type": "short",
+        "risk_notes": ["Requires editorial review before use.", "Must not overstate facts beyond the script or source evidence.", "Must avoid misleading clickbait and unsupported claims."],
+        "approval_state": "not_approved"
+      },
+      {
+        "option_id": "title_06",
+        "title_text": "Neymar Explained in One Football Story",
+        "title_style": "explainer",
+        "angle": "Make the video format clear and educational.",
+        "emotional_trigger": "clarity",
+        "platform_fit": ["youtube_shorts", "youtube_shorts"],
+        "source_topic": "Neymar 2014 World Cup injury and comeback pressure",
+        "content_type": "short",
+        "risk_notes": ["Requires editorial review before use.", "Must not overstate facts beyond the script or source evidence.", "Must avoid misleading clickbait and unsupported claims."],
+        "approval_state": "not_approved"
+      },
+      {
+        "option_id": "title_07",
+        "title_text": "What Neymar Means for Football Legacy",
+        "title_style": "legacy",
+        "angle": "Position the topic as a legacy question.",
+        "emotional_trigger": "legacy",
+        "platform_fit": ["youtube_shorts", "youtube_shorts"],
+        "source_topic": "Neymar 2014 World Cup injury and comeback pressure",
+        "content_type": "short",
+        "risk_notes": ["Requires editorial review before use.", "Must not overstate facts beyond the script or source evidence.", "Must avoid misleading clickbait and unsupported claims."],
+        "approval_state": "not_approved"
+      },
+      {
+        "option_id": "title_08",
+        "title_text": "Why the Pressure Around Neymar Is Different",
+        "title_style": "pressure",
+        "angle": "Focus on emotional stakes and expectations.",
+        "emotional_trigger": "pressure",
+        "platform_fit": ["youtube_shorts", "youtube_shorts"],
+        "source_topic": "Neymar 2014 World Cup injury and comeback pressure",
+        "content_type": "short",
+        "risk_notes": ["Requires editorial review before use.", "Must not overstate facts beyond the script or source evidence.", "Must avoid misleading clickbait and unsupported claims."],
+        "approval_state": "not_approved"
+      },
+      {
+        "option_id": "title_09",
+        "title_text": "Neymar: Talent, Pressure, or Timing?",
+        "title_style": "versus",
+        "angle": "Create a simple versus-style debate around the angle.",
+        "emotional_trigger": "comparison",
+        "platform_fit": ["youtube_shorts", "youtube_shorts"],
+        "source_topic": "Neymar 2014 World Cup injury and comeback pressure",
+        "content_type": "short",
+        "risk_notes": ["Requires editorial review before use.", "Must not overstate facts beyond the script or source evidence.", "Must avoid misleading clickbait and unsupported claims."],
+        "approval_state": "not_approved"
+      },
+      {
+        "option_id": "title_10",
+        "title_text": "What Happens Next With Neymar?",
+        "title_style": "prediction",
+        "angle": "Invite prediction while avoiding certainty.",
+        "emotional_trigger": "prediction",
+        "platform_fit": ["youtube_shorts", "youtube_shorts"],
+        "source_topic": "Neymar 2014 World Cup injury and comeback pressure",
+        "content_type": "short",
+        "risk_notes": ["Requires editorial review before use.", "Must not overstate facts beyond the script or source evidence.", "Must avoid misleading clickbait and unsupported claims."],
+        "approval_state": "not_approved"
+      }
+    ],
+    "status": "pending_editorial_review",
+    "planned_epic": "P25"
+  }
+}
