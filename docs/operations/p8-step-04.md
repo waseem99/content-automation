@@ -51,7 +51,7 @@ Configuration rollback steps:
 
 1. Identify changed configuration values.
 2. Identify previous known-good configuration source.
-3. Confirm no secret values are written to logs or issue comments.
+3. No secret values are written to logs or issue comments.
 4. Reapply previous known-good configuration.
 5. Restart or recycle the runtime instance if required.
 6. Confirm `GET /runtime/config` returns safe expected values only.
