@@ -135,6 +135,7 @@ jobs:
             tests/integration/test_p9_step_*.py \
             tests/integration/test_p10_step_*.py \
             tests/integration/test_p11_step_*.py \
+            tests/integration/test_p12_step_*.py \
             tests/integration/test_asset_registry.py \
             tests/integration/test_rights_gate.py \
             tests/integration/test_rights_gate_revalidation.py \
