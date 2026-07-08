@@ -24,8 +24,8 @@ def create_configured_app(
     def runtime_config() -> dict[str, Any]:
         return {"ok": True, "kind": "runtime_config", "runtime": settings.public_snapshot()}
 
-    @app.get("/runtime/ready")
-    def runtime_ready() -> dict[str, Any] | JSONResponse:
+    @app.get("/runtime/ready", response_model=None)
+    def runtime_ready() -> Any:
         payload = _runtime_readiness_payload(database=database, settings=settings)
         if payload["ok"]:
             return payload
