@@ -8,6 +8,7 @@ from fastapi.testclient import TestClient
 from pydantic import SecretStr
 
 from src.infrastructure.database.connection import Database
+from src.infrastructure.database.migrations import apply_migrations
 from src.infrastructure.database.settings import DatabaseSettings
 from src.operator_api.auth import OperatorAuthSettings
 from src.operator_api.runtime_config import OperatorRuntimeSettings
@@ -35,7 +36,8 @@ def ready_database() -> Database:
         pool_max_size=2,
     )
     db = Database(settings)
-    db.open(require_schema=True)
+    db.open(require_schema=False)
+    apply_migrations(db, ROOT / "migrations")
     try:
         yield db
     finally:
