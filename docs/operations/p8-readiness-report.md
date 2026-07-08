@@ -15,7 +15,7 @@ P8 completed service definition, environment configuration, database backup and 
 | #121 | Database backup and restore | PR #127 |
 | #122 | Rollback runbook | PR #128 |
 | #123 | Operational dashboards | PR #129 |
-| #124 | P8 production readiness closeout | This closeout PR |
+| #124 | P8 production readiness closeout | PR #130 |
 
 ## Service definition
 
@@ -130,7 +130,7 @@ P8 test files:
 - #122 / PR #128: Acceptance `28922104229`, Closeout `28922104222`, Ops `28922104283`.
 - #123 / PR #129: Acceptance `28922280038`, Closeout `28922280078`, Ops `28922280041`.
 
-This closeout PR records final CI evidence after validation.
+PR #130 records final CI evidence after validation.
 
 ## Readiness checklist
 
