@@ -2,7 +2,7 @@
 
 Parent epic: #248  
 Closeout issue: #254  
-Closeout PR: PR_NUMBER_PENDING
+Closeout PR: #260
 
 ## Status
 
@@ -28,7 +28,7 @@ P18 converted P17 release readiness into handover-ready operating material acros
 | #251 | #257 | Training and onboarding checklist | c81f771a6fa13235406f90015a37631e32df1dc2 |
 | #252 | #258 | Support playbook | 872d31508a9a1666cddbe2dd1448c65205c33aa2 |
 | #253 | #259 | Runbook index and ownership map | 2ab9708c3a7803ab8604683f981b9ec48dca0f54 |
-| #254 | PR_NUMBER_PENDING | P18 handover closeout | Pending final merge |
+| #254 | #260 | P18 handover closeout | Pending final merge |
 
 ## Key deliverables
 
