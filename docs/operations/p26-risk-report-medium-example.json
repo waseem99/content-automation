@@ -1,0 +1,32 @@
+{
+  "schema_version": "p26.monetization_risk_report.v1",
+  "report_id": "risk-medium-example",
+  "package_id": "pkg-medium-risk-example",
+  "content_type": "explainer",
+  "overall_risk_level": "medium",
+  "publish_allowed": false,
+  "review_required": true,
+  "risk_categories": {
+    "reused_content_risk": {"risk_level": "medium", "review_required": true, "publish_blocking": true, "reason": "Template pacing and repeated football visuals need originality review.", "required_actions": ["Confirm original analysis, narration, and custom graphics."]},
+    "copyright_risk": {"risk_level": "medium", "review_required": true, "publish_blocking": true, "reason": "Some source clips or stills are unreviewed.", "required_actions": ["Review each clip source and usage context."]},
+    "image_license_risk": {"risk_level": "medium", "review_required": true, "publish_blocking": true, "reason": "Web image licenses and attribution are not fully verified.", "required_actions": ["Verify license and attribution for every web image."]},
+    "music_license_risk": {"risk_level": "medium", "review_required": true, "publish_blocking": true, "reason": "Music usage is not confirmed for every target platform.", "required_actions": ["Confirm music license per platform."]},
+    "ai_template_risk": {"risk_level": "medium", "review_required": true, "publish_blocking": true, "reason": "AI or template-like visuals may require originality review.", "required_actions": ["Confirm AI visuals do not imply false real-world events."]},
+    "factual_risk": {"risk_level": "medium", "review_required": true, "publish_blocking": true, "reason": "Stats and claims need source references.", "required_actions": ["Add source URLs and checked dates for claims."]},
+    "originality_risk": {"risk_level": "medium", "review_required": true, "publish_blocking": true, "reason": "Originality layer is not fully documented.", "required_actions": ["Add original analysis, stat card, or editorial angle evidence."]},
+    "platform_reuse_risk": {"risk_level": "medium", "review_required": true, "publish_blocking": true, "reason": "Platform-specific export review is pending.", "required_actions": ["Confirm no watermarks or cross-platform artifacts remain."]},
+    "brand_safety_risk": {"risk_level": "medium", "review_required": true, "publish_blocking": true, "reason": "Debate framing needs editorial review.", "required_actions": ["Review CTA and title for inflammatory wording."]}
+  },
+  "asset_risks": [
+    {"asset_id": "web_image_001", "asset_role": "web_image", "asset_path": "production/image_01.png", "default_risk_level": "medium", "current_risk_level": "medium", "review_required": true, "publish_blocking": true, "blocking_reasons": ["image license and attribution unverified"], "required_actions": ["Verify source URL, license, attribution, and allowed platform use."], "evidence_allowed": ["source URL", "license summary", "attribution-needed status"], "evidence_blocked": ["private account screenshots", "secret values"], "notes": "Web source evidence is not copyright clearance."},
+    {"asset_id": "music_001", "asset_role": "music", "asset_path": "assets/music/background.mp3", "default_risk_level": "high", "current_risk_level": "medium", "review_required": true, "publish_blocking": true, "blocking_reasons": ["platform-specific music license unverified"], "required_actions": ["Confirm YouTube, TikTok, Instagram, Facebook, and X/Twitter music rights separately."], "evidence_allowed": ["license name or summary", "platform coverage summary"], "evidence_blocked": ["private license invoice", "account data", "secret values"], "notes": "One music license must not be assumed safe across all platforms."}
+  ],
+  "blocking_reasons": ["image license review pending", "music license review pending", "originality review pending"],
+  "required_actions": ["Complete image, music, factual, originality, and editorial reviews before export."],
+  "evidence_allowed": ["asset role", "asset path", "source URL", "license name or summary", "review status"],
+  "evidence_blocked": ["secret values", "private runtime values", "private account screenshots", "raw legal correspondence"],
+  "content_package_updates": {"monetization_risk_report_path": "production/monetization_risk_report.json", "publish_allowed": false, "review_required": true, "rights_clearance_status": "review_required", "source_attribution_status": "review_required", "music_license_status": "review_required", "originality_status": "review_required", "blocking_reasons": ["image license review pending", "music license review pending", "originality review pending"], "required_actions": ["Complete P26 review before any publish-ready export."], "status": "generated_pending_review", "planned_epic": "P26"},
+  "review_state": "generated_pending_review",
+  "reviewer_role": "rights reviewer",
+  "notes": ["Medium risk remains publish-blocking until required actions are complete.", "No automatic monetization approval.", "No legal clearance is implied."]
+}
