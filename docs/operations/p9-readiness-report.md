@@ -15,7 +15,7 @@ P9 completed deployment dry-run rehearsal planning, restore rehearsal planning, 
 | #134 | Rollback rehearsal runbook | PR #140 |
 | #135 | Dashboard and alert routing review | PR #141 |
 | #136 | Final go/no-go checklist | PR #142 |
-| #137 | P9 rollout rehearsal closeout | This closeout PR |
+| #137 | P9 rollout rehearsal closeout | PR #143 |
 
 ## Deployment dry-run
 
@@ -133,7 +133,7 @@ P9 test files:
 - #135 / PR #141: Acceptance `28923625210`, Closeout `28923625158`, Ops `28923625156`.
 - #136 / PR #142: Acceptance `28923836470`, Closeout `28923836456`, Ops `28923836504`.
 
-This closeout PR records final CI evidence after validation.
+PR #143 records final CI evidence after validation.
 
 ## Readiness checklist
 
