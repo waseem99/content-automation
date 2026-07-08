@@ -40,17 +40,17 @@ It does:
 
 It does not:
 
-- approve titles;
-- upload titles to YouTube;
-- run YouTube A/B tests;
-- generate thumbnails;
-- generate first-frame images;
-- score retention;
-- verify facts;
-- approve monetization;
-- approve rights;
-- publish content;
-- bypass workflow gates.
+- does not approve titles;
+- does not upload titles to YouTube;
+- does not run YouTube A/B tests;
+- does not generate thumbnails;
+- does not generate first-frame images;
+- does not score retention;
+- does not verify facts;
+- does not approve monetization;
+- does not approve rights;
+- does not publish content;
+- does not bypass workflow gates.
 
 ## Title option schema
 
