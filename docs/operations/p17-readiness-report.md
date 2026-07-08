@@ -2,7 +2,7 @@
 
 Parent epic: #235  
 Closeout issue: #241  
-Closeout PR: PR_NUMBER_PENDING
+Closeout PR: #247
 
 ## Status
 
@@ -28,7 +28,7 @@ P17 converted P16 observability into a controlled release readiness process acro
 | #238 | #244 | Dry-run and rehearsal process | 1428adddf514a7da8dce0251e49669d467bec582 |
 | #239 | #245 | Go / No-Go approval record | d372ed492ac2c454fff56b688bb8ce7adc141b8e |
 | #240 | #246 | Post-release observation plan | 6227516905863daf6565eb8c36cac93d5d58089a |
-| #241 | PR_NUMBER_PENDING | P17 release readiness closeout | Pending final merge |
+| #241 | #247 | P17 release readiness closeout | Pending final merge |
 
 ## Key deliverables
 
