@@ -2,7 +2,7 @@
 
 Parent epic: #300  
 Closeout issue: #306  
-Closeout PR: PR_NUMBER_PENDING
+Closeout PR: #312
 
 ## Checklist
 
@@ -16,7 +16,7 @@ Closeout PR: PR_NUMBER_PENDING
 - [x] P22-06 readiness report created.
 - [x] P22-06 closeout checklist created.
 - [x] P22-06 final validation test created.
-- [ ] Closeout PR number patched from PR_NUMBER_PENDING.
+- [x] Closeout PR number patched to #312.
 - [ ] P1 Acceptance Harness passed on exact patched closeout head.
 - [ ] P1 Foundation Closeout passed on exact patched closeout head.
 - [ ] P1 Ops Storage passed on exact patched closeout head.
@@ -33,7 +33,7 @@ Closeout PR: PR_NUMBER_PENDING
 | #303 | Closed | #309 | P22 privacy-safe evidence checklist |
 | #304 | Closed | #310 | P22 data access and role review |
 | #305 | Closed | #311 | P22 data export and sharing guardrails |
-| #306 | Pending | PR_NUMBER_PENDING | P22 privacy and retention closeout |
+| #306 | Pending | #312 | P22 privacy and retention closeout |
 
 ## Validation expectations
 
