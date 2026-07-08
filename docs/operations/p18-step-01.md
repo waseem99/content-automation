@@ -86,6 +86,7 @@ Operators must follow these principles:
 - merge only after required checks are green;
 - confirm issue closure after merge;
 - update parent epic evidence during closeout;
+- capture CI evidence from the final exact branch head;
 - never store restricted values in evidence.
 
 ## Daily checks
