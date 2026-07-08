@@ -2,7 +2,7 @@
 
 Parent epic: #222  
 Closeout issue: #228  
-Closeout PR: PR_NUMBER_PENDING
+Closeout PR: #234
 
 ## Status
 
@@ -28,7 +28,7 @@ P16 made production health measurable and reviewable across:
 | #225 | #231 | Alert quality and noise review | 1907b4aaef2e35462352edd6ebb1367a0fb01390 |
 | #226 | #232 | Service level review process | 3064705c7531eddabb6d2f4f80e24598187ed642 |
 | #227 | #233 | Metrics evidence retention | 0c0c7e445344ab75c4e37b86ec5156c9d92b13d5 |
-| #228 | PR_NUMBER_PENDING | P16 observability closeout | Pending final merge |
+| #228 | #234 | P16 observability closeout | Pending final merge |
 
 ## Key deliverables
 
