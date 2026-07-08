@@ -2,7 +2,7 @@
 
 Parent epic: #274  
 Closeout issue: #280  
-Closeout PR: PR_NUMBER_PENDING
+Closeout PR: #286
 
 ## Status
 
@@ -28,7 +28,7 @@ P20 converted production readiness controls into audit-ready evidence across:
 | #277 | #283 | Audit trail and change evidence review | 9e4c7e1c21dfe07335d948a8c52b8139421541f7 |
 | #278 | #284 | Data retention and deletion evidence pack | 72959f392c277483061cb3c05cd85e33a4c5356e |
 | #279 | #285 | Third-party dependency compliance evidence pack | a2e80877dc73d24e49c218707d7279caad644615 |
-| #280 | PR_NUMBER_PENDING | P20 final compliance closeout | Pending final merge |
+| #280 | #286 | P20 final compliance closeout | Pending final merge |
 
 ## Key deliverables
 
