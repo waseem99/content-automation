@@ -2,7 +2,7 @@
 
 Parent epic: #248  
 Closeout issue: #254  
-Closeout PR: PR_NUMBER_PENDING
+Closeout PR: #260
 
 ## Checklist
 
@@ -16,7 +16,7 @@ Closeout PR: PR_NUMBER_PENDING
 - [x] P18-06 readiness report created.
 - [x] P18-06 closeout checklist created.
 - [x] P18-06 final validation test created.
-- [ ] Closeout PR number patched from PR_NUMBER_PENDING.
+- [x] Closeout PR number patched to #260.
 - [ ] P1 Acceptance Harness passed on exact patched closeout head.
 - [ ] P1 Foundation Closeout passed on exact patched closeout head.
 - [ ] P1 Ops Storage passed on exact patched closeout head.
@@ -33,7 +33,7 @@ Closeout PR: PR_NUMBER_PENDING
 | #251 | Closed | #257 | P18 training and onboarding checklist |
 | #252 | Closed | #258 | P18 support playbook |
 | #253 | Closed | #259 | P18 runbook index and ownership map |
-| #254 | Pending | PR_NUMBER_PENDING | P18 handover closeout |
+| #254 | Pending | #260 | P18 handover closeout |
 
 ## Validation expectations
 
