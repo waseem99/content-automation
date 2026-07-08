@@ -10,7 +10,7 @@ pytestmark = pytest.mark.integration
 
 REPORT = Path("docs/operations/p21-readiness-report.md")
 CHECKLIST = Path("docs/operations/p21-closeout-checklist.md")
-EXPECTED_CLOSEOUT_PR = "PR_NUMBER_PENDING"
+EXPECTED_CLOSEOUT_PR = "#299"
 
 
 def _text(path: Path) -> str:
@@ -49,6 +49,7 @@ def test_p21_closeout_references_all_completed_issues_and_prs() -> None:
         "#296",
         "#297",
         "#298",
+        "#299",
         "a279031c9b170380005712cc5116c95ac4240cbe",
         "cac7997fff5879f8d97071479a58ee0e4a874094",
         "b72c7d4769d4ce614471b070310c778e6d52abfe",
