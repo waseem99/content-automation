@@ -2,7 +2,7 @@
 
 Parent epic: #287  
 Closeout issue: #293  
-Closeout PR: PR_NUMBER_PENDING
+Closeout PR: #299
 
 ## Checklist
 
@@ -16,7 +16,7 @@ Closeout PR: PR_NUMBER_PENDING
 - [x] P21-06 readiness report created.
 - [x] P21-06 closeout checklist created.
 - [x] P21-06 final validation test created.
-- [ ] Closeout PR number patched from PR_NUMBER_PENDING.
+- [x] Closeout PR number patched to #299.
 - [ ] P1 Acceptance Harness passed on exact patched closeout head.
 - [ ] P1 Foundation Closeout passed on exact patched closeout head.
 - [ ] P1 Ops Storage passed on exact patched closeout head.
@@ -33,7 +33,7 @@ Closeout PR: PR_NUMBER_PENDING
 | #290 | Closed | #296 | P21 rollback and restore evidence review |
 | #291 | Closed | #297 | P21 operator failure-mode checklist |
 | #292 | Closed | #298 | P21 escalation drill and contact routing |
-| #293 | Pending | PR_NUMBER_PENDING | P21 final drill readiness closeout |
+| #293 | Pending | #299 | P21 final drill readiness closeout |
 
 ## Validation expectations
 
