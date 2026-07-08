@@ -12,14 +12,17 @@ REPORT = Path("docs/operations/p23-readiness-report.md")
 CHECKLIST = Path("docs/operations/p23-closeout-checklist.md")
 
 
-def test_p23_closeout_files_reference_parent_issue_and_placeholder() -> None:
+def test_p23_closeout_files_reference_parent_issue_and_final_pr() -> None:
     report = REPORT.read_text(encoding="utf-8")
     checklist = CHECKLIST.read_text(encoding="utf-8")
 
     for content in [report, checklist]:
         assert "Parent epic: #313" in content
         assert "Final closeout issue: #319" in content
-        assert "Final closeout PR: PR_NUMBER_PENDING" in content
+        assert "Final closeout PR: #325" in content
+
+    assert "The final closeout PR number was patched from `PR_NUMBER_PENDING` to `#325` before merge." in report
+    assert "Final closeout files are patched with the actual PR number before merge: #325." in checklist
 
 
 def test_p23_closeout_report_records_child_evidence() -> None:
