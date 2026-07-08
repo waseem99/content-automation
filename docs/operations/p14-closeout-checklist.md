@@ -2,7 +2,7 @@
 
 P14 closeout checklist for epic #196 and final closeout issue #202.
 
-Final closeout PR: PR_NUMBER_PENDING.
+Final closeout PR: #208.
 
 ## Required closeout evidence
 
@@ -34,7 +34,7 @@ Final closeout PR: PR_NUMBER_PENDING.
 - [x] Step #199 merged through PR #205.
 - [x] Step #200 merged through PR #206.
 - [x] Step #201 merged through PR #207.
-- [ ] Step #202 merges through PR_NUMBER_PENDING.
+- [ ] Step #202 merges through PR #208.
 
 ## Final CI gate
 
@@ -64,7 +64,7 @@ The final PR must not merge until exact-head CI is green for:
 
 Epic #196 can close only after:
 
-- final PR PR_NUMBER_PENDING is patched with the actual PR number;
+- final PR #208 is patched with the actual PR number;
 - final exact-head CI passes;
 - final PR merges into `test`;
 - issue #202 is confirmed closed;
