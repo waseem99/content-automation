@@ -13,6 +13,8 @@ on:
       - "requirements.txt"
       - "src/**"
       - "tests/**"
+      - "Dockerfile"
+      - ".dockerignore"
   workflow_dispatch:
 
 permissions:
@@ -64,6 +66,7 @@ jobs:
             "typer>=0.12.0" \
             "pytest>=8.0.0" \
             "fastapi>=0.115.0" \
+            "uvicorn>=0.30.0" \
             "httpx>=0.27.0" \
             "psycopg[binary]>=3.2.0,<4.0" \
             "psycopg-pool>=3.2.0,<4.0" \
@@ -127,6 +130,7 @@ jobs:
             tests/integration/test_p4_step_*.py \
             tests/integration/test_p5_step_*.py \
             tests/integration/test_p6_step_*.py \
+            tests/integration/test_p7_step_*.py \
             tests/integration/test_asset_registry.py \
             tests/integration/test_rights_gate.py \
             tests/integration/test_rights_gate_revalidation.py \
