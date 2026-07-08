@@ -20,10 +20,12 @@ def test_p14_closeout_documents_exist() -> None:
 def test_p14_closeout_report_links_all_steps_and_evidence() -> None:
     content = REPORT.read_text(encoding="utf-8")
 
+    assert "PR_NUMBER_PENDING" not in content
+
     for term in [
         "epic #196",
         "Final closeout issue: #202.",
-        "Final closeout PR: PR_NUMBER_PENDING.",
+        "Final closeout PR: #208.",
         "#197",
         "#198",
         "#199",
@@ -35,6 +37,7 @@ def test_p14_closeout_report_links_all_steps_and_evidence() -> None:
         "#205",
         "#206",
         "#207",
+        "#208",
         "docs/operations/p14-step-01.md",
         "docs/operations/p14-step-02.md",
         "docs/operations/p14-step-03.md",
@@ -71,8 +74,10 @@ def test_p14_closeout_report_documents_readiness_and_exclusions() -> None:
 def test_p14_closeout_checklist_documents_required_evidence_and_gates() -> None:
     content = CHECKLIST.read_text(encoding="utf-8")
 
+    assert "PR_NUMBER_PENDING" not in content
+
     for term in [
-        "Final closeout PR: PR_NUMBER_PENDING.",
+        "Final closeout PR: #208.",
         "P14-01 compliance evidence mapping document exists.",
         "P14-02 security review cadence document exists.",
         "P14-03 access certification document exists.",
@@ -82,7 +87,7 @@ def test_p14_closeout_checklist_documents_required_evidence_and_gates() -> None:
         "P14 closeout checklist exists.",
         "P14 final validation test exists.",
         "Child issue #202 closes after final PR merge.",
-        "Step #202 merges through PR_NUMBER_PENDING.",
+        "Step #202 merges through PR #208.",
         "P1 Acceptance Harness.",
         "P1 Foundation Closeout.",
         "P1 Ops Storage.",
@@ -107,6 +112,7 @@ def test_p14_closeout_checklist_documents_guardrails_and_epic_rule() -> None:
         "No scheduling occurs.",
         "No rendering occurs.",
         "No external export occurs.",
+        "final PR #208 is patched with the actual PR number",
         "final exact-head CI passes",
         "issue #202 is confirmed closed",
         "epic #196 is updated with final CI evidence",
