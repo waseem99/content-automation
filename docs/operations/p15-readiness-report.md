@@ -2,7 +2,7 @@
 
 Parent epic: #209  
 Closeout issue: #215  
-Closeout PR: PR_NUMBER_PENDING
+Closeout PR: #221
 
 ## Status
 
@@ -28,7 +28,7 @@ P15 established the production continuous improvement loop across:
 | #212 | #218 | Cost and performance review | 3186e981df96b5bb0f638fc182e8b45e16c89bbe |
 | #213 | #219 | Support and incident trend review | d2455fb02833cb31047d9354d3af4414aa76c0a3 |
 | #214 | #220 | Documentation freshness review | 925c81384e8acf9533b4033f0b218848875a01cd |
-| #215 | PR_NUMBER_PENDING | P15 closeout | Pending final merge |
+| #215 | #221 | P15 closeout | Pending final merge |
 
 ## Key deliverables
 
