@@ -2,7 +2,7 @@
 
 Parent epic: #261  
 Closeout issue: #267  
-Closeout PR: PR_NUMBER_PENDING
+Closeout PR: #273
 
 ## Status
 
@@ -28,7 +28,7 @@ P19 strengthened production readiness across:
 | #264 | #270 | Data handling and retention review | 0eb944e88880f5ddf7a3077e24974658fd55cf42 |
 | #265 | #271 | Dependency and supply-chain review | e4e1cc1a6839df31dc274ff5d18209a16ce81496 |
 | #266 | #272 | Security incident response playbook | e0be79839693d1fcf631673813f389700a5314f3 |
-| #267 | PR_NUMBER_PENDING | P19 security closeout | Pending final merge |
+| #267 | #273 | P19 security closeout | Pending final merge |
 
 ## Key deliverables
 
