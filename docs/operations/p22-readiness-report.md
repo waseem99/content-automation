@@ -2,7 +2,7 @@
 
 Parent epic: #300  
 Closeout issue: #306  
-Closeout PR: PR_NUMBER_PENDING
+Closeout PR: #312
 
 ## Status
 
@@ -28,7 +28,7 @@ P22 strengthened privacy and data-governance readiness across:
 | #303 | #309 | Privacy-safe evidence checklist | 5331ee67deda7e9ceca7e7c9f67e1b4553f8444c |
 | #304 | #310 | Data access and role review | 6cf834a5b80ca4ec673d2829d3d77f74486cfdde |
 | #305 | #311 | Data export and sharing guardrails | a3a2ff0ffbb6f5f5cabecb3c68a823269220407c |
-| #306 | PR_NUMBER_PENDING | P22 privacy and retention closeout | Pending final merge |
+| #306 | #312 | P22 privacy and retention closeout | Pending final merge |
 
 ## Key deliverables
 
