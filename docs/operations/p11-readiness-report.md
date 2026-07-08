@@ -15,7 +15,7 @@ P11 completed the weekly rollout review cadence, alert tuning and threshold revi
 | #160 | Incident review cadence and action tracking | PR #166 |
 | #161 | Production evidence archive maintenance | PR #167 |
 | #162 | Operator handoff and ownership matrix | PR #168 |
-| #163 | P11 stabilization closeout | This closeout PR |
+| #163 | P11 stabilization closeout | PR #169 |
 
 ## Weekly rollout review cadence
 
@@ -130,7 +130,7 @@ P11 test files:
 - #161 / PR #167: Acceptance `28927986201`, Closeout `28927986158`, Ops `28927986138`.
 - #162 / PR #168: Acceptance `28928232275`, Closeout `28928232545`, Ops `28928232341`.
 
-This closeout PR records final CI evidence after validation.
+PR #169 records final CI evidence after validation.
 
 ## Readiness checklist
 
