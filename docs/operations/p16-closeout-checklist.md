@@ -2,7 +2,7 @@
 
 Parent epic: #222  
 Closeout issue: #228  
-Closeout PR: PR_NUMBER_PENDING
+Closeout PR: #234
 
 ## Checklist
 
@@ -16,7 +16,7 @@ Closeout PR: PR_NUMBER_PENDING
 - [x] P16-06 readiness report created.
 - [x] P16-06 closeout checklist created.
 - [x] P16-06 final validation test created.
-- [ ] Closeout PR number patched from PR_NUMBER_PENDING.
+- [x] Closeout PR number patched to #234.
 - [ ] P1 Acceptance Harness passed on exact patched closeout head.
 - [ ] P1 Foundation Closeout passed on exact patched closeout head.
 - [ ] P1 Ops Storage passed on exact patched closeout head.
@@ -33,7 +33,7 @@ Closeout PR: PR_NUMBER_PENDING
 | #225 | Closed | #231 | P16 alert quality and noise review |
 | #226 | Closed | #232 | P16 service level review process |
 | #227 | Closed | #233 | P16 metrics evidence retention |
-| #228 | Pending | PR_NUMBER_PENDING | P16 observability closeout |
+| #228 | Pending | #234 | P16 observability closeout |
 
 ## Validation expectations
 
