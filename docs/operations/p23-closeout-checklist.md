@@ -2,7 +2,7 @@
 
 Parent epic: #313
 Final closeout issue: #319
-Final closeout PR: PR_NUMBER_PENDING
+Final closeout PR: #325
 
 ## Closeout scope
 
@@ -37,7 +37,7 @@ It confirms that P23 added documented controls for repository visibility, access
 ## Final PR placeholder status
 
 - [x] Final closeout files initially use `PR_NUMBER_PENDING`.
-- [ ] Final closeout files are patched with the actual PR number before merge.
+- [x] Final closeout files are patched with the actual PR number before merge: #325.
 - [ ] Final closeout PR passes exact-head CI.
 - [ ] Final closeout PR is merged only after required checks pass.
 - [ ] #319 is confirmed closed after merge.
