@@ -2,7 +2,7 @@
 
 Parent epic: #274  
 Closeout issue: #280  
-Closeout PR: PR_NUMBER_PENDING
+Closeout PR: #286
 
 ## Checklist
 
@@ -16,7 +16,7 @@ Closeout PR: PR_NUMBER_PENDING
 - [x] P20-06 readiness report created.
 - [x] P20-06 closeout checklist created.
 - [x] P20-06 final validation test created.
-- [ ] Closeout PR number patched from PR_NUMBER_PENDING.
+- [x] Closeout PR number patched to #286.
 - [ ] P1 Acceptance Harness passed on exact patched closeout head.
 - [ ] P1 Foundation Closeout passed on exact patched closeout head.
 - [ ] P1 Ops Storage passed on exact patched closeout head.
@@ -33,7 +33,7 @@ Closeout PR: PR_NUMBER_PENDING
 | #277 | Closed | #283 | P20 audit trail and change evidence review |
 | #278 | Closed | #284 | P20 data retention and deletion evidence pack |
 | #279 | Closed | #285 | P20 third-party dependency compliance evidence pack |
-| #280 | Pending | PR_NUMBER_PENDING | P20 final compliance closeout |
+| #280 | Pending | #286 | P20 final compliance closeout |
 
 ## Validation expectations
 
