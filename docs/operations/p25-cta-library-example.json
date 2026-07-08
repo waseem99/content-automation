@@ -1,0 +1,103 @@
+{
+  "schema_version": "p24.content_package.v1",
+  "package_id": "pkg-cta-library-example",
+  "content_type": "short",
+  "source_topic": "Neymar 2014 World Cup injury and comeback pressure",
+  "packaging": {
+    "cta_comment_trigger_options": [
+      {
+        "cta_id": "cta_01",
+        "cta_type": "debate",
+        "cta_text": "Be honest: are fans too harsh on Neymar?",
+        "source_topic": "Neymar 2014 World Cup injury and comeback pressure",
+        "content_type": "short",
+        "focal_subject": "Neymar",
+        "intent": "Create a balanced argument without attacking either side.",
+        "comment_trigger": "fans defend or challenge the pressure narrative",
+        "platform_fit": ["youtube_shorts", "youtube_long_form"],
+        "risk_notes": ["Requires editorial review before use.", "Must avoid unsupported claims, harassment, and inflammatory wording.", "Must not bait abuse toward players, teams, fans, or communities.", "Must align with the script, title, hook, and source evidence."],
+        "approval_state": "not_approved"
+      },
+      {
+        "cta_id": "cta_02",
+        "cta_type": "prediction",
+        "cta_text": "What happens next for Neymar?",
+        "source_topic": "Neymar 2014 World Cup injury and comeback pressure",
+        "content_type": "short",
+        "focal_subject": "Neymar",
+        "intent": "Invite future-looking football predictions without fake certainty.",
+        "comment_trigger": "viewers predict the next tournament or career moment",
+        "platform_fit": ["youtube_shorts", "youtube_long_form"],
+        "risk_notes": ["Requires editorial review before use.", "Must avoid unsupported claims, harassment, and inflammatory wording.", "Must not bait abuse toward players, teams, fans, or communities.", "Must align with the script, title, hook, and source evidence."],
+        "approval_state": "not_approved"
+      },
+      {
+        "cta_id": "cta_03",
+        "cta_type": "loyalty",
+        "cta_text": "Neymar fans, are you still backing this story?",
+        "source_topic": "Neymar 2014 World Cup injury and comeback pressure",
+        "content_type": "short",
+        "focal_subject": "Neymar",
+        "intent": "Activate fan identity while keeping the wording respectful.",
+        "comment_trigger": "supporters respond from loyalty or memory",
+        "platform_fit": ["youtube_shorts", "youtube_long_form"],
+        "risk_notes": ["Requires editorial review before use.", "Must avoid unsupported claims, harassment, and inflammatory wording.", "Must not bait abuse toward players, teams, fans, or communities.", "Must align with the script, title, hook, and source evidence."],
+        "approval_state": "not_approved"
+      },
+      {
+        "cta_id": "cta_04",
+        "cta_type": "ranking",
+        "cta_text": "Rank Neymar by pressure, not talent.",
+        "source_topic": "Neymar 2014 World Cup injury and comeback pressure",
+        "content_type": "short",
+        "focal_subject": "Neymar",
+        "intent": "Invite comparison based on a specific dimension.",
+        "comment_trigger": "viewers explain their ranking logic",
+        "platform_fit": ["youtube_shorts", "youtube_long_form"],
+        "risk_notes": ["Requires editorial review before use.", "Must avoid unsupported claims, harassment, and inflammatory wording.", "Must not bait abuse toward players, teams, fans, or communities.", "Must align with the script, title, hook, and source evidence."],
+        "approval_state": "not_approved"
+      },
+      {
+        "cta_id": "cta_05",
+        "cta_type": "controversy",
+        "cta_text": "Is the conversation around Neymar fair or exaggerated?",
+        "source_topic": "Neymar 2014 World Cup injury and comeback pressure",
+        "content_type": "short",
+        "focal_subject": "Neymar",
+        "intent": "Create a safe controversy frame without unsupported scandal.",
+        "comment_trigger": "viewers debate media and fan narratives",
+        "platform_fit": ["youtube_shorts", "youtube_long_form"],
+        "risk_notes": ["Requires editorial review before use.", "Must avoid unsupported claims, harassment, and inflammatory wording.", "Must not bait abuse toward players, teams, fans, or communities.", "Must align with the script, title, hook, and source evidence."],
+        "approval_state": "not_approved"
+      },
+      {
+        "cta_id": "cta_06",
+        "cta_type": "legacy",
+        "cta_text": "Does this change how you see Neymar's legacy?",
+        "source_topic": "Neymar 2014 World Cup injury and comeback pressure",
+        "content_type": "short",
+        "focal_subject": "Neymar",
+        "intent": "Prompt reflective legacy discussion.",
+        "comment_trigger": "viewers connect the moment to long-term reputation",
+        "platform_fit": ["youtube_shorts", "youtube_long_form"],
+        "risk_notes": ["Requires editorial review before use.", "Must avoid unsupported claims, harassment, and inflammatory wording.", "Must not bait abuse toward players, teams, fans, or communities.", "Must align with the script, title, hook, and source evidence."],
+        "approval_state": "not_approved"
+      },
+      {
+        "cta_id": "cta_07",
+        "cta_type": "versus",
+        "cta_text": "Who carries more pressure than Neymar right now?",
+        "source_topic": "Neymar 2014 World Cup injury and comeback pressure",
+        "content_type": "short",
+        "focal_subject": "Neymar",
+        "intent": "Open a versus comparison without declaring a false winner.",
+        "comment_trigger": "viewers name rival players, teams, or eras",
+        "platform_fit": ["youtube_shorts", "youtube_long_form"],
+        "risk_notes": ["Requires editorial review before use.", "Must avoid unsupported claims, harassment, and inflammatory wording.", "Must not bait abuse toward players, teams, fans, or communities.", "Must align with the script, title, hook, and source evidence."],
+        "approval_state": "not_approved"
+      }
+    ],
+    "status": "generated_pending_review",
+    "planned_epic": "P25"
+  }
+}
