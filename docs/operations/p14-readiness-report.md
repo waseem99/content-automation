@@ -3,7 +3,7 @@
 P14 documents production compliance and audit readiness for epic #196.
 
 Final closeout issue: #202.
-Final closeout PR: PR_NUMBER_PENDING.
+Final closeout PR: #208.
 
 ## Completed P14 steps
 
@@ -14,7 +14,7 @@ Final closeout PR: PR_NUMBER_PENDING.
 | P14-03 Access certification | #199 | #205 | Complete | `docs/operations/p14-step-03.md`, `tests/integration/test_p14_step_03.py` |
 | P14-04 Control testing | #200 | #206 | Complete | `docs/operations/p14-step-04.md`, `tests/integration/test_p14_step_04.py` |
 | P14-05 Audit package preparation | #201 | #207 | Complete | `docs/operations/p14-step-05.md`, `tests/integration/test_p14_step_05.py` |
-| P14-06 Compliance and audit readiness closeout | #202 | PR_NUMBER_PENDING | Pending final PR merge | `docs/operations/p14-readiness-report.md`, `docs/operations/p14-closeout-checklist.md`, `tests/integration/test_p14_step_06.py` |
+| P14-06 Compliance and audit readiness closeout | #202 | #208 | Pending final PR merge | `docs/operations/p14-readiness-report.md`, `docs/operations/p14-closeout-checklist.md`, `tests/integration/test_p14_step_06.py` |
 
 ## Readiness summary
 
