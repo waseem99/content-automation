@@ -15,7 +15,7 @@ P7 completed runtime container packaging, health and readiness checks, observabi
 | #108 | Observability instrumentation | PR #114 |
 | #109 | Static UI API wiring contract | PR #115 |
 | #110 | Operator runbook updates | PR #116 |
-| #111 | P7 readiness closeout | This closeout PR |
+| #111 | P7 readiness closeout | PR #117 |
 
 ## Runtime package
 
@@ -130,7 +130,7 @@ P7 test files:
 - #109 / PR #115: Acceptance `28920354297`, Closeout `28920354344`, Ops `28920354363`.
 - #110 / PR #116: Acceptance `28920514538`, Closeout `28920514618`, Ops `28920514540`.
 
-This closeout PR records final CI evidence after validation.
+PR #117 records final CI evidence after validation.
 
 ## Readiness checklist
 
