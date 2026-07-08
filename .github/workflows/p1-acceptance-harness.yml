@@ -140,6 +140,7 @@ jobs:
             tests/integration/test_p14_step_*.py \
             tests/integration/test_p15_step_*.py \
             tests/integration/test_p16_step_*.py \
+            tests/integration/test_p17_step_*.py \
             tests/integration/test_asset_registry.py \
             tests/integration/test_rights_gate.py \
             tests/integration/test_rights_gate_revalidation.py \
