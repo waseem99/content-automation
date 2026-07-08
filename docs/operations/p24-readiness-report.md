@@ -2,7 +2,7 @@
 
 Parent epic: #326
 Final closeout issue: #337
-Final closeout PR: PR_NUMBER_PENDING
+Final closeout PR: #380
 
 ## Purpose
 
@@ -101,7 +101,7 @@ docs/operations/p24-closeout-checklist.md
 tests/integration/test_p24_step_06.py
 ```
 
-The final closeout PR number must be patched from `PR_NUMBER_PENDING` to the actual PR number before merge.
+The final closeout PR number was patched from `PR_NUMBER_PENDING` to `#380` before merge.
 
 ## Guardrails preserved
 
