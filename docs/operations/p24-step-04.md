@@ -51,13 +51,13 @@ It does not:
 - does not generate thumbnails;
 - does not score retention;
 - does not score rights risk;
-- verify licenses;
-- export platform folders;
-- approve editorial status;
-- render videos;
-- upload content;
-- publish content;
-- bypass workflow gates.
+- does not verify licenses;
+- does not export platform folders;
+- does not approve editorial status;
+- does not render videos;
+- does not upload content;
+- does not publish content;
+- does not bypass workflow gates.
 
 ## Public functions
 
