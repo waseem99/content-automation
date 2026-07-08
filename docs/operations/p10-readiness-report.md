@@ -15,7 +15,7 @@ P10 completed the production exposure decision record, production deployment che
 | #147 | Controlled exposure and smoke test runbook | PR #153 |
 | #148 | Post-rollout monitoring review | PR #154 |
 | #149 | First production incident drill | PR #155 |
-| #150 | P10 rollout implementation closeout | This closeout PR |
+| #150 | P10 rollout implementation closeout | PR #156 |
 
 ## Production exposure decision record
 
@@ -132,7 +132,7 @@ P10 test files:
 - #148 / PR #154: Acceptance `28925845559`, Closeout `28925845588`, Ops `28925845569`.
 - #149 / PR #155: Acceptance `28926068902`, Closeout `28926068883`, Ops `28926068930`.
 
-This closeout PR records final CI evidence after validation.
+PR #156 records final CI evidence after validation.
 
 ## Readiness checklist
 
