@@ -2,7 +2,7 @@
 
 Parent epic: #261  
 Closeout issue: #267  
-Closeout PR: PR_NUMBER_PENDING
+Closeout PR: #273
 
 ## Checklist
 
@@ -16,7 +16,7 @@ Closeout PR: PR_NUMBER_PENDING
 - [x] P19-06 readiness report created.
 - [x] P19-06 closeout checklist created.
 - [x] P19-06 final validation test created.
-- [ ] Closeout PR number patched from PR_NUMBER_PENDING.
+- [x] Closeout PR number patched to #273.
 - [ ] P1 Acceptance Harness passed on exact patched closeout head.
 - [ ] P1 Foundation Closeout passed on exact patched closeout head.
 - [ ] P1 Ops Storage passed on exact patched closeout head.
@@ -33,7 +33,7 @@ Closeout PR: PR_NUMBER_PENDING
 | #264 | Closed | #270 | P19 data handling and retention review |
 | #265 | Closed | #271 | P19 dependency and supply-chain review |
 | #266 | Closed | #272 | P19 security incident response playbook |
-| #267 | Pending | PR_NUMBER_PENDING | P19 security closeout |
+| #267 | Pending | #273 | P19 security closeout |
 
 ## Validation expectations
 
