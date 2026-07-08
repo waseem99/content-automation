@@ -288,6 +288,7 @@ The schema must remain extensible for future long-form support by preserving:
 
 - `content_type: long_form` as a future value;
 - `youtube_long_form` inside `platform_suitability`;
+- 16:9 output metadata for future YouTube long-form renders;
 - chapter/source-list fields under future production plans;
 - thumbnail concepts under `packaging`;
 - sponsor slot markers under future generated assets;
