@@ -2,7 +2,7 @@
 
 Parent epic: #235  
 Closeout issue: #241  
-Closeout PR: PR_NUMBER_PENDING
+Closeout PR: #247
 
 ## Checklist
 
@@ -16,7 +16,7 @@ Closeout PR: PR_NUMBER_PENDING
 - [x] P17-06 readiness report created.
 - [x] P17-06 closeout checklist created.
 - [x] P17-06 final validation test created.
-- [ ] Closeout PR number patched from PR_NUMBER_PENDING.
+- [x] Closeout PR number patched to #247.
 - [ ] P1 Acceptance Harness passed on exact patched closeout head.
 - [ ] P1 Foundation Closeout passed on exact patched closeout head.
 - [ ] P1 Ops Storage passed on exact patched closeout head.
@@ -33,7 +33,7 @@ Closeout PR: PR_NUMBER_PENDING
 | #238 | Closed | #244 | P17 dry-run and rehearsal process |
 | #239 | Closed | #245 | P17 Go / No-Go approval record |
 | #240 | Closed | #246 | P17 post-release observation plan |
-| #241 | Pending | PR_NUMBER_PENDING | P17 release readiness closeout |
+| #241 | Pending | #247 | P17 release readiness closeout |
 
 ## Validation expectations
 
