@@ -17,6 +17,7 @@ Closeout PR: #312
 - [x] P22-06 closeout checklist created.
 - [x] P22-06 final validation test created.
 - [x] Closeout PR number patched to #312.
+- [x] Closeout checklist refreshed after PR number patch.
 - [ ] P1 Acceptance Harness passed on exact patched closeout head.
 - [ ] P1 Foundation Closeout passed on exact patched closeout head.
 - [ ] P1 Ops Storage passed on exact patched closeout head.
