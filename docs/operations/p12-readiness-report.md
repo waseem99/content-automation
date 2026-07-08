@@ -15,7 +15,7 @@ P12 completed release calendar governance, quarterly access review, operational 
 | #173 | Operational KPI reporting | PR #179 |
 | #174 | Audit-ready production controls | PR #180 |
 | #175 | Governance exception handling | PR #181 |
-| #176 | P12 lifecycle governance closeout | This closeout PR |
+| #176 | P12 lifecycle governance closeout | PR #182 |
 
 ## Release calendar governance
 
@@ -133,14 +133,14 @@ P12 test files:
 - #174 / PR #180: Acceptance `28929935493`, Closeout `28929935565`, Ops `28929935521`.
 - #175 / PR #181: Acceptance `28930217770`, Closeout `28930217780`, Ops `28930217807`.
 
-This closeout PR records final CI evidence after validation.
+PR #182 records final CI evidence after validation.
 
 ## Readiness checklist
 
 - [x] Release calendar governance exists.
 - [x] Quarterly access review exists.
 - [x] Operational KPI reporting exists.
-- [x] Audit-ready production controls exist.
+- [x] Audit-ready production controls exists.
 - [x] Governance exception handling exists.
 - [x] P12 validation tests exist.
 - [x] Guardrails remain preserved.
