@@ -2,7 +2,7 @@
 
 Parent epic: #287  
 Closeout issue: #293  
-Closeout PR: PR_NUMBER_PENDING
+Closeout PR: #299
 
 ## Status
 
@@ -28,7 +28,7 @@ P21 proved response-readiness planning across:
 | #290 | #296 | Rollback and restore evidence review | b72c7d4769d4ce614471b070310c778e6d52abfe |
 | #291 | #297 | Operator failure-mode checklist | 892e84568af9d23f8371ac0233c49053955cf40e |
 | #292 | #298 | Escalation drill and contact routing | 110b21be93778a20af32df36ac765d8536036cb7 |
-| #293 | PR_NUMBER_PENDING | P21 final drill readiness closeout | Pending final merge |
+| #293 | #299 | P21 final drill readiness closeout | Pending final merge |
 
 ## Key deliverables
 
