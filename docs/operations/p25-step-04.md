@@ -48,17 +48,17 @@ It does:
 
 It does not:
 
-- ingest YouTube Analytics;
-- run A/B tests;
-- call AI scoring services;
-- predict real retention curves;
-- approve publishing;
-- approve monetization;
-- approve rights;
-- approve editorial status;
-- upload to YouTube;
-- publish content;
-- bypass workflow gates.
+- does not ingest YouTube Analytics;
+- does not run A/B tests;
+- does not call AI scoring services;
+- does not predict real retention curves;
+- does not approve publishing;
+- does not approve monetization;
+- does not approve rights;
+- does not approve editorial status;
+- does not upload to YouTube;
+- does not publish content;
+- does not bypass workflow gates.
 
 ## retention_score.json schema
 
