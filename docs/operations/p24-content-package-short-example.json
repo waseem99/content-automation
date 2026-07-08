@@ -1,0 +1,259 @@
+{
+  "schema_version": "p24.content_package.v1",
+  "package_id": "pkg-short-neymar-2014-example",
+  "run_identity": {
+    "run_id": "neymar_2014_short_001",
+    "run_folder": "data/output/neymar_2014_20260708_120000/production",
+    "campaign_id": null,
+    "concept_id": null,
+    "source_command": "produce",
+    "created_at": "2026-07-08T12:00:00Z",
+    "package_owner_role": "content operator",
+    "reviewer_role": "editorial reviewer"
+  },
+  "content_type": "short",
+  "content_status": "draft_contract_example",
+  "source_assets": [
+    {
+      "asset_id": "single_run_manifest",
+      "asset_type": "single_run_manifest",
+      "path": "data/output/neymar_2014_20260708_120000/manifest.json",
+      "role": "clip and topic source evidence",
+      "review_state": "review_required",
+      "rights_state": "unreviewed",
+      "notes": "Contains clip timestamps, scores, labels, and source text for the Short run."
+    },
+    {
+      "asset_id": "clip_001",
+      "asset_type": "extracted_clip",
+      "path": "data/output/neymar_2014_20260708_120000/clip_001.mp4",
+      "role": "candidate football moment",
+      "review_state": "review_required",
+      "rights_state": "unreviewed_high_risk",
+      "notes": "Broadcast footage must not be treated as rights-cleared by default."
+    }
+  ],
+  "generated_assets": {
+    "production_plans": [
+      {
+        "path": "data/output/neymar_2014_20260708_120000/production/production_plan.json",
+        "type": "short_production_plan",
+        "review_state": "review_required"
+      }
+    ],
+    "visuals": [
+      {
+        "path": "data/output/neymar_2014_20260708_120000/production/image_intro.png",
+        "type": "intro_image",
+        "review_state": "review_required"
+      },
+      {
+        "path": "data/output/neymar_2014_20260708_120000/production/image_01.png",
+        "type": "web_image",
+        "review_state": "review_required"
+      }
+    ],
+    "audio": [
+      {
+        "path": "data/output/neymar_2014_20260708_120000/production/narration_intro.mp3",
+        "type": "voiceover",
+        "review_state": "review_required"
+      }
+    ],
+    "captions": [
+      {
+        "path": "data/output/neymar_2014_20260708_120000/production/subtitles.srt",
+        "type": "karaoke_subtitles",
+        "review_state": "review_required"
+      }
+    ],
+    "rendered_outputs": [
+      {
+        "path": "data/output/neymar_2014_20260708_120000/production/preview_video.mp4",
+        "render_mode": "preview",
+        "publication_eligible": false,
+        "review_state": "review_only",
+        "notes": "Preview render is not for publication."
+      }
+    ],
+    "source_evidence": [
+      {
+        "path": "data/output/neymar_2014_20260708_120000/production/image_sources.json",
+        "type": "image_source_evidence",
+        "review_state": "review_required"
+      }
+    ],
+    "checkpoints": []
+  },
+  "platform_suitability": {
+    "youtube_shorts": {
+      "status": "usable_now_review_only",
+      "usable_current_assets": ["preview_video.mp4", "production_plan.json", "subtitles.srt", "image_sources.json"],
+      "missing_assets": ["title_options", "first_frame_options", "upload_description", "hashtags", "pinned_comment", "retention_score", "monetization_risk_report", "platform_export_folder", "editorial_approval"],
+      "review_requirements": ["hook review", "rights review", "music review", "editorial approval"],
+      "publish_state": "not_publish_ready"
+    },
+    "youtube_long_form": {
+      "status": "not_supported_today",
+      "usable_current_assets": [],
+      "missing_assets": ["16_9_render", "long_form_concept", "chapters", "thumbnail_concepts"],
+      "review_requirements": ["future P28 long-form planning required"],
+      "publish_state": "not_publish_ready"
+    },
+    "tiktok": {
+      "status": "planned_p27",
+      "usable_current_assets": ["preview_video.mp4"],
+      "missing_assets": ["tiktok_caption", "hashtags", "music_risk_note", "platform_export_folder"],
+      "review_requirements": ["platform-specific music review", "caption review"],
+      "publish_state": "not_publish_ready"
+    },
+    "instagram_reels": {
+      "status": "planned_p27",
+      "usable_current_assets": ["preview_video.mp4"],
+      "missing_assets": ["reels_caption", "cover_frame_note", "hashtags", "platform_export_folder"],
+      "review_requirements": ["cover review", "rights review"],
+      "publish_state": "not_publish_ready"
+    },
+    "facebook_reels": {
+      "status": "planned_p27",
+      "usable_current_assets": ["preview_video.mp4"],
+      "missing_assets": ["facebook_caption", "monetization_note", "music_risk_note", "platform_export_folder"],
+      "review_requirements": ["reused-content review", "rights review"],
+      "publish_state": "not_publish_ready"
+    },
+    "x_twitter": {
+      "status": "planned_p27",
+      "usable_current_assets": ["preview_video.mp4", "production_plan.json"],
+      "missing_assets": ["post_copy", "thread_copy", "debate_prompt", "rights_note", "platform_export_folder"],
+      "review_requirements": ["factual review", "debate framing review"],
+      "publish_state": "not_publish_ready"
+    }
+  },
+  "missing_assets": [
+    "title_options",
+    "first_frame_options",
+    "thumbnail_concepts",
+    "upload_description",
+    "hashtags",
+    "pinned_comment",
+    "retention_score",
+    "hook_score",
+    "cta_comment_trigger_options",
+    "monetization_risk_report",
+    "rights_clearance_status",
+    "originality_assessment",
+    "source_attribution_checklist",
+    "music_license_note",
+    "platform_export_folders",
+    "human_editorial_review_status",
+    "publish_readiness_manifest"
+  ],
+  "packaging": {
+    "title_options": [],
+    "first_frame_options": [],
+    "thumbnail_concepts": [],
+    "hook_notes": [],
+    "cta_comment_trigger_options": [],
+    "status": "pending_p25",
+    "planned_epic": "P25"
+  },
+  "retention": {
+    "retention_score_path": null,
+    "hook_score": null,
+    "first_three_seconds_score": null,
+    "midpoint_reset_score": null,
+    "cta_strength_score": null,
+    "dead_air_risk": "pending",
+    "genericness_risk": "pending",
+    "recommended_fixes": [],
+    "status": "pending_p25",
+    "planned_epic": "P25"
+  },
+  "rights_and_monetization": {
+    "monetization_risk_report_path": null,
+    "publish_allowed": false,
+    "review_required": true,
+    "rights_clearance_status": "pending_p26",
+    "source_attribution_status": "pending_p26",
+    "music_license_status": "pending_p26",
+    "originality_status": "pending_p26",
+    "blocking_reasons": ["rights and monetization review not completed"],
+    "required_actions": ["complete P26 risk review before any publish-ready decision"],
+    "status": "pending_p26",
+    "planned_epic": "P26"
+  },
+  "exports": {
+    "youtube_shorts": {
+      "export_path": null,
+      "required_files": ["video.mp4", "title.txt", "description.txt", "hashtags.txt", "pinned_comment.txt", "risk_note.txt"],
+      "status": "pending_p27",
+      "notes": "YouTube Shorts export pack not generated yet."
+    },
+    "youtube_long_form": {
+      "export_path": null,
+      "required_files": ["video.mp4", "title.txt", "description.txt", "thumbnail_notes.txt", "chapters.txt", "risk_note.txt"],
+      "status": "planned_p28_then_p27",
+      "notes": "True long-form package requires P28 planning first."
+    },
+    "tiktok": {
+      "export_path": null,
+      "required_files": ["video.mp4", "caption.txt", "hashtags.txt", "music_risk_note.txt"],
+      "status": "pending_p27",
+      "notes": "TikTok export pack not generated yet."
+    },
+    "instagram_reels": {
+      "export_path": null,
+      "required_files": ["video.mp4", "caption.txt", "hashtags.txt", "cover_notes.txt", "music_risk_note.txt"],
+      "status": "pending_p27",
+      "notes": "Instagram Reels export pack not generated yet."
+    },
+    "facebook_reels": {
+      "export_path": null,
+      "required_files": ["video.mp4", "caption.txt", "hashtags.txt", "monetization_note.txt", "music_risk_note.txt"],
+      "status": "pending_p27",
+      "notes": "Facebook Reels export pack not generated yet."
+    },
+    "x_twitter": {
+      "export_path": null,
+      "required_files": ["post.txt", "thread.txt", "hashtags.txt", "debate_prompt.txt", "risk_note.txt"],
+      "status": "pending_p27",
+      "notes": "X/Twitter export pack not generated yet."
+    },
+    "status": "pending_p27",
+    "planned_epic": "P27"
+  },
+  "editorial_review": {
+    "status": "pending_p29",
+    "approval_state": "not_approved",
+    "review_owner_role": "editorial reviewer",
+    "rights_reviewer_role": "rights reviewer",
+    "approved_at": null,
+    "blockers": ["editorial review not completed", "rights review not completed"],
+    "required_actions": ["complete P29 publish-governance review before publish-ready export"],
+    "planned_epic": "P29"
+  },
+  "next_actions": [
+    {
+      "action_id": "p25_packaging",
+      "owner_role": "content strategist",
+      "description": "Generate title options, first-frame options, thumbnail concepts, and CTA options.",
+      "blocking": true,
+      "target_epic": "P25"
+    },
+    {
+      "action_id": "p26_risk_review",
+      "owner_role": "rights reviewer",
+      "description": "Review rights, monetization, attribution, music, and originality risks.",
+      "blocking": true,
+      "target_epic": "P26"
+    }
+  ],
+  "guardrails": [
+    "No automatic publishing.",
+    "No automatic upload.",
+    "No automatic rights clearance.",
+    "No automatic monetization approval.",
+    "No preview render publication.",
+    "No workflow gate bypass."
+  ]
+}
