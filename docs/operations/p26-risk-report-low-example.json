@@ -1,0 +1,110 @@
+{
+  "schema_version": "p26.monetization_risk_report.v1",
+  "report_id": "risk-low-example",
+  "package_id": "pkg-low-risk-example",
+  "content_type": "short",
+  "overall_risk_level": "low",
+  "publish_allowed": false,
+  "review_required": true,
+  "risk_categories": {
+    "reused_content_risk": {
+      "risk_level": "low",
+      "review_required": true,
+      "publish_blocking": false,
+      "reason": "Original narration and custom packaging are present, but editorial review is still required.",
+      "required_actions": ["Confirm narration and visual framing are meaningfully original."]
+    },
+    "copyright_risk": {
+      "risk_level": "low",
+      "review_required": true,
+      "publish_blocking": false,
+      "reason": "No broadcast clip is included in this example.",
+      "required_actions": ["Confirm all referenced assets remain non-broadcast or properly licensed."]
+    },
+    "image_license_risk": {
+      "risk_level": "low",
+      "review_required": true,
+      "publish_blocking": false,
+      "reason": "Image sources are reviewed in summary form.",
+      "required_actions": ["Confirm attribution requirements before export."]
+    },
+    "music_license_risk": {
+      "risk_level": "low",
+      "review_required": true,
+      "publish_blocking": false,
+      "reason": "No background music is included in this example.",
+      "required_actions": ["Confirm no music file is added before export without review."]
+    },
+    "ai_template_risk": {
+      "risk_level": "low",
+      "review_required": true,
+      "publish_blocking": false,
+      "reason": "No AI image is included in this example.",
+      "required_actions": ["Confirm no AI image is added before export without review."]
+    },
+    "factual_risk": {
+      "risk_level": "low",
+      "review_required": true,
+      "publish_blocking": false,
+      "reason": "No high-risk factual stat is used in this example.",
+      "required_actions": ["Confirm title, script, and captions remain factually aligned."]
+    },
+    "originality_risk": {
+      "risk_level": "low",
+      "review_required": true,
+      "publish_blocking": false,
+      "reason": "The package includes original narration and custom CTA framing.",
+      "required_actions": ["Confirm originality before publish-ready export."]
+    },
+    "platform_reuse_risk": {
+      "risk_level": "low",
+      "review_required": true,
+      "publish_blocking": false,
+      "reason": "No reposted watermark or platform-specific artifact is included.",
+      "required_actions": ["Confirm final export is platform-clean."]
+    },
+    "brand_safety_risk": {
+      "risk_level": "low",
+      "review_required": true,
+      "publish_blocking": false,
+      "reason": "No inflammatory or abusive wording is present.",
+      "required_actions": ["Confirm CTA and title remain safe."]
+    }
+  },
+  "asset_risks": [
+    {
+      "asset_id": "voiceover_001",
+      "asset_role": "voiceover",
+      "asset_path": "production/narration_intro.mp3",
+      "default_risk_level": "low",
+      "current_risk_level": "low",
+      "review_required": true,
+      "publish_blocking": false,
+      "blocking_reasons": [],
+      "required_actions": ["Confirm voice provider license summary."],
+      "evidence_allowed": ["provider name summary", "license status summary"],
+      "evidence_blocked": ["private account data", "secret values"],
+      "notes": "Low risk does not equal publish approval."
+    }
+  ],
+  "blocking_reasons": [],
+  "required_actions": ["Complete editorial review before any publish-ready state."],
+  "evidence_allowed": ["asset role", "asset path", "source URL", "license name or summary", "review status"],
+  "evidence_blocked": ["secret values", "private runtime values", "private account screenshots", "raw legal correspondence"],
+  "content_package_updates": {
+    "monetization_risk_report_path": "production/monetization_risk_report.json",
+    "publish_allowed": false,
+    "review_required": true,
+    "rights_clearance_status": "review_required",
+    "source_attribution_status": "review_required",
+    "music_license_status": "review_required",
+    "originality_status": "review_required",
+    "blocking_reasons": [],
+    "required_actions": ["Complete editorial review before publish-ready export."],
+    "status": "generated_pending_review",
+    "planned_epic": "P26"
+  },
+  "review_state": "generated_pending_review",
+  "reviewer_role": "rights reviewer",
+  "notes": ["Low risk is not publish approval.", "No automatic monetization approval.", "No legal clearance is implied."]
+}
