@@ -1,0 +1,30 @@
+{
+  "schema_version": "p25.retention_score.v1",
+  "package_id": "pkg-retention-example",
+  "content_type": "short",
+  "source_topic": "Neymar 2014 World Cup injury and comeback pressure",
+  "hook_text": "What changed Neymar's World Cup forever?",
+  "cta_text": "Was Neymar robbed of the legacy people expected?",
+  "hook_score": 10,
+  "first_1s_thumb_stop_score": 10,
+  "first_3s_clarity_score": 10,
+  "first_8s_retention_lock_score": 10,
+  "curiosity_gap_score": 7,
+  "visual_pacing_score": 7,
+  "midpoint_reset_score": 8,
+  "cta_strength_score": 8,
+  "average_core_score": 8.75,
+  "dead_air_risk": "low",
+  "genericness_risk": "low",
+  "recommended_fixes": [
+    "Review for factual support, rights safety, and editorial alignment before use."
+  ],
+  "status": "generated_pending_review",
+  "approval_state": "not_approved",
+  "planned_epic": "P25",
+  "notes": [
+    "Deterministic placeholder report only.",
+    "Not based on YouTube Analytics, A/B testing, or live viewer data.",
+    "Does not approve publishing, monetization, rights, or editorial status."
+  ]
+}
