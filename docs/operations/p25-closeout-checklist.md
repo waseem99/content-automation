@@ -2,7 +2,7 @@
 
 Parent epic: #327
 Final closeout issue: #343
-Final closeout PR: PR_NUMBER_PENDING
+Final closeout PR: #386
 
 ## Closeout scope
 
@@ -45,7 +45,7 @@ It confirms that P25 added a hook/retention rubric, title option helper, first-f
 ## Final PR placeholder status
 
 - [x] Final closeout files initially use `PR_NUMBER_PENDING`.
-- [ ] Final closeout files are patched with the actual PR number before merge: PR_NUMBER_PENDING.
+- [x] Final closeout files are patched with the actual PR number before merge: #386.
 - [ ] Final closeout PR passes exact-head CI.
 - [ ] Final closeout PR is merged only after required checks pass.
 - [ ] #343 is confirmed closed after merge.
