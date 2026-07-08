@@ -19,7 +19,10 @@ def test_p25_closeout_files_reference_parent_issue_and_final_pr() -> None:
     for content in [report, checklist]:
         assert "Parent epic: #327" in content
         assert "Final closeout issue: #343" in content
-        assert "Final closeout PR: PR_NUMBER_PENDING" in content
+        assert "Final closeout PR: #386" in content
+
+    assert "The final closeout PR number was patched from `PR_NUMBER_PENDING` to `#386` before merge." in report
+    assert "Final closeout files are patched with the actual PR number before merge: #386." in checklist
 
 
 def test_p25_closeout_report_records_child_evidence() -> None:
