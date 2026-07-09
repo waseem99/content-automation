@@ -1,0 +1,44 @@
+{
+  "schema_version": "p35.closeout_checklist.v1",
+  "parent_epic": 451,
+  "closeout_issue": 457,
+  "child_tasks": [
+    {"issue": 452, "status": "complete_after_merge", "artifacts": ["src/p35_integrity.py", "docs/operations/p35-step-01.md", "tests/integration/test_p35_batch_01_06.py"]},
+    {"issue": 453, "status": "complete_after_merge", "artifacts": ["src/p35_integrity.py", "docs/operations/p35-step-02.md", "docs/operations/p35-integrity-example.json"]},
+    {"issue": 454, "status": "complete_after_merge", "artifacts": ["src/p35_integrity.py", "docs/operations/p35-step-03.md", "tests/integration/test_p35_batch_01_06.py"]},
+    {"issue": 455, "status": "complete_after_merge", "artifacts": ["src/p35_integrity.py", "docs/operations/p35-step-04.md", "tests/integration/test_p35_batch_01_06.py"]},
+    {"issue": 456, "status": "complete_after_merge", "artifacts": ["src/p35_integrity.py", "docs/operations/p35-step-05.md", "docs/operations/p35-integrity-example.json"]},
+    {"issue": 457, "status": "complete_after_merge", "artifacts": ["docs/operations/p35-step-06.md", "docs/operations/p35-closeout-report.md", "docs/operations/p35-closeout-checklist.json", "tests/integration/test_p35_batch_01_06.py"]}
+  ],
+  "coverage": {
+    "checksum_generation": true,
+    "artifact_inventory": true,
+    "retention_policy_metadata": true,
+    "integrity_verification": true,
+    "drift_warning_report": true,
+    "closeout_report": true
+  },
+  "no_deletion": true,
+  "no_moving": true,
+  "no_cloud_sync": true,
+  "no_external_upload": true,
+  "no_network_call": true,
+  "no_scheduler": true,
+  "no_credential_storage": true,
+  "no_platform_edit": true,
+  "no_auto_publish_path": true,
+  "guardrails": [
+    "No deletion.",
+    "No moving or archiving files.",
+    "No cloud sync.",
+    "No external upload.",
+    "No network calls.",
+    "No schedulers or background jobs.",
+    "No credential storage.",
+    "No platform edits.",
+    "No auto-publish path.",
+    "No merge without exact-head CI."
+  ],
+  "publish_allowed": false,
+  "review_required": true
+}
