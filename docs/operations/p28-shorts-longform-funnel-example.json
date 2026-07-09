@@ -1,0 +1,154 @@
+{
+  "schema_version": "p28.shorts_longform_funnel.v1",
+  "parent_epic": 330,
+  "content_type": "shorts_longform_funnel_contract",
+  "funnel_types": [
+    {
+      "type": "short_teaser_to_long_form",
+      "description": "A Short opens a strong curiosity gap and routes viewers to the related long-form episode."
+    },
+    {
+      "type": "long_form_to_shorts_cutdowns",
+      "description": "A reviewed long-form video produces rights-safe Shorts candidates after editorial review."
+    },
+    {
+      "type": "explainer_to_debate_short",
+      "description": "A factual explainer becomes a focused debate Short without losing source caveats."
+    },
+    {
+      "type": "series_episode_to_next_episode_tease",
+      "description": "A series episode end-card becomes a next-episode tease and comment prompt."
+    }
+  ],
+  "cutdown_map_fields": [
+    "source_video",
+    "hook_clip",
+    "cutdown_angle",
+    "target_platform",
+    "cta",
+    "linked_long_form_episode"
+  ],
+  "cutdown_map": [
+    {
+      "map_id": "cutdown-player-legacy-teaser",
+      "format_example": "football_player_legacy",
+      "funnel_type": "short_teaser_to_long_form",
+      "source_video": "outputs/longform/pkg-p28-longform-neymar-2014/final_video_placeholder.txt",
+      "hook_clip": "Opening pressure question: was Neymar carrying Brazil's entire 2014 dream?",
+      "cutdown_angle": "Use a sharp legacy-pressure question to push viewers to the full long-form breakdown.",
+      "target_platform": "youtube_shorts",
+      "cta": "Watch the full pressure breakdown on the channel.",
+      "linked_long_form_episode": "episode-neymar-2014-pressure",
+      "related_episode_fields": {
+        "episode_id": "episode-neymar-2014-pressure",
+        "source_chapter": "cold_open",
+        "content_package_path": "content_package.json",
+        "longform_plan_path": "outputs/longform/pkg-p28-longform-neymar-2014/longform_plan.json"
+      },
+      "series": "Football Pressure Index",
+      "review_status": "needs_review_before_export",
+      "publish_allowed": false,
+      "review_required": true
+    },
+    {
+      "map_id": "cutdown-player-legacy-payoff",
+      "format_example": "football_player_legacy",
+      "funnel_type": "long_form_to_shorts_cutdowns",
+      "source_video": "outputs/longform/pkg-p28-longform-neymar-2014/final_video_placeholder.txt",
+      "hook_clip": "Legacy payoff section explaining why the injury changed how the tournament is remembered.",
+      "cutdown_angle": "Turn the long-form payoff into a standalone Shorts debate about legacy and pressure.",
+      "target_platform": "instagram_reels",
+      "cta": "Comment if this changed Neymar's legacy or only Brazil's story.",
+      "linked_long_form_episode": "episode-neymar-2014-pressure",
+      "related_episode_fields": {
+        "episode_id": "episode-neymar-2014-pressure",
+        "source_chapter": "turning_point",
+        "content_package_path": "content_package.json",
+        "longform_plan_path": "outputs/longform/pkg-p28-longform-neymar-2014/longform_plan.json"
+      },
+      "series": "Football Pressure Index",
+      "review_status": "needs_review_before_export",
+      "publish_allowed": false,
+      "review_required": true
+    },
+    {
+      "map_id": "cutdown-world-cup-hype-teaser",
+      "format_example": "world_cup_hype",
+      "funnel_type": "explainer_to_debate_short",
+      "source_video": "outputs/longform/pkg-p28-world-cup-what-if-2010/final_video_placeholder.txt",
+      "hook_clip": "What if Ghana scored the 2010 World Cup penalty?",
+      "cutdown_angle": "Frame a speculative World Cup question while clearly pointing viewers to the sourced explainer.",
+      "target_platform": "tiktok",
+      "cta": "Watch the full what-if breakdown before choosing a side.",
+      "linked_long_form_episode": "episode-ghana-2010-what-if",
+      "related_episode_fields": {
+        "episode_id": "episode-ghana-2010-what-if",
+        "source_chapter": "turning_point",
+        "content_package_path": "content_package.json",
+        "longform_plan_path": "outputs/longform/pkg-p28-longform-neymar-2014/longform_plan.json"
+      },
+      "series": "World Cup What Ifs",
+      "review_status": "needs_review_before_export",
+      "publish_allowed": false,
+      "review_required": true
+    },
+    {
+      "map_id": "cutdown-match-moment-next-episode",
+      "format_example": "match_moment_format",
+      "funnel_type": "series_episode_to_next_episode_tease",
+      "source_video": "outputs/longform/pkg-p28-moment-that-changed/final_video_placeholder.txt",
+      "hook_clip": "One match moment changed everything, but the next episode tests an even bigger turning point.",
+      "cutdown_angle": "Use the end-card tease to move viewers from one series episode into the next planned story.",
+      "target_platform": "x_twitter",
+      "cta": "Reply with the next match moment we should break down.",
+      "linked_long_form_episode": "episode-moment-that-changed-next",
+      "related_episode_fields": {
+        "episode_id": "episode-moment-that-changed-next",
+        "source_chapter": "turning_point",
+        "content_package_path": "content_package.json",
+        "longform_plan_path": "outputs/longform/pkg-p28-longform-neymar-2014/longform_plan.json"
+      },
+      "series": "The Moment That Changed",
+      "review_status": "needs_review_before_export",
+      "publish_allowed": false,
+      "review_required": true
+    }
+  ],
+  "platform_connections": {
+    "p27_export_pack_after_review": true,
+    "youtube_long_form_packaging_after_review": true,
+    "target_platforms": [
+      "youtube_shorts",
+      "tiktok",
+      "instagram_reels",
+      "facebook_reels",
+      "x_twitter",
+      "youtube_long_form"
+    ],
+    "automatic_upload_out_of_scope": true,
+    "automatic_rendering_out_of_scope": true,
+    "analytics_based_selection_out_of_scope": true
+  },
+  "planning_connections": {
+    "topic_calendar_path": "docs/operations/p28-topic-calendar-example.json",
+    "series_metadata_path": "docs/operations/p28-series-metadata-example.json",
+    "produce_longform_contract_path": "docs/operations/p28-produce-longform-output-contract-example.json",
+    "content_package_path": "content_package.json"
+  },
+  "recommendation_states": [
+    "produce_now",
+    "hold",
+    "needs_research",
+    "reject_high_risk"
+  ],
+  "risk_fields": {
+    "rights_review_required": true,
+    "factual_review_required": true,
+    "source_attribution_required": true,
+    "editorial_review_required": true,
+    "publish_allowed": false,
+    "review_required": true
+  },
+  "publish_allowed": false,
+  "review_required": true
+}
