@@ -1,0 +1,31 @@
+{
+  "schema_version": "p29.human_review_checklist.v1",
+  "parent_epic": 331,
+  "issue": 363,
+  "content_type": "human_review_checklist",
+  "states": ["pass", "fail", "needs_revision"],
+  "sections": [
+    {"section": "script_accuracy", "states": ["pass", "fail", "needs_revision"], "operator_prompt": "Review script accuracy and mark pass, fail, or needs_revision.", "required_before_approval": true},
+    {"section": "hook_strength", "states": ["pass", "fail", "needs_revision"], "operator_prompt": "Review hook strength and mark pass, fail, or needs_revision.", "required_before_approval": true},
+    {"section": "title_thumbnail_alignment", "states": ["pass", "fail", "needs_revision"], "operator_prompt": "Review title thumbnail alignment and mark pass, fail, or needs_revision.", "required_before_approval": true},
+    {"section": "asset_rights", "states": ["pass", "fail", "needs_revision"], "operator_prompt": "Review asset rights and mark pass, fail, or needs_revision.", "required_before_approval": true},
+    {"section": "image_attribution", "states": ["pass", "fail", "needs_revision"], "operator_prompt": "Review image attribution and mark pass, fail, or needs_revision.", "required_before_approval": true},
+    {"section": "music_license", "states": ["pass", "fail", "needs_revision"], "operator_prompt": "Review music license and mark pass, fail, or needs_revision.", "required_before_approval": true},
+    {"section": "captions", "states": ["pass", "fail", "needs_revision"], "operator_prompt": "Review captions and mark pass, fail, or needs_revision.", "required_before_approval": true},
+    {"section": "factual_sources", "states": ["pass", "fail", "needs_revision"], "operator_prompt": "Review factual sources and mark pass, fail, or needs_revision.", "required_before_approval": true},
+    {"section": "originality", "states": ["pass", "fail", "needs_revision"], "operator_prompt": "Review originality and mark pass, fail, or needs_revision.", "required_before_approval": true},
+    {"section": "platform_fit", "states": ["pass", "fail", "needs_revision"], "operator_prompt": "Review platform fit and mark pass, fail, or needs_revision.", "required_before_approval": true}
+  ],
+  "variants": {
+    "shorts": {"format": "vertical_short_form", "extra_checks": ["first_two_seconds_hook", "safe_caption_burn_in", "mobile_readability"]},
+    "explainer": {"format": "explainers_and_long_form", "extra_checks": ["chapter_logic", "source_density", "claim_context"]}
+  },
+  "operator_notes": [
+    "Use simple pass, fail, or needs_revision decisions.",
+    "Any fail blocks approval.",
+    "Any needs_revision returns the package to revisions_required.",
+    "This checklist does not provide legal clearance."
+  ],
+  "publish_allowed": false,
+  "review_required": true
+}

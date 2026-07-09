@@ -1,0 +1,49 @@
+{
+  "schema_version": "p29.closeout_checklist.v1",
+  "parent_epic": 331,
+  "closeout_issue": 367,
+  "child_tasks": [
+    {"issue": 362, "status": "complete", "artifacts": ["src/editorial_status.py", "docs/operations/p29-step-01.md", "tests/integration/test_p29_step_01.py"]},
+    {"issue": 363, "status": "complete_after_merge", "artifacts": ["src/p29_governance.py", "docs/operations/p29-step-02.md", "docs/operations/p29-human-review-checklist-example.json"]},
+    {"issue": 364, "status": "complete_after_merge", "artifacts": ["src/p29_governance.py", "docs/operations/p29-step-03.md", "docs/operations/p29-publish-readiness-manifest-example.json"]},
+    {"issue": 365, "status": "complete_after_merge", "artifacts": ["src/p29_governance.py", "docs/operations/p29-step-04.md", "docs/operations/p29-render-rules-example.json"]},
+    {"issue": 366, "status": "complete_after_merge", "artifacts": ["src/p29_governance.py", "docs/operations/p29-step-05.md", "docs/operations/p29-editorial-evidence-example.json"]},
+    {"issue": 367, "status": "complete_after_merge", "artifacts": ["docs/operations/p29-closeout-report.md", "docs/operations/p29-closeout-checklist.json", "tests/integration/test_p29_batch_02_06.py"]}
+  ],
+  "coverage": {
+    "editorial_status_model": true,
+    "human_review_checklist": true,
+    "publish_readiness_manifest": true,
+    "preview_publish_render_rules": true,
+    "editorial_evidence_trail": true,
+    "closeout_report": true
+  },
+  "no_auto_publish_path": true,
+  "no_platform_upload": true,
+  "human_review_required": true,
+  "future_work_out_of_scope": [
+    "review UI",
+    "authentication and authorization",
+    "legal clearance workflow",
+    "permanent audit database",
+    "platform upload automation",
+    "direct publishing",
+    "assembler rewrite",
+    "external account integrations"
+  ],
+  "guardrails": [
+    "No automated approval.",
+    "No legal clearance.",
+    "No direct platform publishing.",
+    "No direct platform upload.",
+    "No secrets or credential storage.",
+    "No customer data storage.",
+    "No bypass of P26 risk rules.",
+    "No bypass of P29 human/editorial approval.",
+    "No publish permission from preview renders.",
+    "No platform upload permission from export manifests.",
+    "No merge without exact-head CI."
+  ],
+  "publish_allowed": false,
+  "review_required": true
+}
