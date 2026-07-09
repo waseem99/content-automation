@@ -1,0 +1,32 @@
+{
+  "schema_version": "p26.monetization_risk_report.v1",
+  "report_id": "risk-high-example",
+  "package_id": "pkg-high-risk-example",
+  "content_type": "short",
+  "overall_risk_level": "high",
+  "publish_allowed": false,
+  "review_required": true,
+  "risk_categories": {
+    "reused_content_risk": {"risk_level": "high", "review_required": true, "publish_blocking": true, "reason": "The package relies heavily on unreviewed broadcast footage and template narration.", "required_actions": ["Add original analysis and reduce or replace reused footage."]},
+    "copyright_risk": {"risk_level": "blocked_until_review", "review_required": true, "publish_blocking": true, "reason": "Broadcast clips are unreviewed and must be blocked until review.", "required_actions": ["Confirm rights or remove/replace broadcast clips."]},
+    "image_license_risk": {"risk_level": "high", "review_required": true, "publish_blocking": true, "reason": "Image sources are missing or unverified.", "required_actions": ["Replace with reviewed/licensed visuals or complete attribution review."]},
+    "music_license_risk": {"risk_level": "high", "review_required": true, "publish_blocking": true, "reason": "Music license is unknown for target platforms.", "required_actions": ["Remove music or confirm platform-specific license coverage."]},
+    "ai_template_risk": {"risk_level": "medium", "review_required": true, "publish_blocking": true, "reason": "AI visuals may imply a real match event.", "required_actions": ["Label, replace, or review AI visuals for false-event risk."]},
+    "factual_risk": {"risk_level": "high", "review_required": true, "publish_blocking": true, "reason": "Claims and stats lack source references.", "required_actions": ["Add sources and checked dates for all claims."]},
+    "originality_risk": {"risk_level": "high", "review_required": true, "publish_blocking": true, "reason": "Originality layer is missing.", "required_actions": ["Add original commentary, analysis, data card, or editorial angle."]},
+    "platform_reuse_risk": {"risk_level": "high", "review_required": true, "publish_blocking": true, "reason": "Platform-specific export review is missing.", "required_actions": ["Block platform exports until risk review is complete."]},
+    "brand_safety_risk": {"risk_level": "medium", "review_required": true, "publish_blocking": true, "reason": "Potentially inflammatory title or CTA needs review.", "required_actions": ["Revise title/CTA before publishing."]}
+  },
+  "asset_risks": [
+    {"asset_id": "broadcast_clip_001", "asset_role": "broadcast_clip", "asset_path": "production/clip_001.mp4", "default_risk_level": "blocked_until_review", "current_risk_level": "blocked_until_review", "review_required": true, "publish_blocking": true, "blocking_reasons": ["broadcast footage is unreviewed", "rights clearance missing"], "required_actions": ["Confirm rights or remove/replace this clip before export."], "evidence_allowed": ["source summary", "rights decision summary", "review status"], "evidence_blocked": ["private license documents", "raw legal correspondence", "secret values"], "notes": "Broadcast footage is blocked until review."},
+    {"asset_id": "music_001", "asset_role": "music", "asset_path": "assets/music/background.mp3", "default_risk_level": "high", "current_risk_level": "high", "review_required": true, "publish_blocking": true, "blocking_reasons": ["music license unknown"], "required_actions": ["Remove music or confirm licenses for every target platform."], "evidence_allowed": ["license summary", "platform coverage summary"], "evidence_blocked": ["private invoices", "account screenshots", "secret values"], "notes": "Unverified music is publish-blocking."}
+  ],
+  "blocking_reasons": ["broadcast footage review pending", "music license unknown", "factual sources missing", "originality layer missing"],
+  "required_actions": ["Block publishing and platform export until required actions are complete."],
+  "evidence_allowed": ["asset role", "asset path", "source URL", "license name or summary", "review status"],
+  "evidence_blocked": ["secret values", "private runtime values", "private account screenshots", "raw legal correspondence"],
+  "content_package_updates": {"monetization_risk_report_path": "production/monetization_risk_report.json", "publish_allowed": false, "review_required": true, "rights_clearance_status": "blocked_until_review", "source_attribution_status": "blocked_until_review", "music_license_status": "blocked_until_review", "originality_status": "blocked_until_review", "blocking_reasons": ["broadcast footage review pending", "music license unknown", "factual sources missing", "originality layer missing"], "required_actions": ["Block publishing and platform export until required actions are complete."], "status": "blocked_until_review", "planned_epic": "P26"},
+  "review_state": "blocked_until_review",
+  "reviewer_role": "rights reviewer",
+  "notes": ["High risk blocks publish-readiness.", "No automatic monetization approval.", "No legal clearance is implied."]
+}
