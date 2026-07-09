@@ -1,0 +1,133 @@
+{
+  "schema_version": "p28.closeout_checklist.v1",
+  "parent_epic": 330,
+  "closeout_issue": 361,
+  "publish_allowed": false,
+  "review_required": true,
+  "p28_complete_after_issue_361_merge": true,
+  "child_tasks": [
+    {
+      "issue": 356,
+      "step": "P28-01",
+      "title": "Define long-form 16:9 concept model",
+      "status": "complete",
+      "required_artifacts": [
+        "src/long_form_concept.py",
+        "docs/operations/p28-step-01.md",
+        "docs/operations/p28-long-form-concept-example.json",
+        "tests/integration/test_p28_step_01.py"
+      ]
+    },
+    {
+      "issue": 357,
+      "step": "P28-02",
+      "title": "Design produce-longform command and output contract",
+      "status": "complete",
+      "required_artifacts": [
+        "src/long_form_command_contract.py",
+        "docs/operations/p28-step-02.md",
+        "docs/operations/p28-produce-longform-output-contract-example.json",
+        "tests/integration/test_p28_step_02.py"
+      ]
+    },
+    {
+      "issue": 358,
+      "step": "P28-03",
+      "title": "Add series and episode metadata contract",
+      "status": "complete",
+      "required_artifacts": [
+        "src/series_metadata.py",
+        "docs/operations/p28-step-03.md",
+        "docs/operations/p28-series-metadata-example.json",
+        "tests/integration/test_p28_step_03.py"
+      ]
+    },
+    {
+      "issue": 359,
+      "step": "P28-04",
+      "title": "Define topic scoring and content calendar contract",
+      "status": "complete",
+      "required_artifacts": [
+        "src/topic_calendar.py",
+        "docs/operations/p28-step-04.md",
+        "docs/operations/p28-topic-calendar-example.json",
+        "tests/integration/test_p28_step_04.py"
+      ]
+    },
+    {
+      "issue": 360,
+      "step": "P28-05",
+      "title": "Define Shorts-to-long-form funnel and cutdown map",
+      "status": "complete",
+      "required_artifacts": [
+        "src/shorts_longform_funnel.py",
+        "docs/operations/p28-step-05.md",
+        "docs/operations/p28-shorts-longform-funnel-example.json",
+        "tests/integration/test_p28_step_05.py"
+      ]
+    },
+    {
+      "issue": 361,
+      "step": "P28-06",
+      "title": "P28 long-form and topic intelligence closeout",
+      "status": "complete_after_merge",
+      "required_artifacts": [
+        "docs/operations/p28-closeout-report.md",
+        "docs/operations/p28-closeout-checklist.json",
+        "tests/integration/test_p28_step_06.py"
+      ]
+    }
+  ],
+  "contract_coverage": {
+    "long_form_concept_model": true,
+    "produce_longform_command_design": true,
+    "series_episode_metadata": true,
+    "topic_scoring_rubric": true,
+    "content_calendar_contract": true,
+    "shorts_longform_funnel": true,
+    "cutdown_map_contract": true,
+    "content_package_connections": true,
+    "p27_export_after_review_connections": true
+  },
+  "validation_summary": {
+    "long_form_validation": "src/long_form_concept.py",
+    "produce_longform_validation": "src/long_form_command_contract.py",
+    "series_metadata_validation": "src/series_metadata.py",
+    "topic_calendar_validation": "src/topic_calendar.py",
+    "funnel_validation": "src/shorts_longform_funnel.py",
+    "publish_allowed": false,
+    "review_required": true
+  },
+  "future_work_out_of_scope": [
+    "produce-longform CLI implementation",
+    "long-form script generation",
+    "long-form video assembly",
+    "16:9 rendering pipeline",
+    "thumbnail generation pipeline",
+    "Shorts cutdown rendering",
+    "analytics feedback loop",
+    "YouTube search-volume or trend data integration",
+    "YouTube upload API integration",
+    "TikTok/Meta/X upload APIs",
+    "rights and source review workflow UI",
+    "editorial approval workflow UI",
+    "platform analytics ingestion",
+    "content scheduling automation"
+  ],
+  "guardrails": [
+    "No publish approval in P28.",
+    "No long-form rendering in P28 closeout.",
+    "No Shorts cutdown rendering in P28 closeout.",
+    "No upload API integration in P28 closeout.",
+    "No live trend scraping in P28 closeout.",
+    "No YouTube search-volume API integration in P28 closeout.",
+    "No analytics-based cutdown selection in P28 closeout.",
+    "No platform credentials.",
+    "No secret values.",
+    "No rendered video asset commits.",
+    "No bypass of P26 risk gates.",
+    "No bypass of P29 editorial governance.",
+    "No workflow gate bypass.",
+    "No merge without exact-head CI."
+  ]
+}
