@@ -26,7 +26,7 @@ It does not:
 
 ## Required concept fields
 
-A valid long-form concept includes:
+A valid long-form concept uses YAML/JSON-compatible fields and includes:
 
 | Field | Purpose |
 | --- | --- |
