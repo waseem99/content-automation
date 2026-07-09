@@ -1,0 +1,139 @@
+{
+  "schema_version": "p28.long_form_concept.v1",
+  "content_type": "youtube_long_form",
+  "format": "16:9",
+  "topic": "Neymar 2014 World Cup injury and comeback pressure",
+  "subject": "Neymar",
+  "audience": "Football fans who want story-driven context, tactical clarity, and debate-worthy endings.",
+  "central_question": "What does Neymar 2014 World Cup injury and comeback pressure reveal about pressure, legacy, and how football stories are remembered?",
+  "target_duration_minutes": 7,
+  "target_duration_seconds": 420,
+  "source_requirements": {
+    "minimum_sources": 3,
+    "required_source_types": [
+      "official match or competition records",
+      "reliable match report or archive",
+      "rights-reviewed visual source or recreated editorial visual"
+    ],
+    "rights_review_required": true,
+    "factual_review_required": true,
+    "source_attribution_required": true,
+    "unavailable_footage_policy": "Use recreated editorial visuals, diagrams, or licensed stills when footage is unavailable or unapproved."
+  },
+  "visual_style": {
+    "aspect_ratio": "16:9",
+    "layout": "YouTube 16:9 with chapter cards, timeline graphics, lower-thirds, and tactical boards.",
+    "pacing": "Documentary explainer pace: fast hook, slower context, sharper conflict, clear payoff.",
+    "visual_system": "Football broadcast-inspired graphics with rights-safe recreated visuals.",
+    "b_roll_policy": "No unlicensed match footage; use licensed, rights-reviewed, or recreated visual assets only."
+  },
+  "sponsor_slot_markers": [
+    {
+      "slot": "midroll_after_context",
+      "after_section_type": "context",
+      "target_time_seconds": 160,
+      "max_duration_seconds": 30,
+      "status": "placeholder_only"
+    },
+    {
+      "slot": "pre_payoff_soft_mention",
+      "after_section_type": "turning_point",
+      "target_time_seconds": 345,
+      "max_duration_seconds": 15,
+      "status": "placeholder_only"
+    }
+  ],
+  "chapters": [
+    {
+      "section_type": "cold_open",
+      "title": "The moment that makes the viewer stop scrolling",
+      "narrative_goal": "Open with the highest-stakes emotional beat around Neymar, without resolving the story.",
+      "target_duration_seconds": 35,
+      "visual_direction": "Fast 16:9 montage, scoreboard-style text cards, crowd sound bed, and one unresolved hook line.",
+      "source_notes": "Use only rights-reviewed match imagery, licensed stills, or recreated editorial visuals.",
+      "shorts_cutdown_candidate": true
+    },
+    {
+      "section_type": "question",
+      "title": "The central question",
+      "narrative_goal": "Frame the main viewer question: what does Neymar 2014 World Cup injury and comeback pressure reveal about pressure, legacy, or football memory?",
+      "target_duration_seconds": 40,
+      "visual_direction": "Presenter question card, clean 16:9 lower-third, and timeline setup graphic.",
+      "source_notes": "Question must be answerable from verified match reports, official records, and reviewed commentary.",
+      "shorts_cutdown_candidate": false
+    },
+    {
+      "section_type": "context",
+      "title": "Why this story mattered before the turning point",
+      "narrative_goal": "Give enough background for casual viewers while keeping the football audience engaged.",
+      "target_duration_seconds": 85,
+      "visual_direction": "Timeline, player/team context cards, map or bracket graphic, and archival-style motion.",
+      "source_notes": "Minimum two reliable background sources plus one official or primary reference where possible.",
+      "shorts_cutdown_candidate": true
+    },
+    {
+      "section_type": "conflict",
+      "title": "The pressure that changed the stakes",
+      "narrative_goal": "Show the tension, criticism, tactical pressure, or public expectation surrounding Neymar.",
+      "target_duration_seconds": 105,
+      "visual_direction": "Contrast edits, quote cards from reviewed sources, tactical board moments, and crowd tension.",
+      "source_notes": "Claims about pressure, criticism, or performance must be sourced and fact-checked before narration lock.",
+      "shorts_cutdown_candidate": true
+    },
+    {
+      "section_type": "turning_point",
+      "title": "The moment the story turned",
+      "narrative_goal": "Isolate the decision, incident, match moment, injury, comeback, or performance swing that changed the narrative.",
+      "target_duration_seconds": 80,
+      "visual_direction": "Slowdown sequence, replay-inspired editorial graphics, and chapter marker transition.",
+      "source_notes": "Use timestamped match references or trusted reporting; avoid unsupported tactical or medical claims.",
+      "shorts_cutdown_candidate": true
+    },
+    {
+      "section_type": "payoff",
+      "title": "What the story means now",
+      "narrative_goal": "Resolve the central question with a clear football takeaway, not a generic motivational ending.",
+      "target_duration_seconds": 55,
+      "visual_direction": "Clean final montage, legacy card, and restrained music lift after editorial approval.",
+      "source_notes": "Final interpretation must separate verified facts from opinion and avoid overclaiming.",
+      "shorts_cutdown_candidate": false
+    },
+    {
+      "section_type": "comment_trigger",
+      "title": "The debate to continue below the video",
+      "narrative_goal": "End with a specific viewer debate prompt that can also seed Shorts, polls, and community posts.",
+      "target_duration_seconds": 20,
+      "visual_direction": "End card with one clear debate question and next-video tease area.",
+      "source_notes": "Question must not imply unverified facts or encourage harassment of players, clubs, or fans.",
+      "shorts_cutdown_candidate": true
+    }
+  ],
+  "shorts_compatibility": {
+    "compatible_with_shorts_cutdowns": true,
+    "recommended_cutdown_sections": [
+      "cold_open",
+      "context",
+      "conflict",
+      "turning_point",
+      "comment_trigger"
+    ],
+    "p27_platform_packaging_ready_after_review": true,
+    "cutdown_guardrail": "Cutdowns must preserve source, rights, monetization, and editorial review status."
+  },
+  "platform_packaging": {
+    "youtube_long_form": {
+      "title_options_required": true,
+      "description_required": true,
+      "chapters_required": true,
+      "thumbnail_brief_required": true,
+      "direct_upload_out_of_scope": true
+    },
+    "shorts_funnel": {
+      "supported": true,
+      "uses_p27_exports_after_review": true,
+      "recommended_shorts_count": 3
+    }
+  },
+  "publish_allowed": false,
+  "review_required": true
+}
