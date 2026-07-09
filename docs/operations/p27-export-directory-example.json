@@ -1,0 +1,87 @@
+{
+  "schema_version": "p27.export_directory_contract.v1",
+  "package_id": "pkg-export-directory-example",
+  "publish_allowed": false,
+  "review_required": true,
+  "root_directory": "exports/",
+  "platforms": [
+    {
+      "platform": "youtube_shorts",
+      "export_directory": "exports/youtube_shorts/",
+      "required_files": ["video.mp4", "title.txt", "description.txt", "hashtags.txt", "pinned_comment.txt", "rights_note.txt", "metadata.json", "review_status.json"],
+      "metadata_required_fields": ["schema_version", "package_id", "platform", "export_directory", "content_type", "video_asset_path", "copy_asset_paths", "rights_note_path", "review_status_path", "source_package_path", "monetization_risk_report_path", "source_attribution_path", "publish_allowed", "review_required", "blocking_reasons", "required_actions", "created_by_step", "planned_epic"],
+      "review_status_required_fields": ["platform", "package_id", "export_status", "publish_allowed", "p26_review_status", "p29_editorial_status", "rights_status", "monetization_status", "source_attribution_status", "music_license_status", "originality_status", "blocking_reasons", "required_actions", "reviewer_role", "notes"],
+      "publish_allowed": false,
+      "review_required": true,
+      "blocking_reasons": ["P26 review required", "P29 editorial approval required"],
+      "required_actions": ["Generate YouTube Shorts export pack in P27-02.", "Keep publish_allowed false until P29 approval exists."],
+      "created_by_step": "P27-01",
+      "planned_epic": "P27"
+    },
+    {
+      "platform": "youtube_longform",
+      "export_directory": "exports/youtube_longform/",
+      "required_files": ["video.mp4", "title.txt", "description.txt", "thumbnail_brief.md", "chapters.txt", "source_list.txt", "rights_note.txt", "metadata.json", "review_status.json"],
+      "metadata_required_fields": ["schema_version", "package_id", "platform", "export_directory", "content_type", "video_asset_path", "copy_asset_paths", "rights_note_path", "review_status_path", "source_package_path", "monetization_risk_report_path", "source_attribution_path", "publish_allowed", "review_required", "blocking_reasons", "required_actions", "created_by_step", "planned_epic"],
+      "review_status_required_fields": ["platform", "package_id", "export_status", "publish_allowed", "p26_review_status", "p29_editorial_status", "rights_status", "monetization_status", "source_attribution_status", "music_license_status", "originality_status", "blocking_reasons", "required_actions", "reviewer_role", "notes"],
+      "publish_allowed": false,
+      "review_required": true,
+      "blocking_reasons": ["Long-form output contract remains future work", "P29 editorial approval required"],
+      "required_actions": ["Use P28 long-form work before producing long-form exports.", "Keep publish_allowed false until P29 approval exists."],
+      "created_by_step": "P27-01",
+      "planned_epic": "P27"
+    },
+    {
+      "platform": "tiktok",
+      "export_directory": "exports/tiktok/",
+      "required_files": ["video.mp4", "caption.txt", "hashtags.txt", "music_rights_note.txt", "cover_note.txt", "metadata.json", "review_status.json"],
+      "metadata_required_fields": ["schema_version", "package_id", "platform", "export_directory", "content_type", "video_asset_path", "copy_asset_paths", "rights_note_path", "review_status_path", "source_package_path", "monetization_risk_report_path", "source_attribution_path", "publish_allowed", "review_required", "blocking_reasons", "required_actions", "created_by_step", "planned_epic"],
+      "review_status_required_fields": ["platform", "package_id", "export_status", "publish_allowed", "p26_review_status", "p29_editorial_status", "rights_status", "monetization_status", "source_attribution_status", "music_license_status", "originality_status", "blocking_reasons", "required_actions", "reviewer_role", "notes"],
+      "publish_allowed": false,
+      "review_required": true,
+      "blocking_reasons": ["Music rights note required", "P29 editorial approval required"],
+      "required_actions": ["Generate TikTok export pack in P27-03.", "Confirm platform-specific music rights before any publish-ready state."],
+      "created_by_step": "P27-01",
+      "planned_epic": "P27"
+    },
+    {
+      "platform": "instagram_reels",
+      "export_directory": "exports/instagram_reels/",
+      "required_files": ["video.mp4", "caption.txt", "hashtags.txt", "cover_frame_note.txt", "collaborator_tags.txt", "rights_note.txt", "metadata.json", "review_status.json"],
+      "metadata_required_fields": ["schema_version", "package_id", "platform", "export_directory", "content_type", "video_asset_path", "copy_asset_paths", "rights_note_path", "review_status_path", "source_package_path", "monetization_risk_report_path", "source_attribution_path", "publish_allowed", "review_required", "blocking_reasons", "required_actions", "created_by_step", "planned_epic"],
+      "review_status_required_fields": ["platform", "package_id", "export_status", "publish_allowed", "p26_review_status", "p29_editorial_status", "rights_status", "monetization_status", "source_attribution_status", "music_license_status", "originality_status", "blocking_reasons", "required_actions", "reviewer_role", "notes"],
+      "publish_allowed": false,
+      "review_required": true,
+      "blocking_reasons": ["Originality/repost review required", "P29 editorial approval required"],
+      "required_actions": ["Generate Instagram Reels export pack in P27-03.", "Keep rights and originality notes visible."],
+      "created_by_step": "P27-01",
+      "planned_epic": "P27"
+    },
+    {
+      "platform": "facebook_reels",
+      "export_directory": "exports/facebook_reels/",
+      "required_files": ["video.mp4", "caption.txt", "hashtags.txt", "monetization_note.txt", "rights_note.txt", "metadata.json", "review_status.json"],
+      "metadata_required_fields": ["schema_version", "package_id", "platform", "export_directory", "content_type", "video_asset_path", "copy_asset_paths", "rights_note_path", "review_status_path", "source_package_path", "monetization_risk_report_path", "source_attribution_path", "publish_allowed", "review_required", "blocking_reasons", "required_actions", "created_by_step", "planned_epic"],
+      "review_status_required_fields": ["platform", "package_id", "export_status", "publish_allowed", "p26_review_status", "p29_editorial_status", "rights_status", "monetization_status", "source_attribution_status", "music_license_status", "originality_status", "blocking_reasons", "required_actions", "reviewer_role", "notes"],
+      "publish_allowed": false,
+      "review_required": true,
+      "blocking_reasons": ["Monetization note required", "P29 editorial approval required"],
+      "required_actions": ["Generate Facebook Reels export pack in P27-03.", "Keep monetization and rights status visible."],
+      "created_by_step": "P27-01",
+      "planned_epic": "P27"
+    },
+    {
+      "platform": "x_twitter",
+      "export_directory": "exports/x_twitter/",
+      "required_files": ["video.mp4", "post_copy.txt", "thread_outline.txt", "hashtags.txt", "rights_note.txt", "metadata.json", "review_status.json"],
+      "metadata_required_fields": ["schema_version", "package_id", "platform", "export_directory", "content_type", "video_asset_path", "copy_asset_paths", "rights_note_path", "review_status_path", "source_package_path", "monetization_risk_report_path", "source_attribution_path", "publish_allowed", "review_required", "blocking_reasons", "required_actions", "created_by_step", "planned_epic"],
+      "review_status_required_fields": ["platform", "package_id", "export_status", "publish_allowed", "p26_review_status", "p29_editorial_status", "rights_status", "monetization_status", "source_attribution_status", "music_license_status", "originality_status", "blocking_reasons", "required_actions", "reviewer_role", "notes"],
+      "publish_allowed": false,
+      "review_required": true,
+      "blocking_reasons": ["Thread/post copy required", "P29 editorial approval required"],
+      "required_actions": ["Generate X/Twitter export pack in P27-04.", "Keep publish_allowed false until P29 approval exists."],
+      "created_by_step": "P27-01",
+      "planned_epic": "P27"
+    }
+  ]
+}
