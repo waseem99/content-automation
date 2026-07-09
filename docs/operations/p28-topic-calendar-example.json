@@ -1,0 +1,169 @@
+{
+  "schema_version": "p28.topic_calendar_contract.v1",
+  "parent_epic": 330,
+  "content_type": "topic_scoring_and_calendar_contract",
+  "scoring_rubric": {
+    "score_range": "1_to_5",
+    "dimensions": {
+      "timeliness": {"higher_is_better": true, "description": "How relevant the topic is to the current football conversation."},
+      "search_demand": {"higher_is_better": true, "description": "Estimated search and evergreen discovery potential without live API data."},
+      "emotional_intensity": {"higher_is_better": true, "description": "Strength of pressure, conflict, nostalgia, shock, or legacy stakes."},
+      "comment_potential": {"higher_is_better": true, "description": "Likelihood that the topic creates healthy debate and comments."},
+      "series_fit": {"higher_is_better": true, "description": "Fit with approved repeatable P28 series formats."},
+      "monetization_fit": {"higher_is_better": true, "description": "Brand safety and long-form monetization suitability."},
+      "rights_risk": {"higher_is_better": false, "description": "Rights, footage, music, source, or claim risk."},
+      "production_effort": {"higher_is_better": false, "description": "Expected research, scripting, design, and editing effort."}
+    }
+  },
+  "recommendation_states": ["produce_now", "hold", "needs_research", "reject_high_risk"],
+  "scored_topics": [
+    {
+      "topic_id": "topic-neymar-2014-pressure",
+      "title": "Neymar 2014 World Cup injury and comeback pressure",
+      "series": "Football Pressure Index",
+      "scores": {
+        "timeliness": 4,
+        "search_demand": 4,
+        "emotional_intensity": 5,
+        "comment_potential": 5,
+        "series_fit": 5,
+        "monetization_fit": 4,
+        "rights_risk": 3,
+        "production_effort": 2
+      },
+      "recommendation_state": "produce_now",
+      "priority_score": 22,
+      "rationale": "High emotional football story with strong debate and repeatable pressure framing.",
+      "rights_notes": "Use rights-reviewed visuals or recreated editorial graphics; avoid unlicensed match footage.",
+      "research_notes": "Verify injury timeline, match context, and post-tournament comeback reporting before script lock.",
+      "publish_allowed": false,
+      "review_required": true
+    },
+    {
+      "topic_id": "topic-messi-2022-pressure",
+      "title": "Messi 2022 World Cup pressure before the final",
+      "series": "Legacy vs Future",
+      "scores": {
+        "timeliness": 3,
+        "search_demand": 5,
+        "emotional_intensity": 5,
+        "comment_potential": 5,
+        "series_fit": 5,
+        "monetization_fit": 5,
+        "rights_risk": 3,
+        "production_effort": 3
+      },
+      "recommendation_state": "produce_now",
+      "priority_score": 22,
+      "rationale": "Evergreen legacy debate with high search interest and strong long-form storytelling fit.",
+      "rights_notes": "Archive visuals and match footage require rights review; recreated timelines are safer.",
+      "research_notes": "Separate verified match facts from legacy interpretation and opinion framing.",
+      "publish_allowed": false,
+      "review_required": true
+    },
+    {
+      "topic_id": "topic-world-cup-what-if-2010",
+      "title": "What if Ghana scored the 2010 World Cup penalty?",
+      "series": "World Cup What Ifs",
+      "scores": {
+        "timeliness": 2,
+        "search_demand": 3,
+        "emotional_intensity": 5,
+        "comment_potential": 5,
+        "series_fit": 5,
+        "monetization_fit": 3,
+        "rights_risk": 4,
+        "production_effort": 4
+      },
+      "recommendation_state": "hold",
+      "priority_score": 15,
+      "rationale": "Excellent debate format, but needs careful sourcing and speculation guardrails.",
+      "rights_notes": "High rights sensitivity around match footage; prefer recreated diagrams and licensed stills.",
+      "research_notes": "Needs extra research to separate factual sequence from counterfactual analysis.",
+      "publish_allowed": false,
+      "review_required": true
+    },
+    {
+      "topic_id": "topic-transfer-rumor-live",
+      "title": "Unverified summer transfer rumor reaction",
+      "series": "The Moment That Changed",
+      "scores": {
+        "timeliness": 5,
+        "search_demand": 2,
+        "emotional_intensity": 3,
+        "comment_potential": 4,
+        "series_fit": 2,
+        "monetization_fit": 2,
+        "rights_risk": 5,
+        "production_effort": 5
+      },
+      "recommendation_state": "reject_high_risk",
+      "priority_score": 6,
+      "rationale": "Fast-moving rumor topic is risky, weakly sourced, and outside the stable evergreen format.",
+      "rights_notes": "Reject unless verified sources and rights-safe assets are available.",
+      "research_notes": "Avoid live rumor chasing; no live trend scraping or search-volume API integration in this contract.",
+      "publish_allowed": false,
+      "review_required": true
+    }
+  ],
+  "content_calendar": [
+    {
+      "topic_id": "topic-neymar-2014-pressure",
+      "publish_window": "week_01_primary_longform_slot",
+      "platform": "youtube_long_form",
+      "series": "Football Pressure Index",
+      "priority": "high",
+      "dependencies": ["rights_review", "source_attribution", "thumbnail_concepts", "p29_editorial_review"],
+      "review_status": "needs_review_before_production"
+    },
+    {
+      "topic_id": "topic-messi-2022-pressure",
+      "publish_window": "week_02_primary_longform_slot",
+      "platform": "youtube_long_form",
+      "series": "Legacy vs Future",
+      "priority": "high",
+      "dependencies": ["rights_review", "source_attribution", "script_fact_check", "p29_editorial_review"],
+      "review_status": "needs_review_before_production"
+    },
+    {
+      "topic_id": "topic-world-cup-what-if-2010",
+      "publish_window": "research_backlog",
+      "platform": "youtube_long_form",
+      "series": "World Cup What Ifs",
+      "priority": "medium",
+      "dependencies": ["additional_research", "counterfactual_guardrails", "rights_review"],
+      "review_status": "needs_research"
+    },
+    {
+      "topic_id": "topic-transfer-rumor-live",
+      "publish_window": "not_scheduled",
+      "platform": "none",
+      "series": "The Moment That Changed",
+      "priority": "reject_high_risk",
+      "dependencies": ["verified_sources_missing", "rights_review_missing"],
+      "review_status": "reject_high_risk"
+    }
+  ],
+  "calendar_contract": {
+    "required_fields": ["publish_window", "platform", "series", "priority", "dependencies", "review_status"],
+    "allowed_platforms": ["youtube_long_form", "youtube_shorts", "tiktok", "instagram_reels", "facebook_reels", "x_twitter", "none"],
+    "review_statuses": ["needs_review_before_production", "needs_research", "reject_high_risk", "approved_after_review"],
+    "publishing_automation_out_of_scope": true,
+    "live_trend_scraping_out_of_scope": true,
+    "youtube_search_volume_api_out_of_scope": true
+  },
+  "series_connection": {
+    "series_metadata_path": "docs/operations/p28-series-metadata-example.json",
+    "allowed_series": ["Football Pressure Index", "The Moment That Changed", "World Cup What Ifs", "Legacy vs Future"]
+  },
+  "risk_fields": {
+    "rights_review_required": true,
+    "factual_review_required": true,
+    "source_attribution_required": true,
+    "editorial_review_required": true,
+    "publish_allowed": false,
+    "review_required": true
+  },
+  "publish_allowed": false,
+  "review_required": true
+}
