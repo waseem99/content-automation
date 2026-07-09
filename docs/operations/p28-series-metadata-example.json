@@ -1,0 +1,198 @@
+{
+  "schema_version": "p28.series_metadata.v1",
+  "parent_epic": 330,
+  "package_id": "pkg-p28-series-metadata",
+  "content_type": "series_metadata_catalog",
+  "series_count": 4,
+  "series_formats": [
+    {
+      "series_name": "Football Pressure Index",
+      "series_slug": "football-pressure-index",
+      "episode_number": 1,
+      "recurring_question": "Who carried the most pressure, and what did that pressure reveal?",
+      "format_promise": "Rank the emotional, tactical, and legacy pressure around one player or match story.",
+      "target_audience": "Football fans who enjoy pressure narratives, legacy debate, and ranked arguments.",
+      "emotional_trigger": "Pressure, doubt, criticism, comeback, and reputation risk.",
+      "next_episode_tease": "Next episode compares another player whose defining match changed how fans remember them.",
+      "related_shorts": [
+        {
+          "short_type": "cold_open_cutdown",
+          "source_section": "cold_open",
+          "hook": "This player was under more pressure than most fans remember.",
+          "p27_export_after_review": true
+        },
+        {
+          "short_type": "turning_point_cutdown",
+          "source_section": "conflict",
+          "hook": "The moment that changed the full story.",
+          "p27_export_after_review": true
+        },
+        {
+          "short_type": "comment_trigger_cutdown",
+          "source_section": "comment_trigger",
+          "hook": "The debate that should continue in comments.",
+          "p27_export_after_review": true
+        }
+      ],
+      "packaging_connection": {
+        "produce_longform_contract_path": "docs/operations/p28-produce-longform-output-contract-example.json",
+        "youtube_long_form_packaging": "future_scope_after_review",
+        "p27_related_shorts_exports": "allowed_after_review_only",
+        "direct_publish_out_of_scope": true
+      },
+      "content_package_connection": {
+        "content_package_path": "content_package.json",
+        "series_metadata_path": "docs/operations/p28-series-metadata-example.json",
+        "relationship": "series metadata enriches content_package.json without replacing it"
+      },
+      "publish_allowed": false,
+      "review_required": true
+    },
+    {
+      "series_name": "The Moment That Changed",
+      "series_slug": "the-moment-that-changed",
+      "episode_number": 1,
+      "recurring_question": "Which single moment changed the story, and why did it matter afterward?",
+      "format_promise": "Break down one decisive football moment through context, conflict, turning point, and payoff.",
+      "target_audience": "Fans who like story-led breakdowns of iconic match moments and turning points.",
+      "emotional_trigger": "Shock, consequence, momentum swing, and what-if tension.",
+      "next_episode_tease": "Next episode follows another moment where one decision or incident changed a football legacy.",
+      "related_shorts": [
+        {
+          "short_type": "cold_open_cutdown",
+          "source_section": "cold_open",
+          "hook": "One moment changed everything, but not for the reason most people think.",
+          "p27_export_after_review": true
+        },
+        {
+          "short_type": "turning_point_cutdown",
+          "source_section": "turning_point",
+          "hook": "The moment that changed the full story.",
+          "p27_export_after_review": true
+        },
+        {
+          "short_type": "comment_trigger_cutdown",
+          "source_section": "comment_trigger",
+          "hook": "The debate that should continue in comments.",
+          "p27_export_after_review": true
+        }
+      ],
+      "packaging_connection": {
+        "produce_longform_contract_path": "docs/operations/p28-produce-longform-output-contract-example.json",
+        "youtube_long_form_packaging": "future_scope_after_review",
+        "p27_related_shorts_exports": "allowed_after_review_only",
+        "direct_publish_out_of_scope": true
+      },
+      "content_package_connection": {
+        "content_package_path": "content_package.json",
+        "series_metadata_path": "docs/operations/p28-series-metadata-example.json",
+        "relationship": "series metadata enriches content_package.json without replacing it"
+      },
+      "publish_allowed": false,
+      "review_required": true
+    },
+    {
+      "series_name": "World Cup What Ifs",
+      "series_slug": "world-cup-what-ifs",
+      "episode_number": 1,
+      "recurring_question": "How would football memory change if one World Cup detail had gone differently?",
+      "format_promise": "Explore a World Cup counterfactual while clearly separating verified history from speculation.",
+      "target_audience": "World Cup fans who enjoy alternate-history debate with factual guardrails.",
+      "emotional_trigger": "Regret, imagination, nostalgia, national pride, and missed opportunity.",
+      "next_episode_tease": "Next episode tests another World Cup turning point that still splits fans.",
+      "related_shorts": [
+        {
+          "short_type": "cold_open_cutdown",
+          "source_section": "cold_open",
+          "hook": "What if this World Cup moment went the other way?",
+          "p27_export_after_review": true
+        },
+        {
+          "short_type": "turning_point_cutdown",
+          "source_section": "question",
+          "hook": "The moment that changed the full story.",
+          "p27_export_after_review": true
+        },
+        {
+          "short_type": "comment_trigger_cutdown",
+          "source_section": "comment_trigger",
+          "hook": "The debate that should continue in comments.",
+          "p27_export_after_review": true
+        }
+      ],
+      "packaging_connection": {
+        "produce_longform_contract_path": "docs/operations/p28-produce-longform-output-contract-example.json",
+        "youtube_long_form_packaging": "future_scope_after_review",
+        "p27_related_shorts_exports": "allowed_after_review_only",
+        "direct_publish_out_of_scope": true
+      },
+      "content_package_connection": {
+        "content_package_path": "content_package.json",
+        "series_metadata_path": "docs/operations/p28-series-metadata-example.json",
+        "relationship": "series metadata enriches content_package.json without replacing it"
+      },
+      "publish_allowed": false,
+      "review_required": true
+    },
+    {
+      "series_name": "Legacy vs Future",
+      "series_slug": "legacy-vs-future",
+      "episode_number": 1,
+      "recurring_question": "Is this football story about protecting a legacy or building the future?",
+      "format_promise": "Compare legacy pressure against future expectations for a player, club, or national team.",
+      "target_audience": "Fans who enjoy player legacy debates, next-generation comparisons, and future-facing arguments.",
+      "emotional_trigger": "Expectation, succession, reputation, fear of decline, and hope.",
+      "next_episode_tease": "Next episode compares another football figure caught between what they achieved and what comes next.",
+      "related_shorts": [
+        {
+          "short_type": "cold_open_cutdown",
+          "source_section": "cold_open",
+          "hook": "Is this about legacy, or is the future already taking over?",
+          "p27_export_after_review": true
+        },
+        {
+          "short_type": "turning_point_cutdown",
+          "source_section": "payoff",
+          "hook": "The moment that changed the full story.",
+          "p27_export_after_review": true
+        },
+        {
+          "short_type": "comment_trigger_cutdown",
+          "source_section": "comment_trigger",
+          "hook": "The debate that should continue in comments.",
+          "p27_export_after_review": true
+        }
+      ],
+      "packaging_connection": {
+        "produce_longform_contract_path": "docs/operations/p28-produce-longform-output-contract-example.json",
+        "youtube_long_form_packaging": "future_scope_after_review",
+        "p27_related_shorts_exports": "allowed_after_review_only",
+        "direct_publish_out_of_scope": true
+      },
+      "content_package_connection": {
+        "content_package_path": "content_package.json",
+        "series_metadata_path": "docs/operations/p28-series-metadata-example.json",
+        "relationship": "series metadata enriches content_package.json without replacing it"
+      },
+      "publish_allowed": false,
+      "review_required": true
+    }
+  ],
+  "catalog_connections": {
+    "content_package_path": "content_package.json",
+    "produce_longform_contract_path": "docs/operations/p28-produce-longform-output-contract-example.json",
+    "p27_platform_exports_after_review": true,
+    "scheduling_automation_out_of_scope": true,
+    "publishing_automation_out_of_scope": true
+  },
+  "risk_fields": {
+    "rights_review_required": true,
+    "factual_review_required": true,
+    "source_attribution_required": true,
+    "editorial_review_required": true,
+    "publish_allowed": false,
+    "review_required": true
+  },
+  "publish_allowed": false,
+  "review_required": true
+}
