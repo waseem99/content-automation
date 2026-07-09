@@ -1,0 +1,50 @@
+{
+  "schema_version": "p29.editorial_evidence_trail.v1",
+  "parent_epic": 331,
+  "issue": 366,
+  "content_type": "editorial_evidence_trail_requirements",
+  "required_fields": ["reviewer", "decision", "timestamp", "reviewed_package_version", "blockers", "required_changes", "source_risk_notes", "approval_scope"],
+  "privacy_rules": [
+    "Do not store secrets.",
+    "Do not store customer data.",
+    "Do not store unnecessary external account details.",
+    "Evidence is internal and not a platform upload artifact."
+  ],
+  "example_records": [
+    {
+      "reviewer": "reviewer_001",
+      "decision": "approved",
+      "timestamp": "2026-07-09T00:00:00Z",
+      "reviewed_package_version": "content_package.json@v1",
+      "blockers": [],
+      "required_changes": [],
+      "source_risk_notes": "Internal evidence only; no secrets, customer data, or external account details.",
+      "approval_scope": "package_export_readiness_only_not_platform_upload",
+      "publish_readiness_manifest_path": "docs/operations/p29-publish-readiness-manifest-example.json"
+    },
+    {
+      "reviewer": "reviewer_001",
+      "decision": "blocked",
+      "timestamp": "2026-07-09T00:00:00Z",
+      "reviewed_package_version": "content_package.json@v1",
+      "blockers": ["p26_publish_block", "rights_review_required"],
+      "required_changes": ["clear risk blocker", "replace asset"],
+      "source_risk_notes": "Internal evidence only; no secrets, customer data, or external account details.",
+      "approval_scope": "package_export_readiness_only_not_platform_upload",
+      "publish_readiness_manifest_path": "docs/operations/p29-publish-readiness-manifest-example.json"
+    },
+    {
+      "reviewer": "reviewer_001",
+      "decision": "revisions_required",
+      "timestamp": "2026-07-09T00:00:00Z",
+      "reviewed_package_version": "content_package.json@v1",
+      "blockers": ["editorial_changes_required"],
+      "required_changes": ["tighten hook", "add source context"],
+      "source_risk_notes": "Internal evidence only; no secrets, customer data, or external account details.",
+      "approval_scope": "package_export_readiness_only_not_platform_upload",
+      "publish_readiness_manifest_path": "docs/operations/p29-publish-readiness-manifest-example.json"
+    }
+  ],
+  "publish_allowed": false,
+  "review_required": true
+}
