@@ -1,0 +1,99 @@
+{
+  "schema_version": "p26.publish_block_rules.v1",
+  "package_id": "pkg-publish-block-examples",
+  "decisions": [
+    {
+      "decision_id": "blocked_high_risk_package",
+      "package_id": "pkg-high-risk-example",
+      "content_type": "short",
+      "publish_allowed": false,
+      "review_required": true,
+      "decision_state": "blocked_until_review",
+      "hard_blockers": [
+        "unreviewed_broadcast_footage",
+        "unverified_music_license",
+        "missing_stat_source_reference",
+        "high_reused_content_risk",
+        "missing_originality_layer",
+        "missing_human_editorial_approval",
+        "missing_p29_publish_readiness_manifest"
+      ],
+      "non_blocking_warnings": [],
+      "blocking_reasons": [
+        "Broadcast footage is unreviewed.",
+        "Music license is not verified for target platforms.",
+        "Factual sources are missing.",
+        "Originality layer is missing.",
+        "Human editorial approval is missing."
+      ],
+      "required_actions": [
+        "Review or remove broadcast footage.",
+        "Verify or remove music.",
+        "Add source references for claims.",
+        "Add originality signals.",
+        "Complete P29 editorial approval before publish-readiness."
+      ],
+      "p29_editorial_required": true,
+      "reviewer_role": "rights reviewer",
+      "notes": ["High-risk packages must remain blocked.", "This is a workflow control, not legal clearance."]
+    },
+    {
+      "decision_id": "medium_review_required_package",
+      "package_id": "pkg-medium-risk-example",
+      "content_type": "explainer",
+      "publish_allowed": false,
+      "review_required": true,
+      "decision_state": "review_required",
+      "hard_blockers": [
+        "missing_image_attribution",
+        "unknown_image_license",
+        "missing_human_editorial_approval",
+        "missing_p29_publish_readiness_manifest"
+      ],
+      "non_blocking_warnings": [
+        "thumbnail_concept_needs_polish",
+        "retention_score_medium_risk"
+      ],
+      "blocking_reasons": [
+        "Image attribution is unresolved.",
+        "Image license is unresolved.",
+        "Human editorial approval is missing."
+      ],
+      "required_actions": [
+        "Resolve image attribution and license review.",
+        "Complete editorial review.",
+        "Keep warnings visible for final export review."
+      ],
+      "p29_editorial_required": true,
+      "reviewer_role": "publishing operator",
+      "notes": ["Medium risk can move forward only after blockers are resolved.", "Warnings do not become approvals."]
+    },
+    {
+      "decision_id": "export_candidate_after_review_package",
+      "package_id": "pkg-export-candidate-example",
+      "content_type": "short",
+      "publish_allowed": false,
+      "review_required": true,
+      "decision_state": "export_candidate_after_review",
+      "hard_blockers": [
+        "missing_human_editorial_approval",
+        "missing_p29_publish_readiness_manifest"
+      ],
+      "non_blocking_warnings": [
+        "optional_description_attribution_improvement",
+        "cta_could_be_stronger"
+      ],
+      "blocking_reasons": [
+        "P29 publish-readiness manifest is not complete.",
+        "Final human editorial approval is missing."
+      ],
+      "required_actions": [
+        "Complete P29 publish-readiness manifest.",
+        "Record final human approval before any publish-ready state."
+      ],
+      "p29_editorial_required": true,
+      "reviewer_role": "editorial reviewer",
+      "notes": ["Export-candidate-after-review is not automatic publishing.", "publish_allowed remains false until final approval exists."]
+    }
+  ]
+}
