@@ -26,7 +26,7 @@ Define the operator handoff/export report package so weekly briefs, action queue
 
 ## Safety boundary
 
-The package is local/review-only. It does not email, post to Slack, publish a dashboard, or upload files externally.
+The package is local/review-only. No email, Slack, dashboard, or external upload is performed.
 
 ## Example
 
