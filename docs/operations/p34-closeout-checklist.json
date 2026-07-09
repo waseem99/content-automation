@@ -1,0 +1,43 @@
+{
+  "schema_version": "p34.closeout_checklist.v1",
+  "parent_epic": 443,
+  "closeout_issue": 449,
+  "child_tasks": [
+    {"issue": 444, "status": "complete_after_merge", "artifacts": ["src/p34_artifacts.py", "docs/operations/p34-step-01.md", "tests/integration/test_p34_batch_01_06.py"]},
+    {"issue": 445, "status": "complete_after_merge", "artifacts": ["src/p34_artifacts.py", "docs/operations/p34-step-02.md", "tests/integration/test_p34_batch_01_06.py"]},
+    {"issue": 446, "status": "complete_after_merge", "artifacts": ["src/p34_artifacts.py", "docs/operations/p34-step-03.md", "tests/integration/test_p34_batch_01_06.py"]},
+    {"issue": 447, "status": "complete_after_merge", "artifacts": ["src/p34_artifacts.py", "docs/operations/p34-step-04.md", "docs/operations/p34-artifact-writer-example.json"]},
+    {"issue": 448, "status": "complete_after_merge", "artifacts": ["src/p34_artifacts.py", "docs/operations/p34-step-05.md", "tests/integration/test_p34_batch_01_06.py"]},
+    {"issue": 449, "status": "complete_after_merge", "artifacts": ["docs/operations/p34-step-06.md", "docs/operations/p34-closeout-report.md", "docs/operations/p34-closeout-checklist.json", "tests/integration/test_p34_batch_01_06.py"]}
+  ],
+  "coverage": {
+    "safe_output_root_validation": true,
+    "json_artifact_writer": true,
+    "operator_summary_writer": true,
+    "materialized_manifest": true,
+    "blocked_path_handling": true,
+    "overwrite_safety": true,
+    "closeout_report": true
+  },
+  "no_external_upload": true,
+  "no_cloud_sync": true,
+  "no_network_call": true,
+  "no_scheduler": true,
+  "no_credential_storage": true,
+  "no_destructive_cleanup": true,
+  "no_platform_edit": true,
+  "no_auto_publish_path": true,
+  "guardrails": [
+    "No external uploads.",
+    "No cloud storage sync.",
+    "No network calls.",
+    "No schedulers or background jobs.",
+    "No OAuth or credential storage.",
+    "No destructive cleanup.",
+    "No platform edits.",
+    "No auto-publish path.",
+    "No merge without exact-head CI."
+  ],
+  "publish_allowed": false,
+  "review_required": true
+}
