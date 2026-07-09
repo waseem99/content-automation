@@ -1,0 +1,29 @@
+{
+  "schema_version": "p41.rights_safety_example.v1",
+  "parent_epic": 499,
+  "example_payload": {
+    "platform": "youtube_shorts",
+    "title_options": ["Most People Get AI Automation Wrong"],
+    "hook": "If you think AI automation is just about tools, this is what most founders miss.",
+    "script": "Use owned screen recordings, original narration, licensed music, and simple motion graphics.",
+    "scene_plan": [{"scene_number": 1, "visual_direction": "Original dashboard mockup, no third-party clips."}],
+    "asset_requirements": [{"asset": "music", "requirement": "Licensed music only."}],
+    "source_notes": ["Use owned mockups and documented music license."]
+  },
+  "expected_output_sections": [
+    "rights_risk_inventory",
+    "safer_rewrite_suggestions",
+    "asset_source_manifest",
+    "originality_and_transformation_notes",
+    "platform_monetization_safety_flags",
+    "scores",
+    "publish_gate"
+  ],
+  "guardrails": {
+    "legal_clearance_claimed": false,
+    "monetization_guaranteed": false,
+    "no_external_calls": true,
+    "no_asset_download": true,
+    "no_upload_or_publish": true
+  }
+}
