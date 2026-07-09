@@ -1,0 +1,35 @@
+{
+  "schema_version": "p35.local_artifact_integrity_example.v1",
+  "parent_epic": 451,
+  "checksum": {
+    "algorithm": "sha256",
+    "content_type": "application/json",
+    "generated_at": "manual"
+  },
+  "inventory": {
+    "schema_version": "p35.artifact_inventory.v1",
+    "inventory_id": "inventory-example",
+    "entry_fields": ["artifact_name", "relative_path", "checksum", "byte_count", "content_type", "source_command", "local_only", "review_required"]
+  },
+  "retention_policy": {
+    "schema_version": "p35.retention_policy.v1",
+    "supported_classes": ["keep", "review_later", "archive_candidate", "legal_hold"],
+    "deletion_allowed": false,
+    "manual_review_required": true
+  },
+  "verification_statuses": ["match", "missing", "changed", "unexpected"],
+  "drift_warnings": ["missing_artifacts_detected", "changed_artifacts_detected", "unexpected_artifacts_detected", "manual_review_required", "retention_review_required"],
+  "guardrails": {
+    "local_only": true,
+    "deletion_performed": false,
+    "moving_performed": false,
+    "cloud_sync": false,
+    "external_upload": false,
+    "network_called": false,
+    "scheduler_used": false,
+    "credentials_used": false,
+    "platform_edit_performed": false,
+    "publish_allowed": false,
+    "review_required": true
+  }
+}
