@@ -1,0 +1,58 @@
+{
+  "schema_version": "p29.publish_readiness_manifest.v1",
+  "parent_epic": 331,
+  "issue": 364,
+  "content_type": "publish_readiness_manifest_examples",
+  "allowed_readiness_states": ["not_publish_ready", "review_required", "publish_export_ready"],
+  "required_fields": ["content_package_path", "risk_report_path", "export_paths", "editorial_status", "approval_owner", "approval_timestamp", "blockers", "next_actions"],
+  "examples": [
+    {
+      "content_package_path": "content_package.json",
+      "risk_report_path": "monetization_risk_report.json",
+      "export_paths": ["exports/youtube_shorts/package.json", "exports/youtube_long_form/package.json"],
+      "manifest_id": "manifest-blocked-example",
+      "readiness_state": "not_publish_ready",
+      "editorial_status": "revisions_required",
+      "approval_owner": null,
+      "approval_timestamp": null,
+      "blockers": ["rights_review_required", "missing_source_attribution"],
+      "next_actions": ["replace unlicensed asset", "complete source attribution"],
+      "platform_export_is_upload": false
+    },
+    {
+      "content_package_path": "content_package.json",
+      "risk_report_path": "monetization_risk_report.json",
+      "export_paths": ["exports/youtube_shorts/package.json", "exports/youtube_long_form/package.json"],
+      "manifest_id": "manifest-review-required-example",
+      "readiness_state": "review_required",
+      "editorial_status": "editorial_review",
+      "approval_owner": "human_reviewer_required",
+      "approval_timestamp": null,
+      "blockers": [],
+      "next_actions": ["complete human checklist", "confirm P26 risk clearance"],
+      "platform_export_is_upload": false
+    },
+    {
+      "content_package_path": "content_package.json",
+      "risk_report_path": "monetization_risk_report.json",
+      "export_paths": ["exports/youtube_shorts/package.json", "exports/youtube_long_form/package.json"],
+      "manifest_id": "manifest-approved-example",
+      "readiness_state": "publish_export_ready",
+      "editorial_status": "publish_export_ready",
+      "approval_owner": "reviewer_001",
+      "approval_timestamp": "2026-07-09T00:00:00Z",
+      "blockers": [],
+      "next_actions": ["manual export handoff", "record external publish only after human action"],
+      "platform_export_is_upload": false
+    }
+  ],
+  "alignment": {
+    "p24_package_required": true,
+    "p25_packaging_quality_required": true,
+    "p26_risk_clearance_required": true,
+    "p27_exports_are_not_uploads": true,
+    "p29_human_approval_required": true
+  },
+  "publish_allowed": false,
+  "review_required": true
+}
