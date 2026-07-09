@@ -1,0 +1,68 @@
+{
+  "schema_version": "p27.x_twitter_export_pack.v1",
+  "package_id": "pkg-x-twitter-export-example",
+  "platform": "x_twitter",
+  "export_directory": "exports/x_twitter/",
+  "required_files": ["video.mp4", "post.txt", "thread.txt", "hashtags.txt", "debate_prompt.txt", "risk_note.txt", "metadata.json", "review_status.json"],
+  "publish_allowed": false,
+  "review_required": true,
+  "metadata": {
+    "schema_version": "p27.x_twitter_export_pack.v1",
+    "package_id": "pkg-x-twitter-export-example",
+    "platform": "x_twitter",
+    "export_directory": "exports/x_twitter/",
+    "content_type": "short",
+    "video_asset_path": "renders/shorts/neymar-2014-comeback-pressure.mp4",
+    "copy_asset_paths": {
+      "post": "exports/x_twitter/post.txt",
+      "thread": "exports/x_twitter/thread.txt",
+      "hashtags": "exports/x_twitter/hashtags.txt",
+      "debate_prompt": "exports/x_twitter/debate_prompt.txt",
+      "risk_note": "exports/x_twitter/risk_note.txt"
+    },
+    "review_status_path": "exports/x_twitter/review_status.json",
+    "source_package_path": "content_package.json",
+    "monetization_risk_report_path": "monetization_risk_report.json",
+    "source_attribution_path": "source_attribution.json",
+    "publish_allowed": false,
+    "review_required": true,
+    "blocking_reasons": ["Factual/stat review required.", "P26 rights and monetization review required.", "P29 editorial approval required."],
+    "required_actions": ["Verify stats and sources.", "Complete editorial review."],
+    "created_by_step": "P27-04",
+    "planned_epic": "P27",
+    "copy_constraints": {
+      "post_max_chars": 280,
+      "thread_required_for": ["explainer"],
+      "style": "short_specific_debate_oriented"
+    },
+    "p25_packaging_sources": {"cta_id": "cta_01"},
+    "p26_decision_state": "review_required"
+  },
+  "review_status": {
+    "platform": "x_twitter",
+    "package_id": "pkg-x-twitter-export-example",
+    "export_status": "blocked_until_review",
+    "publish_allowed": false,
+    "p26_review_status": "required",
+    "p29_editorial_status": "missing",
+    "rights_status": "review_required",
+    "monetization_status": "review_required",
+    "source_attribution_status": "review_required",
+    "factual_status": "review_required",
+    "originality_status": "review_required",
+    "blocking_reasons": ["Factual/stat review required.", "P26 rights and monetization review required.", "P29 editorial approval required."],
+    "required_actions": ["Verify stats and sources.", "Complete editorial review."],
+    "reviewer_role": "publishing operator",
+    "notes": ["X/Twitter export pack is review-only.", "Stats and source claims need human verification."]
+  },
+  "files": {
+    "video.mp4": {"path": "exports/x_twitter/video.mp4", "content_type": "video/mp4", "status": "reference_only_not_committed"},
+    "post.txt": {"path": "exports/x_twitter/post.txt", "content_type": "text/plain", "content": "Neymar is still a football debate, not a settled story. Be honest: are fans too harsh on Neymar?"},
+    "thread.txt": {"path": "exports/x_twitter/thread.txt", "content_type": "text/plain", "content": "1/ Short context: Neymar 2014 World Cup injury and comeback pressure\n2/ The debate is about pressure, timing, and fan memory around Neymar."},
+    "hashtags.txt": {"path": "exports/x_twitter/hashtags.txt", "content_type": "text/plain", "content": "#football\n#soccer\n#footballtalk"},
+    "debate_prompt.txt": {"path": "exports/x_twitter/debate_prompt.txt", "content_type": "text/plain", "content": "Be honest: are fans too harsh on Neymar?"},
+    "risk_note.txt": {"path": "exports/x_twitter/risk_note.txt", "content_type": "text/plain", "content": "publish_allowed: false\nreview_required: true\nStats, rights, and source claims are not automatically cleared."},
+    "metadata.json": {"path": "exports/x_twitter/metadata.json", "content_type": "application/json", "content": "{\"publish_allowed\": false}"},
+    "review_status.json": {"path": "exports/x_twitter/review_status.json", "content_type": "application/json", "content": "{\"export_status\": \"blocked_until_review\"}"}
+  }
+}
