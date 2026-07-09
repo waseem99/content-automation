@@ -1,0 +1,145 @@
+{
+  "schema_version": "p27.closeout_checklist.v1",
+  "parent_epic": 329,
+  "closeout_issue": 355,
+  "publish_allowed": false,
+  "review_required": true,
+  "p27_complete_after_issue_355_merge": true,
+  "child_tasks": [
+    {
+      "issue": 350,
+      "step": "P27-01",
+      "title": "Define platform export directory contract",
+      "status": "complete",
+      "required_artifacts": [
+        "docs/operations/p27-step-01.md",
+        "docs/operations/p27-export-directory-example.json",
+        "tests/integration/test_p27_step_01.py"
+      ]
+    },
+    {
+      "issue": 351,
+      "step": "P27-02",
+      "title": "Generate YouTube Shorts export pack",
+      "status": "complete",
+      "required_artifacts": [
+        "src/youtube_shorts_export.py",
+        "docs/operations/p27-step-02.md",
+        "docs/operations/p27-youtube-shorts-export-example.json",
+        "tests/integration/test_p27_step_02.py"
+      ]
+    },
+    {
+      "issue": 352,
+      "step": "P27-03",
+      "title": "Generate TikTok, Instagram Reels, and Facebook Reels export packs",
+      "status": "complete",
+      "required_artifacts": [
+        "src/short_form_exports.py",
+        "docs/operations/p27-step-03.md",
+        "docs/operations/p27-short-form-export-example.json",
+        "tests/integration/test_p27_step_03.py"
+      ]
+    },
+    {
+      "issue": 353,
+      "step": "P27-04",
+      "title": "Generate X/Twitter caption and thread export pack",
+      "status": "complete",
+      "required_artifacts": [
+        "src/x_twitter_export.py",
+        "docs/operations/p27-step-04.md",
+        "docs/operations/p27-x-twitter-export-example.json",
+        "tests/integration/test_p27_step_04.py"
+      ]
+    },
+    {
+      "issue": 354,
+      "step": "P27-05",
+      "title": "Validate cross-platform export readiness",
+      "status": "complete",
+      "required_artifacts": [
+        "src/export_readiness.py",
+        "docs/operations/p27-step-05.md",
+        "docs/operations/p27-cross-platform-readiness-example.json",
+        "tests/integration/test_p27_step_05.py"
+      ]
+    },
+    {
+      "issue": 355,
+      "step": "P27-06",
+      "title": "P27 platform export closeout",
+      "status": "complete_after_merge",
+      "required_artifacts": [
+        "docs/operations/p27-closeout-report.md",
+        "docs/operations/p27-closeout-checklist.json",
+        "tests/integration/test_p27_step_06.py"
+      ]
+    }
+  ],
+  "platform_exports": [
+    {
+      "platform": "youtube_shorts",
+      "directory": "exports/youtube_shorts/",
+      "status": "review_only_export_pack_defined"
+    },
+    {
+      "platform": "tiktok",
+      "directory": "exports/tiktok/",
+      "status": "review_only_export_pack_defined"
+    },
+    {
+      "platform": "instagram_reels",
+      "directory": "exports/instagram_reels/",
+      "status": "review_only_export_pack_defined"
+    },
+    {
+      "platform": "facebook_reels",
+      "directory": "exports/facebook_reels/",
+      "status": "review_only_export_pack_defined"
+    },
+    {
+      "platform": "x_twitter",
+      "directory": "exports/x_twitter/",
+      "status": "review_only_export_pack_defined"
+    }
+  ],
+  "validation_summary": {
+    "cross_platform_validator": "src/export_readiness.py",
+    "readiness_example": "docs/operations/p27-cross-platform-readiness-example.json",
+    "is_ready_for_manual_review": true,
+    "is_publish_ready": false,
+    "blocked_content_must_not_be_publish_ready": true,
+    "p26_risk_state_visible": true,
+    "p29_editorial_required": true
+  },
+  "remaining_gaps": [
+    "YouTube API upload",
+    "TikTok API upload",
+    "Meta/Instagram/Facebook upload APIs",
+    "X API posting",
+    "platform credential storage",
+    "live platform post previews",
+    "platform analytics ingestion",
+    "engagement/reply scraping",
+    "automated music licensing",
+    "automatic rights clearance",
+    "automatic monetization approval",
+    "automatic editorial approval"
+  ],
+  "guardrails": [
+    "No platform upload in P27.",
+    "No platform API integration in P27.",
+    "No platform credentials in P27.",
+    "No external video asset commits.",
+    "No secret values.",
+    "No automatic publish approval.",
+    "No automatic rights clearance.",
+    "No automatic monetization approval.",
+    "No automatic editorial approval.",
+    "No bypass of P26 publish-block rules.",
+    "No bypass of P29 editorial governance.",
+    "No workflow gate bypass.",
+    "No merge without exact-head CI."
+  ]
+}
