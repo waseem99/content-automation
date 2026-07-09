@@ -1,0 +1,37 @@
+{
+  "schema_version": "p40.video_content_package.example.v1",
+  "example_brief": {
+    "topic": "AI tools for small business owners",
+    "platform": "youtube_shorts",
+    "audience": "busy founders who want practical automation wins",
+    "tone": "sharp, useful, cinematic",
+    "duration_seconds": 45,
+    "monetization_goal": "newsletter signups and future SaaS affiliate revenue",
+    "content_format": "vertical_short",
+    "must_use_points": ["show one workflow", "avoid hype", "make it practical"],
+    "avoid": ["celebrity voice", "movie clip"],
+    "source_notes": ["Use original screen recordings or owned mockups only."]
+  },
+  "expected_output_sections": [
+    "positioning",
+    "concepts",
+    "title_options",
+    "hook",
+    "retention_beats",
+    "script",
+    "scene_plan",
+    "asset_requirements",
+    "rights_risk",
+    "scores",
+    "production_brief"
+  ],
+  "guardrails": {
+    "no_external_api_calls": true,
+    "no_scraping": true,
+    "no_copyrighted_asset_download": true,
+    "no_upload_or_publish": true,
+    "legal_clearance_claimed": false,
+    "monetization_guaranteed": false,
+    "human_review_before_publish": true
+  }
+}
