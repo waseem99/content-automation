@@ -1,0 +1,53 @@
+{
+  "schema_version": "p33.closeout_checklist.v1",
+  "parent_epic": 435,
+  "closeout_issue": 441,
+  "child_tasks": [
+    {"issue": 436, "status": "complete_after_merge", "artifacts": ["src/p33_cli_runtime.py", "docs/operations/p33-step-01.md", "tests/integration/test_p33_batch_01_06.py"]},
+    {"issue": 437, "status": "complete_after_merge", "artifacts": ["src/p33_cli_runtime.py", "docs/operations/p33-step-02.md", "tests/integration/test_p33_batch_01_06.py"]},
+    {"issue": 438, "status": "complete_after_merge", "artifacts": ["src/p33_cli_runtime.py", "docs/operations/p33-step-03.md", "docs/operations/p33-cli-runtime-example.json"]},
+    {"issue": 439, "status": "complete_after_merge", "artifacts": ["src/p33_cli_runtime.py", "docs/operations/p33-step-04.md", "tests/integration/test_p33_batch_01_06.py"]},
+    {"issue": 440, "status": "complete_after_merge", "artifacts": ["docs/operations/p33-step-05.md", "docs/operations/p33-cli-runtime-example.json"]},
+    {"issue": 441, "status": "complete_after_merge", "artifacts": ["docs/operations/p33-step-06.md", "docs/operations/p33-closeout-report.md", "docs/operations/p33-closeout-checklist.json", "tests/integration/test_p33_batch_01_06.py"]}
+  ],
+  "coverage": {
+    "cli_argument_parser": true,
+    "command_dispatcher": true,
+    "dry_run_safety_enforcement": true,
+    "local_command_payloads": true,
+    "json_output": true,
+    "exit_code_adapter": true,
+    "usage_examples": true,
+    "closeout_report": true
+  },
+  "no_live_upload": true,
+  "no_network_call": true,
+  "no_scheduler": true,
+  "no_credential_storage": true,
+  "no_destructive_cleanup": true,
+  "no_external_notifications": true,
+  "no_account_sync": true,
+  "no_auto_publish_path": true,
+  "future_work_out_of_scope": [
+    "console script packaging",
+    "local file existence validation",
+    "local artifact writing",
+    "HTML/PDF report generation",
+    "shell completion",
+    "operator training UI",
+    "approved service integrations"
+  ],
+  "guardrails": [
+    "No live uploads.",
+    "No network calls.",
+    "No schedulers or background jobs.",
+    "No OAuth or credential storage.",
+    "No real account sync.",
+    "No external notifications.",
+    "No destructive filesystem cleanup.",
+    "No auto-publish path.",
+    "No merge without exact-head CI."
+  ],
+  "publish_allowed": false,
+  "review_required": true
+}
