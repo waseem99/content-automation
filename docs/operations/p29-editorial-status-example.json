@@ -1,0 +1,158 @@
+{
+  "schema_version": "p29.editorial_status_model.v1",
+  "parent_epic": 331,
+  "content_type": "editorial_status_model",
+  "statuses": [
+    {
+      "status": "draft",
+      "description": "Content is being drafted and has no package or approval status.",
+      "allowed_next_statuses": ["package_generated", "archived"],
+      "is_terminal": false,
+      "requires_human_review": false,
+      "can_move_to_publish_export": false,
+      "direct_platform_upload_allowed": false
+    },
+    {
+      "status": "package_generated",
+      "description": "A content package exists, but human editorial review has not passed.",
+      "allowed_next_statuses": ["editorial_review", "rights_review", "revisions_required", "archived"],
+      "is_terminal": false,
+      "requires_human_review": true,
+      "can_move_to_publish_export": false,
+      "direct_platform_upload_allowed": false
+    },
+    {
+      "status": "editorial_review",
+      "description": "Human review is checking script, claims, structure, safety, and editorial quality.",
+      "allowed_next_statuses": ["rights_review", "revisions_required", "approved", "archived"],
+      "is_terminal": false,
+      "requires_human_review": true,
+      "can_move_to_publish_export": false,
+      "direct_platform_upload_allowed": false
+    },
+    {
+      "status": "rights_review",
+      "description": "Human review is checking source attribution, footage, music, visual asset, and usage rights.",
+      "allowed_next_statuses": ["editorial_review", "revisions_required", "approved", "archived"],
+      "is_terminal": false,
+      "requires_human_review": true,
+      "can_move_to_publish_export": false,
+      "direct_platform_upload_allowed": false
+    },
+    {
+      "status": "revisions_required",
+      "description": "The package is blocked until requested edits are completed and resubmitted.",
+      "allowed_next_statuses": ["draft", "package_generated", "editorial_review", "archived"],
+      "is_terminal": false,
+      "requires_human_review": true,
+      "can_move_to_publish_export": false,
+      "direct_platform_upload_allowed": false
+    },
+    {
+      "status": "approved",
+      "description": "Editorial and rights gates are passed, but publish export still needs final readiness checks.",
+      "allowed_next_statuses": ["publish_export_ready", "revisions_required", "archived"],
+      "is_terminal": false,
+      "requires_human_review": true,
+      "can_move_to_publish_export": false,
+      "direct_platform_upload_allowed": false
+    },
+    {
+      "status": "publish_export_ready",
+      "description": "All required gates are passed and the package may move to manual export/publish operations.",
+      "allowed_next_statuses": ["published_external", "revisions_required", "archived"],
+      "is_terminal": false,
+      "requires_human_review": true,
+      "can_move_to_publish_export": true,
+      "direct_platform_upload_allowed": false
+    },
+    {
+      "status": "published_external",
+      "description": "A human has published externally and recorded the external status; no API upload is implied.",
+      "allowed_next_statuses": ["archived"],
+      "is_terminal": true,
+      "requires_human_review": true,
+      "can_move_to_publish_export": false,
+      "direct_platform_upload_allowed": false
+    },
+    {
+      "status": "archived",
+      "description": "The package is no longer active for production or publishing.",
+      "allowed_next_statuses": [],
+      "is_terminal": true,
+      "requires_human_review": false,
+      "can_move_to_publish_export": false,
+      "direct_platform_upload_allowed": false
+    }
+  ],
+  "allowed_transitions": {
+    "draft": ["package_generated", "archived"],
+    "package_generated": ["editorial_review", "rights_review", "revisions_required", "archived"],
+    "editorial_review": ["rights_review", "revisions_required", "approved", "archived"],
+    "rights_review": ["editorial_review", "revisions_required", "approved", "archived"],
+    "revisions_required": ["draft", "package_generated", "editorial_review", "archived"],
+    "approved": ["publish_export_ready", "revisions_required", "archived"],
+    "publish_export_ready": ["published_external", "revisions_required", "archived"],
+    "published_external": ["archived"],
+    "archived": []
+  },
+  "approval_gates": {
+    "required_for_approved": [
+      "editorial_gate_passed",
+      "rights_gate_passed",
+      "p26_publish_block_clear",
+      "source_attribution_complete"
+    ],
+    "required_for_publish_export_ready": [
+      "editorial_gate_passed",
+      "rights_gate_passed",
+      "p26_publish_block_clear",
+      "source_attribution_complete",
+      "monetization_review_passed"
+    ],
+    "rule": "No status implies publish-export readiness unless editorial, rights, source, monetization, and P26 publish-block gates are clear."
+  },
+  "blocked_states": {
+    "revisions_required": {
+      "meaning": "Human reviewer requested changes before the item can continue.",
+      "must_include_blocker_type": true,
+      "allowed_blocker_types": [
+        "editorial_changes_required",
+        "rights_review_required",
+        "p26_publish_block",
+        "missing_source_attribution",
+        "monetization_review_required",
+        "platform_export_not_ready"
+      ],
+      "may_return_to": ["draft", "package_generated", "editorial_review"]
+    },
+    "p26_publish_block": {
+      "meaning": "P26 risk rules block publish-export readiness.",
+      "must_clear_before": ["approved", "publish_export_ready", "published_external"]
+    }
+  },
+  "p26_alignment": {
+    "p26_publish_block_clear_required": true,
+    "blocked_content_cannot_be_approved": true,
+    "blocked_content_cannot_be_publish_export_ready": true,
+    "risk_review_must_remain_visible": true
+  },
+  "review_record_required_fields": [
+    "content_id",
+    "current_status",
+    "requested_status",
+    "reviewer_id",
+    "review_timestamp",
+    "gate_results",
+    "blockers",
+    "transition_allowed"
+  ],
+  "out_of_scope": [
+    "review UI",
+    "platform upload",
+    "automatic publishing",
+    "platform credential storage"
+  ],
+  "publish_allowed": false,
+  "review_required": true
+}
