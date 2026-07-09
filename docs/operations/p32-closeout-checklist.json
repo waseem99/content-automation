@@ -1,0 +1,50 @@
+{
+  "schema_version": "p32.closeout_checklist.v1",
+  "parent_epic": 427,
+  "closeout_issue": 433,
+  "child_tasks": [
+    {"issue": 428, "status": "complete_after_merge", "artifacts": ["src/p32_cli.py", "docs/operations/p32-step-01.md", "docs/operations/p32-local-operator-cli-example.json"]},
+    {"issue": 429, "status": "complete_after_merge", "artifacts": ["src/p32_cli.py", "docs/operations/p32-step-02.md", "docs/operations/p32-local-operator-cli-example.json"]},
+    {"issue": 430, "status": "complete_after_merge", "artifacts": ["src/p32_cli.py", "docs/operations/p32-step-03.md", "docs/operations/p32-local-operator-cli-example.json"]},
+    {"issue": 431, "status": "complete_after_merge", "artifacts": ["src/p32_cli.py", "docs/operations/p32-step-04.md", "docs/operations/p32-local-operator-cli-example.json"]},
+    {"issue": 432, "status": "complete_after_merge", "artifacts": ["src/p32_cli.py", "docs/operations/p32-step-05.md", "docs/operations/p32-local-operator-cli-example.json"]},
+    {"issue": 433, "status": "complete_after_merge", "artifacts": ["docs/operations/p32-step-06.md", "docs/operations/p32-closeout-report.md", "docs/operations/p32-closeout-checklist.json", "tests/integration/test_p32_batch_01_06.py"]}
+  ],
+  "coverage": {
+    "local_command_registry": true,
+    "dry_run_safety_flags": true,
+    "command_artifact_contract": true,
+    "exit_code_semantics": true,
+    "local_runbook": true,
+    "closeout_report": true
+  },
+  "no_executable_cli": true,
+  "no_live_upload": true,
+  "no_scheduler": true,
+  "no_external_notifications": true,
+  "no_credential_storage": true,
+  "no_destructive_cleanup": true,
+  "no_auto_publish_path": true,
+  "future_work_out_of_scope": [
+    "executable CLI implementation",
+    "local command parser",
+    "shell packaging",
+    "report generation runtime",
+    "artifact storage policy",
+    "scheduler implementation",
+    "external integrations"
+  ],
+  "guardrails": [
+    "No executable CLI runtime.",
+    "No live platform uploads.",
+    "No schedulers or background jobs.",
+    "No OAuth or credential storage.",
+    "No real account sync.",
+    "No external notifications.",
+    "No destructive filesystem cleanup.",
+    "No auto-publish path.",
+    "No merge without exact-head CI."
+  ],
+  "publish_allowed": false,
+  "review_required": true
+}
