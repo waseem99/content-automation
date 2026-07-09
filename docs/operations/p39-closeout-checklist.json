@@ -1,0 +1,28 @@
+{
+  "schema_version": "p39.closeout_checklist.v1",
+  "parent_epic": 483,
+  "closeout_issue": 489,
+  "child_tasks": [484, 485, 486, 487, 488, 489],
+  "coverage": {
+    "decision_record_schema": true,
+    "decision_state_validation": true,
+    "decision_summary_markdown": true,
+    "follow_up_actions": true,
+    "local_signoff_metadata": true
+  },
+  "guardrails": [
+    "No automated approval.",
+    "No external delivery.",
+    "No cloud sync.",
+    "No external upload.",
+    "No network calls.",
+    "No schedulers.",
+    "No credential storage.",
+    "No platform edits.",
+    "No deletion or movement.",
+    "No auto-publish path.",
+    "No merge without exact-head CI."
+  ],
+  "publish_allowed": false,
+  "review_required": true
+}
