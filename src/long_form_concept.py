@@ -102,7 +102,7 @@ def _build_chapters(topic: str, subject: str) -> list[dict[str, Any]]:
             "title": "The central question",
             "narrative_goal": f"Frame the main viewer question: what does {topic} reveal about pressure, legacy, or football memory?",
             "target_duration_seconds": 40,
-            "visual_direction": "Presenter/voiceover question card, clean 16:9 lower-third, and timeline setup graphic.",
+            "visual_direction": "Presenter question card, clean 16:9 lower-third, and timeline setup graphic.",
             "source_notes": "Question must be answerable from verified match reports, official records, and reviewed commentary.",
             "shorts_cutdown_candidate": False,
         },
@@ -111,7 +111,7 @@ def _build_chapters(topic: str, subject: str) -> list[dict[str, Any]]:
             "title": "Why this story mattered before the turning point",
             "narrative_goal": "Give enough background for casual viewers while keeping the football audience engaged.",
             "target_duration_seconds": 85,
-            "visual_direction": "Timeline, player/team context cards, map or bracket graphic, and restrained archival-style motion.",
+            "visual_direction": "Timeline, player/team context cards, map or bracket graphic, and archival-style motion.",
             "source_notes": "Minimum two reliable background sources plus one official or primary reference where possible.",
             "shorts_cutdown_candidate": True,
         },
@@ -120,7 +120,7 @@ def _build_chapters(topic: str, subject: str) -> list[dict[str, Any]]:
             "title": "The pressure that changed the stakes",
             "narrative_goal": f"Show the tension, criticism, tactical pressure, or public expectation surrounding {subject}.",
             "target_duration_seconds": 105,
-            "visual_direction": "Contrast edits, quote cards from reviewed sources, tactical board moments, and ambient crowd tension.",
+            "visual_direction": "Contrast edits, quote cards from reviewed sources, tactical board moments, and crowd tension.",
             "source_notes": "Claims about pressure, criticism, or performance must be sourced and fact-checked before narration lock.",
             "shorts_cutdown_candidate": True,
         },
@@ -139,7 +139,7 @@ def _build_chapters(topic: str, subject: str) -> list[dict[str, Any]]:
             "narrative_goal": "Resolve the central question with a clear football takeaway, not a generic motivational ending.",
             "target_duration_seconds": 55,
             "visual_direction": "Clean final montage, legacy card, and restrained music lift after editorial approval.",
-            "source_notes": "Final interpretation must separate verified facts from opinion and clearly avoid overclaiming.",
+            "source_notes": "Final interpretation must separate verified facts from opinion and avoid overclaiming.",
             "shorts_cutdown_candidate": False,
         },
         {
@@ -176,7 +176,6 @@ def build_long_form_concept(
         if central_question is not None
         else f"What does {topic_text} reveal about pressure, legacy, and how football stories are remembered?"
     )
-
     chapters = _build_chapters(topic_text, subject_text)
 
     return {
@@ -263,7 +262,7 @@ def validate_long_form_concept(concept: dict[str, Any]) -> dict[str, Any]:
     errors: list[str] = []
     warnings: list[str] = []
 
-    _require(REQUIRED_LONG_FORM_FIELDS <= tuple(concept.keys()), errors, "missing required long-form fields")
+    _require(set(REQUIRED_LONG_FORM_FIELDS) <= set(concept), errors, "missing required long-form fields")
     _require(concept.get("schema_version") == LONG_FORM_SCHEMA_VERSION, errors, "schema_version mismatch")
     _require(concept.get("content_type") == LONG_FORM_CONTENT_TYPE, errors, "content_type mismatch")
     _require(concept.get("format") == LONG_FORM_ASPECT_RATIO, errors, "format must be 16:9")
@@ -288,28 +287,37 @@ def validate_long_form_concept(concept: dict[str, Any]) -> dict[str, Any]:
         _require(isinstance(value, str) and bool(value.strip()), errors, f"{text_field} must be non-empty text")
 
     source_requirements = concept.get("source_requirements", {})
-    _require(REQUIRED_SOURCE_FIELDS <= tuple(source_requirements.keys()), errors, "missing source requirement fields")
+    if not isinstance(source_requirements, dict):
+        source_requirements = {}
+    _require(set(REQUIRED_SOURCE_FIELDS) <= set(source_requirements), errors, "missing source requirement fields")
     _require(source_requirements.get("minimum_sources", 0) >= 3, errors, "minimum_sources must be at least 3")
     _require(source_requirements.get("rights_review_required") is True, errors, "rights review must be required")
     _require(source_requirements.get("factual_review_required") is True, errors, "factual review must be required")
     _require(source_requirements.get("source_attribution_required") is True, errors, "source attribution must be required")
 
     visual_style = concept.get("visual_style", {})
-    _require(REQUIRED_VISUAL_STYLE_FIELDS <= tuple(visual_style.keys()), errors, "missing visual style fields")
+    if not isinstance(visual_style, dict):
+        visual_style = {}
+    _require(set(REQUIRED_VISUAL_STYLE_FIELDS) <= set(visual_style), errors, "missing visual style fields")
     _require(visual_style.get("aspect_ratio") == LONG_FORM_ASPECT_RATIO, errors, "visual style aspect ratio must be 16:9")
 
     sponsor_slots = concept.get("sponsor_slot_markers")
     _require(isinstance(sponsor_slots, list) and bool(sponsor_slots), errors, "sponsor_slot_markers must be a non-empty list")
     for slot in sponsor_slots if isinstance(sponsor_slots, list) else []:
-        _require(slot.get("status") == "placeholder_only", errors, "sponsor slots must be placeholder_only")
-        _require("after_section_type" in slot, errors, "sponsor slot missing after_section_type")
+        _require(isinstance(slot, dict), errors, "sponsor slot must be an object")
+        if isinstance(slot, dict):
+            _require(slot.get("status") == "placeholder_only", errors, "sponsor slots must be placeholder_only")
+            _require("after_section_type" in slot, errors, "sponsor slot missing after_section_type")
 
     chapters = concept.get("chapters")
     _require(isinstance(chapters, list) and bool(chapters), errors, "chapters must be a non-empty list")
     chapter_section_types: list[str] = []
     chapter_seconds = 0
     for chapter in chapters if isinstance(chapters, list) else []:
-        _require(REQUIRED_CHAPTER_FIELDS <= tuple(chapter.keys()), errors, "chapter missing required fields")
+        _require(isinstance(chapter, dict), errors, "chapter must be an object")
+        if not isinstance(chapter, dict):
+            continue
+        _require(set(REQUIRED_CHAPTER_FIELDS) <= set(chapter), errors, "chapter missing required fields")
         section_type = chapter.get("section_type")
         if isinstance(section_type, str):
             chapter_section_types.append(section_type)
@@ -323,15 +331,23 @@ def validate_long_form_concept(concept: dict[str, Any]) -> dict[str, Any]:
         warnings.append("chapter duration total differs from target duration by more than 30 seconds")
 
     shorts_compatibility = concept.get("shorts_compatibility", {})
+    if not isinstance(shorts_compatibility, dict):
+        shorts_compatibility = {}
     _require(shorts_compatibility.get("compatible_with_shorts_cutdowns") is True, errors, "shorts compatibility must be true")
     _require(shorts_compatibility.get("p27_platform_packaging_ready_after_review") is True, errors, "P27 packaging compatibility must be after review")
     _require(bool(shorts_compatibility.get("recommended_cutdown_sections")), errors, "recommended cutdown sections required")
 
     platform_packaging = concept.get("platform_packaging", {})
+    if not isinstance(platform_packaging, dict):
+        platform_packaging = {}
     youtube_packaging = platform_packaging.get("youtube_long_form", {})
     shorts_funnel = platform_packaging.get("shorts_funnel", {})
-    _require(youtube_packaging.get("direct_upload_out_of_scope") is True, errors, "direct upload must remain out of scope")
-    _require(shorts_funnel.get("uses_p27_exports_after_review") is True, errors, "shorts funnel must use P27 exports after review")
+    _require(isinstance(youtube_packaging, dict), errors, "youtube_long_form packaging must be an object")
+    _require(isinstance(shorts_funnel, dict), errors, "shorts_funnel packaging must be an object")
+    if isinstance(youtube_packaging, dict):
+        _require(youtube_packaging.get("direct_upload_out_of_scope") is True, errors, "direct upload must remain out of scope")
+    if isinstance(shorts_funnel, dict):
+        _require(shorts_funnel.get("uses_p27_exports_after_review") is True, errors, "shorts funnel must use P27 exports after review")
 
     return {
         "schema_version": "p28.long_form_concept_validation.v1",
