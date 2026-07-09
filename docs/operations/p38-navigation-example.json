@@ -1,0 +1,24 @@
+{
+  "schema_version": "p38.navigation_example.v1",
+  "parent_epic": 475,
+  "renderers": ["toc", "anchors", "reviewer_quick_links", "blocker_quick_links", "navigation_summary"],
+  "output_format": "markdown_only",
+  "guardrails": {
+    "markdown_only": true,
+    "html_rendered": false,
+    "pdf_rendered": false,
+    "zip_created": false,
+    "email_sent": false,
+    "slack_sent": false,
+    "cloud_sync": false,
+    "external_upload": false,
+    "network_called": false,
+    "scheduler_used": false,
+    "credentials_used": false,
+    "platform_edit_performed": false,
+    "deletion_performed": false,
+    "moving_performed": false,
+    "publish_allowed": false,
+    "review_required": true
+  }
+}

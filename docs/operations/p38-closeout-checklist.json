@@ -1,0 +1,29 @@
+{
+  "schema_version": "p38.closeout_checklist.v1",
+  "parent_epic": 475,
+  "closeout_issue": 481,
+  "child_tasks": [476, 477, 478, 479, 480, 481],
+  "coverage": {
+    "packet_toc": true,
+    "section_anchors": true,
+    "reviewer_quick_links": true,
+    "blocker_quick_links": true,
+    "navigation_summary": true
+  },
+  "guardrails": [
+    "No HTML/PDF generation.",
+    "No ZIP/archive generation.",
+    "No email/Slack delivery.",
+    "No cloud sync.",
+    "No external upload.",
+    "No network calls.",
+    "No schedulers.",
+    "No credential storage.",
+    "No platform edits.",
+    "No deletion or movement.",
+    "No auto-publish path.",
+    "No merge without exact-head CI."
+  ],
+  "publish_allowed": false,
+  "review_required": true
+}
