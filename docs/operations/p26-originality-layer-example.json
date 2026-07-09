@@ -1,0 +1,163 @@
+{
+  "schema_version": "p26.originality_layer.v1",
+  "package_id": "pkg-originality-example",
+  "publish_allowed": false,
+  "examples": [
+    {
+      "example_id": "weak_short_example",
+      "content_type": "short",
+      "originality_score": 2,
+      "originality_status": "originality_blocked",
+      "signals_present": [
+        {
+          "signal_id": "weak_signal_001",
+          "signal_type": "original_cta_or_debate_frame",
+          "description": "Generic CTA asks only what viewers think.",
+          "evidence_path": "content_package.json:packaging.cta_comment_trigger_options[0]",
+          "source_reference": null,
+          "strength": "weak",
+          "review_required": true,
+          "review_status": "revision_required",
+          "notes": "The CTA does not add a football-specific debate."
+        }
+      ],
+      "signals_missing": ["unique_narration_angle", "original_analysis", "custom_stat_card", "sourced_comparison"],
+      "generic_template_warnings": ["generic AI voiceover", "slideshow of web images", "template with swapped player names"],
+      "required_actions": ["Add a specific football angle, a sourced comparison, and a stronger CTA before export review."],
+      "review_required": true,
+      "approval_state": "not_approved",
+      "risk_report_linkage": {
+        "originality_risk_level": "high",
+        "publish_blocking": true,
+        "content_package_originality_status": "originality_blocked"
+      },
+      "notes": ["Weak originality blocks publish-readiness."]
+    },
+    {
+      "example_id": "stronger_short_example",
+      "content_type": "short",
+      "originality_score": 7,
+      "originality_status": "reviewed_pending_editorial",
+      "signals_present": [
+        {
+          "signal_id": "short_signal_001",
+          "signal_type": "unique_narration_angle",
+          "description": "Frames Neymar through one injury, one expectation, and one unfinished World Cup question.",
+          "evidence_path": "production/production_plan.json:hook",
+          "source_reference": "content_package.json:source_assets",
+          "strength": "strong",
+          "review_required": true,
+          "review_status": "reviewed_pending_editorial",
+          "notes": "Specific angle reduces generic player-summary risk."
+        },
+        {
+          "signal_id": "short_signal_002",
+          "signal_type": "sourced_comparison",
+          "description": "Compares pre-injury expectation with later tournament pressure using source references.",
+          "evidence_path": "docs/operations/p26-source-attribution-example.json:records[1]",
+          "source_reference": "attr_stat_001",
+          "strength": "moderate",
+          "review_required": true,
+          "review_status": "reviewed_pending_editorial",
+          "notes": "Comparison requires factual review."
+        },
+        {
+          "signal_id": "short_signal_003",
+          "signal_type": "original_cta_or_debate_frame",
+          "description": "Asks whether Neymar was robbed of the legacy people expected.",
+          "evidence_path": "content_package.json:packaging.cta_comment_trigger_options",
+          "source_reference": null,
+          "strength": "strong",
+          "review_required": true,
+          "review_status": "reviewed_pending_editorial",
+          "notes": "CTA creates football-specific debate rather than generic engagement."
+        }
+      ],
+      "signals_missing": ["host_or_avatar_layer"],
+      "generic_template_warnings": [],
+      "required_actions": ["Complete rights, attribution, factual, and editorial review before export."],
+      "review_required": true,
+      "approval_state": "not_approved",
+      "risk_report_linkage": {
+        "originality_risk_level": "medium",
+        "publish_blocking": true,
+        "content_package_originality_status": "reviewed_pending_editorial"
+      },
+      "notes": ["Stronger originality still does not approve publishing."]
+    },
+    {
+      "example_id": "stronger_explainer_example",
+      "content_type": "explainer",
+      "originality_score": 8,
+      "originality_status": "reviewed_pending_editorial",
+      "signals_present": [
+        {
+          "signal_id": "explainer_signal_001",
+          "signal_type": "unique_narration_angle",
+          "description": "Frames 2026 pressure as a comparison between legacy, age, expectation, and tournament role.",
+          "evidence_path": "production/explainer_plan.json:sections",
+          "source_reference": "concept.yaml",
+          "strength": "strong",
+          "review_required": true,
+          "review_status": "reviewed_pending_editorial",
+          "notes": "Angle is broader than a simple player list."
+        },
+        {
+          "signal_id": "explainer_signal_002",
+          "signal_type": "original_analysis",
+          "description": "Explains why pressure differs by player rather than ranking talent only.",
+          "evidence_path": "production/explainer_plan.json:beats",
+          "source_reference": null,
+          "strength": "strong",
+          "review_required": true,
+          "review_status": "reviewed_pending_editorial",
+          "notes": "Adds editorial point of view."
+        },
+        {
+          "signal_id": "explainer_signal_003",
+          "signal_type": "custom_stat_card",
+          "description": "Uses custom pressure-index stat card with source references.",
+          "evidence_path": "production/beat_comparison_collage.png",
+          "source_reference": "docs/operations/p26-source-attribution-example.json",
+          "strength": "moderate",
+          "review_required": true,
+          "review_status": "reviewed_pending_editorial",
+          "notes": "Stats require source verification."
+        },
+        {
+          "signal_id": "explainer_signal_004",
+          "signal_type": "contextual_timeline",
+          "description": "Shows how the story changes from past tournament moment to future tournament pressure.",
+          "evidence_path": "production/explainer_plan.json:timeline",
+          "source_reference": null,
+          "strength": "moderate",
+          "review_required": true,
+          "review_status": "reviewed_pending_editorial",
+          "notes": "Timeline prevents flat listicle structure."
+        },
+        {
+          "signal_id": "explainer_signal_005",
+          "signal_type": "counterpoint_or_nuance",
+          "description": "Adds nuance that pressure is not the same as talent or popularity.",
+          "evidence_path": "production/explainer_plan.json:counterpoints",
+          "source_reference": null,
+          "strength": "strong",
+          "review_required": true,
+          "review_status": "reviewed_pending_editorial",
+          "notes": "Nuance reduces repetitive template risk."
+        }
+      ],
+      "signals_missing": ["host_or_avatar_layer"],
+      "generic_template_warnings": [],
+      "required_actions": ["Complete source, rights, originality, and editorial review before export."],
+      "review_required": true,
+      "approval_state": "not_approved",
+      "risk_report_linkage": {
+        "originality_risk_level": "medium",
+        "publish_blocking": true,
+        "content_package_originality_status": "reviewed_pending_editorial"
+      },
+      "notes": ["Strong originality helps editorial review but does not clear rights or monetization."]
+    }
+  ]
+}
