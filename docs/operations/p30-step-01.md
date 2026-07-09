@@ -37,6 +37,8 @@ Define a platform-agnostic performance metrics input contract that can be filled
 
 This step supports manual or fixture-based metrics only.
 
+Explicit rule: no live API ingestion.
+
 It does not:
 
 - ingest live analytics APIs;
