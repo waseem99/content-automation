@@ -1,0 +1,21 @@
+{
+  "schema_version": "p39.decision_example.v1",
+  "parent_epic": 483,
+  "supported_states": ["approved_local", "request_changes", "hold_blocked", "archive_candidate_review"],
+  "followup_required_for": ["request_changes", "hold_blocked"],
+  "guardrails": {
+    "local_only": true,
+    "automated_approval_performed": false,
+    "external_delivery_performed": false,
+    "external_upload": false,
+    "cloud_sync": false,
+    "network_called": false,
+    "scheduler_used": false,
+    "credentials_used": false,
+    "platform_edit_performed": false,
+    "deletion_performed": false,
+    "moving_performed": false,
+    "publish_allowed": false,
+    "review_required": true
+  }
+}
