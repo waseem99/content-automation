@@ -1,0 +1,52 @@
+{
+  "schema_version": "p33.safe_local_cli_example.v1",
+  "parent_epic": 435,
+  "safe_examples": [
+    ["validate-package", "--input", "content_package.json", "--mode", "validate"],
+    ["review-readiness", "--input", "publish_readiness_manifest.json", "--mode", "inspect"],
+    ["build-report", "--input", "reporting_input_bundle.json", "--mode", "build-local-artifact"],
+    ["export-handoff", "--input", "operator_report_package.json", "--mode", "package-local-handoff"],
+    ["dry-run-publish-check", "--input", "publish_readiness_manifest.json", "--input", "risk_report.json", "--mode", "validate"],
+    ["closeout-check", "--input", "closeout_checklist.json", "--mode", "validate"]
+  ],
+  "blocked_examples": [
+    ["validate-package", "--mode", "upload"],
+    ["dry-run-publish-check", "--allow-upload"],
+    ["build-report", "--allow-network"],
+    ["export-handoff", "--allow-notifications"],
+    ["closeout-check", "--allow-delete"]
+  ],
+  "result_contract": {
+    "schema_version": "p33.safe_local_cli_result.v1",
+    "status_values": ["success", "blocked"],
+    "local_only_fields": [
+      "external_action_performed",
+      "network_called",
+      "upload_performed",
+      "scheduler_used",
+      "credentials_used",
+      "notification_sent",
+      "destructive_cleanup_performed"
+    ]
+  },
+  "exit_codes": {
+    "success": 0,
+    "validation_failure": 1,
+    "governance_block": 2,
+    "missing_artifact": 3,
+    "unsafe_mode_request": 4,
+    "internal_error": 5
+  },
+  "guardrails": {
+    "no_live_upload": true,
+    "no_network_call": true,
+    "no_scheduler": true,
+    "no_credential_storage": true,
+    "no_destructive_cleanup": true,
+    "no_external_notifications": true,
+    "no_account_sync": true,
+    "no_auto_publish_path": true
+  },
+  "publish_allowed": false,
+  "review_required": true
+}
