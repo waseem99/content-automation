@@ -1,0 +1,46 @@
+{
+  "schema_version": "p36.closeout_checklist.v1",
+  "parent_epic": 459,
+  "closeout_issue": 465,
+  "child_tasks": [
+    {"issue": 460, "status": "complete_after_merge", "artifacts": ["src/p36_review_packet.py", "docs/operations/p36-step-01.md", "tests/integration/test_p36_batch_01_06.py"]},
+    {"issue": 461, "status": "complete_after_merge", "artifacts": ["src/p36_review_packet.py", "docs/operations/p36-step-02.md", "docs/operations/p36-review-packet-example.json"]},
+    {"issue": 462, "status": "complete_after_merge", "artifacts": ["src/p36_review_packet.py", "docs/operations/p36-step-03.md", "tests/integration/test_p36_batch_01_06.py"]},
+    {"issue": 463, "status": "complete_after_merge", "artifacts": ["src/p36_review_packet.py", "docs/operations/p36-step-04.md", "tests/integration/test_p36_batch_01_06.py"]},
+    {"issue": 464, "status": "complete_after_merge", "artifacts": ["src/p36_review_packet.py", "docs/operations/p36-step-05.md", "docs/operations/p36-review-packet-example.json"]},
+    {"issue": 465, "status": "complete_after_merge", "artifacts": ["docs/operations/p36-step-06.md", "docs/operations/p36-closeout-report.md", "docs/operations/p36-closeout-checklist.json", "tests/integration/test_p36_batch_01_06.py"]}
+  ],
+  "coverage": {
+    "packet_item_metadata": true,
+    "packet_index": true,
+    "reviewer_checklist": true,
+    "blocker_appendix": true,
+    "local_handoff_manifest": true,
+    "closeout_report": true
+  },
+  "no_zip_archive_generation": true,
+  "no_email_slack_delivery": true,
+  "no_cloud_sync": true,
+  "no_external_upload": true,
+  "no_network_call": true,
+  "no_scheduler": true,
+  "no_credential_storage": true,
+  "no_platform_edit": true,
+  "no_deletion_or_movement": true,
+  "no_auto_publish_path": true,
+  "guardrails": [
+    "No ZIP/archive generation.",
+    "No email/Slack delivery.",
+    "No cloud sync.",
+    "No external upload.",
+    "No network calls.",
+    "No schedulers or background jobs.",
+    "No credential storage.",
+    "No platform edits.",
+    "No deletion or movement.",
+    "No auto-publish path.",
+    "No merge without exact-head CI."
+  ],
+  "publish_allowed": false,
+  "review_required": true
+}

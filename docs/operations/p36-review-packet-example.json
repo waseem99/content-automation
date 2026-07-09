@@ -1,0 +1,27 @@
+{
+  "schema_version": "p36.local_review_packet_example.v1",
+  "parent_epic": 459,
+  "packet_item_fields": ["item_id", "title", "relative_path", "item_type", "source_system", "source_issue", "review_status", "reviewer_role", "required", "checksum_digest"],
+  "item_types": ["report", "cli_result", "artifact", "inventory", "summary", "blocker_appendix", "checklist"],
+  "sections": ["executive_summary", "review_required", "ready_for_approval", "blocked", "reference_artifacts"],
+  "checklist_gates": ["completeness", "governance", "integrity", "retention", "blocker_review", "final_operator_decision"],
+  "decision_options": ["approve_local_packet", "request_changes", "hold_blocked", "archive_candidate_review"],
+  "blocker_types": ["governance_block", "integrity_drift", "retention_review", "missing_artifact", "rights_review", "unsafe_publish_state"],
+  "distribution_status": "local_only_not_sent",
+  "guardrails": {
+    "local_only": true,
+    "zip_created": false,
+    "email_sent": false,
+    "slack_sent": false,
+    "cloud_sync": false,
+    "external_upload": false,
+    "network_called": false,
+    "scheduler_used": false,
+    "credentials_used": false,
+    "platform_edit_performed": false,
+    "deletion_performed": false,
+    "moving_performed": false,
+    "publish_allowed": false,
+    "review_required": true
+  }
+}
