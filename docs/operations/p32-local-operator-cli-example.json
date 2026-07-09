@@ -1,0 +1,72 @@
+{
+  "schema_version": "p32.local_operator_cli.v1",
+  "parent_epic": 427,
+  "content_type": "local_operator_cli_contract",
+  "command_registry": {
+    "issue": 428,
+    "required_commands": ["validate-package", "review-readiness", "build-report", "export-handoff", "dry-run-publish-check", "closeout-check"],
+    "required_fields": ["command_name", "purpose", "required_inputs", "outputs", "allowed_modes", "safety_flags"],
+    "commands": [
+      {"command_name": "validate-package", "purpose": "Validate package structure, required metadata, and local artifact references.", "required_inputs": ["content_package_path"], "outputs": ["validation_report.json"], "allowed_modes": ["inspect", "validate"], "safety_flags": {"dry_run": true, "no_network": true, "no_upload": true, "no_scheduler": true, "no_credentials": true, "no_external_notifications": true, "read_only_inputs": true}},
+      {"command_name": "review-readiness", "purpose": "Check P29 publish-readiness and governance state without exporting or uploading.", "required_inputs": ["publish_readiness_manifest_path", "editorial_status_path"], "outputs": ["readiness_review.json", "operator_summary.md"], "allowed_modes": ["inspect", "validate"], "safety_flags": {"dry_run": true, "no_network": true, "no_upload": true, "no_scheduler": true, "no_credentials": true, "no_external_notifications": true, "read_only_inputs": true}},
+      {"command_name": "build-report", "purpose": "Build a local operator report from P31 reporting inputs.", "required_inputs": ["reporting_input_bundle_path"], "outputs": ["weekly_brief.json", "decision_queue.json", "governance_exceptions.json"], "allowed_modes": ["build-local-artifact"], "safety_flags": {"dry_run": true, "no_network": true, "no_upload": true, "no_scheduler": true, "no_credentials": true, "no_external_notifications": true, "read_only_inputs": true}},
+      {"command_name": "export-handoff", "purpose": "Package local handoff artifacts for human review only.", "required_inputs": ["operator_report_package_path"], "outputs": ["operator_handoff_manifest.json", "operator_summary.md"], "allowed_modes": ["package-local-handoff"], "safety_flags": {"dry_run": true, "no_network": true, "no_upload": true, "no_scheduler": true, "no_credentials": true, "no_external_notifications": true, "read_only_inputs": true}},
+      {"command_name": "dry-run-publish-check", "purpose": "Confirm whether a package would be blocked from publish/export readiness without publishing.", "required_inputs": ["publish_readiness_manifest_path", "risk_report_path"], "outputs": ["dry_run_publish_check.json"], "allowed_modes": ["inspect", "validate"], "safety_flags": {"dry_run": true, "no_network": true, "no_upload": true, "no_scheduler": true, "no_credentials": true, "no_external_notifications": true, "read_only_inputs": true}},
+      {"command_name": "closeout-check", "purpose": "Validate closeout checklist artifacts for the current batch or epic.", "required_inputs": ["closeout_checklist_path"], "outputs": ["closeout_validation_report.json"], "allowed_modes": ["inspect", "validate"], "safety_flags": {"dry_run": true, "no_network": true, "no_upload": true, "no_scheduler": true, "no_credentials": true, "no_external_notifications": true, "read_only_inputs": true}}
+    ]
+  },
+  "dry_run_safety": {
+    "issue": 429,
+    "required_flags": ["dry_run", "no_network", "no_upload", "no_scheduler", "no_credentials", "no_external_notifications", "read_only_inputs"],
+    "allowed_modes": ["inspect", "validate", "build-local-artifact", "package-local-handoff"],
+    "blocked_modes": ["upload", "publish", "schedule", "notify", "delete", "sync-account"],
+    "default_flags": {"dry_run": true, "no_network": true, "no_upload": true, "no_scheduler": true, "no_credentials": true, "no_external_notifications": true, "read_only_inputs": true},
+    "external_actions_allowed": false
+  },
+  "artifact_contract": {
+    "issue": 430,
+    "required_fields": ["command_name", "input_artifacts", "output_artifacts", "required_paths", "optional_paths", "generated_manifest", "operator_summary", "validation_report"],
+    "artifacts": [
+      {"command_name": "validate-package", "input_artifacts": ["content_package_path"], "output_artifacts": ["validation_report.json"], "required_paths": ["content_package_path"], "optional_paths": ["operator_notes_path", "manual_override_notes_path"], "generated_manifest": "validate-package_manifest.json", "operator_summary": "operator_summary.md", "validation_report": "validate-package_validation_report.json", "local_only": true, "external_upload": false},
+      {"command_name": "review-readiness", "input_artifacts": ["publish_readiness_manifest_path", "editorial_status_path"], "output_artifacts": ["readiness_review.json", "operator_summary.md"], "required_paths": ["publish_readiness_manifest_path", "editorial_status_path"], "optional_paths": ["operator_notes_path", "manual_override_notes_path"], "generated_manifest": "review-readiness_manifest.json", "operator_summary": "operator_summary.md", "validation_report": "review-readiness_validation_report.json", "local_only": true, "external_upload": false},
+      {"command_name": "build-report", "input_artifacts": ["reporting_input_bundle_path"], "output_artifacts": ["weekly_brief.json", "decision_queue.json", "governance_exceptions.json"], "required_paths": ["reporting_input_bundle_path"], "optional_paths": ["operator_notes_path", "manual_override_notes_path"], "generated_manifest": "build-report_manifest.json", "operator_summary": "operator_summary.md", "validation_report": "build-report_validation_report.json", "local_only": true, "external_upload": false},
+      {"command_name": "export-handoff", "input_artifacts": ["operator_report_package_path"], "output_artifacts": ["operator_handoff_manifest.json", "operator_summary.md"], "required_paths": ["operator_report_package_path"], "optional_paths": ["operator_notes_path", "manual_override_notes_path"], "generated_manifest": "export-handoff_manifest.json", "operator_summary": "operator_summary.md", "validation_report": "export-handoff_validation_report.json", "local_only": true, "external_upload": false},
+      {"command_name": "dry-run-publish-check", "input_artifacts": ["publish_readiness_manifest_path", "risk_report_path"], "output_artifacts": ["dry_run_publish_check.json"], "required_paths": ["publish_readiness_manifest_path", "risk_report_path"], "optional_paths": ["operator_notes_path", "manual_override_notes_path"], "generated_manifest": "dry-run-publish-check_manifest.json", "operator_summary": "operator_summary.md", "validation_report": "dry-run-publish-check_validation_report.json", "local_only": true, "external_upload": false},
+      {"command_name": "closeout-check", "input_artifacts": ["closeout_checklist_path"], "output_artifacts": ["closeout_validation_report.json"], "required_paths": ["closeout_checklist_path"], "optional_paths": ["operator_notes_path", "manual_override_notes_path"], "generated_manifest": "closeout-check_manifest.json", "operator_summary": "operator_summary.md", "validation_report": "closeout-check_validation_report.json", "local_only": true, "external_upload": false}
+    ],
+    "outputs_are_local_only": true
+  },
+  "exit_code_semantics": {
+    "issue": 431,
+    "exit_codes": {"success": 0, "validation_failure": 1, "governance_block": 2, "missing_artifact": 3, "unsafe_mode_request": 4, "internal_error": 5},
+    "warning_categories": ["missing_optional_artifact", "stale_input", "review_required", "risk_warning", "export_warning"],
+    "blocking_categories": ["publish_block", "rights_block", "unsafe_mode_block", "credential_request_block"],
+    "fail_closed_on_unsafe_request": true,
+    "examples": [
+      {"case": "all_checks_pass", "exit_code": 0, "category": "success"},
+      {"case": "missing_required_manifest", "exit_code": 3, "category": "missing_artifact"},
+      {"case": "publish_block_active", "exit_code": 2, "category": "publish_block"},
+      {"case": "operator_requested_upload", "exit_code": 4, "category": "unsafe_mode_block"}
+    ]
+  },
+  "local_runbook": {
+    "issue": 432,
+    "steps": ["collect_inputs", "run_validation", "review_warnings", "resolve_blockers", "build_report", "prepare_handoff", "record_decision"],
+    "handoff_checklist": ["artifacts_included", "warnings_reviewed", "blockers_resolved_or_documented", "review_owner_assigned", "no_external_action_performed"],
+    "operator_rule": "Operators must not publish, upload, schedule, notify, sync accounts, or store credentials from this runbook.",
+    "manual_only": true
+  },
+  "closeout": {
+    "issue": 433,
+    "child_tasks": [428, 429, 430, 431, 432, 433],
+    "no_executable_cli": true,
+    "no_live_upload": true,
+    "no_scheduler": true,
+    "no_external_notifications": true,
+    "no_credential_storage": true,
+    "no_destructive_cleanup": true,
+    "no_auto_publish_path": true
+  },
+  "publish_allowed": false,
+  "review_required": true
+}
