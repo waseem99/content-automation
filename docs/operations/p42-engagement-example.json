@@ -1,0 +1,42 @@
+{
+  "schema_version": "p42.engagement_example.v1",
+  "parent_epic": 507,
+  "example_payload": {
+    "platform": "youtube_shorts",
+    "duration_seconds": 45,
+    "audience": "busy founders",
+    "topic": "AI automation",
+    "title_options": ["Most Founders Get AI Automation Wrong"],
+    "hook": "If you think AI automation is just about tools, this is what most founders miss.",
+    "script": "Most busy founders focus on tools, but the real leverage is the system behind the workflow. Here is the simple framework: spot the repeated task, map the decision, automate one step, then test the result. Save this before your next automation decision.",
+    "retention_beats": [
+      {"beat": "hook", "start_seconds": 0, "end_seconds": 3},
+      {"beat": "stakes", "start_seconds": 3, "end_seconds": 8},
+      {"beat": "framework", "start_seconds": 8, "end_seconds": 20},
+      {"beat": "proof", "start_seconds": 20, "end_seconds": 35},
+      {"beat": "cta", "start_seconds": 35, "end_seconds": 45}
+    ],
+    "scene_plan": [
+      {"scene_number": 1, "visual_direction": "Bold contradiction text."},
+      {"scene_number": 2, "visual_direction": "Show workflow map."},
+      {"scene_number": 3, "visual_direction": "3-step framework."},
+      {"scene_number": 4, "visual_direction": "Before-after example."},
+      {"scene_number": 5, "visual_direction": "Save CTA."}
+    ]
+  },
+  "expected_output_sections": [
+    "hook_diagnostics",
+    "retention_analysis",
+    "engagement_dimensions",
+    "alternate_hooks",
+    "cta_variants",
+    "improvement_plan",
+    "overall_engagement_score"
+  ],
+  "guardrails": {
+    "live_analytics_used": false,
+    "performance_guaranteed": false,
+    "no_scraping": true,
+    "no_upload_or_publish": true
+  }
+}
