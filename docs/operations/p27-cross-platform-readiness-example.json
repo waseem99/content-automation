@@ -1,0 +1,64 @@
+{
+  "schema_version": "p27.cross_platform_export_readiness.v1",
+  "platforms": ["youtube_shorts", "tiktok", "instagram_reels", "facebook_reels", "x_twitter"],
+  "publish_allowed": false,
+  "review_required": true,
+  "is_ready_for_manual_review": true,
+  "is_publish_ready": false,
+  "source_topic": "Neymar 2014 World Cup injury and comeback pressure",
+  "subject": "Neymar",
+  "platform_results": {
+    "youtube_shorts": {
+      "platform": "youtube_shorts",
+      "is_ready_for_manual_review": true,
+      "publish_allowed": false,
+      "review_required": true,
+      "checked_files": ["video.mp4", "title.txt", "description.txt", "hashtags.txt", "pinned_comment.txt", "first_frame_notes.txt", "risk_note.txt", "rights_note.txt", "metadata.json", "review_status.json"],
+      "errors": [],
+      "warnings": []
+    },
+    "tiktok": {
+      "platform": "tiktok",
+      "is_ready_for_manual_review": true,
+      "publish_allowed": false,
+      "review_required": true,
+      "checked_files": ["video.mp4", "caption.txt", "hashtags.txt", "cover_notes.txt", "music_risk_note.txt", "publishing_note.txt", "metadata.json", "review_status.json"],
+      "errors": [],
+      "warnings": []
+    },
+    "instagram_reels": {
+      "platform": "instagram_reels",
+      "is_ready_for_manual_review": true,
+      "publish_allowed": false,
+      "review_required": true,
+      "checked_files": ["video.mp4", "caption.txt", "hashtags.txt", "cover_notes.txt", "music_risk_note.txt", "publishing_note.txt", "metadata.json", "review_status.json"],
+      "errors": [],
+      "warnings": []
+    },
+    "facebook_reels": {
+      "platform": "facebook_reels",
+      "is_ready_for_manual_review": true,
+      "publish_allowed": false,
+      "review_required": true,
+      "checked_files": ["video.mp4", "caption.txt", "hashtags.txt", "cover_notes.txt", "music_risk_note.txt", "publishing_note.txt", "metadata.json", "review_status.json"],
+      "errors": [],
+      "warnings": []
+    },
+    "x_twitter": {
+      "platform": "x_twitter",
+      "is_ready_for_manual_review": true,
+      "publish_allowed": false,
+      "review_required": true,
+      "checked_files": ["video.mp4", "post.txt", "thread.txt", "hashtags.txt", "debate_prompt.txt", "risk_note.txt", "metadata.json", "review_status.json"],
+      "errors": [],
+      "warnings": []
+    }
+  },
+  "errors": [],
+  "manual_publishing_workflow": [
+    "Review generated copy and metadata per platform.",
+    "Confirm P26 rights, monetization, source attribution, music, and originality status.",
+    "Complete P29 editorial approval before any publish-ready state.",
+    "Only then may a human operator manually prepare platform uploads outside this validation helper."
+  ]
+}
