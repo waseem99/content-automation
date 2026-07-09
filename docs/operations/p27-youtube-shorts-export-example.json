@@ -1,0 +1,169 @@
+{
+  "schema_version": "p27.youtube_shorts_export_pack.v1",
+  "package_id": "pkg-youtube-shorts-export-example",
+  "platform": "youtube_shorts",
+  "export_directory": "exports/youtube_shorts/",
+  "required_files": [
+    "video.mp4",
+    "title.txt",
+    "description.txt",
+    "hashtags.txt",
+    "pinned_comment.txt",
+    "first_frame_notes.txt",
+    "risk_note.txt",
+    "rights_note.txt",
+    "metadata.json",
+    "review_status.json"
+  ],
+  "publish_allowed": false,
+  "review_required": true,
+  "source_inputs": {
+    "topic": "Neymar 2014 World Cup injury and comeback pressure",
+    "subject": "Neymar",
+    "source_package_path": "docs/operations/p25-title-options-example.json",
+    "monetization_risk_report_path": "docs/operations/p26-risk-report-medium-example.json",
+    "source_attribution_path": "docs/operations/p26-source-attribution-example.json"
+  },
+  "selected_p25_fields": {
+    "title_option": {
+      "option_id": "title_01",
+      "title_text": "The Neymar Question Fans Can't Ignore",
+      "approval_state": "not_approved"
+    },
+    "first_frame_option": {
+      "concept_id": "first_frame_01",
+      "visual_pattern": "freeze_frame_punch_in",
+      "suggested_text": "THIS CHANGED NEYMAR",
+      "approval_state": "not_approved"
+    },
+    "cta_option": {
+      "cta_id": "cta_01",
+      "cta_text": "Be honest: are fans too harsh on Neymar?",
+      "approval_state": "not_approved"
+    }
+  },
+  "metadata": {
+    "schema_version": "p27.youtube_shorts_export_pack.v1",
+    "package_id": "pkg-youtube-shorts-export-example",
+    "platform": "youtube_shorts",
+    "export_directory": "exports/youtube_shorts/",
+    "content_type": "short",
+    "video_asset_path": "renders/shorts/neymar-2014-comeback-pressure.mp4",
+    "copy_asset_paths": {
+      "title": "exports/youtube_shorts/title.txt",
+      "description": "exports/youtube_shorts/description.txt",
+      "hashtags": "exports/youtube_shorts/hashtags.txt",
+      "pinned_comment": "exports/youtube_shorts/pinned_comment.txt",
+      "first_frame_notes": "exports/youtube_shorts/first_frame_notes.txt",
+      "risk_note": "exports/youtube_shorts/risk_note.txt",
+      "rights_note": "exports/youtube_shorts/rights_note.txt"
+    },
+    "rights_note_path": "exports/youtube_shorts/rights_note.txt",
+    "review_status_path": "exports/youtube_shorts/review_status.json",
+    "source_package_path": "docs/operations/p25-title-options-example.json",
+    "monetization_risk_report_path": "docs/operations/p26-risk-report-medium-example.json",
+    "source_attribution_path": "docs/operations/p26-source-attribution-example.json",
+    "publish_allowed": false,
+    "review_required": true,
+    "blocking_reasons": [
+      "Image attribution is unresolved.",
+      "Image license is unresolved.",
+      "Human editorial approval is missing."
+    ],
+    "required_actions": [
+      "Resolve image attribution and license review.",
+      "Complete editorial review.",
+      "Keep warnings visible for final export review."
+    ],
+    "created_by_step": "P27-02",
+    "planned_epic": "P27",
+    "p25_packaging_sources": {
+      "title_option_id": "title_01",
+      "first_frame_concept_id": "first_frame_01",
+      "cta_id": "cta_01"
+    },
+    "p26_decision_state": "review_required"
+  },
+  "review_status": {
+    "platform": "youtube_shorts",
+    "package_id": "pkg-youtube-shorts-export-example",
+    "export_status": "blocked_until_review",
+    "publish_allowed": false,
+    "p26_review_status": "required",
+    "p29_editorial_status": "missing",
+    "rights_status": "review_required",
+    "monetization_status": "review_required",
+    "source_attribution_status": "review_required",
+    "music_license_status": "review_required",
+    "originality_status": "review_required",
+    "blocking_reasons": [
+      "Image attribution is unresolved.",
+      "Image license is unresolved.",
+      "Human editorial approval is missing."
+    ],
+    "required_actions": [
+      "Resolve image attribution and license review.",
+      "Complete editorial review.",
+      "Keep warnings visible for final export review."
+    ],
+    "reviewer_role": "publishing operator",
+    "notes": [
+      "Generated YouTube Shorts export pack is review-only.",
+      "P26 rights and monetization review remain required.",
+      "P29 editorial approval remains required before any publish-ready state."
+    ]
+  },
+  "files": {
+    "video.mp4": {
+      "path": "exports/youtube_shorts/video.mp4",
+      "content_type": "video/mp4",
+      "source_asset_path": "renders/shorts/neymar-2014-comeback-pressure.mp4",
+      "status": "reference_only_not_committed"
+    },
+    "title.txt": {
+      "path": "exports/youtube_shorts/title.txt",
+      "content_type": "text/plain",
+      "content": "The Neymar Question Fans Can't Ignore"
+    },
+    "description.txt": {
+      "path": "exports/youtube_shorts/description.txt",
+      "content_type": "text/plain",
+      "content": "Neymar 2014 World Cup injury and comeback pressure\n\nReview note: This YouTube Shorts export pack is generated for manual review only.\nVerify script facts, source attribution, asset rights, originality, and P29 editorial approval before any manual upload."
+    },
+    "hashtags.txt": {
+      "path": "exports/youtube_shorts/hashtags.txt",
+      "content_type": "text/plain",
+      "content": "#football\n#footballshorts\n#soccer\n#sportsstory"
+    },
+    "pinned_comment.txt": {
+      "path": "exports/youtube_shorts/pinned_comment.txt",
+      "content_type": "text/plain",
+      "content": "Be honest: are fans too harsh on Neymar?"
+    },
+    "first_frame_notes.txt": {
+      "path": "exports/youtube_shorts/first_frame_notes.txt",
+      "content_type": "text/plain",
+      "content": "Selected concept: first_frame_01\nVisual pattern: freeze_frame_punch_in\nSuggested on-frame text: THIS CHANGED NEYMAR"
+    },
+    "risk_note.txt": {
+      "path": "exports/youtube_shorts/risk_note.txt",
+      "content_type": "text/plain",
+      "content": "YouTube Shorts export risk note\npublish_allowed: false\nreview_required: true\nP26 decision state: review_required\nP29 editorial status: missing\n\nThis export pack is not an upload instruction, rights clearance, monetization approval, or publish approval."
+    },
+    "rights_note.txt": {
+      "path": "exports/youtube_shorts/rights_note.txt",
+      "content_type": "text/plain",
+      "content": "Rights note\nNo automatic rights clearance is granted by this export pack.\nP26 review and P29 editorial approval remain required."
+    },
+    "metadata.json": {
+      "path": "exports/youtube_shorts/metadata.json",
+      "content_type": "application/json",
+      "content": "{\"publish_allowed\": false, \"review_required\": true}"
+    },
+    "review_status.json": {
+      "path": "exports/youtube_shorts/review_status.json",
+      "content_type": "application/json",
+      "content": "{\"export_status\": \"blocked_until_review\", \"publish_allowed\": false}"
+    }
+  }
+}
