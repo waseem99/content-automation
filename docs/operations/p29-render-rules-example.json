@@ -1,0 +1,33 @@
+{
+  "schema_version": "p29.preview_publish_render_rules.v1",
+  "parent_epic": 331,
+  "issue": 365,
+  "content_type": "preview_publish_render_rules",
+  "render_modes": {
+    "preview": {
+      "output_name": "preview_video.mp4",
+      "allowed_when": ["draft", "package_generated", "editorial_review", "rights_review", "revisions_required", "approved"],
+      "purpose": "Internal review only; not a publishing asset.",
+      "publish_ready": false
+    },
+    "publish": {
+      "output_name": "publish_video.mp4",
+      "allowed_when": ["publish_export_ready"],
+      "requires": ["approved package", "P26 risk clear", "P29 editorial approval", "rights review clear"],
+      "purpose": "Manual export-ready asset after gates pass; still not a platform upload.",
+      "publish_ready": true
+    }
+  },
+  "readme_mismatch": {
+    "observed_terms": ["final_video.mp4", "preview_video.mp4", "publish_video.mp4"],
+    "recommended_correction": "Use preview_video.mp4 for review renders and publish_video.mp4 only after publish_export_ready; avoid treating final_video.mp4 as approval.",
+    "final_video_mp4_is_ambiguous": true
+  },
+  "blocked_rules": [
+    "publish render is blocked without publish_export_ready",
+    "preview render is not upload permission",
+    "publish render is not direct platform publishing"
+  ],
+  "publish_allowed": false,
+  "review_required": true
+}
