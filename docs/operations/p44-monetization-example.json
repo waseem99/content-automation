@@ -1,0 +1,45 @@
+{
+  "schema_version": "p44.monetization_example.v1",
+  "parent_epic": 523,
+  "example_payload": {
+    "video_package": {
+      "brief": {
+        "platform": "youtube_shorts",
+        "topic": "AI automation",
+        "audience": "busy founders",
+        "monetization_goal": "newsletter signups and SaaS affiliate revenue"
+      },
+      "title_options": ["Most Founders Get AI Automation Wrong"],
+      "hook": "If you think AI automation is just about tools, this is what most founders miss.",
+      "script": "Most busy founders focus on tools, but the real leverage is the system behind the workflow. Save this before your next automation decision."
+    },
+    "rights_report": {
+      "publish_gate": {"gate": "pass"},
+      "scores": {"overall_safety_score": 90}
+    },
+    "engagement_scorecard": {
+      "overall_engagement_score": 88,
+      "cta_variants": ["Save this before your next AI automation decision."]
+    },
+    "production_pack": {
+      "handoff_ready": true,
+      "thumbnail_directions": {"cover_text": "AI Automation Wrong"}
+    }
+  },
+  "expected_output_sections": [
+    "monetization_route_fit",
+    "metadata_pack",
+    "activation_notes",
+    "repurposing_plan",
+    "compliance_caveats",
+    "final_recommendation"
+  ],
+  "guardrails": {
+    "monetization_guaranteed": false,
+    "revenue_guaranteed": false,
+    "upload_or_publish_performed": false,
+    "platform_api_called": false,
+    "live_analytics_used": false,
+    "legal_or_tax_advice_given": false
+  }
+}
