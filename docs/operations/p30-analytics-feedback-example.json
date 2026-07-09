@@ -1,0 +1,145 @@
+{
+  "schema_version": "p30.analytics_feedback.v1",
+  "parent_epic": 411,
+  "content_type": "analytics_feedback_contract",
+  "metrics_input_contract": {
+    "issue": 412,
+    "required_fields": ["platform", "content_id", "published_external_url", "publish_date", "views", "watch_time_seconds", "average_view_duration_seconds", "retention_rate", "likes", "comments", "shares", "saves", "click_through_rate", "subscribers_gained", "revenue_estimate", "manual_notes", "review_state", "data_quality"],
+    "supported_formats": ["shorts", "explainer", "long_form"],
+    "supported_platforms": ["youtube_shorts", "youtube_long_form", "tiktok", "instagram_reels", "facebook_reels", "x_twitter"],
+    "records": [
+      {
+        "platform": "youtube_shorts",
+        "content_id": "episode-neymar-2014-short-01",
+        "published_external_url": "manual-entry-only",
+        "publish_date": "2026-07-01",
+        "views": 125000,
+        "watch_time_seconds": 420000,
+        "average_view_duration_seconds": 21.5,
+        "retention_rate": 0.72,
+        "likes": 9200,
+        "comments": 830,
+        "shares": 510,
+        "saves": 240,
+        "click_through_rate": 0.054,
+        "subscribers_gained": 940,
+        "revenue_estimate": 0.0,
+        "manual_notes": "Strong debate around Neymar legacy and Brazil pressure.",
+        "review_state": "human_reviewed",
+        "data_quality": "manual_verified",
+        "format": "shorts",
+        "live_api_ingested": false,
+        "credential_storage_used": false
+      },
+      {
+        "platform": "youtube_long_form",
+        "content_id": "episode-ghana-2010-what-if",
+        "published_external_url": "manual-entry-only",
+        "publish_date": "2026-07-03",
+        "views": 18000,
+        "watch_time_seconds": 172800,
+        "average_view_duration_seconds": 192.0,
+        "retention_rate": 0.41,
+        "likes": 720,
+        "comments": 122,
+        "shares": 61,
+        "saves": 88,
+        "click_through_rate": 0.028,
+        "subscribers_gained": 61,
+        "revenue_estimate": 4.25,
+        "manual_notes": "Good comments but weak thumbnail click-through.",
+        "review_state": "human_reviewed",
+        "data_quality": "manual_estimate",
+        "format": "long_form",
+        "live_api_ingested": false,
+        "credential_storage_used": false
+      }
+    ]
+  },
+  "learning_snapshot_contract": {
+    "issue": 413,
+    "required_fields": ["content_id", "format", "platform", "performance_window", "baseline_comparison", "outcome_label", "winning_elements", "weak_elements", "audience_signal_summary", "reviewer_interpretation", "recommended_follow_up"],
+    "outcome_labels": ["outperforming", "average", "underperforming", "inconclusive", "blocked_from_learning"],
+    "snapshots": [
+      {
+        "content_id": "episode-neymar-2014-short-01",
+        "format": "shorts",
+        "platform": "youtube_shorts",
+        "performance_window": "7d",
+        "baseline_comparison": "above_channel_short_median",
+        "outcome_label": "outperforming",
+        "winning_elements": ["legacy debate hook", "high comment prompt"],
+        "weak_elements": ["limited source context"],
+        "audience_signal_summary": "High comments and shares show strong emotional debate.",
+        "reviewer_interpretation": "Repeat player legacy pressure angles with clearer source notes.",
+        "recommended_follow_up": "create_follow_up_short"
+      },
+      {
+        "content_id": "episode-ghana-2010-what-if",
+        "format": "long_form",
+        "platform": "youtube_long_form",
+        "performance_window": "7d",
+        "baseline_comparison": "near_channel_longform_median",
+        "outcome_label": "average",
+        "winning_elements": ["what-if premise", "comment debate"],
+        "weak_elements": ["thumbnail clarity", "opening pace"],
+        "audience_signal_summary": "Retention was acceptable but click-through was weak.",
+        "reviewer_interpretation": "Refine title and thumbnail before expanding similar topics.",
+        "recommended_follow_up": "refine_angle"
+      },
+      {
+        "content_id": "unreviewed-transfer-rumor-short",
+        "format": "shorts",
+        "platform": "tiktok",
+        "performance_window": "not_applicable",
+        "baseline_comparison": "not_applicable",
+        "outcome_label": "blocked_from_learning",
+        "winning_elements": [],
+        "weak_elements": ["unreviewed factual claim"],
+        "audience_signal_summary": "Blocked by review; do not learn from unsafe input.",
+        "reviewer_interpretation": "Archive unsafe rumor format.",
+        "recommended_follow_up": "reject_or_archive"
+      }
+    ]
+  },
+  "topic_feedback_rules": {
+    "issue": 414,
+    "p28_score_links": ["timeliness", "emotional_intensity", "comment_potential", "series_fit", "monetization_fit", "production_effort"],
+    "recommendation_outputs": ["repeat_format", "refine_angle", "expand_to_long_form", "create_follow_up_short", "hold", "reject_or_archive"],
+    "rules": [
+      {"rule_id": "high-comments-repeat-format", "if": "outperforming with high comments and shares", "then": "repeat_format", "score_adjustments": {"comment_potential": 1, "emotional_intensity": 1, "series_fit": 1}, "requires_human_review": true},
+      {"rule_id": "weak-ctr-refine-packaging", "if": "average or underperforming with weak click_through_rate", "then": "refine_angle", "score_adjustments": {"production_effort": 1}, "requires_human_review": true},
+      {"rule_id": "blocked-content-archive", "if": "blocked_from_learning or unsafe source/risk state", "then": "reject_or_archive", "score_adjustments": {"monetization_fit": -2}, "requires_human_review": true}
+    ]
+  },
+  "packaging_iteration_contract": {
+    "issue": 415,
+    "required_fields": ["content_id", "source_metric_signal", "element_type", "current_version", "proposed_change", "rationale", "risk_note", "expected_learning", "review_status"],
+    "element_types": ["hook", "title", "thumbnail_cover", "caption", "pinned_comment", "description", "series_positioning"],
+    "recommendations": [
+      {"content_id": "episode-ghana-2010-what-if", "source_metric_signal": "low click_through_rate", "element_type": "title", "current_version": "What If Ghana Won in 2010?", "proposed_change": "The Penalty That Could Have Changed African Football Forever", "rationale": "Make the emotional stakes clearer.", "risk_note": "Keep sourced what-if framing; avoid claiming alternate history as fact.", "expected_learning": "Measure click-through change after human-approved packaging update.", "review_status": "review_required"},
+      {"content_id": "episode-neymar-2014-short-01", "source_metric_signal": "high early retention", "element_type": "hook", "current_version": "Was Neymar carrying Brazil?", "proposed_change": "Brazil did not just lose Neymar. They lost their pressure valve.", "rationale": "Test a sharper emotional hook while staying factual.", "risk_note": "Review tone and factual context before reuse.", "expected_learning": "Compare retention and comments on follow-up Short.", "review_status": "review_required"},
+      {"content_id": "episode-ghana-2010-what-if", "source_metric_signal": "weak thumbnail clarity", "element_type": "thumbnail_cover", "current_version": "Penalty image with generic text", "proposed_change": "Use a clean penalty moment cover with one clear question.", "rationale": "Improve visual clarity for long-form browsing.", "risk_note": "Use rights-cleared or licensed imagery only.", "expected_learning": "Compare click-through after manual packaging review.", "review_status": "review_required"}
+    ]
+  },
+  "future_api_boundary": {
+    "issue": 416,
+    "api_candidates": ["youtube_analytics", "tiktok_analytics", "instagram_facebook_insights", "x_twitter_analytics", "external_dashboards"],
+    "required_safeguards": ["oauth_scope_review", "token_storage_policy", "user_consent", "rate_limits", "privacy_review", "audit_logging", "manual_override"],
+    "current_support": "manual_or_fixture_metrics_only",
+    "live_api_ingestion_enabled": false,
+    "oauth_implemented": false,
+    "credential_storage_used": false,
+    "real_account_data_ingested": false
+  },
+  "closeout": {
+    "issue": 417,
+    "child_tasks": [412, 413, 414, 415, 416, 417],
+    "no_live_analytics_ingestion": true,
+    "no_api_credential_storage": true,
+    "no_auto_publish_path": true,
+    "human_review_required": true
+  },
+  "publish_allowed": false,
+  "review_required": true
+}
