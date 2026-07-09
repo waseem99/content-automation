@@ -1,0 +1,50 @@
+{
+  "schema_version": "p31.closeout_checklist.v1",
+  "parent_epic": 419,
+  "closeout_issue": 425,
+  "child_tasks": [
+    {"issue": 420, "status": "complete_after_merge", "artifacts": ["src/p31_reporting.py", "docs/operations/p31-step-01.md", "docs/operations/p31-operator-reporting-example.json"]},
+    {"issue": 421, "status": "complete_after_merge", "artifacts": ["src/p31_reporting.py", "docs/operations/p31-step-02.md", "docs/operations/p31-operator-reporting-example.json"]},
+    {"issue": 422, "status": "complete_after_merge", "artifacts": ["src/p31_reporting.py", "docs/operations/p31-step-03.md", "docs/operations/p31-operator-reporting-example.json"]},
+    {"issue": 423, "status": "complete_after_merge", "artifacts": ["src/p31_reporting.py", "docs/operations/p31-step-04.md", "docs/operations/p31-operator-reporting-example.json"]},
+    {"issue": 424, "status": "complete_after_merge", "artifacts": ["src/p31_reporting.py", "docs/operations/p31-step-05.md", "docs/operations/p31-operator-reporting-example.json"]},
+    {"issue": 425, "status": "complete_after_merge", "artifacts": ["docs/operations/p31-step-06.md", "docs/operations/p31-closeout-report.md", "docs/operations/p31-closeout-checklist.json", "tests/integration/test_p31_batch_01_06.py"]}
+  ],
+  "coverage": {
+    "reporting_input_bundle": true,
+    "weekly_channel_performance_brief": true,
+    "content_decision_queue": true,
+    "risk_governance_exception_report": true,
+    "operator_handoff_package": true,
+    "closeout_report": true
+  },
+  "no_dashboard_ui": true,
+  "no_email_slack_automation": true,
+  "no_live_api_ingestion": true,
+  "no_external_distribution": true,
+  "no_auto_publish_path": true,
+  "review_required": true,
+  "future_work_out_of_scope": [
+    "dashboard UI",
+    "email/Slack delivery",
+    "report scheduling",
+    "PDF/HTML report generation",
+    "account-level analytics ingestion",
+    "task management integration",
+    "external artifact upload"
+  ],
+  "guardrails": [
+    "No dashboard UI.",
+    "No automated email/Slack reporting.",
+    "No live API ingestion.",
+    "No real account sync.",
+    "No automatic task creation.",
+    "No automatic scheduling.",
+    "No external distribution.",
+    "No platform uploads.",
+    "No automated publishing decisions.",
+    "No merge without exact-head CI."
+  ],
+  "publish_allowed": false,
+  "review_required": true
+}

@@ -1,0 +1,88 @@
+{
+  "schema_version": "p31.operator_reporting.v1",
+  "parent_epic": 419,
+  "content_type": "operator_reporting_contract",
+  "reporting_input_bundle": {
+    "issue": 420,
+    "required_fields": ["reporting_period", "generated_at", "content_packages", "export_manifests", "publish_readiness_manifests", "analytics_feedback_snapshots", "governance_exceptions", "recommendations", "operator_notes"],
+    "upstream_links": ["p27_export_packs", "p28_topic_planning", "p29_publish_governance", "p30_analytics_feedback"],
+    "example": {
+      "reporting_period": "2026-W28",
+      "generated_at": "2026-07-09T00:00:00Z",
+      "content_packages": ["content_package_neymar_short.json", "content_package_ghana_longform.json"],
+      "export_manifests": ["exports/youtube_shorts/package.json", "exports/youtube_long_form/package.json"],
+      "publish_readiness_manifests": ["p29-publish-readiness-manifest-example.json"],
+      "analytics_feedback_snapshots": ["p30-analytics-feedback-example.json"],
+      "governance_exceptions": ["rights_review_required", "blocked_from_learning"],
+      "recommendations": ["create_follow_up_short", "refine_angle"],
+      "operator_notes": "Manual fixture-based report; no live account data or API ingestion.",
+      "manual_or_fixture_based": true,
+      "live_api_ingested": false,
+      "automated_notification_sent": false
+    }
+  },
+  "weekly_channel_brief": {
+    "issue": 421,
+    "required_fields": ["reporting_period", "executive_summary", "channel_health", "top_performers", "weak_performers", "audience_signals", "learning_summary", "recommended_focus_next_week", "review_required_items"],
+    "example": {
+      "reporting_period": "2026-W28",
+      "executive_summary": "Legacy debate Shorts performed strongly; long-form packaging needs refinement.",
+      "channel_health": "stable_with_shorts_momentum",
+      "top_performers": ["episode-neymar-2014-short-01"],
+      "weak_performers": ["episode-ghana-2010-what-if"],
+      "audience_signals": ["high comments on player legacy", "weak CTR on generic what-if thumbnail"],
+      "learning_summary": "Emotional legacy hooks create debate; long-form needs clearer stakes in title/cover.",
+      "recommended_focus_next_week": ["produce follow-up Neymar legacy Short", "revise Ghana long-form title and cover"],
+      "review_required_items": ["rights review for follow-up imagery", "thumbnail copy review"],
+      "not_dashboard": true,
+      "automated_delivery": false
+    }
+  },
+  "content_decision_queue": {
+    "issue": 422,
+    "required_fields": ["item_id", "content_id", "decision_type", "priority", "reason", "source_signal", "recommended_action", "owner_role", "due_window", "review_status"],
+    "decision_types": ["repeat", "revise", "expand", "hold", "archive", "escalate_rights", "escalate_risk", "prepare_export"],
+    "items": [
+      {"item_id": "decision-001", "content_id": "episode-neymar-2014-short-01", "decision_type": "repeat", "priority": "high", "reason": "Outperforming comments and shares.", "source_signal": "P30 learning snapshot: outperforming", "recommended_action": "Create one follow-up Short with clearer source notes.", "owner_role": "content_operator", "due_window": "next_week", "review_status": "review_required", "automatically_executed": false},
+      {"item_id": "decision-002", "content_id": "episode-ghana-2010-what-if", "decision_type": "revise", "priority": "medium", "reason": "Weak click-through rate with acceptable retention.", "source_signal": "P30 packaging iteration recommendation", "recommended_action": "Revise title and thumbnail/cover before another push.", "owner_role": "editorial_operator", "due_window": "next_week", "review_status": "review_required", "automatically_executed": false},
+      {"item_id": "decision-003", "content_id": "unreviewed-transfer-rumor-short", "decision_type": "archive", "priority": "high", "reason": "Blocked from learning due to unreviewed factual claim.", "source_signal": "P30 blocked_from_learning outcome", "recommended_action": "Archive or rewrite with verified sources.", "owner_role": "risk_reviewer", "due_window": "immediate_review", "review_status": "review_required", "automatically_executed": false}
+    ]
+  },
+  "risk_governance_exceptions": {
+    "issue": 423,
+    "required_fields": ["exception_id", "content_id", "severity", "blocker_type", "governance_source", "current_status", "required_resolution", "owner_role", "review_notes"],
+    "severity_levels": ["low", "medium", "high", "critical"],
+    "exceptions": [
+      {"exception_id": "exception-001", "content_id": "unreviewed-transfer-rumor-short", "severity": "high", "blocker_type": "unreviewed_factual_claim", "governance_source": "p30_blocked_from_learning", "current_status": "blocked", "required_resolution": "Verify sources or archive item.", "owner_role": "risk_reviewer", "review_notes": "Do not use performance learning from unsafe rumor content.", "automatic_platform_action": false},
+      {"exception_id": "exception-002", "content_id": "episode-ghana-2010-what-if", "severity": "medium", "blocker_type": "rights_review_required", "governance_source": "p29_publish_governance", "current_status": "review_required", "required_resolution": "Confirm rights-cleared imagery before cover update.", "owner_role": "rights_reviewer", "review_notes": "Packaging revision cannot become export-ready until rights review passes.", "automatic_platform_action": false}
+    ]
+  },
+  "operator_handoff_package": {
+    "issue": 424,
+    "required_fields": ["package_id", "reporting_period", "generated_at", "files", "audience", "review_required", "distribution_note", "next_operator_steps"],
+    "required_files": ["weekly_brief.json", "decision_queue.json", "governance_exceptions.json", "operator_summary.md"],
+    "example": {
+      "package_id": "operator-report-2026-W28",
+      "reporting_period": "2026-W28",
+      "generated_at": "2026-07-09T00:00:00Z",
+      "files": ["weekly_brief.json", "decision_queue.json", "governance_exceptions.json", "operator_summary.md"],
+      "audience": ["content_operator", "editorial_operator", "risk_reviewer"],
+      "review_required": true,
+      "distribution_note": "Local/review-only artifact. No email, Slack, dashboard, or external upload is performed.",
+      "next_operator_steps": ["review decision queue", "resolve governance exceptions", "approve or reject next-week focus"],
+      "external_distribution_performed": false
+    }
+  },
+  "closeout": {
+    "issue": 425,
+    "child_tasks": [420, 421, 422, 423, 424, 425],
+    "no_dashboard_ui": true,
+    "no_email_slack_automation": true,
+    "no_live_api_ingestion": true,
+    "no_external_distribution": true,
+    "no_auto_publish_path": true,
+    "review_required": true
+  },
+  "publish_allowed": false,
+  "review_required": true
+}
