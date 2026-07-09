@@ -1,0 +1,32 @@
+{
+  "schema_version": "p34.local_artifact_writer_example.v1",
+  "parent_epic": 443,
+  "safe_paths": [
+    "validate-package/result.json",
+    "validate-package/operator_summary.md",
+    "validate-package/manifest.json"
+  ],
+  "blocked_paths": [
+    "/tmp/result.json",
+    "../result.json",
+    "~/result.json",
+    "https://example.com/result.json",
+    "nested/../result.json",
+    "bad\\path.json"
+  ],
+  "default_overwrite_allowed": false,
+  "explicit_overwrite_flag": "allow_overwrite=True",
+  "manifest_schema_version": "p34.materialized_output_manifest.v1",
+  "guardrails": {
+    "local_only": true,
+    "external_upload": false,
+    "cloud_sync": false,
+    "network_called": false,
+    "scheduler_used": false,
+    "credentials_used": false,
+    "destructive_cleanup_performed": false,
+    "platform_edit_performed": false,
+    "publish_allowed": false,
+    "review_required": true
+  }
+}
