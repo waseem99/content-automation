@@ -2,7 +2,7 @@
 
 Parent epic: #328
 Final closeout issue: #349
-Final closeout PR: PR_NUMBER_PENDING
+Final closeout PR: #396
 
 ## Closeout scope
 
@@ -43,7 +43,7 @@ It confirms that P26 added rights classification, monetization risk reporting, s
 ## Final PR placeholder status
 
 - [x] Final closeout files initially use `PR_NUMBER_PENDING`.
-- [ ] Final closeout files are patched with the actual PR number before merge: PR_NUMBER_PENDING.
+- [x] Final closeout files are patched with the actual PR number before merge: #396.
 - [ ] Final closeout PR passes exact-head CI.
 - [ ] Final closeout PR is merged only after required checks pass.
 - [ ] #349 is confirmed closed after merge.
