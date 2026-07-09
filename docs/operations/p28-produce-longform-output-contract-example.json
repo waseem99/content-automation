@@ -1,0 +1,208 @@
+{
+  "schema_version": "p28.produce_longform_contract.v1",
+  "command": "produce-longform",
+  "objective": "Design-only output contract for future 16:9 YouTube long-form generation.",
+  "status": "design_only_not_implemented",
+  "package_id": "pkg-p28-longform-neymar-2014",
+  "output_directory": "outputs/longform/pkg-p28-longform-neymar-2014/",
+  "cli_arguments": [
+    {
+      "name": "--concept",
+      "required": true,
+      "example": "docs/operations/p28-long-form-concept-example.json",
+      "purpose": "Path to the validated P28 long-form concept JSON/YAML input."
+    },
+    {
+      "name": "--topic",
+      "required": true,
+      "example": "Neymar 2014 World Cup injury and comeback pressure",
+      "purpose": "Football story/topic for the long-form plan."
+    },
+    {
+      "name": "--subject",
+      "required": false,
+      "example": "Neymar",
+      "purpose": "Main player, club, match, tournament, or story subject."
+    },
+    {
+      "name": "--output-dir",
+      "required": true,
+      "example": "outputs/longform/pkg-p28-longform-neymar-2014/",
+      "purpose": "Target folder for planned long-form outputs."
+    },
+    {
+      "name": "--content-package",
+      "required": true,
+      "example": "content_package.json",
+      "purpose": "Existing content_package.json or future generated package bridge."
+    },
+    {
+      "name": "--risk-report",
+      "required": true,
+      "example": "monetization_risk_report.json",
+      "purpose": "P26 risk report input that must remain visible in outputs."
+    },
+    {
+      "name": "--source-attribution",
+      "required": true,
+      "example": "source_attribution.json",
+      "purpose": "Source attribution input used to create source_list.json."
+    },
+    {
+      "name": "--duration-minutes",
+      "required": false,
+      "example": "7",
+      "purpose": "Target duration constrained by the long-form concept model."
+    },
+    {
+      "name": "--review-only",
+      "required": true,
+      "example": "true",
+      "purpose": "Forces review-only outputs and publish_allowed false."
+    },
+    {
+      "name": "--dry-run",
+      "required": false,
+      "example": "true",
+      "purpose": "Validates inputs and output plan without producing media assets."
+    }
+  ],
+  "expected_inputs": {
+    "concept": "docs/operations/p28-long-form-concept-example.json",
+    "content_package": "content_package.json",
+    "risk_report": "monetization_risk_report.json",
+    "source_attribution": "source_attribution.json",
+    "rights_review_state": "required_before_assembly",
+    "editorial_review_state": "required_before_publish_ready"
+  },
+  "planned_outputs": {
+    "longform_plan.json": {
+      "path": "outputs/longform/pkg-p28-longform-neymar-2014/longform_plan.json",
+      "purpose": "Full production plan with concept, chapter map, packaging bridge, and review state.",
+      "contains": ["concept", "chapters", "target_duration", "output_manifest", "risk_fields"]
+    },
+    "chapter_script.md": {
+      "path": "outputs/longform/pkg-p28-longform-neymar-2014/chapter_script.md",
+      "purpose": "Draft long-form chapter script organized by section type.",
+      "contains": ["cold_open", "question", "context", "conflict", "turning_point", "payoff", "comment_trigger"]
+    },
+    "source_list.json": {
+      "path": "outputs/longform/pkg-p28-longform-neymar-2014/source_list.json",
+      "purpose": "Source list and attribution plan for facts, visuals, and recreated assets.",
+      "contains": ["source_attribution", "minimum_sources", "rights_status", "factual_status"]
+    },
+    "thumbnail_concepts.json": {
+      "path": "outputs/longform/pkg-p28-longform-neymar-2014/thumbnail_concepts.json",
+      "purpose": "Thumbnail concepts for future human design review.",
+      "contains": ["hook", "composition", "text_overlay", "risk_notes"]
+    },
+    "chapter_timestamps.json": {
+      "path": "outputs/longform/pkg-p28-longform-neymar-2014/chapter_timestamps.json",
+      "purpose": "Approximate chapter timestamps for YouTube description packaging.",
+      "contains": ["start_time", "section_type", "title", "duration_seconds"]
+    },
+    "sponsor_slot_notes.md": {
+      "path": "outputs/longform/pkg-p28-longform-neymar-2014/sponsor_slot_notes.md",
+      "purpose": "Placeholder-only sponsor slot notes from the long-form concept.",
+      "contains": ["slot", "target_time", "max_duration", "placeholder_only"]
+    },
+    "final_video_placeholder.txt": {
+      "path": "outputs/longform/pkg-p28-longform-neymar-2014/final_video_placeholder.txt",
+      "purpose": "Target final video location/name placeholder; no rendered video is produced in P28-02.",
+      "contains": ["target_filename", "rendering_out_of_scope", "manual_review_required"]
+    },
+    "content_package_link.json": {
+      "path": "outputs/longform/pkg-p28-longform-neymar-2014/content_package_link.json",
+      "purpose": "Bridge from long-form plan back to content_package.json.",
+      "contains": ["content_package_path", "longform_plan_path", "source_package_status"]
+    },
+    "platform_export_links.json": {
+      "path": "outputs/longform/pkg-p28-longform-neymar-2014/platform_export_links.json",
+      "purpose": "Bridge from long-form sections to future P27/P28 platform export packs after review.",
+      "contains": ["youtube_long_form", "shorts_funnel", "p27_exports_after_review"]
+    },
+    "risk_review.json": {
+      "path": "outputs/longform/pkg-p28-longform-neymar-2014/risk_review.json",
+      "purpose": "Risk fields carried into the long-form output manifest.",
+      "contains": [
+        "rights_review_required",
+        "factual_review_required",
+        "monetization_review_required",
+        "source_attribution_required",
+        "editorial_review_required",
+        "publish_allowed",
+        "review_required"
+      ]
+    },
+    "metadata.json": {
+      "path": "outputs/longform/pkg-p28-longform-neymar-2014/metadata.json",
+      "purpose": "Command metadata, schema, package id, output folder, and review-only flags.",
+      "contains": ["schema_version", "command", "package_id", "publish_allowed", "review_required"]
+    }
+  },
+  "content_package_connection": {
+    "input_path": "content_package.json",
+    "planned_output_path": "outputs/longform/pkg-p28-longform-neymar-2014/content_package_link.json",
+    "relationship": "long-form outputs must reference the source content package instead of replacing it.",
+    "required_fields": [
+      "content_package_path",
+      "longform_plan_path",
+      "risk_report_path",
+      "source_attribution_path"
+    ]
+  },
+  "platform_export_connection": {
+    "planned_output_path": "outputs/longform/pkg-p28-longform-neymar-2014/platform_export_links.json",
+    "youtube_long_form_packaging": "future_scope_after_review",
+    "shorts_cutdowns": "may use P27 platform export packs only after P26/P29 review gates",
+    "direct_upload": "out_of_scope"
+  },
+  "risk_fields": {
+    "rights_review_required": true,
+    "factual_review_required": true,
+    "monetization_review_required": true,
+    "source_attribution_required": true,
+    "editorial_review_required": true,
+    "publish_allowed": false,
+    "review_required": true
+  },
+  "example_command": "produce-longform --concept docs/operations/p28-long-form-concept-example.json --topic \"Neymar 2014 World Cup injury and comeback pressure\" --subject \"Neymar\" --output-dir outputs/longform/pkg-p28-longform-neymar-2014/ --content-package content_package.json --risk-report monetization_risk_report.json --source-attribution source_attribution.json --duration-minutes 7 --review-only true --dry-run true",
+  "concept_validation": {
+    "schema_version": "p28.long_form_concept_validation.v1",
+    "is_valid": true,
+    "publish_allowed": false,
+    "review_required": true,
+    "section_types_seen": [
+      "cold_open",
+      "question",
+      "context",
+      "conflict",
+      "turning_point",
+      "payoff",
+      "comment_trigger"
+    ],
+    "target_duration_seconds": 420,
+    "chapter_duration_seconds": 420,
+    "errors": [],
+    "warnings": []
+  },
+  "out_of_scope": [
+    "full long-form assembly",
+    "16:9 video rendering",
+    "YouTube upload",
+    "YouTube Studio analytics ingestion",
+    "automatic rights clearance",
+    "automatic editorial approval"
+  ],
+  "guardrails": [
+    "No 16:9 rendering in P28-02.",
+    "No direct YouTube upload.",
+    "No platform credentials.",
+    "No external video asset commits.",
+    "No secret values.",
+    "No automatic publish approval.",
+    "No bypass of P26 or P29 gates."
+  ],
+  "publish_allowed": false,
+  "review_required": true
+}
