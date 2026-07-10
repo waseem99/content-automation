@@ -1,0 +1,34 @@
+{
+  "schema_version": "p61.single_brief_cycle_example.v1",
+  "parent_epic": 659,
+  "example_command": "python -m src.p61_single_brief_cycle_runner outputs/creator-studio/sample_brief.json --output-root outputs/single-brief-cycle --overwrite",
+  "open_after_run": "outputs/single-brief-cycle/single_brief_cycle_index.html",
+  "expected_outputs": [
+    "single_brief_cycle_index.html",
+    "single_brief_cycle_summary.json",
+    "single_brief_cycle_report.md",
+    "adapter/custom_brief_library.json",
+    "adapter/custom_feedback_template.json",
+    "adapter/custom_cycle_manifest.json",
+    "adapter/custom_cycle_readme.md",
+    "review-cycle/review_cycle_index.html",
+    "review-cycle/review_cycle_summary.json",
+    "review-cycle/operator_run_report.md"
+  ],
+  "guardrails": {
+    "local_only": true,
+    "deployment_performed": false,
+    "hosted_ui_created": false,
+    "api_server_started": false,
+    "external_calls_performed": false,
+    "rendering_performed": false,
+    "asset_download_performed": false,
+    "upload_or_publish_performed": false,
+    "browser_command_execution": false,
+    "automated_final_approval": false,
+    "creative_improvement_guaranteed": false,
+    "monetization_guaranteed": false,
+    "performance_guaranteed": false,
+    "human_review_required_before_production": true
+  }
+}
