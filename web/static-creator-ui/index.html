@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Content Creator Studio</title>
+  <meta name="description" content="Static, Vercel-ready creator studio for drafting and reviewing video content packs.">
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+  <header class="hero">
+    <div>
+      <p class="eyebrow">Static Creator Studio</p>
+      <h1>Turn one content brief into a reviewable video pack.</h1>
+      <p class="hero-copy">Runs fully in the browser. No backend, no API key, no Python runtime, no upload, and no external network call.</p>
+    </div>
+    <div class="hero-card">
+      <strong>Deploy target</strong>
+      <span>Vercel static site</span>
+      <small>Import repo → deploy → open /</small>
+    </div>
+  </header>
+
+  <main>
+    <section class="grid two-col">
+      <form id="brief-form" class="panel" autocomplete="off">
+        <div class="section-title">
+          <p class="eyebrow">01</p>
+          <h2>Create Brief</h2>
+        </div>
+
+        <label for="topic">Topic</label>
+        <input id="topic" name="topic" value="AI operations audit for service businesses">
+
+        <label for="platform">Platform</label>
+        <select id="platform" name="platform">
+          <option value="youtube_shorts">YouTube Shorts</option>
+          <option value="instagram_reels">Instagram Reels</option>
+          <option value="tiktok">TikTok</option>
+          <option value="youtube_long">YouTube Longform</option>
+          <option value="linkedin_video">LinkedIn Video</option>
+        </select>
+
+        <label for="audience">Audience</label>
+        <textarea id="audience" name="audience">Agency founders and service business owners with manual operations</textarea>
+
+        <label for="tone">Tone</label>
+        <input id="tone" name="tone" value="practical, confident, high-trust, founder-led">
+
+        <div class="split">
+          <div>
+            <label for="duration_seconds">Duration seconds</label>
+            <input id="duration_seconds" name="duration_seconds" type="number" min="15" max="900" value="45">
+          </div>
+          <div>
+            <label for="content_format">Format</label>
+            <input id="content_format" name="content_format" value="vertical_short">
+          </div>
+        </div>
+
+        <label for="monetization_goal">Monetization goal</label>
+        <textarea id="monetization_goal" name="monetization_goal">Generate qualified leads for a paid AI operations audit.</textarea>
+
+        <label for="must_use_points">Must-use points <span class="hint">one per line</span></label>
+        <textarea id="must_use_points" name="must_use_points">Open with the hidden cost of manual follow-ups and scattered tools.
+Show a simple before/after workflow from lead capture to follow-up.
+End with a soft CTA to request an operations audit checklist.</textarea>
+
+        <label for="avoid">Avoid <span class="hint">one per line</span></label>
+        <textarea id="avoid" name="avoid">Do not promise guaranteed revenue, savings, or automation success.
+Do not use celebrity likeness, copied music, third-party clips, or brand logos.</textarea>
+
+        <label for="source_notes">Source notes <span class="hint">one per line</span></label>
+        <textarea id="source_notes" name="source_notes">Use original narration, owned diagrams, simple UI mockups, and licensed or owned assets only.</textarea>
+
+        <div class="actions">
+          <button type="submit">Generate Review Pack</button>
+          <button type="button" class="secondary" id="load-sample">Load Sample</button>
+          <button type="button" class="secondary" id="clear-form">Clear</button>
+        </div>
+      </form>
+
+      <section class="panel output-panel">
+        <div class="section-title">
+          <p class="eyebrow">02</p>
+          <h2>Review Output</h2>
+        </div>
+        <div id="quality-banner" class="notice">Generate a pack to review hook, script, storyboard, rights notes, monetization notes, QA, and exports.</div>
+        <div id="review-output" class="review-output"></div>
+      </section>
+    </section>
+
+    <section class="panel exports">
+      <div class="section-title">
+        <p class="eyebrow">03</p>
+        <h2>Exports</h2>
+      </div>
+      <div class="actions wrap">
+        <button type="button" id="copy-brief">Copy Brief JSON</button>
+        <button type="button" id="download-brief">Download Brief JSON</button>
+        <button type="button" id="copy-pack">Copy Review Pack JSON</button>
+        <button type="button" id="download-pack">Download Review Pack JSON</button>
+        <button type="button" id="download-markdown">Download Producer Brief MD</button>
+        <button type="button" id="download-script">Download Script TXT</button>
+        <button type="button" id="download-qa">Download QA Checklist MD</button>
+      </div>
+      <pre id="json-preview" aria-live="polite">Generate a review pack to preview JSON.</pre>
+    </section>
+
+    <section class="panel guardrails">
+      <h2>Deployment Position</h2>
+      <ul>
+        <li>Vercel-ready static app: no build command required.</li>
+        <li>No backend, database, serverless function, API key, upload, publish action, or external asset dependency.</li>
+        <li>Browser output is a first-pass planning pack, not a final video and not a monetization guarantee.</li>
+        <li>Human review remains required before production.</li>
+      </ul>
+    </section>
+  </main>
+
+  <footer>
+    <span>Static Creator Studio</span>
+    <span>Local/Vercel browser workflow</span>
+  </footer>
+
+  <script src="assets/app.js" defer></script>
+</body>
+</html>
