@@ -18,6 +18,7 @@ def test_static_ui_expected_files_exist():
         STATIC_ROOT / "wordpress-embed.html",
         STATIC_ROOT / "vercel.json",
         ROOT / "vercel.json",
+        ROOT / ".vercelignore",
         ROOT / "package.json",
         ROOT / "scripts" / "build-static-creator-ui.js",
         ROOT / "docs" / "operations" / "p62-vercel-static-ui.md",
@@ -66,6 +67,22 @@ def test_root_vercel_config_uses_static_build_output_as_fallback():
     assert {"source": "/assets/:path*", "destination": "/assets/:path*"} in rewrites
 
 
+def test_vercelignore_blocks_python_fastapi_detection_files():
+    ignore = read(ROOT / ".vercelignore")
+    blocked = [
+        "src/",
+        "tests/",
+        "pyproject.toml",
+        "requirements.txt",
+        "setup.py",
+    ]
+    for entry in blocked:
+        assert entry in ignore
+    assert "!web/static-creator-ui/**" in ignore
+    assert "!vercel.json" in ignore
+    assert "!package.json" in ignore
+
+
 def test_package_json_locks_static_node_build():
     package = json.loads(read(ROOT / "package.json"))
     assert package["private"] is True
@@ -98,6 +115,7 @@ def test_docs_explain_vercel_root_directory_and_guardrails():
     assert "Vercel" in docs
     assert "Root Directory: web/static-creator-ui" in docs
     assert "Build Command: leave empty" in docs
+    assert ".vercelignore" in docs
     assert "FastAPI" in docs
     assert "Human review remains required" in docs
     assert "does not call a server-side AI model" in docs
