@@ -1,0 +1,108 @@
+{
+  "schema_version": "p55.demo_brief_library.v1",
+  "briefs": [
+    {
+      "demo_id": "ai-automation-founder-short",
+      "topic": "AI automation for service business owners",
+      "platform": "youtube_shorts",
+      "audience": "small agency founders and service business owners",
+      "tone": "clear, high-trust, practical, cinematic",
+      "duration_seconds": 45,
+      "monetization_goal": "generate qualified leads for an AI automation consulting offer",
+      "content_format": "vertical_short",
+      "must_use_points": [
+        "Open with the hidden cost of manual operations.",
+        "Show a simple before/after workflow transformation.",
+        "End with a soft CTA for a free automation audit checklist."
+      ],
+      "avoid": [
+        "Do not promise guaranteed revenue or guaranteed savings.",
+        "Do not use celebrity likeness, brand logos, copied music, or third-party clips."
+      ],
+      "source_notes": ["Use owned graphics, simple workflow diagrams, and original narration only."]
+    },
+    {
+      "demo_id": "restaurant-launch-reel",
+      "topic": "restaurant launch campaign teaser",
+      "platform": "instagram_reels",
+      "audience": "urban food lovers, young professionals, and friend groups",
+      "tone": "premium, sensory, warm, energetic",
+      "duration_seconds": 40,
+      "monetization_goal": "drive reservations and launch-week footfall",
+      "content_format": "vertical_short",
+      "must_use_points": [
+        "Open with a coming-soon moment.",
+        "Show ambience, food, and group experience without overexplaining.",
+        "End with launch-week reservation CTA."
+      ],
+      "avoid": [
+        "Do not use competitor footage or copyrighted music.",
+        "Do not claim unrealistic offers or guaranteed availability."
+      ],
+      "source_notes": ["Use original restaurant footage or licensed stock placeholders only."]
+    },
+    {
+      "demo_id": "fitness-coach-tiktok",
+      "topic": "fitness coach myth about fat loss",
+      "platform": "tiktok",
+      "audience": "busy beginners trying to lose fat without extreme diets",
+      "tone": "direct, helpful, myth-busting, friendly",
+      "duration_seconds": 35,
+      "monetization_goal": "sell a beginner-friendly coaching consultation",
+      "content_format": "vertical_short",
+      "must_use_points": [
+        "Open by challenging a common fat-loss myth.",
+        "Give one simple behavior change.",
+        "End with a low-pressure coaching CTA."
+      ],
+      "avoid": [
+        "Do not provide medical claims.",
+        "Do not promise guaranteed weight loss.",
+        "Do not use before/after body images without consent."
+      ],
+      "source_notes": ["Use general educational language and avoid medical diagnosis or guarantees."]
+    },
+    {
+      "demo_id": "saas-founder-longform",
+      "topic": "why SaaS onboarding fails",
+      "platform": "youtube_long",
+      "audience": "early-stage SaaS founders and product marketers",
+      "tone": "strategic, analytical, practical, calm",
+      "duration_seconds": 480,
+      "monetization_goal": "generate leads for a product strategy workshop",
+      "content_format": "longform",
+      "must_use_points": [
+        "Explain the hidden gap between signup and activation.",
+        "Introduce a 3-step onboarding diagnosis framework.",
+        "Close with a workshop CTA after delivering value."
+      ],
+      "avoid": [
+        "Do not name private client data.",
+        "Do not copy screenshots from live SaaS products.",
+        "Do not imply guaranteed conversion lift."
+      ],
+      "source_notes": ["Use fictional product examples and original diagrams only."]
+    },
+    {
+      "demo_id": "real-estate-carousel-video",
+      "topic": "how first-time buyers should evaluate a neighborhood",
+      "platform": "youtube_shorts",
+      "audience": "first-time home buyers researching neighborhoods",
+      "tone": "trustworthy, calm, practical, advisory",
+      "duration_seconds": 45,
+      "monetization_goal": "generate consultations for a real estate advisory service",
+      "content_format": "vertical_short",
+      "must_use_points": [
+        "Open with the mistake of judging only by property price.",
+        "Show a simple neighborhood evaluation checklist.",
+        "End with a consultation CTA for a buyer planning checklist."
+      ],
+      "avoid": [
+        "Do not provide legal or financial advice.",
+        "Do not promise property appreciation.",
+        "Do not use private property photos without permission."
+      ],
+      "source_notes": ["Use fictional examples, map-like abstract visuals, and owned graphics only."]
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "schema_version": "p55.demo_gallery_example.v1",
+  "parent_epic": 611,
+  "example_command": "python -m src.p55_creator_demo_gallery docs/operations/p55-demo-briefs.json --output-root outputs/demo-gallery --overwrite",
+  "expected_outputs": [
+    "index.html",
+    "demo_gallery.json",
+    "<demo-folder>/index.html",
+    "<demo-folder>/creator_review.json",
+    "<demo-folder>/producer_brief.md",
+    "<demo-folder>/script.txt",
+    "<demo-folder>/storyboard.md",
+    "<demo-folder>/shot_list.csv",
+    "<demo-folder>/captions.srt"
+  ],
+  "included_demo_count": 5,
+  "review_decisions": [
+    "approve_for_production",
+    "revise",
+    "reject"
+  ],
+  "guardrails": {
+    "local_only": true,
+    "deployment_performed": false,
+    "hosted_ui_created": false,
+    "api_server_started": false,
+    "external_calls_performed": false,
+    "rendering_performed": false,
+    "asset_download_performed": false,
+    "upload_or_publish_performed": false,
+    "monetization_guaranteed": false,
+    "performance_guaranteed": false,
+    "human_review_required_before_production": true
+  }
+}
