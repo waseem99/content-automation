@@ -1,0 +1,41 @@
+{
+  "schema_version": "p53.before_after_example.v1",
+  "parent_epic": 595,
+  "example_inputs": {
+    "original_qa_json": "outputs/pilots/qa_scorecards.json",
+    "revised_pilot_index_json": "outputs/revised-pilots/revised_pilot_index.json",
+    "output_root": "outputs/revised-pilots"
+  },
+  "expected_outputs": [
+    "before_after_comparison.json",
+    "production_candidate_shortlist.json",
+    "revised_qa_scorecards.json",
+    "before_after_report.md"
+  ],
+  "candidate_statuses": [
+    "produce_after_human_approval",
+    "revise_again",
+    "drop_or_rework"
+  ],
+  "comparison_fields": [
+    "source_pilot_name",
+    "revised_pilot_name",
+    "original_score",
+    "revised_score",
+    "score_delta",
+    "movement",
+    "candidate_status"
+  ],
+  "guardrails": {
+    "local_only": true,
+    "deployment_performed": false,
+    "api_server_started": false,
+    "external_calls_performed": false,
+    "rendering_performed": false,
+    "asset_download_performed": false,
+    "upload_or_publish_performed": false,
+    "improvement_guaranteed": false,
+    "performance_guaranteed": false,
+    "human_approval_required_before_production": true
+  }
+}
