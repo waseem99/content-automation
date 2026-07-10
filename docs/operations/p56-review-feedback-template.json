@@ -2,10 +2,10 @@
   "schema_version": "p56.review_feedback_template.v1",
   "reviewer_name": "Human Reviewer",
   "review_round": "demo_gallery_review_1",
-  "instructions": "Open outputs/demo-gallery/index.html, inspect each demo workspace, then update decisions, scores, strengths, issues, requested_changes, and approval_notes.",
+  "instructions": "Open outputs/demo-gallery/index.html, inspect each demo workspace, then update decisions, scores, strengths, issues, requested_changes, and approval_notes. Demo slugs must match demo_gallery.json.",
   "reviews": [
     {
-      "demo_slug": "ai-automation-founder-short-local",
+      "demo_slug": "ai-automation-founder-short",
       "decision": "approve_for_production",
       "score": 86,
       "strengths": ["Clear B2B pain point", "Monetization CTA is natural"],
@@ -14,7 +14,7 @@
       "approval_notes": "Strong enough for a production test after minor hook tightening"
     },
     {
-      "demo_slug": "restaurant-launch-reel-local",
+      "demo_slug": "restaurant-launch-reel",
       "decision": "revise",
       "score": 72,
       "strengths": ["Good platform fit", "Launch use case is visual"],
@@ -23,7 +23,7 @@
       "approval_notes": "Not ready until creative direction feels more premium"
     },
     {
-      "demo_slug": "fitness-coach-tiktok-local",
+      "demo_slug": "fitness-coach-tiktok",
       "decision": "revise",
       "score": 68,
       "strengths": ["Clear audience"],
@@ -32,7 +32,7 @@
       "approval_notes": "Needs safer health framing"
     },
     {
-      "demo_slug": "saas-founder-longform-local",
+      "demo_slug": "saas-founder-longform",
       "decision": "approve_for_production",
       "score": 84,
       "strengths": ["Useful for B2B lead generation", "Longform structure fits the topic"],
@@ -41,7 +41,7 @@
       "approval_notes": "Good candidate for internal test production"
     },
     {
-      "demo_slug": "real-estate-carousel-video-local",
+      "demo_slug": "real-estate-carousel-video",
       "decision": "reject",
       "score": 45,
       "strengths": ["Audience is clear"],
