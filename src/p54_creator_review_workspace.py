@@ -59,7 +59,7 @@ def build_creator_review_workspace(
     project_slug: str | None = None,
     overwrite: bool = False,
 ) -> dict[str, Any]:
-    """Generate local export files plus static creator review workspace."""
+    """Generate local export files plus a static creator review workspace."""
 
     try:
         brief = load_brief_json(brief_source) if isinstance(brief_source, (str, Path)) else brief_source
@@ -87,7 +87,7 @@ def build_creator_review_workspace(
 
     project_dir = Path(export_result["output_dir"]).resolve()
     _assert_within_root(Path(output_root).expanduser().resolve(), project_dir)
-    review = build_creator_review_summary(brief, export_pack, export_result, project_dir)
+    review = build_creator_review_summary(brief, export_pack, project_dir)
     review_path = project_dir / CREATOR_REVIEW_FILENAME
     html_path = project_dir / INDEX_FILENAME
     review_path.write_text(_json_dump(review), encoding="utf-8")
@@ -110,7 +110,6 @@ def build_creator_review_workspace(
 def build_creator_review_summary(
     brief: dict[str, Any],
     export_pack: dict[str, Any],
-    export_result: dict[str, Any],
     project_dir: Path,
 ) -> dict[str, Any]:
     """Build creator-facing summary JSON for the HTML review page."""
@@ -124,7 +123,6 @@ def build_creator_review_summary(
     production_pack = pipeline.get("production_pack", {}) if isinstance(pipeline, dict) else {}
     engagement = pipeline.get("engagement_scorecard", {}) if isinstance(pipeline, dict) else {}
 
-    file_refs = build_file_refs(project_dir)
     return {
         "schema_version": P54_WORKSPACE_VERSION,
         "project": {
@@ -140,7 +138,7 @@ def build_creator_review_summary(
             "selected_concept": video.get("selected_concept") or first_item(video.get("concepts")),
             "title_options": video.get("title_options") or video.get("titles") or [],
             "hook": video.get("hook", ""),
-            "script_preview": preview_text((project_dir / "script.txt").read_text(encoding="utf-8") if (project_dir / "script.txt").exists() else video.get("script", ""), 1200),
+            "script_preview": preview_text(_read_optional(project_dir / "script.txt") or video.get("script", ""), 1200),
             "storyboard_preview": preview_text(_read_optional(project_dir / "storyboard.md"), 1200),
             "shot_list_preview": preview_text(_read_optional(project_dir / "shot_list.csv"), 1000),
             "captions_preview": preview_text(_read_optional(project_dir / "captions.srt"), 1000),
@@ -163,7 +161,7 @@ def build_creator_review_summary(
             "approved_for_production": False,
             "human_review_required_before_production": True,
         },
-        "files": file_refs,
+        "files": build_file_refs(project_dir),
         "guardrails": _guardrails(),
     }
 
@@ -189,14 +187,39 @@ def render_review_workspace_html(review: dict[str, Any], project_dir: Path) -> s
     signals = review["signals"]
     files = review["files"]
     checklist = review["reviewer"]["checklist"]
+
+    project_metrics = "".join([
+        metric("Platform", project.get("platform")),
+        metric("Audience", project.get("audience")),
+        metric("Tone", project.get("tone")),
+        metric("Duration", f"{project.get('duration_seconds')}s"),
+        metric("Goal", project.get("monetization_goal")),
+    ])
+    signal_metrics = "".join([
+        metric("Pipeline", signals.get("pipeline_status")),
+        metric("Rights Gate", signals.get("rights_gate")),
+        metric("Engagement", signals.get("engagement_score")),
+        metric("Monetization", signals.get("monetization_status")),
+        metric("Production Ready", signals.get("production_ready")),
+    ])
+    decision_html = "".join(f"<span>{esc(option)}</span>" for option in DECISION_OPTIONS)
+    concept_json = json.dumps(creative.get("selected_concept"), indent=2, sort_keys=True)
+    titles_html = "".join(f"<span class='pill'>{esc(title)}</span>" for title in creative.get("title_options", []))
+    titles_html = titles_html or "<span class='pill'>No titles found</span>"
+    next_actions_html = "".join(f"<li>{esc(item)}</li>" for item in signals.get("next_actions", []))
+    checklist_html = "".join(
+        f"<div class='check'><input type='checkbox'><span>{esc(item['item'])}</span></div>" for item in checklist
+    )
+    file_links_html = render_file_links(files)
+
     return f"""<!doctype html>
-<html lang=\"en\">
+<html lang="en">
 <head>
-  <meta charset=\"utf-8\">
-  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{esc(project.get('topic'))} — Creator Review</title>
   <style>
-    :root {{ --bg:#0f172a; --panel:#111827; --card:#ffffff; --muted:#64748b; --line:#e2e8f0; --accent:#2563eb; --ok:#16a34a; --warn:#ca8a04; --bad:#dc2626; }}
+    :root {{ --card:#ffffff; --muted:#64748b; --line:#e2e8f0; --accent:#2563eb; --warn:#ca8a04; }}
     * {{ box-sizing: border-box; }}
     body {{ margin:0; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background:#f8fafc; color:#0f172a; }}
     header {{ background:linear-gradient(135deg,#0f172a,#1e293b); color:#fff; padding:34px 42px; }}
@@ -226,63 +249,21 @@ def render_review_workspace_html(review: dict[str, Any], project_dir: Path) -> s
     <p>Local creator review workspace. Open this file in a browser, inspect the creative pack, then decide whether it is good enough for production, needs revision, or should be rejected.</p>
   </header>
   <main>
-    <div class=\"grid\">
-      <section class=\"card span-4\">
-        <h2>Project</h2>
-        {metric('Platform', project.get('platform'))}
-        {metric('Audience', project.get('audience'))}
-        {metric('Tone', project.get('tone'))}
-        {metric('Duration', f\"{project.get('duration_seconds')}s\")}
-        {metric('Goal', project.get('monetization_goal'))}
-      </section>
-      <section class=\"card span-4\">
-        <h2>Signals</h2>
-        {metric('Pipeline', signals.get('pipeline_status'))}
-        {metric('Rights Gate', signals.get('rights_gate'))}
-        {metric('Engagement', signals.get('engagement_score'))}
-        {metric('Monetization', signals.get('monetization_status'))}
-        {metric('Production Ready', signals.get('production_ready'))}
-      </section>
-      <section class=\"card span-4\">
-        <h2>Decision</h2>
-        <div class=\"decision\">{''.join(f'<span>{esc(option)}</span>' for option in DECISION_OPTIONS)}</div>
-        <p class=\"notice\">Human approval is required before production, upload, or publishing. This workspace does not render or publish video.</p>
-      </section>
-
-      <section class=\"card span-8\">
-        <h2>Creative Direction</h2>
-        <h3>Hook</h3>
-        <pre>{esc(creative.get('hook'))}</pre>
-        <h3>Selected Concept</h3>
-        <pre>{esc(json.dumps(creative.get('selected_concept'), indent=2, sort_keys=True))}</pre>
-        <h3>Title Options</h3>
-        <div>{''.join(f'<span class=\"pill\">{esc(title)}</span>' for title in creative.get('title_options', [])) or '<span class=\"pill\">No titles found</span>'}</div>
-      </section>
-      <section class=\"card span-4\">
-        <h2>Artifact Links</h2>
-        <ul class=\"clean\">{render_file_links(files)}</ul>
-      </section>
-
-      <section class=\"card span-6\"><h2>Script Preview</h2><pre>{esc(creative.get('script_preview'))}</pre></section>
-      <section class=\"card span-6\"><h2>Storyboard Preview</h2><pre>{esc(creative.get('storyboard_preview'))}</pre></section>
-      <section class=\"card span-6\"><h2>Shot List Preview</h2><pre>{esc(creative.get('shot_list_preview'))}</pre></section>
-      <section class=\"card span-6\"><h2>Captions Preview</h2><pre>{esc(creative.get('captions_preview'))}</pre></section>
-
-      <section class=\"card span-6\">
-        <h2>Next Actions</h2>
-        <ul>{''.join(f'<li>{esc(item)}</li>' for item in signals.get('next_actions', []))}</ul>
-      </section>
-      <section class=\"card span-6\">
-        <h2>Review Checklist</h2>
-        {''.join(f'<div class=\"check\"><input type=\"checkbox\"><span>{esc(item[\"item\"])}</span></div>' for item in checklist)}
-      </section>
-      <section class=\"card span-12\">
-        <h2>Reviewer Notes</h2>
-        <p class=\"notice\">Static HTML cannot save notes by itself. Use this section while reviewing, then copy your notes into your project tracker or update the JSON manually if needed.</p>
-        <pre>Reviewer:\nDecision: pending\nNotes:</pre>
-      </section>
+    <div class="grid">
+      <section class="card span-4"><h2>Project</h2>{project_metrics}</section>
+      <section class="card span-4"><h2>Signals</h2>{signal_metrics}</section>
+      <section class="card span-4"><h2>Decision</h2><div class="decision">{decision_html}</div><p class="notice">Human approval is required before production, upload, or publishing. This workspace does not render or publish video.</p></section>
+      <section class="card span-8"><h2>Creative Direction</h2><h3>Hook</h3><pre>{esc(creative.get('hook'))}</pre><h3>Selected Concept</h3><pre>{esc(concept_json)}</pre><h3>Title Options</h3><div>{titles_html}</div></section>
+      <section class="card span-4"><h2>Artifact Links</h2><ul class="clean">{file_links_html}</ul></section>
+      <section class="card span-6"><h2>Script Preview</h2><pre>{esc(creative.get('script_preview'))}</pre></section>
+      <section class="card span-6"><h2>Storyboard Preview</h2><pre>{esc(creative.get('storyboard_preview'))}</pre></section>
+      <section class="card span-6"><h2>Shot List Preview</h2><pre>{esc(creative.get('shot_list_preview'))}</pre></section>
+      <section class="card span-6"><h2>Captions Preview</h2><pre>{esc(creative.get('captions_preview'))}</pre></section>
+      <section class="card span-6"><h2>Next Actions</h2><ul>{next_actions_html}</ul></section>
+      <section class="card span-6"><h2>Review Checklist</h2>{checklist_html}</section>
+      <section class="card span-12"><h2>Reviewer Notes</h2><p class="notice">Static HTML cannot save notes by itself. Use this section while reviewing, then copy your notes into your project tracker or update the JSON manually if needed.</p><pre>Reviewer:\nDecision: pending\nNotes:</pre></section>
     </div>
-    <p class=\"footer\">Generated locally in {esc(str(project_dir))}. No cloud deployment, upload, platform API call, or rendering was performed.</p>
+    <p class="footer">Generated locally in {esc(str(project_dir))}. No cloud deployment, upload, platform API call, or rendering was performed.</p>
   </main>
 </body>
 </html>
