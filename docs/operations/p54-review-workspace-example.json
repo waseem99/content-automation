@@ -1,0 +1,38 @@
+{
+  "schema_version": "p54.review_workspace_example.v1",
+  "parent_epic": 603,
+  "example_command": "python -m src.p54_creator_review_workspace docs/operations/p54-demo-brief.json --output-root outputs/review-demo --project-slug ai-automation-founder-demo --overwrite",
+  "expected_outputs": [
+    "index.html",
+    "creator_review.json",
+    "producer_brief.md",
+    "script.txt",
+    "storyboard.md",
+    "shot_list.csv",
+    "captions.srt",
+    "metadata.json",
+    "asset_manifest.json",
+    "review_checklist.md",
+    "platform_variants.json",
+    "manifest.json",
+    "summary.json"
+  ],
+  "review_decision_options": [
+    "approve_for_production",
+    "revise",
+    "reject"
+  ],
+  "guardrails": {
+    "local_only": true,
+    "deployment_performed": false,
+    "hosted_ui_created": false,
+    "api_server_started": false,
+    "external_calls_performed": false,
+    "rendering_performed": false,
+    "asset_download_performed": false,
+    "upload_or_publish_performed": false,
+    "monetization_guaranteed": false,
+    "performance_guaranteed": false,
+    "human_review_required_before_production": true
+  }
+}
