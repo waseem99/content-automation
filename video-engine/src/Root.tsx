@@ -2,13 +2,13 @@ import React from "react";
 import {Composition} from "remotion";
 import sampleProject from "../samples/rawr-nation-army-ants.json";
 import {RawrNationShort} from "./RawrNationShort";
-import type {VideoInputProps, VideoProject} from "./types";
+import type {VideoProject} from "./types";
 
 const sample = sampleProject as VideoProject;
 
 export const VideoRoot: React.FC = () => {
   return (
-    <Composition<VideoInputProps>
+    <Composition
       id="RawrNationShort"
       component={RawrNationShort}
       width={1080}
