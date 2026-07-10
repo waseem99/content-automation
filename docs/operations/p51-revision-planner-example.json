@@ -1,0 +1,47 @@
+{
+  "schema_version": "p51.revision_planner_example.v1",
+  "parent_epic": 579,
+  "example_qa_pack": {
+    "schema_version": "p50.creative_qa_pack.v1",
+    "is_valid": true,
+    "scorecards": [
+      {
+        "pilot_number": 1,
+        "pilot_name": "ai-automation-founder-short",
+        "topic": "AI automation for small business owners",
+        "platform": "youtube_shorts",
+        "output_dir": "outputs/pilots/ai-automation-founder-short",
+        "baseline_scores": {
+          "hook_strength": 78,
+          "clarity": 86,
+          "retention_potential": 79,
+          "platform_fit": 90,
+          "originality": 84,
+          "rights_readiness": 94,
+          "monetization_fit": 82,
+          "production_feasibility": 90
+        },
+        "weighted_overall_score": 85,
+        "recommendation": "revise_before_production",
+        "top_issues": ["Hook is not sharp enough."],
+        "next_actions": ["Rewrite opening 3 seconds."]
+      }
+    ]
+  },
+  "expected_outputs": [
+    "revision_plan.json",
+    "revision_summary.md",
+    "revision_packs/<pilot>.md",
+    "revised_brief_patches/<pilot>.json"
+  ],
+  "guardrails": {
+    "local_only": true,
+    "deployment_performed": false,
+    "api_server_started": false,
+    "external_calls_performed": false,
+    "rendering_performed": false,
+    "asset_download_performed": false,
+    "upload_or_publish_performed": false,
+    "human_approval_required_before_production": true
+  }
+}
