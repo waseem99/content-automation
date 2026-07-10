@@ -1,0 +1,29 @@
+{
+  "schema_version": "p56.human_feedback_example.v1",
+  "parent_epic": 619,
+  "example_command": "python -m src.p56_human_feedback_queue outputs/demo-gallery/demo_gallery.json docs/operations/p56-review-feedback-template.json --output-root outputs/demo-gallery",
+  "expected_outputs": [
+    "review_feedback_summary.json",
+    "revision_queue.json",
+    "review_feedback_report.md"
+  ],
+  "supported_decisions": [
+    "approve_for_production",
+    "revise",
+    "reject"
+  ],
+  "guardrails": {
+    "local_only": true,
+    "deployment_performed": false,
+    "hosted_ui_created": false,
+    "api_server_started": false,
+    "external_calls_performed": false,
+    "rendering_performed": false,
+    "asset_download_performed": false,
+    "upload_or_publish_performed": false,
+    "automated_final_approval": false,
+    "monetization_guaranteed": false,
+    "performance_guaranteed": false,
+    "human_review_required_before_production": true
+  }
+}
