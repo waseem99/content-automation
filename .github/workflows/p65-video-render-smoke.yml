@@ -54,15 +54,6 @@ jobs:
           REMOTION_CONCURRENCY: "2"
         run: npm run render
 
-      - name: Probe rendered MP4
-        run: |
-          test -s out/rawr-nation-army-ant-bridge-demo.mp4
-          ffprobe -v error \
-            -select_streams v:0 \
-            -show_entries stream=codec_name,width,height,r_frame_rate \
-            -of default=noprint_wrappers=1 \
-            out/rawr-nation-army-ant-bridge-demo.mp4
-
       - name: Upload rendered sample
         uses: actions/upload-artifact@v4
         with:
@@ -72,3 +63,19 @@ jobs:
             video-engine/out/rawr-nation-army-ant-bridge-demo.render.json
           if-no-files-found: error
           retention-days: 7
+
+      - name: Ensure ffprobe is available
+        run: |
+          if ! command -v ffprobe >/dev/null 2>&1; then
+            sudo apt-get update
+            sudo apt-get install -y ffmpeg
+          fi
+
+      - name: Probe rendered MP4
+        run: |
+          test -s out/rawr-nation-army-ant-bridge-demo.mp4
+          ffprobe -v error \
+            -select_streams v:0 \
+            -show_entries stream=codec_name,width,height,r_frame_rate \
+            -of default=noprint_wrappers=1 \
+            out/rawr-nation-army-ant-bridge-demo.mp4
