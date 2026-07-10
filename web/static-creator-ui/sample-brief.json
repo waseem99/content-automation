@@ -1,0 +1,23 @@
+{
+  "schema_version": "p62.static_creator_brief.v1",
+  "demo_id": "custom-ai-operations-short",
+  "topic": "AI operations audit for service businesses",
+  "platform": "youtube_shorts",
+  "audience": "agency founders and service business owners with manual operations",
+  "tone": "practical, confident, high-trust, founder-led",
+  "duration_seconds": 45,
+  "content_format": "vertical_short",
+  "monetization_goal": "Generate qualified leads for a paid AI operations audit.",
+  "must_use_points": [
+    "Open with the hidden cost of manual follow-ups and scattered tools.",
+    "Show a simple before/after workflow from lead capture to follow-up.",
+    "End with a soft CTA to request an operations audit checklist."
+  ],
+  "avoid": [
+    "Do not promise guaranteed revenue, savings, or automation success.",
+    "Do not use celebrity likeness, copied music, third-party clips, or brand logos."
+  ],
+  "source_notes": [
+    "Use original narration, owned diagrams, simple UI mockups, and licensed or owned assets only."
+  ]
+}
