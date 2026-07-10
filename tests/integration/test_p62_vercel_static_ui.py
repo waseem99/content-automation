@@ -36,6 +36,59 @@ def test_index_uses_local_assets_only():
     assert "cdn" not in html.lower()
 
 
+def test_interactive_engine_map_is_present_and_decision_oriented():
+    html = read(STATIC_ROOT / "index.html")
+    required = [
+        'id="engine-map"',
+        'id="engine-pipeline"',
+        'id="engine-detail"',
+        'data-filter="engagement"',
+        'data-filter="compliance"',
+        'data-filter="monetization"',
+        "Runtime Lanes",
+        "How output is controlled against the three objectives",
+        "How the engine proves what happened",
+        "Planned AI Generation Layer",
+    ]
+    for marker in required:
+        assert marker in html
+
+
+def test_engine_map_js_tracks_modules_tools_outputs_and_quality_gates():
+    app = read(STATIC_ROOT / "assets" / "app.js")
+    required = [
+        "P40 Package Generator",
+        "P41 Rights & Safety",
+        "P42 Engagement",
+        "P44 Monetization",
+        "P46 Producer Export",
+        "P53 Comparator",
+        "P58 Review Cycle",
+        "P61 Full Cycle",
+        "P62 Static UI",
+        "P63 Vercel Lock",
+        "objectives:",
+        "gate:",
+        "outputs:",
+        "tools:",
+        "renderEnginePipeline",
+        "renderEngineDetail",
+        "setEngineFilter",
+    ]
+    for marker in required:
+        assert marker in app
+
+
+def test_engine_map_discloses_current_and_planned_runtime_boundaries():
+    app = read(STATIC_ROOT / "assets" / "app.js")
+    html = read(STATIC_ROOT / "index.html")
+    assert "Planned model adapter" in app
+    assert "Planned Vercel API" in app
+    assert "Not connected to the deployed static UI yet" in html
+    assert "Human review remains required before production" in html
+    assert "No database, automatic publishing, final approval, or external AI call" in html
+
+
 def test_app_js_is_browser_only_without_external_calls():
     app = read(STATIC_ROOT / "assets" / "app.js")
     blocked_terms = ["fetch(", "XMLHttpRequest", "import(", "axios", "openai", "apiKey", "api_key"]
