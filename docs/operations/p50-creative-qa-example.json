@@ -1,0 +1,39 @@
+{
+  "schema_version": "p50.creative_qa_example.v1",
+  "parent_epic": 571,
+  "example_pilot_index": {
+    "output_root": "outputs/pilots",
+    "pilots": [
+      {
+        "pilot_number": 1,
+        "pilot_name": "ai-automation-founder-short",
+        "topic": "AI automation for small business owners",
+        "platform": "youtube_shorts",
+        "output_dir": "outputs/pilots/ai-automation-founder-short",
+        "is_valid": true,
+        "pipeline_status": "ready_for_human_review",
+        "rights_gate": "pass",
+        "engagement_score": 88,
+        "monetization_status": "ready_for_human_review",
+        "production_ready": true,
+        "template_platforms": ["youtube_shorts", "instagram_reels", "tiktok", "youtube_long", "carousel_newsletter"]
+      }
+    ]
+  },
+  "expected_outputs": [
+    "qa_scorecards.json",
+    "qa_summary.md",
+    "qa_scorecards/<pilot>.md"
+  ],
+  "guardrails": {
+    "local_only": true,
+    "deployment_performed": false,
+    "api_server_started": false,
+    "external_calls_performed": false,
+    "rendering_performed": false,
+    "asset_download_performed": false,
+    "upload_or_publish_performed": false,
+    "performance_guaranteed": false,
+    "human_review_required_before_production": true
+  }
+}
