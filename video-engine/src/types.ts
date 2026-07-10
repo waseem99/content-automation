@@ -76,6 +76,6 @@ export interface VideoProject {
   editorialStatus: "demo_only_not_approved" | "ready_for_human_review" | "approved";
 }
 
-export interface VideoInputProps {
+export type VideoInputProps = {
   project: VideoProject;
-}
+};
