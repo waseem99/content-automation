@@ -1,0 +1,38 @@
+{
+  "schema_version": "p52.revised_regeneration_example.v1",
+  "parent_epic": 587,
+  "example_inputs": {
+    "pilot_briefs_json": "docs/operations/p49-pilot-briefs.json",
+    "revision_plan_json": "outputs/pilots/revision_plan.json",
+    "output_root": "outputs/revised-pilots"
+  },
+  "expected_outputs": [
+    "revised_pilot_briefs.json",
+    "revised_pilot_index.json",
+    "revised_generation_summary.md",
+    "<revised-pilot-folder>/producer_brief.md",
+    "<revised-pilot-folder>/platform_templates.json"
+  ],
+  "comparison_fields": [
+    "source_pilot_name",
+    "revised_pilot_name",
+    "revision_priority",
+    "applied_patch_count",
+    "original_output_dir",
+    "revised_output_dir",
+    "pipeline_status",
+    "engagement_score",
+    "monetization_status"
+  ],
+  "guardrails": {
+    "local_only": true,
+    "deployment_performed": false,
+    "api_server_started": false,
+    "external_calls_performed": false,
+    "rendering_performed": false,
+    "asset_download_performed": false,
+    "upload_or_publish_performed": false,
+    "improvement_guaranteed": false,
+    "human_review_required_before_production": true
+  }
+}
