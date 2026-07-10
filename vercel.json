@@ -1,5 +1,7 @@
 {
-  "installCommand": "node -e \"console.log('No install required for static Creator UI')\"",
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "installCommand": "",
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "rewrites": [
