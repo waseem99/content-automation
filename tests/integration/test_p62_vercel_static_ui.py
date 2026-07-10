@@ -17,6 +17,8 @@ def test_static_ui_expected_files_exist():
         STATIC_ROOT / "sample-brief.json",
         STATIC_ROOT / "wordpress-embed.html",
         ROOT / "vercel.json",
+        ROOT / "package.json",
+        ROOT / "scripts" / "build-static-creator-ui.js",
         ROOT / "docs" / "operations" / "p62-vercel-static-ui.md",
     ]
     for path in expected:
@@ -42,13 +44,34 @@ def test_app_js_is_browser_only_without_external_calls():
     assert "URL.createObjectURL" in app
 
 
-def test_vercel_config_routes_to_static_ui():
+def test_vercel_config_uses_static_build_output():
     config = json.loads(read(ROOT / "vercel.json"))
+    assert config["installCommand"].startswith("node -e")
+    assert config["buildCommand"] == "npm run build"
+    assert config["outputDirectory"] == "dist"
     rewrites = config["rewrites"]
-    assert {"source": "/", "destination": "/web/static-creator-ui/index.html"} in rewrites
-    assert {"source": "/app", "destination": "/web/static-creator-ui/index.html"} in rewrites
-    assert {"source": "/assets/:path*", "destination": "/web/static-creator-ui/assets/:path*"} in rewrites
+    assert {"source": "/", "destination": "/index.html"} in rewrites
+    assert {"source": "/app", "destination": "/index.html"} in rewrites
+    assert {"source": "/assets/:path*", "destination": "/assets/:path*"} in rewrites
     assert any(header["source"] == "/assets/:path*" for header in config["headers"])
+
+
+def test_package_json_locks_static_node_build():
+    package = json.loads(read(ROOT / "package.json"))
+    assert package["private"] is True
+    assert package["scripts"]["build"] == "node scripts/build-static-creator-ui.js"
+    assert package["dependencies"] == {}
+    assert package["devDependencies"] == {}
+
+
+def test_static_build_script_copies_expected_dist_files():
+    script = read(ROOT / "scripts" / "build-static-creator-ui.js")
+    assert "web" in script
+    assert "static-creator-ui" in script
+    assert "dist" in script
+    assert "index.html" in script
+    assert "assets" in script
+    assert "Static Creator UI copied" in script
 
 
 def test_sample_brief_is_valid_and_guarded():
@@ -63,6 +86,8 @@ def test_sample_brief_is_valid_and_guarded():
 def test_docs_explain_vercel_and_guardrails():
     docs = read(ROOT / "docs" / "operations" / "p62-vercel-static-ui.md")
     assert "Vercel" in docs
-    assert "Build Command: leave empty" in docs
+    assert "Build Command: npm run build" in docs
+    assert "Output Directory: dist" in docs
+    assert "FastAPI" in docs
     assert "Human review remains required" in docs
     assert "does not call a server-side AI model" in docs
