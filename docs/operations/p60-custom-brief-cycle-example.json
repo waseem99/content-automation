@@ -1,0 +1,29 @@
+{
+  "schema_version": "p60.custom_brief_cycle_example.v1",
+  "parent_epic": 651,
+  "example_command": "python -m src.p60_custom_brief_cycle_adapter outputs/creator-studio/sample_brief.json --output-root outputs/custom-brief-cycle --overwrite",
+  "expected_outputs": [
+    "custom_brief_library.json",
+    "custom_feedback_template.json",
+    "custom_cycle_manifest.json",
+    "custom_cycle_readme.md"
+  ],
+  "next_step_command": "python -m src.p58_review_cycle_runner --demo-briefs outputs/custom-brief-cycle/custom_brief_library.json --feedback outputs/custom-brief-cycle/custom_feedback_template.json --output-root outputs/custom-review-cycle --overwrite",
+  "open_after_next_step": "outputs/custom-review-cycle/review_cycle_index.html",
+  "guardrails": {
+    "local_only": true,
+    "deployment_performed": false,
+    "hosted_ui_created": false,
+    "api_server_started": false,
+    "external_calls_performed": false,
+    "rendering_performed": false,
+    "asset_download_performed": false,
+    "upload_or_publish_performed": false,
+    "browser_command_execution": false,
+    "automated_final_approval": false,
+    "creative_improvement_guaranteed": false,
+    "monetization_guaranteed": false,
+    "performance_guaranteed": false,
+    "human_review_required_before_production": true
+  }
+}
