@@ -15,6 +15,7 @@
       title: "Brief Intake & Normalization",
       status: "static",
       statusLabel: "Static + local",
+      focus: ["engagement", "compliance", "monetization"],
       summary: "Turns one business request into a structured, reusable content brief.",
       purpose: "Capture topic, platform, audience, tone, duration, must-use points, avoid rules, source notes, and monetization intent before any content is produced.",
       modules: ["P59 Creator Studio", "P60 Brief Adapter", "P61 Single-Brief Runner"],
@@ -33,6 +34,7 @@
       title: "Content Package Generation",
       status: "local",
       statusLabel: "Implemented local",
+      focus: ["engagement", "monetization"],
       summary: "Builds the structured concept, titles, hook, script, storyboard, and platform plan.",
       purpose: "Transform the normalized brief into a complete, reviewable content package rather than a single unstructured script.",
       modules: ["P40 Package Generator", "P48 Platform Templates", "P49 Pilot Batch"],
@@ -51,6 +53,7 @@
       title: "Engagement & Retention Engine",
       status: "local",
       statusLabel: "Implemented local",
+      focus: ["engagement"],
       summary: "Evaluates the opening, pacing, retention structure, clarity, and platform fit.",
       purpose: "Improve the probability that a viewer understands the value quickly and remains engaged through a deliberate sequence of beats.",
       modules: ["P42 Engagement", "P50 Creative QA", "P53 Comparator"],
@@ -69,6 +72,7 @@
       title: "Policy, Rights & Safety",
       status: "local",
       statusLabel: "Implemented local",
+      focus: ["compliance"],
       summary: "Creates explicit cautions for copyright, likeness, logos, music, claims, and asset provenance.",
       purpose: "Prevent production teams from using risky assets or claims merely because a creative idea appears engaging.",
       modules: ["P41 Rights & Safety", "P50 Creative QA", "P56 Feedback Queue"],
@@ -87,6 +91,7 @@
       title: "Monetization Readiness",
       status: "local",
       statusLabel: "Implemented local",
+      focus: ["monetization"],
       summary: "Aligns the content format and CTA with the selected commercial outcome.",
       purpose: "Ensure the content has a clear next action, platform-appropriate value exchange, and realistic business path without guaranteeing performance.",
       modules: ["P44 Monetization", "P48 Platform Templates", "P49 Pilot Batch"],
@@ -105,6 +110,7 @@
       title: "Production Handoff",
       status: "local",
       statusLabel: "Implemented local",
+      focus: ["engagement", "compliance", "monetization"],
       summary: "Packages the approved plan for producers, editors, designers, and reviewers.",
       purpose: "Remove ambiguity between strategy and execution by exporting a consistent producer-ready package.",
       modules: ["P43 Production Handoff", "P46 Producer Export", "P47 Folder Runner"],
@@ -123,6 +129,7 @@
       title: "Orchestration & Batch Operations",
       status: "local",
       statusLabel: "Implemented local",
+      focus: ["engagement", "compliance", "monetization"],
       summary: "Runs the modules in a repeatable order for one brief or a folder of briefs.",
       purpose: "Make the process operationally consistent, reproducible, and auditable instead of relying on ad hoc manual execution.",
       modules: ["P45 Orchestration", "P47 Folder Runner", "P58 Review Cycle", "P61 Full Cycle"],
@@ -141,6 +148,7 @@
       title: "Human Review & Revision Loop",
       status: "human",
       statusLabel: "Human-controlled",
+      focus: ["engagement", "compliance", "monetization"],
       summary: "Captures approve, revise, or reject decisions and converts them into a revision plan.",
       purpose: "Keep final judgment with a reviewer while making feedback structured enough to regenerate and compare versions.",
       modules: ["P50 Creative QA", "P51 Revision Planner", "P52 Regeneration", "P53 Comparator", "P56 Feedback", "P57 Gallery"],
@@ -159,6 +167,7 @@
       title: "Review Workspaces & Deployment",
       status: "static",
       statusLabel: "Deployed static",
+      focus: ["engagement", "compliance", "monetization"],
       summary: "Presents the workflow in local browser workspaces and a Vercel-deployed static interface.",
       purpose: "Make complex content artifacts understandable to non-technical reviewers and decision-makers.",
       modules: ["P54 Review Workspace", "P55 Demo Gallery", "P62 Static UI", "P63 Vercel Lock"],
@@ -177,6 +186,7 @@
       title: "Secure AI Generation Layer",
       status: "planned",
       statusLabel: "Planned next",
+      focus: ["engagement", "compliance", "monetization"],
       summary: "Will replace deterministic browser copy with model-generated structured content through a protected API.",
       purpose: "Use external language models for richer creative generation while preserving schemas, safety gates, cost controls, and human approval.",
       modules: ["Planned model adapter", "Planned Vercel API", "Planned validation layer"],
@@ -287,7 +297,7 @@
     pipeline.innerHTML = "";
 
     const visibleStages = engineStages.filter((stage) => {
-      return state.engineFilter === "all" || Boolean(stage.objectives[state.engineFilter]);
+      return state.engineFilter === "all" || stage.focus.includes(state.engineFilter);
     });
 
     if (!visibleStages.some((stage) => stage.id === state.selectedStage)) {
@@ -309,7 +319,7 @@
         <h3>${escapeHtml(stage.title)}</h3>
         <p>${escapeHtml(stage.summary)}</p>
         <div class="stage-objectives">
-          ${Object.keys(stage.objectives).map((objective) => `<span class="objective-tag ${objective}">${escapeHtml(objectiveLabel(objective))}</span>`).join("")}
+          ${stage.focus.map((objective) => `<span class="objective-tag ${objective}">${escapeHtml(objectiveLabel(objective))}</span>`).join("")}
         </div>`;
       button.addEventListener("click", () => selectEngineStage(stage.id));
       pipeline.appendChild(button);
