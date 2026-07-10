@@ -1,0 +1,133 @@
+{
+  "schemaVersion": "p65.video_project.v1",
+  "id": "rawr-nation-army-ant-bridge-demo",
+  "title": "The Bridge That Builds Itself",
+  "brand": {
+    "id": "rawr_nation",
+    "name": "Rawr Nation",
+    "tagline": "Real facts. Simple explanations.",
+    "primaryColor": "#FFD84D",
+    "secondaryColor": "#FFFFFF",
+    "backgroundColor": "#0B1018",
+    "captionColor": "#FFFFFF",
+    "watermark": "RAWR NATION",
+    "tone": "energetic, curious, factual",
+    "voiceStyle": "fast international English factual narrator"
+  },
+  "format": "vertical_short",
+  "narration": "This bridge can build itself in seconds. When army ants reach a gap, some workers stop and lock their bodies together. More ants join until a living path appears. The colony then streams across the bridge carrying food and protecting the route. Here is the clever part: the bridge changes shape as traffic increases. When the last ants cross, the workers simply unlock and rejoin the colony. No engineer. No blueprint. Just thousands of tiny decisions working as one.",
+  "scenes": [
+    {
+      "id": "hook",
+      "startSec": 0,
+      "endSec": 3.2,
+      "headline": "A BRIDGE THAT BUILDS ITSELF?",
+      "body": "This bridge can build itself in seconds.",
+      "visual": "hook",
+      "accent": "#FFD84D",
+      "safetyLevel": "safe",
+      "objectives": ["engagement"]
+    },
+    {
+      "id": "gap",
+      "startSec": 3.2,
+      "endSec": 8.2,
+      "headline": "THE COLONY REACHES A GAP",
+      "body": "Army ants cannot stop the entire moving colony.",
+      "visual": "swarm",
+      "accent": "#70D6FF",
+      "safetyLevel": "safe",
+      "objectives": ["engagement", "compliance"]
+    },
+    {
+      "id": "lock",
+      "startSec": 8.2,
+      "endSec": 14.2,
+      "headline": "WORKERS LOCK TOGETHER",
+      "body": "Some workers use their own bodies to create the first span.",
+      "visual": "bridge",
+      "accent": "#FF9F68",
+      "safetyLevel": "safe",
+      "objectives": ["engagement"]
+    },
+    {
+      "id": "cross",
+      "startSec": 14.2,
+      "endSec": 20.5,
+      "headline": "THE COLONY CROSSES",
+      "body": "The living structure becomes a route for the rest of the colony.",
+      "visual": "traffic",
+      "accent": "#65E7A2",
+      "safetyLevel": "safe",
+      "objectives": ["engagement"]
+    },
+    {
+      "id": "adapt",
+      "startSec": 20.5,
+      "endSec": 27.5,
+      "headline": "IT ADAPTS TO TRAFFIC",
+      "body": "The bridge grows or shrinks as the flow changes.",
+      "visual": "reveal",
+      "accent": "#B794F4",
+      "safetyLevel": "safe",
+      "objectives": ["engagement", "monetization"]
+    },
+    {
+      "id": "disassemble",
+      "startSec": 27.5,
+      "endSec": 33,
+      "headline": "THEN IT DISAPPEARS",
+      "body": "The workers unlock and rejoin the moving colony.",
+      "visual": "swarm",
+      "accent": "#70D6FF",
+      "safetyLevel": "safe",
+      "objectives": ["engagement", "compliance"]
+    },
+    {
+      "id": "cta",
+      "startSec": 33,
+      "endSec": 36,
+      "headline": "TINY DECISIONS. ONE SYSTEM.",
+      "body": "FOLLOW FOR MORE REAL FACTS",
+      "visual": "cta",
+      "accent": "#FFD84D",
+      "safetyLevel": "safe",
+      "objectives": ["monetization"]
+    }
+  ],
+  "captions": [
+    {"startSec": 0, "endSec": 1.6, "text": "THIS BRIDGE BUILDS ITSELF", "highlight": "ITSELF", "emphasis": "fact"},
+    {"startSec": 1.6, "endSec": 3.2, "text": "IN JUST SECONDS", "highlight": "SECONDS", "emphasis": "danger"},
+    {"startSec": 3.2, "endSec": 5.7, "text": "ARMY ANTS REACH A GAP", "highlight": "GAP", "emphasis": "danger"},
+    {"startSec": 5.7, "endSec": 8.2, "text": "SOME WORKERS STOP", "highlight": "STOP", "emphasis": "fact"},
+    {"startSec": 8.2, "endSec": 11.1, "text": "THEY LOCK BODIES TOGETHER", "highlight": "LOCK", "emphasis": "fact"},
+    {"startSec": 11.1, "endSec": 14.2, "text": "A LIVING PATH APPEARS", "highlight": "LIVING", "emphasis": "positive"},
+    {"startSec": 14.2, "endSec": 17.1, "text": "THE COLONY STREAMS ACROSS", "highlight": "ACROSS", "emphasis": "positive"},
+    {"startSec": 17.1, "endSec": 20.5, "text": "CARRYING FOOD AND PROTECTING THE ROUTE", "highlight": "PROTECTING", "emphasis": "positive"},
+    {"startSec": 20.5, "endSec": 23.5, "text": "HERE IS THE CLEVER PART", "highlight": "CLEVER", "emphasis": "fact"},
+    {"startSec": 23.5, "endSec": 27.5, "text": "THE BRIDGE CHANGES WITH TRAFFIC", "highlight": "CHANGES", "emphasis": "fact"},
+    {"startSec": 27.5, "endSec": 30.2, "text": "WHEN THE LAST ANTS CROSS", "highlight": "LAST", "emphasis": "neutral"},
+    {"startSec": 30.2, "endSec": 33, "text": "THE WORKERS REJOIN THE COLONY", "highlight": "REJOIN", "emphasis": "positive"},
+    {"startSec": 33, "endSec": 34.4, "text": "NO ENGINEER", "highlight": "NO", "emphasis": "danger"},
+    {"startSec": 34.4, "endSec": 35.2, "text": "NO BLUEPRINT", "highlight": "NO", "emphasis": "danger"},
+    {"startSec": 35.2, "endSec": 36, "text": "JUST ONE LIVING SYSTEM", "highlight": "SYSTEM", "emphasis": "fact"}
+  ],
+  "sources": [
+    {
+      "title": "Army-ant living bridge behaviour — editorial source to be verified before publication",
+      "publisher": "Editorial research queue",
+      "status": "needs_verification"
+    }
+  ],
+  "render": {
+    "width": 1080,
+    "height": 1920,
+    "fps": 30,
+    "codec": "h264",
+    "durationSeconds": 36
+  },
+  "disclosure": "Animated explanation · human review required",
+  "callToAction": "FOLLOW FOR MORE REAL FACTS",
+  "humanReviewRequired": true,
+  "editorialStatus": "demo_only_not_approved"
+}
