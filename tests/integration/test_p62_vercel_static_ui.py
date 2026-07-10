@@ -14,6 +14,7 @@ def test_static_ui_expected_files_exist():
         STATIC_ROOT / "index.html",
         STATIC_ROOT / "assets" / "styles.css",
         STATIC_ROOT / "assets" / "app.js",
+        STATIC_ROOT / "assets" / "engine-map.js",
         STATIC_ROOT / "sample-brief.json",
         STATIC_ROOT / "wordpress-embed.html",
         STATIC_ROOT / "vercel.json",
@@ -22,6 +23,7 @@ def test_static_ui_expected_files_exist():
         ROOT / "package.json",
         ROOT / "scripts" / "build-static-creator-ui.js",
         ROOT / "docs" / "operations" / "p62-vercel-static-ui.md",
+        ROOT / "docs" / "operations" / "p64-interactive-content-engine-map.md",
     ]
     for path in expected:
         assert path.exists(), f"missing {path}"
@@ -30,10 +32,54 @@ def test_static_ui_expected_files_exist():
 def test_index_uses_local_assets_only():
     html = read(STATIC_ROOT / "index.html")
     assert 'href="assets/styles.css"' in html
+    assert 'src="assets/engine-map.js"' in html
     assert 'src="assets/app.js"' in html
     assert "https://" not in html
     assert "http://" not in html
     assert "cdn" not in html.lower()
+
+
+def test_interactive_engine_map_is_present_and_decision_oriented():
+    html = read(STATIC_ROOT / "index.html")
+    required_ids = [
+        'id="engine-map"',
+        'id="engine-stage-rail"',
+        'id="engine-detail"',
+        'id="engine-platform"',
+        'id="platform-detail"',
+    ]
+    for identifier in required_ids:
+        assert identifier in html
+    assert "Engagement assurance loop" in html
+    assert "Policy assurance loop" in html
+    assert "Monetization assurance loop" in html
+    assert "Human controlled" in html
+    assert "Next architecture layer" in html
+
+
+def test_engine_map_js_covers_pipeline_objectives_and_platforms():
+    engine = read(STATIC_ROOT / "assets" / "engine-map.js")
+    blocked_terms = ["fetch(", "XMLHttpRequest", "import(", "axios", "apiKey", "api_key"]
+    for term in blocked_terms:
+        assert term not in engine
+    for stage in [
+        "Brief & Intent Capture",
+        "Content Strategy & Platform Adaptation",
+        "Hook, Script & Storyboard Generation",
+        "Rights, Safety & Policy Gate",
+        "Engagement & Retention Scoring",
+        "Monetization Readiness",
+        "Production Handoff & Batch Execution",
+        "Human Review, Feedback & Revision",
+        "Export, Measurement & Learning Loop",
+    ]:
+        assert stage in engine
+    for objective in ["engagement", "policy", "monetization"]:
+        assert objective in engine.lower()
+    for platform in ["youtube_shorts", "instagram_reels", "tiktok", "youtube_long", "linkedin_video"]:
+        assert platform in engine
+    for module in ["P40", "P41", "P42", "P44", "P46", "P50", "P54", "P58", "P62"]:
+        assert module in engine
 
 
 def test_app_js_is_browser_only_without_external_calls():
@@ -124,3 +170,20 @@ def test_docs_explain_vercel_framework_override_and_guardrails():
     assert "FastAPI" in docs
     assert "Human review remains required" in docs
     assert "does not call a server-side AI model" in docs
+
+
+def test_engine_map_docs_explain_strategy_and_limitations():
+    docs = read(ROOT / "docs" / "operations" / "p64-interactive-content-engine-map.md")
+    for phrase in [
+        "Engagement",
+        "Policy compliance",
+        "Monetization",
+        "P59–P61",
+        "P40–P45",
+        "P46–P53",
+        "P54–P58",
+        "P62–P64",
+        "Human approval",
+        "Future AI/backend",
+    ]:
+        assert phrase in docs
