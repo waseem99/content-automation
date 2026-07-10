@@ -1,0 +1,63 @@
+name: P65 Video Render Smoke
+
+on:
+  pull_request:
+    branches:
+      - test
+    paths:
+      - "video-engine/**"
+      - "tests/integration/test_p65_video_engine.py"
+      - ".github/workflows/p65-video-render-smoke.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  render-sample:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    defaults:
+      run:
+        working-directory: video-engine
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install video engine dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Validate sample contract
+        run: npm run validate
+
+      - name: Type-check composition
+        run: npx tsc --noEmit
+
+      - name: Render sample MP4
+        env:
+          REMOTION_CONCURRENCY: "2"
+        run: npm run render
+
+      - name: Probe rendered MP4
+        run: |
+          test -s out/rawr-nation-army-ant-bridge-demo.mp4
+          ffprobe -v error \
+            -select_streams v:0 \
+            -show_entries stream=codec_name,width,height,r_frame_rate \
+            -of default=noprint_wrappers=1 \
+            out/rawr-nation-army-ant-bridge-demo.mp4
+
+      - name: Upload rendered sample
+        uses: actions/upload-artifact@v4
+        with:
+          name: p65-rawr-nation-sample
+          path: |
+            video-engine/out/rawr-nation-army-ant-bridge-demo.mp4
+            video-engine/out/rawr-nation-army-ant-bridge-demo.render.json
+          if-no-files-found: error
+          retention-days: 7
