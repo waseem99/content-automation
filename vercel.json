@@ -1,24 +1,27 @@
 {
+  "installCommand": "node -e \"console.log('No install required for static Creator UI')\"",
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
   "rewrites": [
     {
       "source": "/",
-      "destination": "/web/static-creator-ui/index.html"
+      "destination": "/index.html"
     },
     {
       "source": "/app",
-      "destination": "/web/static-creator-ui/index.html"
+      "destination": "/index.html"
     },
     {
       "source": "/sample-brief.json",
-      "destination": "/web/static-creator-ui/sample-brief.json"
+      "destination": "/sample-brief.json"
     },
     {
       "source": "/wordpress-embed.html",
-      "destination": "/web/static-creator-ui/wordpress-embed.html"
+      "destination": "/wordpress-embed.html"
     },
     {
       "source": "/assets/:path*",
-      "destination": "/web/static-creator-ui/assets/:path*"
+      "destination": "/assets/:path*"
     }
   ],
   "headers": [
