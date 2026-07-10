@@ -22,6 +22,7 @@ web/static-creator-ui/assets/app.js
 web/static-creator-ui/sample-brief.json
 web/static-creator-ui/wordpress-embed.html
 web/static-creator-ui/vercel.json
+.vercelignore
 scripts/build-static-creator-ui.js
 package.json
 vercel.json
@@ -71,7 +72,7 @@ The nested `web/static-creator-ui/vercel.json` handles these routes:
 
 ## Repo-root fallback
 
-A root `package.json`, root `vercel.json`, and `scripts/build-static-creator-ui.js` also exist as a fallback static build contract:
+A root `package.json`, root `vercel.json`, `.vercelignore`, and `scripts/build-static-creator-ui.js` also exist as a fallback static build contract:
 
 ```text
 npm run build
@@ -87,6 +88,16 @@ into:
 
 ```text
 dist/
+```
+
+The root `.vercelignore` excludes the Python/FastAPI project files from Vercel's repo-root deployment context:
+
+```text
+src/
+tests/
+pyproject.toml
+requirements.txt
+setup.py
 ```
 
 However, because Vercel already detected FastAPI before running the build in this mixed Python repository, the recommended production setup is still to set Root Directory to:
