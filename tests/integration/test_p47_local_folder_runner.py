@@ -6,7 +6,6 @@ from pathlib import Path
 import pytest
 
 from src.p47_local_folder_runner import (
-    build_summary,
     build_write_manifest,
     load_brief_json,
     main,
@@ -102,8 +101,8 @@ def test_existing_folder_requires_overwrite(tmp_path: Path) -> None:
 
 def test_build_summary_and_manifest_helpers(tmp_path: Path) -> None:
     result = run_local_folder_export(VALID_BRIEF, tmp_path)
-    export_pack = result["summary"]
-    assert export_pack["schema_version"] == "p47.local_export_summary.v1"
+    summary = result["summary"]
+    assert summary["schema_version"] == "p47.local_export_summary.v1"
 
     manifest = build_write_manifest({"a.txt": "hello"}, tmp_path)
     assert manifest[0]["filename"] == "a.txt"
@@ -123,7 +122,10 @@ def test_cli_main_writes_folder(tmp_path: Path, capsys: pytest.CaptureFixture[st
     assert Path(result["output_dir"]).exists()
 
 
-def test_cli_main_invalid_json_returns_error(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+def test_cli_main_invalid_json_returns_error(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
     brief_path = tmp_path / "brief.json"
     brief_path.write_text("not-json", encoding="utf-8")
     exit_code = main([str(brief_path), "--output-root", str(tmp_path / "outputs")])
