@@ -1,0 +1,44 @@
+{
+  "schema_version": "p48.platform_template_example.v1",
+  "parent_epic": 555,
+  "example_brief": {
+    "topic": "AI automation for small business owners",
+    "platform": "youtube_shorts",
+    "audience": "busy founders who want practical automation wins",
+    "tone": "sharp, useful, cinematic",
+    "duration_seconds": 45,
+    "monetization_goal": "newsletter signups and SaaS affiliate revenue",
+    "content_format": "vertical_short",
+    "must_use_points": ["show one workflow", "avoid hype", "make it practical"],
+    "avoid": ["celebrity voice", "movie clip"],
+    "source_notes": ["Use owned mockups and licensed music only."]
+  },
+  "expected_platforms": [
+    "youtube_shorts",
+    "instagram_reels",
+    "tiktok",
+    "youtube_long",
+    "carousel_newsletter"
+  ],
+  "expected_template_fields": [
+    "title",
+    "adapted_hook",
+    "adapted_cta",
+    "hook_style",
+    "pacing_rules",
+    "caption_style",
+    "scene_count_guidance",
+    "metadata_guidance",
+    "storyboard_adaptation_notes",
+    "export_notes",
+    "risk_compliance_notes"
+  ],
+  "guardrails": {
+    "local_only": true,
+    "trend_scraping_performed": false,
+    "platform_api_called": false,
+    "rendering_performed": false,
+    "upload_or_publish_performed": false,
+    "performance_guaranteed": false
+  }
+}
