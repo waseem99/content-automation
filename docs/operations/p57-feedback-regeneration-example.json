@@ -1,0 +1,32 @@
+{
+  "schema_version": "p57.feedback_regeneration_example.v1",
+  "parent_epic": 627,
+  "example_command": "python -m src.p57_feedback_regeneration_gallery docs/operations/p55-demo-briefs.json outputs/demo-gallery/review_feedback_summary.json --output-root outputs/feedback-regeneration --overwrite",
+  "expected_outputs": [
+    "revised_demo_briefs.json",
+    "feedback_patch_summary.json",
+    "feedback_regeneration_report.md",
+    "revised-gallery/index.html",
+    "revised-gallery/demo_gallery.json"
+  ],
+  "default_behavior": {
+    "regenerate_revision_queue_items": true,
+    "include_rejected_items": true,
+    "preserve_approved_candidates": true,
+    "human_review_required_before_production": true
+  },
+  "guardrails": {
+    "local_only": true,
+    "deployment_performed": false,
+    "hosted_ui_created": false,
+    "api_server_started": false,
+    "external_calls_performed": false,
+    "rendering_performed": false,
+    "asset_download_performed": false,
+    "upload_or_publish_performed": false,
+    "automated_final_approval": false,
+    "creative_improvement_guaranteed": false,
+    "monetization_guaranteed": false,
+    "performance_guaranteed": false
+  }
+}
