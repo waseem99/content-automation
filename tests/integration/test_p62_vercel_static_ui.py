@@ -16,6 +16,7 @@ def test_static_ui_expected_files_exist():
         STATIC_ROOT / "assets" / "app.js",
         STATIC_ROOT / "sample-brief.json",
         STATIC_ROOT / "wordpress-embed.html",
+        STATIC_ROOT / "vercel.json",
         ROOT / "vercel.json",
         ROOT / "package.json",
         ROOT / "scripts" / "build-static-creator-ui.js",
@@ -44,7 +45,17 @@ def test_app_js_is_browser_only_without_external_calls():
     assert "URL.createObjectURL" in app
 
 
-def test_vercel_config_uses_static_build_output():
+def test_subdirectory_vercel_config_routes_static_ui():
+    config = json.loads(read(STATIC_ROOT / "vercel.json"))
+    rewrites = config["rewrites"]
+    assert {"source": "/", "destination": "/index.html"} in rewrites
+    assert {"source": "/app", "destination": "/index.html"} in rewrites
+    assert {"source": "/assets/:path*", "destination": "/assets/:path*"} in rewrites
+    assert {"source": "/sample-brief.json", "destination": "/sample-brief.json"} in rewrites
+    assert any(header["source"] == "/assets/:path*" for header in config["headers"])
+
+
+def test_root_vercel_config_uses_static_build_output_as_fallback():
     config = json.loads(read(ROOT / "vercel.json"))
     assert config["installCommand"].startswith("node -e")
     assert config["buildCommand"] == "npm run build"
@@ -53,7 +64,6 @@ def test_vercel_config_uses_static_build_output():
     assert {"source": "/", "destination": "/index.html"} in rewrites
     assert {"source": "/app", "destination": "/index.html"} in rewrites
     assert {"source": "/assets/:path*", "destination": "/assets/:path*"} in rewrites
-    assert any(header["source"] == "/assets/:path*" for header in config["headers"])
 
 
 def test_package_json_locks_static_node_build():
@@ -83,11 +93,11 @@ def test_sample_brief_is_valid_and_guarded():
     assert sample["avoid"]
 
 
-def test_docs_explain_vercel_and_guardrails():
+def test_docs_explain_vercel_root_directory_and_guardrails():
     docs = read(ROOT / "docs" / "operations" / "p62-vercel-static-ui.md")
     assert "Vercel" in docs
-    assert "Build Command: npm run build" in docs
-    assert "Output Directory: dist" in docs
+    assert "Root Directory: web/static-creator-ui" in docs
+    assert "Build Command: leave empty" in docs
     assert "FastAPI" in docs
     assert "Human review remains required" in docs
     assert "does not call a server-side AI model" in docs
