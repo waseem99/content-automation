@@ -1,0 +1,82 @@
+{
+  "schema_version": "p49.pilot_brief_library.v1",
+  "parent_epic": 563,
+  "briefs": [
+    {
+      "pilot_name": "ai-automation-founder-short",
+      "topic": "AI automation for small business owners",
+      "platform": "youtube_shorts",
+      "audience": "busy founders who want practical automation wins",
+      "tone": "sharp, useful, cinematic",
+      "duration_seconds": 45,
+      "monetization_goal": "newsletter signups and SaaS affiliate revenue",
+      "content_format": "vertical_short",
+      "must_use_points": ["show one workflow", "avoid hype", "make it practical"],
+      "avoid": ["celebrity voice", "movie clip", "unlicensed software screenshots"],
+      "source_notes": ["Use owned mockups, original narration, and licensed music only."]
+    },
+    {
+      "pilot_name": "travel-budget-mistakes-reel",
+      "topic": "budget travel mistakes first-time Dubai visitors make",
+      "platform": "instagram_reels",
+      "audience": "young travelers planning their first Dubai trip",
+      "tone": "fast, visual, friendly",
+      "duration_seconds": 35,
+      "monetization_goal": "travel checklist lead magnet and affiliate hotel links",
+      "content_format": "vertical_short",
+      "must_use_points": ["show 3 mistakes", "include one money-saving tip", "end with checklist CTA"],
+      "avoid": ["hotel logos", "airline logos", "unlicensed destination footage"],
+      "source_notes": ["Use owned clips, licensed stock, or original map-style graphics."]
+    },
+    {
+      "pilot_name": "fitness-meal-prep-tiktok",
+      "topic": "meal prep system for busy professionals trying to lose fat",
+      "platform": "tiktok",
+      "audience": "busy professionals who fail diets because of time pressure",
+      "tone": "direct, practical, motivating",
+      "duration_seconds": 30,
+      "monetization_goal": "meal plan download and coaching enquiry",
+      "content_format": "vertical_short",
+      "must_use_points": ["show a simple 3-container system", "avoid extreme claims", "make it saveable"],
+      "avoid": ["medical claims", "before-after body photos", "celebrity trainer references"],
+      "source_notes": ["Use original food prep footage or licensed stock; add health disclaimer in review."]
+    },
+    {
+      "pilot_name": "used-car-import-guide-short",
+      "topic": "Japanese used car import checklist for overseas buyers",
+      "platform": "youtube_shorts",
+      "audience": "first-time overseas buyers comparing Japanese auction cars",
+      "tone": "trust-building, clear, premium",
+      "duration_seconds": 50,
+      "monetization_goal": "qualified WhatsApp leads and buyer guide downloads",
+      "content_format": "vertical_short",
+      "must_use_points": ["explain inspection sheet", "mention payment trust", "show buyer checklist"],
+      "avoid": ["specific third-party auction screenshots", "brand logos as decoration", "guaranteed savings claims"],
+      "source_notes": ["Use owned sample checklist graphics and licensed generic car footage."]
+    },
+    {
+      "pilot_name": "cybersecurity-phishing-longform",
+      "topic": "phishing red flags every small team should know",
+      "platform": "youtube_long",
+      "audience": "small business owners and operations managers",
+      "tone": "calm, expert, non-technical",
+      "duration_seconds": 420,
+      "monetization_goal": "security audit enquiries and checklist download",
+      "content_format": "longform",
+      "must_use_points": ["show fake email anatomy", "include team checklist", "avoid fearmongering"],
+      "avoid": ["real breached emails", "brand impersonation", "live malicious links"],
+      "source_notes": ["Use fictional emails and original diagrams only."]
+    }
+  ],
+  "guardrails": {
+    "local_only": true,
+    "deployment_performed": false,
+    "api_server_started": false,
+    "trend_scraping_performed": false,
+    "platform_api_called": false,
+    "rendering_performed": false,
+    "asset_download_performed": false,
+    "upload_or_publish_performed": false,
+    "performance_guaranteed": false
+  }
+}
