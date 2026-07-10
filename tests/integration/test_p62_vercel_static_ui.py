@@ -46,8 +46,12 @@ def test_app_js_is_browser_only_without_external_calls():
     assert "URL.createObjectURL" in app
 
 
-def test_subdirectory_vercel_config_routes_static_ui():
+def test_subdirectory_vercel_config_forces_static_framework():
     config = json.loads(read(STATIC_ROOT / "vercel.json"))
+    assert config["framework"] is None
+    assert config["installCommand"] == ""
+    assert config["buildCommand"] is None
+    assert config["outputDirectory"] == "."
     rewrites = config["rewrites"]
     assert {"source": "/", "destination": "/index.html"} in rewrites
     assert {"source": "/app", "destination": "/index.html"} in rewrites
@@ -56,9 +60,10 @@ def test_subdirectory_vercel_config_routes_static_ui():
     assert any(header["source"] == "/assets/:path*" for header in config["headers"])
 
 
-def test_root_vercel_config_uses_static_build_output_as_fallback():
+def test_root_vercel_config_forces_other_and_static_build_output():
     config = json.loads(read(ROOT / "vercel.json"))
-    assert config["installCommand"].startswith("node -e")
+    assert config["framework"] is None
+    assert config["installCommand"] == ""
     assert config["buildCommand"] == "npm run build"
     assert config["outputDirectory"] == "dist"
     rewrites = config["rewrites"]
@@ -110,11 +115,11 @@ def test_sample_brief_is_valid_and_guarded():
     assert sample["avoid"]
 
 
-def test_docs_explain_vercel_root_directory_and_guardrails():
+def test_docs_explain_vercel_framework_override_and_guardrails():
     docs = read(ROOT / "docs" / "operations" / "p62-vercel-static-ui.md")
     assert "Vercel" in docs
-    assert "Root Directory: web/static-creator-ui" in docs
-    assert "Build Command: leave empty" in docs
+    assert "framework: null" in docs
+    assert "Framework Preset: Other" in docs
     assert ".vercelignore" in docs
     assert "FastAPI" in docs
     assert "Human review remains required" in docs
