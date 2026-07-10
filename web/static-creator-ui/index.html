@@ -4,15 +4,19 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Content Creator Studio</title>
-  <meta name="description" content="Static, Vercel-ready creator studio for drafting and reviewing video content packs.">
+  <meta name="description" content="Static, Vercel-ready creator studio for drafting, understanding, and reviewing video content packs.">
   <link rel="stylesheet" href="assets/styles.css">
 </head>
-<body>
+<body data-objective="all">
   <header class="hero">
     <div>
       <p class="eyebrow">Static Creator Studio</p>
       <h1>Turn one content brief into a reviewable video pack.</h1>
       <p class="hero-copy">Runs fully in the browser. No backend, no API key, no Python runtime, no upload, and no external network call.</p>
+      <div class="hero-actions">
+        <a href="#engine-map">Explore the engine</a>
+        <a href="#creator-workspace" class="ghost-link">Create a brief</a>
+      </div>
     </div>
     <div class="hero-card">
       <strong>Deploy target</strong>
@@ -22,7 +26,97 @@
   </header>
 
   <main>
-    <section class="grid two-col">
+    <section id="engine-map" class="panel engine-map-panel">
+      <div class="engine-map-intro">
+        <div>
+          <p class="eyebrow">00 · System Strategy</p>
+          <h2>How the content engine works</h2>
+          <p>Click any stage to inspect the exact modules, tools, inputs, outputs, decision gates, and the controls used to protect engagement, policy compliance, and monetization.</p>
+        </div>
+        <div class="objective-toggle" aria-label="Highlight objective">
+          <button type="button" class="active" data-objective="all">All objectives</button>
+          <button type="button" data-objective="engagement">Engagement</button>
+          <button type="button" data-objective="policy">Policy</button>
+          <button type="button" data-objective="money">Monetization</button>
+        </div>
+      </div>
+
+      <div class="engine-summary-grid">
+        <article class="engine-summary-card engagement">
+          <span>Objective 1</span>
+          <h3>Engagement</h3>
+          <p>Hook strength, retention beats, pacing, clarity, proof, novelty, replay/save triggers, and platform-native CTA design.</p>
+          <strong>Primary modules: P42 · P48 · P50 · P53</strong>
+        </article>
+        <article class="engine-summary-card policy">
+          <span>Objective 2</span>
+          <h3>Policy compliance</h3>
+          <p>Rights provenance, claims control, brand/likeness protection, platform restrictions, advertiser suitability, and human approval.</p>
+          <strong>Primary modules: P41 · P50 · P54–P58</strong>
+        </article>
+        <article class="engine-summary-card money">
+          <span>Objective 3</span>
+          <h3>Monetization</h3>
+          <p>Offer alignment, CTA path, lead/product/sponsorship/platform revenue fit, conversion intent, and demonetization-risk prevention.</p>
+          <strong>Primary modules: P44 · P45 · P46</strong>
+        </article>
+      </div>
+
+      <div class="engine-workspace">
+        <nav id="engine-stage-rail" class="engine-stage-rail" aria-label="Content engine stages"></nav>
+        <section id="engine-detail" class="engine-detail" aria-live="polite"></section>
+      </div>
+
+      <div class="engine-assurance-grid">
+        <article class="assurance-card">
+          <div class="assurance-icon">E</div>
+          <div>
+            <h3>Engagement assurance loop</h3>
+            <p>Brief → hook architecture → retention scoring → creative QA → human feedback → revision comparison.</p>
+          </div>
+        </article>
+        <article class="assurance-card">
+          <div class="assurance-icon">P</div>
+          <div>
+            <h3>Policy assurance loop</h3>
+            <p>Avoid/source notes → rights gate → claim/asset checks → production instructions → human approval.</p>
+          </div>
+        </article>
+        <article class="assurance-card">
+          <div class="assurance-icon">M</div>
+          <div>
+            <h3>Monetization assurance loop</h3>
+            <p>Commercial goal → content angle → CTA mapping → offer/funnel fit → platform revenue risk → performance learning.</p>
+          </div>
+        </article>
+      </div>
+
+      <div class="platform-adapter">
+        <div class="platform-adapter-head">
+          <div>
+            <p class="eyebrow">Platform adaptation layer</p>
+            <h3>One strategy, different execution rules</h3>
+          </div>
+          <label for="engine-platform">Inspect platform</label>
+          <select id="engine-platform">
+            <option value="youtube_shorts">YouTube Shorts</option>
+            <option value="instagram_reels">Instagram Reels</option>
+            <option value="tiktok">TikTok</option>
+            <option value="youtube_long">YouTube Longform</option>
+            <option value="linkedin_video">LinkedIn Video</option>
+          </select>
+        </div>
+        <div id="platform-detail" class="platform-detail"></div>
+      </div>
+
+      <div class="decision-status-grid">
+        <article><span class="status-dot live"></span><strong>Live now</strong><p>Brief builder, deterministic content pack, rights notes, engagement/monetization planning, exports, local review and Vercel UI.</p></article>
+        <article><span class="status-dot human"></span><strong>Human controlled</strong><p>Final compliance judgment, creative approval, production approval, publishing decision and outcome interpretation.</p></article>
+        <article><span class="status-dot future"></span><strong>Next architecture layer</strong><p>Secure LLM generation, platform-policy rule updates, analytics ingestion, performance scoring and recommendation learning.</p></article>
+      </div>
+    </section>
+
+    <section id="creator-workspace" class="grid two-col creator-workspace">
       <form id="brief-form" class="panel" autocomplete="off">
         <div class="section-title">
           <p class="eyebrow">01</p>
@@ -110,7 +204,7 @@ Do not use celebrity likeness, copied music, third-party clips, or brand logos.<
     <section class="panel guardrails">
       <h2>Deployment Position</h2>
       <ul>
-        <li>Vercel-ready static app: no build command required.</li>
+        <li>Vercel-ready static app with explicit framework override.</li>
         <li>No backend, database, serverless function, API key, upload, publish action, or external asset dependency.</li>
         <li>Browser output is a first-pass planning pack, not a final video and not a monetization guarantee.</li>
         <li>Human review remains required before production.</li>
@@ -123,6 +217,7 @@ Do not use celebrity likeness, copied music, third-party clips, or brand logos.<
     <span>Local/Vercel browser workflow</span>
   </footer>
 
+  <script src="assets/engine-map.js" defer></script>
   <script src="assets/app.js" defer></script>
 </body>
 </html>
