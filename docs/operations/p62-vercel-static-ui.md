@@ -1,6 +1,6 @@
 # P62 Vercel-Deployable Static Creator UI
 
-Part of #667. P63 adds the Vercel deployment lock after Vercel auto-detected the Python/FastAPI code in `src/` when the repo root was used as the Vercel project root.
+Part of #667. P63 adds the Vercel deployment lock after Vercel repeatedly auto-detected the Python/FastAPI project instead of the static Creator UI.
 
 ## What this builds
 
@@ -31,54 +31,25 @@ tests/integration/test_p62_vercel_static_ui.py
 
 ## Why the P63 hotfix exists
 
-The repository also contains Python CLI/API code with variables named `app`. If Vercel is pointed at the repository root, Vercel may scan the whole repo and try to deploy it as a FastAPI project, causing this error:
+The repository contains Python CLI/API code with variables named `app`. The Vercel project was saved with the FastAPI Framework Preset, so Vercel kept trying to locate a FastAPI entrypoint even after Python files were excluded.
+
+The repo now overrides the saved framework setting in both Vercel configuration files:
 
 ```text
-No FastAPI entrypoint found in default locations, but found potential entrypoints
+framework: null
 ```
 
-The safest deployment contract is therefore:
+In Vercel, `framework: null` explicitly selects **Other** for that deployment and overrides the project-level FastAPI preset.
+
+The root config also uses:
 
 ```text
-Vercel Root Directory: web/static-creator-ui
+installCommand: ""
+buildCommand: npm run build
+outputDirectory: dist
 ```
 
-That keeps Vercel inside the deployable static app folder and outside the Python project files.
-
-## Recommended Vercel deploy path
-
-Use the static UI folder as the Vercel project root.
-
-Recommended Vercel settings:
-
-```text
-Framework Preset: Other
-Root Directory: web/static-creator-ui
-Build Command: leave empty
-Output Directory: leave empty
-Install Command: leave empty
-```
-
-The nested `web/static-creator-ui/vercel.json` handles these routes:
-
-```text
-/      -> static creator UI
-/app   -> static creator UI
-/assets/app.js -> local browser JS
-/assets/styles.css -> local CSS
-/sample-brief.json -> sample brief
-/wordpress-embed.html -> secondary embed snippet
-```
-
-## Repo-root fallback
-
-A root `package.json`, root `vercel.json`, `.vercelignore`, and `scripts/build-static-creator-ui.js` also exist as a fallback static build contract:
-
-```text
-npm run build
-```
-
-That command copies:
+The build command copies the browser-only source from:
 
 ```text
 web/static-creator-ui/
@@ -90,7 +61,7 @@ into:
 dist/
 ```
 
-The root `.vercelignore` excludes the Python/FastAPI project files from Vercel's repo-root deployment context:
+The root `.vercelignore` excludes Python/FastAPI files from the deployment context, including:
 
 ```text
 src/
@@ -100,21 +71,45 @@ requirements.txt
 setup.py
 ```
 
-However, because Vercel already detected FastAPI before running the build in this mixed Python repository, the recommended production setup is still to set Root Directory to:
+## Recommended Vercel settings
+
+The repository config should now override the previously saved FastAPI preset automatically.
+
+Use:
 
 ```text
-web/static-creator-ui
+Framework Preset: Other
+Build Command: npm run build
+Output Directory: dist
+Install Command: leave empty
+```
+
+If using a new project or if Root Directory is available, the clean static-only setup is:
+
+```text
+Root Directory: web/static-creator-ui
+Framework Preset: Other
+Build Command: leave empty
+Output Directory: .
+Install Command: leave empty
+```
+
+The nested `web/static-creator-ui/vercel.json` also contains `framework: null` and serves the static folder directly.
+
+## Routes
+
+```text
+/      -> static creator UI
+/app   -> static creator UI
+/assets/app.js -> local browser JS
+/assets/styles.css -> local CSS
+/sample-brief.json -> sample brief
+/wordpress-embed.html -> secondary embed snippet
 ```
 
 ## Local smoke test
 
-Open this file directly in a browser:
-
-```text
-web/static-creator-ui/index.html
-```
-
-Or run the fallback static build locally:
+Run:
 
 ```bash
 npm run build
@@ -124,6 +119,12 @@ Then open:
 
 ```text
 dist/index.html
+```
+
+You can also open the source directly:
+
+```text
+web/static-creator-ui/index.html
 ```
 
 ## Important product position
