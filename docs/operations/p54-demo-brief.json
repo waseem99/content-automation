@@ -1,0 +1,23 @@
+{
+  "topic": "AI automation for service business owners",
+  "platform": "youtube_shorts",
+  "audience": "small agency founders and service business owners",
+  "tone": "clear, high-trust, practical, cinematic",
+  "duration_seconds": 45,
+  "monetization_goal": "generate qualified leads for an AI automation consulting offer",
+  "content_format": "vertical_short",
+  "must_use_points": [
+    "Open with the hidden cost of manual operations.",
+    "Show a simple before/after workflow transformation.",
+    "End with a soft CTA for a free automation audit checklist."
+  ],
+  "avoid": [
+    "Do not mention specific copyrighted tools unless used generically.",
+    "Do not promise guaranteed revenue or guaranteed savings.",
+    "Do not use celebrity likeness, brand logos, copied music, or third-party clips."
+  ],
+  "source_notes": [
+    "Use owned graphics, simple workflow diagrams, and original narration only.",
+    "All examples should be fictional or generalized."
+  ]
+}
