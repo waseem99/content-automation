@@ -15,7 +15,9 @@ The app now includes:
 5. A traceability loop from input brief through revision and before/after comparison.
 6. A browser-based first-pass content pack generator with JSON and Markdown exports.
 
-## Engine map stages
+## Interactive content engine map
+
+The deployed HTML visualizes ten stages:
 
 1. Brief Intake and Normalization — P59, P60, P61.
 2. Content Package Generation — P40, P48, P49.
@@ -38,7 +40,7 @@ The three objective controls are:
 
 ## Runtime boundaries
 
-The deployed Vercel interface is static and browser-only. The deeper P40–P61 processing remains implemented as local Python modules and runners. Human review remains mandatory. External model generation is planned but not connected to this static deployment.
+The deployed Vercel interface is static and browser-only. The deeper P40–P61 processing remains implemented as local Python modules and runners. Human review remains mandatory. The deployed static UI does not call a server-side AI model. External model generation is planned but not connected to this static deployment.
 
 ## Files
 
