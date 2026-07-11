@@ -47,8 +47,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "22"
-          cache: npm
-          cache-dependency-path: video-engine/package-lock.json
 
       - name: Install system media and speech dependencies
         run: |
@@ -87,7 +85,7 @@ jobs:
       - name: Install video engine and Kokoro
         working-directory: video-engine
         run: |
-          npm ci
+          npm install
           python -m pip install -r voice-requirements.txt
 
       - name: Validate TypeScript and projects
