@@ -1,6 +1,205 @@
 (() => {
-  const state = { brief: null, pack: null };
+  const state = {
+    brief: null,
+    pack: null,
+    engineFilter: "all",
+    selectedStage: "brief-intake"
+  };
+
   const $ = (id) => document.getElementById(id);
+
+  const engineStages = [
+    {
+      id: "brief-intake",
+      number: "01",
+      title: "Brief Intake & Normalization",
+      status: "static",
+      statusLabel: "Static + local",
+      focus: ["engagement", "compliance", "monetization"],
+      summary: "Turns one business request into a structured, reusable content brief.",
+      purpose: "Capture topic, platform, audience, tone, duration, must-use points, avoid rules, source notes, and monetization intent before any content is produced.",
+      modules: ["P59 Creator Studio", "P60 Brief Adapter", "P61 Single-Brief Runner"],
+      tools: ["HTML5 form", "Vanilla JavaScript", "JSON schema", "Python adapter"],
+      outputs: ["Normalized brief JSON", "Custom brief library", "Feedback starter", "Cycle manifest"],
+      gate: "Generation cannot be trusted until platform, audience, monetization goal, rights constraints, and source notes are explicit.",
+      objectives: {
+        engagement: "Audience, tone, platform, and duration define the creative direction before scripting.",
+        compliance: "Avoid rules and source notes establish policy and rights boundaries at input stage.",
+        monetization: "The commercial objective and desired CTA are captured before the content strategy is created."
+      }
+    },
+    {
+      id: "content-package",
+      number: "02",
+      title: "Content Package Generation",
+      status: "local",
+      statusLabel: "Implemented local",
+      focus: ["engagement", "monetization"],
+      summary: "Builds the structured concept, titles, hook, script, storyboard, and platform plan.",
+      purpose: "Transform the normalized brief into a complete, reviewable content package rather than a single unstructured script.",
+      modules: ["P40 Package Generator", "P48 Platform Templates", "P49 Pilot Batch"],
+      tools: ["Python", "Deterministic templates", "JSON artifacts", "Markdown outputs"],
+      outputs: ["Concept", "Hook", "Title options", "Script", "Storyboard", "Platform notes"],
+      gate: "Every package must contain enough information for creative, production, policy, and monetization review as separate artifacts.",
+      objectives: {
+        engagement: "Multiple creative components can be reviewed independently instead of accepting one generic draft.",
+        compliance: "Policy notes remain attached to the same package as the creative output.",
+        monetization: "Platform and conversion intent stay connected to the script and CTA."
+      }
+    },
+    {
+      id: "engagement-engine",
+      number: "03",
+      title: "Engagement & Retention Engine",
+      status: "local",
+      statusLabel: "Implemented local",
+      focus: ["engagement"],
+      summary: "Evaluates the opening, pacing, retention structure, clarity, and platform fit.",
+      purpose: "Improve the probability that a viewer understands the value quickly and remains engaged through a deliberate sequence of beats.",
+      modules: ["P42 Engagement", "P50 Creative QA", "P53 Comparator"],
+      tools: ["Hook checks", "Retention beats", "Platform heuristics", "Before/after review"],
+      outputs: ["Hook assessment", "Retention plan", "Pacing notes", "Creative QA findings", "Comparison report"],
+      gate: "The first seconds must be specific, the middle must deliver proof or value, and the CTA must arrive without breaking audience trust.",
+      objectives: {
+        engagement: "Directly controls hook strength, pacing, clarity, relevance, and retention beats.",
+        compliance: "Avoids engagement tactics that rely on false urgency, misleading claims, or unsafe creative shortcuts.",
+        monetization: "Higher-quality attention is connected to a relevant CTA instead of engagement for its own sake."
+      }
+    },
+    {
+      id: "policy-rights",
+      number: "04",
+      title: "Policy, Rights & Safety",
+      status: "local",
+      statusLabel: "Implemented local",
+      focus: ["compliance"],
+      summary: "Creates explicit cautions for copyright, likeness, logos, music, claims, and asset provenance.",
+      purpose: "Prevent production teams from using risky assets or claims merely because a creative idea appears engaging.",
+      modules: ["P41 Rights & Safety", "P50 Creative QA", "P56 Feedback Queue"],
+      tools: ["Rights checklist", "Claims guard", "Source notes", "Human policy review"],
+      outputs: ["Rights notes", "Prohibited-use warnings", "Source requirements", "Reviewer issues", "Approval status"],
+      gate: "Owned, original, or properly licensed assets must be confirmed and factual claims must not overpromise outcomes.",
+      objectives: {
+        engagement: "Preserves strong creative ideas while replacing risky execution methods with safe alternatives.",
+        compliance: "Primary control for copyright, platform policy, likeness, logos, music, sourcing, and claims.",
+        monetization: "Protects long-term account eligibility, brand safety, advertiser confidence, and commercial reuse."
+      }
+    },
+    {
+      id: "monetization-readiness",
+      number: "05",
+      title: "Monetization Readiness",
+      status: "local",
+      statusLabel: "Implemented local",
+      focus: ["monetization"],
+      summary: "Aligns the content format and CTA with the selected commercial outcome.",
+      purpose: "Ensure the content has a clear next action, platform-appropriate value exchange, and realistic business path without guaranteeing performance.",
+      modules: ["P44 Monetization", "P48 Platform Templates", "P49 Pilot Batch"],
+      tools: ["CTA mapping", "Platform fit checks", "Offer alignment", "Readiness notes"],
+      outputs: ["Primary monetization path", "CTA recommendation", "Platform notes", "Readiness cautions"],
+      gate: "The CTA must match the audience and platform, provide a reasonable next action, and avoid revenue or performance guarantees.",
+      objectives: {
+        engagement: "The CTA is introduced as a natural continuation of the content value rather than a disruptive sales pitch.",
+        compliance: "Commercial claims remain factual and do not promise guaranteed revenue, views, conversions, or savings.",
+        monetization: "Directly maps content to leads, products, affiliates, subscriptions, sponsorship, or platform revenue paths."
+      }
+    },
+    {
+      id: "production-handoff",
+      number: "06",
+      title: "Production Handoff",
+      status: "local",
+      statusLabel: "Implemented local",
+      focus: ["engagement", "compliance", "monetization"],
+      summary: "Packages the approved plan for producers, editors, designers, and reviewers.",
+      purpose: "Remove ambiguity between strategy and execution by exporting a consistent producer-ready package.",
+      modules: ["P43 Production Handoff", "P46 Producer Export", "P47 Folder Runner"],
+      tools: ["Markdown brief", "Script TXT", "Storyboard JSON", "QA checklist"],
+      outputs: ["Producer brief", "Editor script", "Storyboard", "Asset cautions", "QA checklist"],
+      gate: "A production team should be able to understand the creative, timing, visuals, source restrictions, and CTA without reconstructing strategy.",
+      objectives: {
+        engagement: "Timing, scene direction, subtitles, and visual beats are preserved during production.",
+        compliance: "Rights notes and source constraints travel with the production brief.",
+        monetization: "CTA placement and commercial objective remain visible to the production team."
+      }
+    },
+    {
+      id: "orchestration",
+      number: "07",
+      title: "Orchestration & Batch Operations",
+      status: "local",
+      statusLabel: "Implemented local",
+      focus: ["engagement", "compliance", "monetization"],
+      summary: "Runs the modules in a repeatable order for one brief or a folder of briefs.",
+      purpose: "Make the process operationally consistent, reproducible, and auditable instead of relying on ad hoc manual execution.",
+      modules: ["P45 Orchestration", "P47 Folder Runner", "P58 Review Cycle", "P61 Full Cycle"],
+      tools: ["Python CLI", "Local folders", "Manifests", "Summary reports"],
+      outputs: ["Run summary", "Cycle index", "Operator report", "Input/output manifest", "Review workspace"],
+      gate: "The same input must produce a traceable artifact chain with no hidden publishing or approval action.",
+      objectives: {
+        engagement: "Creative checks are applied consistently across batches and platforms.",
+        compliance: "Rights and approval stages cannot be silently skipped in the defined cycle.",
+        monetization: "Commercial readiness checks are repeated consistently instead of depending on individual operators."
+      }
+    },
+    {
+      id: "human-review",
+      number: "08",
+      title: "Human Review & Revision Loop",
+      status: "human",
+      statusLabel: "Human-controlled",
+      focus: ["engagement", "compliance", "monetization"],
+      summary: "Captures approve, revise, or reject decisions and converts them into a revision plan.",
+      purpose: "Keep final judgment with a reviewer while making feedback structured enough to regenerate and compare versions.",
+      modules: ["P50 Creative QA", "P51 Revision Planner", "P52 Regeneration", "P53 Comparator", "P56 Feedback", "P57 Gallery"],
+      tools: ["Feedback JSON", "Revision queue", "Comparison view", "Reviewer notes"],
+      outputs: ["Decision", "Issues", "Requested changes", "Revision plan", "Revised pack", "Before/after comparison"],
+      gate: "No content becomes production-ready merely because it was generated; a human reviewer must explicitly approve it.",
+      objectives: {
+        engagement: "Reviewers can reject generic hooks, weak pacing, or unclear creative direction.",
+        compliance: "Human oversight resolves context-sensitive policy and rights issues the templates cannot decide alone.",
+        monetization: "Reviewers confirm the CTA and offer fit before money or brand reputation is put at risk."
+      }
+    },
+    {
+      id: "workspace-deployment",
+      number: "09",
+      title: "Review Workspaces & Deployment",
+      status: "static",
+      statusLabel: "Deployed static",
+      focus: ["engagement", "compliance", "monetization"],
+      summary: "Presents the workflow in local browser workspaces and a Vercel-deployed static interface.",
+      purpose: "Make complex content artifacts understandable to non-technical reviewers and decision-makers.",
+      modules: ["P54 Review Workspace", "P55 Demo Gallery", "P62 Static UI", "P63 Vercel Lock"],
+      tools: ["Static HTML", "CSS", "Vanilla JavaScript", "Vercel", "Local galleries"],
+      outputs: ["Interactive engine map", "Creator Studio", "Review gallery", "Local index", "Downloadable exports"],
+      gate: "Presentation must remain read-only with respect to final publishing and must disclose what is static, local, human-controlled, or planned.",
+      objectives: {
+        engagement: "Decision-makers can inspect creative structure without reading raw JSON files.",
+        compliance: "Guardrails, implementation status, and human approval requirements are visible in the interface.",
+        monetization: "Commercial strategy and readiness are visible beside the creative and policy evidence."
+      }
+    },
+    {
+      id: "ai-layer",
+      number: "10",
+      title: "Secure AI Generation Layer",
+      status: "planned",
+      statusLabel: "Planned next",
+      focus: ["engagement", "compliance", "monetization"],
+      summary: "Will replace deterministic browser copy with model-generated structured content through a protected API.",
+      purpose: "Use external language models for richer creative generation while preserving schemas, safety gates, cost controls, and human approval.",
+      modules: ["Planned model adapter", "Planned Vercel API", "Planned validation layer"],
+      tools: ["Vercel serverless", "OpenAI / Gemini / Claude", "Environment secrets", "JSON validation"],
+      outputs: ["Model-generated hooks", "Scripts", "Storyboards", "Revision variants", "Usage logs"],
+      gate: "Model output must be validated, policy-checked, cost-controlled, and reviewed by a human before production.",
+      objectives: {
+        engagement: "Provides more varied, context-aware creative options and revisions.",
+        compliance: "Structured validation and the existing rights/human gates remain mandatory after model generation.",
+        monetization: "Allows more tailored platform and offer strategies while retaining realistic, non-guaranteed claims."
+      }
+    }
+  ];
 
   const sampleBrief = {
     demo_id: "custom-ai-operations-short",
@@ -92,16 +291,115 @@
     };
   }
 
+  function renderEnginePipeline() {
+    const pipeline = $("engine-pipeline");
+    if (!pipeline) return;
+    pipeline.innerHTML = "";
+
+    const visibleStages = engineStages.filter((stage) => {
+      return state.engineFilter === "all" || stage.focus.includes(state.engineFilter);
+    });
+
+    if (!visibleStages.some((stage) => stage.id === state.selectedStage)) {
+      state.selectedStage = visibleStages[0]?.id || engineStages[0].id;
+    }
+
+    visibleStages.forEach((stage) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = `engine-stage${stage.id === state.selectedStage ? " selected" : ""}`;
+      button.dataset.stageId = stage.id;
+      button.dataset.status = stage.status;
+      button.setAttribute("aria-pressed", stage.id === state.selectedStage ? "true" : "false");
+      button.innerHTML = `
+        <div class="stage-top">
+          <span class="stage-number">${escapeHtml(stage.number)}</span>
+          <span class="stage-status">${escapeHtml(stage.statusLabel)}</span>
+        </div>
+        <h3>${escapeHtml(stage.title)}</h3>
+        <p>${escapeHtml(stage.summary)}</p>
+        <div class="stage-objectives">
+          ${stage.focus.map((objective) => `<span class="objective-tag ${objective}">${escapeHtml(objectiveLabel(objective))}</span>`).join("")}
+        </div>`;
+      button.addEventListener("click", () => selectEngineStage(stage.id));
+      pipeline.appendChild(button);
+    });
+
+    renderEngineDetail();
+    syncFilterControls();
+  }
+
+  function selectEngineStage(stageId) {
+    state.selectedStage = stageId;
+    renderEnginePipeline();
+  }
+
+  function renderEngineDetail() {
+    const stage = engineStages.find((item) => item.id === state.selectedStage) || engineStages[0];
+    if (!$("detail-title")) return;
+
+    $("detail-title").textContent = `${stage.number} · ${stage.title}`;
+    $("detail-purpose").textContent = stage.purpose;
+    $("detail-modules").innerHTML = stage.modules.map((item) => `<span class="module-pill">${escapeHtml(item)}</span>`).join("");
+    $("detail-tools").innerHTML = stage.tools.map((item) => `<span class="tool-pill">${escapeHtml(item)}</span>`).join("");
+    $("detail-outputs").innerHTML = stage.outputs.map((item) => `<li>${escapeHtml(item)}</li>`).join("");
+    $("detail-gate").textContent = stage.gate;
+    $("detail-objectives").innerHTML = Object.entries(stage.objectives).map(([objective, impact]) => `
+      <div class="detail-objective-card ${objective}">
+        <strong>${escapeHtml(objectiveLabel(objective))}</strong>
+        <span>${escapeHtml(impact)}</span>
+      </div>`).join("");
+  }
+
+  function objectiveLabel(objective) {
+    return {
+      engagement: "Engagement",
+      compliance: "Policy & rights",
+      monetization: "Monetization"
+    }[objective] || objective;
+  }
+
+  function setEngineFilter(filter) {
+    state.engineFilter = filter;
+    renderEnginePipeline();
+  }
+
+  function syncFilterControls() {
+    document.querySelectorAll(".filter-chip").forEach((button) => {
+      const selected = button.dataset.filter === state.engineFilter;
+      button.classList.toggle("selected", selected);
+      button.setAttribute("aria-pressed", selected ? "true" : "false");
+    });
+
+    document.querySelectorAll(".objective-card").forEach((button) => {
+      const active = state.engineFilter === "all" || button.dataset.objective === state.engineFilter;
+      button.classList.toggle("active", active);
+      button.setAttribute("aria-pressed", active ? "true" : "false");
+    });
+  }
+
+  function bindEngineControls() {
+    document.querySelectorAll(".filter-chip").forEach((button) => {
+      button.addEventListener("click", () => setEngineFilter(button.dataset.filter || "all"));
+    });
+
+    document.querySelectorAll(".objective-card").forEach((button) => {
+      button.addEventListener("click", () => {
+        const objective = button.dataset.objective || "all";
+        setEngineFilter(state.engineFilter === objective ? "all" : objective);
+      });
+    });
+  }
+
   function buildReviewPack(brief) {
     const topic = brief.topic;
     const platform = platformLabel(brief.platform);
     const audience = brief.audience || "the target audience";
-    const monetizationGoal = brief.monetization_goal || "qualified interest";
     const hook = `Most ${audience} lose time on ${topic.toLowerCase()} because the real problem is hidden in the workflow.`;
     const titleOptions = [
       `The Hidden Cost of ${topic}`,
       `Before You Scale, Fix This ${topic} Problem`,
-      `${topic}: The 45-Second Audit`,
+      `${topic}: The ${brief.duration_seconds}-Second Audit`,
       `Stop Guessing: Audit Your ${topic} Workflow`,
       `The Simple ${topic} Fix Most Teams Miss`
     ];
@@ -112,6 +410,7 @@
     const rights = buildRightsNotes(brief);
     const monetization = buildMonetizationNotes(brief);
     const producerBrief = buildProducerMarkdown(brief, hook, titleOptions, beats, script, storyboard, qa, rights, monetization);
+
     return {
       schema_version: "p62.static_review_pack.v1",
       created_in_browser: true,
@@ -138,15 +437,24 @@
       },
       platform_notes: [
         `Primary platform: ${platform}.`,
-        brief.content_format === "vertical_short" ? "Use fast cuts, subtitles, and a strong first 2 seconds." : "Use chapter-like structure and stronger explanation depth.",
+        brief.content_format === "vertical_short"
+          ? "Use fast cuts, subtitles, and a strong first 2 seconds."
+          : "Use chapter-like structure and stronger explanation depth.",
         "Keep visuals original, licensed, or owned."
       ],
+      objective_assurance: {
+        engagement: ["Hook", "Retention beats", "Platform format", "Creative QA"],
+        compliance: ["Avoid rules", "Rights notes", "Source notes", "Human approval"],
+        monetization: ["Monetization goal", "CTA alignment", "Platform notes", "No outcome guarantee"]
+      },
       guardrails: guardrails()
     };
   }
 
   function buildBeats(brief, hook) {
-    const points = brief.must_use_points.length ? brief.must_use_points : ["Introduce the problem.", "Show the better workflow.", "Close with a soft CTA."];
+    const points = brief.must_use_points.length
+      ? brief.must_use_points
+      : ["Introduce the problem.", "Show the better workflow.", "Close with a soft CTA."];
     return [
       { time: "0-3s", label: "Hook", direction: hook },
       { time: "3-12s", label: "Problem", direction: points[0] || "Frame the pain clearly." },
@@ -157,12 +465,14 @@
   }
 
   function buildScript(brief, beats) {
-    const avoid = brief.avoid.length ? `Avoid: ${brief.avoid.join(" ")}` : "Avoid overclaiming or using unlicensed assets.";
+    const avoid = brief.avoid.length
+      ? `Avoid: ${brief.avoid.join(" ")}`
+      : "Avoid overclaiming or using unlicensed assets.";
     return [
       `HOOK: ${beats[0].direction}`,
-      `PROBLEM: If your team is relying on memory, scattered tools, or manual follow-ups, the leak is probably not one person. It is the system around them.`,
-      `PROCESS: Map the lead or customer journey from first touch to final follow-up. Mark every delay, repeated task, missing owner, and message that depends on manual effort.`,
-      `VALUE: Once the workflow is visible, you can decide what should be automated, what should stay human, and what should be removed completely.`,
+      "PROBLEM: If your team is relying on memory, scattered tools, or manual follow-ups, the leak is probably not one person. It is the system around them.",
+      "PROCESS: Map the lead or customer journey from first touch to final follow-up. Mark every delay, repeated task, missing owner, and message that depends on manual effort.",
+      "VALUE: Once the workflow is visible, you can decide what should be automated, what should stay human, and what should be removed completely.",
       `CTA: ${brief.monetization_goal || "Use this as a checklist before you invest more time or ad spend."}`,
       `SAFETY: ${avoid}`
     ];
@@ -174,9 +484,9 @@
       time: beat.time,
       scene: beat.label,
       visual_direction: index === 0
-        ? "Close-up founder/persona speaking to camera with bold subtitle overlay."
+        ? "Close-up founder or presenter speaking to camera with bold subtitle overlay."
         : index === beats.length - 1
-          ? "Clean CTA card with checklist/download/request prompt."
+          ? "Clean CTA card with checklist, download, consultation, or request prompt."
           : "Simple owned diagram, screen mockup, workflow card, or original B-roll.",
       narration: beat.direction,
       production_note: "Use owned footage, original graphics, licensed music, and burned-in captions."
@@ -197,7 +507,7 @@
     return [
       `Primary monetization path: ${brief.monetization_goal || "qualified lead generation"}.`,
       "Best CTA style: soft, useful, and action-based rather than hype-led.",
-      "Suggested CTA asset: checklist, audit request, consultation form, or saved post prompt.",
+      "Suggested CTA asset: checklist, audit request, consultation form, product page, or saved-post prompt.",
       "Do not imply guaranteed revenue, savings, conversion, or platform performance."
     ];
   }
@@ -207,8 +517,8 @@
       "Hook is specific and understandable in the first 2-3 seconds.",
       "Script is practical and avoids generic claims.",
       "Storyboard can be produced with owned or licensed assets.",
-      "Copyright and brand/logo risks are identified before production.",
-      "CTA matches the monetization goal.",
+      "Copyright, likeness, logo, and music risks are identified before production.",
+      "CTA matches the monetization goal and audience intent.",
       `Format fits ${platformLabel(brief.platform)} and ${brief.duration_seconds} seconds.`,
       "Human reviewer has approved before production or publishing."
     ];
@@ -222,6 +532,7 @@
       `Audience: ${brief.audience}`,
       `Tone: ${brief.tone}`,
       `Duration: ${brief.duration_seconds}s`,
+      `Monetization goal: ${brief.monetization_goal}`,
       "",
       "## Hook",
       hook,
@@ -261,10 +572,19 @@
     output.appendChild(card("Rights Notes", list(pack.rights_notes)));
     output.appendChild(card("Monetization Notes", list(pack.monetization_notes)));
     output.appendChild(card("QA Checklist", list(pack.qa_checklist)));
-    output.appendChild(card("Export Status", `<div class="badges"><span class="badge">Browser-only</span><span class="badge">Vercel-ready</span><span class="badge">Human review required</span></div>`));
+    output.appendChild(card("Three-Objective Assurance", objectiveAssurance(pack.objective_assurance)));
+    output.appendChild(card("Export Status", '<div class="badges"><span class="badge">Browser-only</span><span class="badge">Vercel-ready</span><span class="badge">Human review required</span></div>'));
     $("quality-banner").className = "notice ok";
-    $("quality-banner").textContent = "Review pack generated. Inspect the content before production; exported files are available below.";
+    $("quality-banner").textContent = "Review pack generated. Inspect engagement, rights, monetization, and QA evidence before production.";
     $("json-preview").textContent = JSON.stringify(pack, null, 2);
+  }
+
+  function objectiveAssurance(assurance) {
+    return `<div class="detail-objectives">${Object.entries(assurance).map(([objective, items]) => `
+      <div class="detail-objective-card ${objective}">
+        <strong>${escapeHtml(objectiveLabel(objective))}</strong>
+        <span>${escapeHtml(items.join(" · "))}</span>
+      </div>`).join("")}</div>`;
   }
 
   function card(title, html) {
@@ -336,26 +656,32 @@
     $("source_notes").value = (brief.source_notes || []).join("\n");
   }
 
-  $("brief-form").addEventListener("submit", (event) => {
-    event.preventDefault();
-    state.brief = collectBrief();
-    state.pack = buildReviewPack(state.brief);
-    renderPack(state.pack);
-  });
+  function bindStudioControls() {
+    $("brief-form").addEventListener("submit", (event) => {
+      event.preventDefault();
+      state.brief = collectBrief();
+      state.pack = buildReviewPack(state.brief);
+      renderPack(state.pack);
+    });
 
-  $("load-sample").addEventListener("click", () => loadBrief(sampleBrief));
-  $("clear-form").addEventListener("click", () => {
-    Array.from(document.querySelectorAll("input, textarea")).forEach((el) => { el.value = ""; });
-    $("platform").value = "youtube_shorts";
-  });
+    $("load-sample").addEventListener("click", () => loadBrief(sampleBrief));
+    $("clear-form").addEventListener("click", () => {
+      Array.from($("brief-form").querySelectorAll("input, textarea")).forEach((el) => { el.value = ""; });
+      $("platform").value = "youtube_shorts";
+      $("content_format").value = "vertical_short";
+    });
 
-  $("copy-brief").addEventListener("click", () => copyText(JSON.stringify(state.brief || collectBrief(), null, 2)));
-  $("download-brief").addEventListener("click", () => download("brief.json", JSON.stringify(state.brief || collectBrief(), null, 2), "application/json"));
-  $("copy-pack").addEventListener("click", () => requirePack() && copyText(JSON.stringify(state.pack, null, 2)));
-  $("download-pack").addEventListener("click", () => requirePack() && download("review-pack.json", JSON.stringify(state.pack, null, 2), "application/json"));
-  $("download-markdown").addEventListener("click", () => requirePack() && download("producer-brief.md", state.pack.exports.producer_brief_md, "text/markdown"));
-  $("download-script").addEventListener("click", () => requirePack() && download("script.txt", state.pack.exports.script_txt, "text/plain"));
-  $("download-qa").addEventListener("click", () => requirePack() && download("qa-checklist.md", state.pack.exports.qa_checklist_md, "text/markdown"));
+    $("copy-brief").addEventListener("click", () => copyText(JSON.stringify(state.brief || collectBrief(), null, 2)));
+    $("download-brief").addEventListener("click", () => download("brief.json", JSON.stringify(state.brief || collectBrief(), null, 2), "application/json"));
+    $("copy-pack").addEventListener("click", () => requirePack() && copyText(JSON.stringify(state.pack, null, 2)));
+    $("download-pack").addEventListener("click", () => requirePack() && download("review-pack.json", JSON.stringify(state.pack, null, 2), "application/json"));
+    $("download-markdown").addEventListener("click", () => requirePack() && download("producer-brief.md", state.pack.exports.producer_brief_md, "text/markdown"));
+    $("download-script").addEventListener("click", () => requirePack() && download("script.txt", state.pack.exports.script_txt, "text/plain"));
+    $("download-qa").addEventListener("click", () => requirePack() && download("qa-checklist.md", state.pack.exports.qa_checklist_md, "text/markdown"));
+  }
 
+  bindEngineControls();
+  renderEnginePipeline();
+  bindStudioControls();
   loadBrief(sampleBrief);
 })();
