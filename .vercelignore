@@ -1,11 +1,12 @@
-# P63 Vercel static deployment guard
-# Keep Vercel's repo-root build away from the Python/FastAPI project files.
+# P63/P66 Vercel static deployment guard
+# Keep Vercel's repo-root build away from local Python/media projects.
 # The deployable app lives in web/static-creator-ui/.
 
 src/
 tests/
 docs/
 outputs/
+reference-engine/
 .venv/
 venv/
 __pycache__/
