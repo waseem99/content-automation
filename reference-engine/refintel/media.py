@@ -187,8 +187,9 @@ def interval_timestamps(duration_seconds: float, interval_seconds: int = 60) -> 
         return [0.0]
     count = int(math.floor(duration_seconds / interval_seconds))
     timestamps = [float(index * interval_seconds) for index in range(count + 1)]
-    if timestamps and timestamps[-1] >= duration_seconds:
-        timestamps[-1] = max(0.0, duration_seconds - 0.05)
+    safe_terminal = max(0.0, duration_seconds - 0.25)
+    if timestamps and timestamps[-1] > safe_terminal:
+        timestamps[-1] = safe_terminal
     return sorted(set(round(value, 3) for value in timestamps))
 
 
@@ -210,6 +211,8 @@ def _extract_frame(video: Path, timestamp: float, target: Path) -> None:
             str(target),
         ]
     )
+    if not target.exists() or target.stat().st_size == 0:
+        raise RuntimeError(f"FFmpeg did not produce a frame at {timestamp:.3f}s")
 
 
 def score_frame(path: Path) -> tuple[float, list[str]]:
@@ -257,7 +260,11 @@ def extract_interval_frames(
     return artifacts
 
 
-def detect_scenes(video: Path, workspace: Path, threshold: float = 27.0) -> tuple[list[SceneArtifact], list[FrameArtifact]]:
+def detect_scenes(
+    video: Path,
+    workspace: Path,
+    threshold: float = 27.0,
+) -> tuple[list[SceneArtifact], list[FrameArtifact]]:
     try:
         from scenedetect import AdaptiveDetector, SceneManager, open_video  # type: ignore
     except ImportError:
