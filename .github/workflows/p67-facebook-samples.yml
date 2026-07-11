@@ -9,6 +9,14 @@ on:
       - "video-engine/**"
       - ".github/workflows/p67-facebook-samples.yml"
       - "tests/integration/test_p67_reference_samples.py"
+  push:
+    branches:
+      - test
+    paths:
+      - "reference-engine/**"
+      - "video-engine/**"
+      - ".github/workflows/p67-facebook-samples.yml"
+      - "tests/integration/test_p67_reference_samples.py"
 
 permissions:
   contents: read
