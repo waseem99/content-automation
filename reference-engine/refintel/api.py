@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import html
 import os
 import tempfile
 from pathlib import Path
@@ -22,16 +23,21 @@ HOME_TEMPLATE = """<!doctype html><html><head><meta charset='utf-8'><meta name='
 def _rows() -> str:
     rows: list[str] = []
     for item in PIPELINE.store.list_references():
-        reference_id = str(item["reference_id"])
-        actions = [f"<form style='display:inline' action='/process/{reference_id}' method='post'><button style='width:auto;padding:6px 9px'>Process</button></form>"]
+        reference_id = html.escape(str(item["reference_id"]), quote=True)
+        platform = html.escape(str(item.get("platform") or ""), quote=True)
+        status = html.escape(str(item.get("status") or ""), quote=True)
+        title = html.escape(str(item.get("title") or ""), quote=True)
+        actions = [
+            f"<form style='display:inline' action='/process/{reference_id}' method='post'>"
+            "<button style='width:auto;padding:6px 9px'>Process</button></form>"
+        ]
         report = WORKSPACE / "references" / reference_id / "reports" / "index.html"
         if report.exists():
-            actions.append(f"<a href='/report/{reference_id}'>Report</a>")
+            actions.append(f"<a href='/report/{reference_id}/index.html'>Report</a>")
         rows.append(
             "<tr>"
-            f"<td>{reference_id}</td><td>{item.get('platform','')}</td>"
-            f"<td>{item.get('status','')}</td><td>{item.get('title','')}</td>"
-            f"<td>{' · '.join(actions)}</td></tr>"
+            f"<td>{reference_id}</td><td>{platform}</td><td>{status}</td>"
+            f"<td>{title}</td><td>{' · '.join(actions)}</td></tr>"
         )
     return "".join(rows) or "<tr><td colspan='5' class='muted'>No references yet.</td></tr>"
 
@@ -99,6 +105,11 @@ def process_reference(reference_id: str, background_tasks: BackgroundTasks) -> R
 
 
 @app.get("/report/{reference_id}")
+def report_redirect(reference_id: str) -> RedirectResponse:
+    return RedirectResponse(f"/report/{reference_id}/index.html", status_code=307)
+
+
+@app.get("/report/{reference_id}/index.html")
 def report(reference_id: str) -> FileResponse:
     try:
         project = PIPELINE.store.load_project(reference_id)
