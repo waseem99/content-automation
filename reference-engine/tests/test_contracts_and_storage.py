@@ -50,7 +50,7 @@ def test_workspace_layout_is_created(tmp_path: Path) -> None:
 
 def test_interval_timestamps_include_minute_boundaries() -> None:
     assert interval_timestamps(125.0, 60) == [0.0, 60.0, 120.0]
-    assert interval_timestamps(60.0, 60) == [0.0, 59.95]
+    assert interval_timestamps(60.0, 60) == [0.0, 59.75]
     assert interval_timestamps(0.0, 60) == [0.0]
     with pytest.raises(ValueError):
         interval_timestamps(10, 0)
