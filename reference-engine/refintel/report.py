@@ -31,7 +31,7 @@ pre{white-space:pre-wrap;word-break:break-word;background:#0c0f15;padding:12px;b
 </style>
 </head>
 <body><main class="shell">
-<header class="header"><div><div class="kicker">P66 Local Reference Intelligence</div><h1 class="title">{{ project.source.title }}</h1><div class="muted">{{ project.source.platform.value }} · {{ duration }}s · {{ project.access.declaration.value }} · {{ project.status.value }}</div></div><div><span class="pill">{{ project.reference_id }}</span><span class="pill">Human review required</span></div></header>
+<header class="header"><div><div class="kicker">P66 Local Reference Intelligence</div><h1 class="title">{{ project.source.title }}</h1><div class="muted">{{ project.source.platform }} · {{ duration }}s · {{ project.access.declaration }} · {{ project.status }}</div></div><div><span class="pill">{{ project.reference_id }}</span><span class="pill">Human review required</span></div></header>
 <div class="warning">This report supports internal research and original content development. Do not reuse source footage, wording, branding, music, voices, or proprietary artwork without permission.</div>
 <section class="grid" style="margin-top:18px">
 <div class="card"><video id="player" controls preload="metadata" src="{{ video_src }}"></video>
