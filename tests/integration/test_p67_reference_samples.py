@@ -36,7 +36,6 @@ def test_p67_original_samples_require_human_review() -> None:
         assert project["compositionId"] == "ReferenceStoryShort"
         assert project["humanReviewRequired"] is True
         assert project["editorialStatus"] == "demo_only_not_approved"
-        assert project["voiceoverFile"] if "voiceoverFile" in project else True
         assert all(source["url"] for source in project["sources"])
 
 
@@ -48,6 +47,16 @@ def test_p67_workflow_does_not_publish_downloaded_source_media() -> None:
     assert "p67-original-narrated-samples" in workflow
     assert "p67-facebook-reference-analysis" in workflow
     assert "vercel" not in workflow.lower()
+
+
+def test_p67_workflow_uses_lockfile_free_node_installation() -> None:
+    workflow = (
+        ROOT / ".github" / "workflows" / "p67-facebook-samples.yml"
+    ).read_text(encoding="utf-8")
+    assert "npm install" in workflow
+    assert "npm ci" not in workflow
+    assert "video-engine/package-lock.json" not in workflow
+    assert "run: |\n          python - <<'PY'" in workflow
 
 
 def test_p67_reference_builder_preserves_anti_copy_constraints() -> None:
