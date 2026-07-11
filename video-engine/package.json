@@ -1,0 +1,27 @@
+{
+  "name": "content-automation-video-engine",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "P65 local video rendering engine for reusable branded vertical shorts.",
+  "scripts": {
+    "studio": "remotion studio src/index.ts",
+    "validate": "node scripts/validate-project.mjs samples/rawr-nation-army-ants.json",
+    "voice": "node scripts/generate-voice.mjs samples/rawr-nation-army-ants.json",
+    "render": "node scripts/render.mjs samples/rawr-nation-army-ants.json",
+    "render:project": "node scripts/render.mjs"
+  },
+  "dependencies": {
+    "@remotion/bundler": "^4.0.0",
+    "@remotion/cli": "^4.0.0",
+    "@remotion/renderer": "^4.0.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "remotion": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "typescript": "^5.7.0"
+  }
+}
