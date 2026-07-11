@@ -1,0 +1,57 @@
+name: P66 Reference Engine
+
+on:
+  pull_request:
+    branches:
+      - test
+    paths:
+      - "reference-engine/**"
+      - ".github/workflows/p66-reference-engine.yml"
+      - ".vercelignore"
+      - "vercel.json"
+
+permissions:
+  contents: read
+
+jobs:
+  offline-acceptance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: reference-engine/pyproject.toml
+
+      - name: Ensure FFmpeg is available
+        run: |
+          if ! command -v ffmpeg >/dev/null 2>&1; then
+            sudo apt-get update
+            sudo apt-get install -y ffmpeg
+          fi
+          ffmpeg -version | head -n 1
+          ffprobe -version | head -n 1
+
+      - name: Install reference engine
+        run: python -m pip install -e './reference-engine[media,dev]'
+
+      - name: Compile package
+        run: python -m compileall -q reference-engine/refintel
+
+      - name: Run environment doctor
+        working-directory: reference-engine
+        run: refintel doctor --workspace "${RUNNER_TEMP}/refintel-doctor"
+
+      - name: Run offline tests
+        working-directory: reference-engine
+        run: pytest
+
+      - name: Verify Vercel exclusion
+        run: |
+          grep -Fx 'reference-engine/' .vercelignore
+          grep -F '"ignoreCommand"' vercel.json
