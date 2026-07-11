@@ -1,0 +1,205 @@
+{
+  "schema_version": "p68.quality_benchmark.v1",
+  "status": "contract_only_pending_pilot_evidence",
+  "planned_epic": "P68",
+  "parent_issue": 714,
+  "implementation_issue": 715,
+  "score_scale": {
+    "minimum": 0,
+    "maximum": 10,
+    "labels": {
+      "0-4": "reject",
+      "5-6": "major_revision",
+      "7": "minor_revision",
+      "8": "production_candidate",
+      "9-10": "exceptional"
+    }
+  },
+  "acceptance": {
+    "minimum_weighted_score": 8.0,
+    "minimum_dimension_score": 7,
+    "minimum_hard_gate_score": 8,
+    "human_approval_required": true,
+    "publish_allowed_by_default": false,
+    "source_media_allowed_in_render": false
+  },
+  "production_profile": {
+    "width": 1080,
+    "height": 1920,
+    "fps": 30,
+    "video_codec": "h264",
+    "audio_codec": "aac",
+    "duration_seconds": {
+      "minimum": 25,
+      "maximum": 38
+    },
+    "shot_count": {
+      "minimum": 6,
+      "maximum": 8
+    },
+    "preferred_shot_duration_seconds": {
+      "minimum": 1.5,
+      "maximum": 5.0
+    },
+    "maximum_unmotivated_static_visual_seconds": 3.5,
+    "minimum_clip_handle_seconds": 0.5,
+    "target_loudness_lufs": -14,
+    "true_peak_ceiling_dbtp": -1
+  },
+  "dimensions": [
+    {
+      "id": "first_second_thumb_stop",
+      "weight": 10,
+      "minimum_score": 8,
+      "hard_gate": false
+    },
+    {
+      "id": "story_clarity_and_payoff",
+      "weight": 10,
+      "minimum_score": 8,
+      "hard_gate": false
+    },
+    {
+      "id": "shot_and_visual_quality",
+      "weight": 15,
+      "minimum_score": 8,
+      "hard_gate": false
+    },
+    {
+      "id": "natural_continuity_and_stitching",
+      "weight": 15,
+      "minimum_score": 8,
+      "hard_gate": false
+    },
+    {
+      "id": "narration_performance",
+      "weight": 8,
+      "minimum_score": 7,
+      "hard_gate": false
+    },
+    {
+      "id": "music_sfx_and_audio_finish",
+      "weight": 7,
+      "minimum_score": 7,
+      "hard_gate": false
+    },
+    {
+      "id": "caption_readability_and_timing",
+      "weight": 5,
+      "minimum_score": 8,
+      "hard_gate": false
+    },
+    {
+      "id": "factual_accuracy_and_evidence",
+      "weight": 8,
+      "minimum_score": 8,
+      "hard_gate": true
+    },
+    {
+      "id": "rights_and_source_handling",
+      "weight": 7,
+      "minimum_score": 8,
+      "hard_gate": true
+    },
+    {
+      "id": "originality_distance",
+      "weight": 8,
+      "minimum_score": 8,
+      "hard_gate": true
+    },
+    {
+      "id": "advertiser_suitability",
+      "weight": 4,
+      "minimum_score": 8,
+      "hard_gate": true
+    },
+    {
+      "id": "monetization_readiness",
+      "weight": 3,
+      "minimum_score": 7,
+      "hard_gate": false
+    }
+  ],
+  "natural_continuity_checks": [
+    "subject_identity_consistency",
+    "environment_and_background_consistency",
+    "lighting_and_time_of_day_consistency",
+    "wardrobe_or_anatomy_consistency",
+    "screen_direction_consistency",
+    "camera_motion_compatibility",
+    "action_overlap_or_pose_bridge",
+    "first_and_last_frame_compatibility",
+    "color_palette_and_grade_consistency",
+    "audio_ambience_continuity",
+    "narration_music_and_sfx_bridge",
+    "transition_is_story_motivated"
+  ],
+  "allowed_transition_strategies": [
+    "direct_cut",
+    "match_cut",
+    "action_cut",
+    "j_cut",
+    "l_cut",
+    "brief_crossfade_under_300ms"
+  ],
+  "disallowed_shortcuts": [
+    "flashy_transition_used_to_hide_unrelated_clips",
+    "shot_for_shot_reference_recreation",
+    "source_footage_reuse",
+    "source_script_or_caption_copy",
+    "source_branding_watermark_music_or_voice_reuse",
+    "unverified_factual_claim",
+    "automatic_final_approval",
+    "automatic_publishing"
+  ],
+  "reference_pack": {
+    "minimum_direct_video_references_per_brand": 3,
+    "required_rights_declaration": true,
+    "required_fields": [
+      "reference_id",
+      "brand_profile",
+      "platform",
+      "direct_video_url_or_local_file",
+      "rights_declaration",
+      "analysis_purpose",
+      "allowed_mechanics",
+      "excluded_source_specific_elements",
+      "human_review_status"
+    ],
+    "source_media_retention": "temporary_local_analysis_only"
+  },
+  "brand_profiles": {
+    "rawr_nation": {
+      "content_promise": "Surprising real-world facts explained through clear visual storytelling.",
+      "tone": ["curious", "credible", "fast", "accessible"],
+      "visual_direction": [
+        "premium factual explainer",
+        "strong first-frame mystery",
+        "clear visual demonstration",
+        "distinct payoff"
+      ],
+      "avoid": [
+        "generic slideshow",
+        "unverified sensationalism",
+        "flat template-only diagrams",
+        "copied reference identity"
+      ]
+    },
+    "animal_x": {
+      "content_promise": "Wildlife behavior explained with accuracy, wonder, and respect.",
+      "tone": ["factual", "cinematic", "respectful", "wonder-led"],
+      "visual_direction": [
+        "recognizable animal subject",
+        "natural environment",
+        "behavior-led visual sequence",
+        "evidence-backed reveal"
+      ],
+      "avoid": [
+        "cartoon-only placeholder visuals",
+        "anthropomorphic misinformation",
+        "graphic distress",
+        "invented scientific claims"
+      ]
+    }
+  }
+}
