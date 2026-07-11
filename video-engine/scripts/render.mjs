@@ -18,7 +18,7 @@ const projectPath = path.resolve(root, input);
 const validation = spawnSync(
   process.execPath,
   [path.join(root, "scripts", "validate-project.mjs"), projectPath],
-  {stdio: "inherit"}
+  {stdio: "inherit"},
 );
 if (validation.status !== 0) process.exit(validation.status ?? 1);
 
@@ -33,14 +33,15 @@ fs.mkdirSync(path.dirname(output), {recursive: true});
 console.log("Bundling Remotion composition...");
 const serveUrl = await bundle({
   entryPoint: path.join(root, "src", "index.ts"),
-  publicDir: path.join(root, "public")
+  publicDir: path.join(root, "public"),
 });
 
 const inputProps = {project};
+const compositionId = project.compositionId || "RawrNationShort";
 const composition = await selectComposition({
   serveUrl,
-  id: "RawrNationShort",
-  inputProps
+  id: compositionId,
+  inputProps,
 });
 
 console.log(`Rendering ${composition.width}x${composition.height} at ${composition.fps}fps...`);
@@ -53,22 +54,24 @@ await renderMedia({
   pixelFormat: "yuv420p",
   audioCodec: "aac",
   concurrency: Math.max(1, Math.min(4, Number(process.env.REMOTION_CONCURRENCY || 2))),
-  overwrite: true
+  overwrite: true,
 });
 
 const manifest = {
   schemaVersion: "p65.render_result.v1",
   projectId: project.id,
   compositionId: composition.id,
+  visualTheme: project.visualTheme ?? null,
   output,
   width: composition.width,
   height: composition.height,
   fps: composition.fps,
   durationInFrames: composition.durationInFrames,
   voiceoverIncluded: Boolean(project.voiceoverFile),
+  voiceProvider: project.voiceGeneration?.provider ?? null,
   editorialStatus: project.editorialStatus,
   humanReviewRequired: true,
-  renderedAt: new Date().toISOString()
+  renderedAt: new Date().toISOString(),
 };
 const manifestPath = output.replace(/\.mp4$/i, ".render.json");
 fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
