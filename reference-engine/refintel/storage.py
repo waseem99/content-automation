@@ -47,7 +47,7 @@ class WorkspaceStore:
         with self.connection() as connection:
             connection.executescript(
                 """
-                CREATE TABLE IF NOT EXISTS references (
+                CREATE TABLE IF NOT EXISTS reference_items (
                     reference_id TEXT PRIMARY KEY,
                     canonical_key TEXT NOT NULL UNIQUE,
                     title TEXT NOT NULL,
@@ -61,10 +61,10 @@ class WorkspaceStore:
                     updated_at TEXT NOT NULL,
                     error_summary TEXT
                 );
-                CREATE INDEX IF NOT EXISTS idx_references_platform
-                    ON references(platform);
-                CREATE INDEX IF NOT EXISTS idx_references_status
-                    ON references(status);
+                CREATE INDEX IF NOT EXISTS idx_reference_items_platform
+                    ON reference_items(platform);
+                CREATE INDEX IF NOT EXISTS idx_reference_items_status
+                    ON reference_items(status);
                 CREATE TABLE IF NOT EXISTS processing_events (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     reference_id TEXT NOT NULL,
@@ -73,7 +73,7 @@ class WorkspaceStore:
                     message TEXT NOT NULL,
                     created_at TEXT NOT NULL,
                     details_json TEXT NOT NULL DEFAULT '{}',
-                    FOREIGN KEY(reference_id) REFERENCES references(reference_id)
+                    FOREIGN KEY(reference_id) REFERENCES reference_items(reference_id)
                 );
                 CREATE TABLE IF NOT EXISTS schema_meta (
                     key TEXT PRIMARY KEY,
@@ -108,7 +108,7 @@ class WorkspaceStore:
         with self.connection() as connection:
             connection.execute(
                 """
-                INSERT INTO references (
+                INSERT INTO reference_items (
                     reference_id, canonical_key, title, platform,
                     rights_declaration, status, workspace_path, source_sha256,
                     duration_seconds, created_at, updated_at, error_summary
@@ -149,7 +149,7 @@ class WorkspaceStore:
     def find_by_canonical_key(self, canonical_key: str) -> str | None:
         with self.connection() as connection:
             row = connection.execute(
-                "SELECT reference_id FROM references WHERE canonical_key = ?",
+                "SELECT reference_id FROM reference_items WHERE canonical_key = ?",
                 (canonical_key,),
             ).fetchone()
         return str(row["reference_id"]) if row else None
@@ -161,7 +161,7 @@ class WorkspaceStore:
                 SELECT reference_id, title, platform, rights_declaration, status,
                        workspace_path, duration_seconds, created_at, updated_at,
                        error_summary
-                FROM references
+                FROM reference_items
                 ORDER BY updated_at DESC
                 """
             ).fetchall()
