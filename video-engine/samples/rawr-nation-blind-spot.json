@@ -1,0 +1,141 @@
+{
+  "schemaVersion": "p65.video_project.v1",
+  "id": "rawr-nation-hidden-blind-spot-p67",
+  "title": "The Hole in Your Vision You Never See",
+  "brand": {
+    "id": "rawr_nation",
+    "name": "Rawr Nation",
+    "tagline": "Real facts. Simple explanations.",
+    "primaryColor": "#FFD84D",
+    "secondaryColor": "#70D6FF",
+    "backgroundColor": "#0B1018",
+    "captionColor": "#FFFFFF",
+    "watermark": "RAWR NATION",
+    "tone": "energetic, curious, factual",
+    "voiceStyle": "clear, quick international English narrator"
+  },
+  "format": "vertical_short",
+  "compositionId": "ReferenceStoryShort",
+  "visualTheme": "vision",
+  "narration": "Every eye has a blind spot, but your brain hides it from you. At the back of the retina, the optic nerve exits through a tiny area with no light-sensing cells. Anything landing there creates a real gap in the image. Yet you never see a black hole. Information from the other eye and the surrounding pattern helps your visual system fill in what is missing. Close one eye and use a blind-spot test, and an object can appear to vanish. Your vision is not a camera. It is a prediction your brain keeps updating.",
+  "scenes": [
+    {
+      "id": "hook",
+      "startSec": 0,
+      "endSec": 3.5,
+      "headline": "THERE IS A HOLE IN YOUR VISION",
+      "body": "Every eye has a blind spot.",
+      "visual": "hook",
+      "accent": "#FFD84D",
+      "safetyLevel": "safe",
+      "objectives": ["engagement"]
+    },
+    {
+      "id": "retina",
+      "startSec": 3.5,
+      "endSec": 9.5,
+      "headline": "THE OPTIC NERVE HAS TO EXIT",
+      "body": "It leaves through the back of the retina.",
+      "visual": "bridge",
+      "accent": "#70D6FF",
+      "safetyLevel": "safe",
+      "objectives": ["engagement", "compliance"]
+    },
+    {
+      "id": "missing-cells",
+      "startSec": 9.5,
+      "endSec": 15.5,
+      "headline": "THAT AREA HAS NO LIGHT SENSORS",
+      "body": "No rods or cones can record that small region.",
+      "visual": "swarm",
+      "accent": "#FF7A8A",
+      "safetyLevel": "safe",
+      "objectives": ["engagement", "compliance"]
+    },
+    {
+      "id": "gap",
+      "startSec": 15.5,
+      "endSec": 21.5,
+      "headline": "A REAL PIECE OF THE IMAGE IS MISSING",
+      "body": "But you do not experience a black circle.",
+      "visual": "swarm",
+      "accent": "#B794F4",
+      "safetyLevel": "safe",
+      "objectives": ["engagement"]
+    },
+    {
+      "id": "fill",
+      "startSec": 21.5,
+      "endSec": 28.5,
+      "headline": "YOUR VISUAL SYSTEM FILLS THE GAP",
+      "body": "It uses surrounding patterns and both eyes.",
+      "visual": "traffic",
+      "accent": "#65E7A2",
+      "safetyLevel": "safe",
+      "objectives": ["engagement", "monetization"]
+    },
+    {
+      "id": "test",
+      "startSec": 28.5,
+      "endSec": 36.5,
+      "headline": "A SIMPLE TEST MAKES OBJECTS VANISH",
+      "body": "Close one eye and find your own blind spot.",
+      "visual": "reveal",
+      "accent": "#FFD84D",
+      "safetyLevel": "safe",
+      "objectives": ["engagement"]
+    },
+    {
+      "id": "cta",
+      "startSec": 36.5,
+      "endSec": 40,
+      "headline": "VISION IS A LIVE PREDICTION",
+      "body": "FOLLOW FOR MORE REAL FACTS",
+      "visual": "cta",
+      "accent": "#FFD84D",
+      "safetyLevel": "safe",
+      "objectives": ["monetization"]
+    }
+  ],
+  "captions": [
+    {"startSec": 0, "endSec": 1.8, "text": "YOUR EYE HAS A HOLE", "highlight": "HOLE", "emphasis": "danger"},
+    {"startSec": 1.8, "endSec": 3.5, "text": "YOU NEVER NOTICE", "highlight": "NEVER", "emphasis": "fact"},
+    {"startSec": 3.5, "endSec": 6.5, "text": "THE OPTIC NERVE EXITS HERE", "highlight": "EXITS", "emphasis": "fact"},
+    {"startSec": 6.5, "endSec": 9.5, "text": "AT THE BACK OF THE RETINA", "highlight": "RETINA", "emphasis": "fact"},
+    {"startSec": 9.5, "endSec": 12.5, "text": "THERE ARE NO LIGHT SENSORS", "highlight": "NO", "emphasis": "danger"},
+    {"startSec": 12.5, "endSec": 15.5, "text": "NOTHING RECORDS THAT SPOT", "highlight": "NOTHING", "emphasis": "danger"},
+    {"startSec": 15.5, "endSec": 18.5, "text": "A PIECE OF THE IMAGE IS MISSING", "highlight": "MISSING", "emphasis": "danger"},
+    {"startSec": 18.5, "endSec": 21.5, "text": "BUT YOU SEE NO BLACK CIRCLE", "highlight": "NO", "emphasis": "fact"},
+    {"startSec": 21.5, "endSec": 24.8, "text": "YOUR BRAIN USES THE SURROUNDINGS", "highlight": "SURROUNDINGS", "emphasis": "positive"},
+    {"startSec": 24.8, "endSec": 28.5, "text": "AND FILLS IN THE GAP", "highlight": "FILLS", "emphasis": "positive"},
+    {"startSec": 28.5, "endSec": 32.5, "text": "CLOSE ONE EYE", "highlight": "ONE", "emphasis": "fact"},
+    {"startSec": 32.5, "endSec": 36.5, "text": "AN OBJECT CAN DISAPPEAR", "highlight": "DISAPPEAR", "emphasis": "danger"},
+    {"startSec": 36.5, "endSec": 38.3, "text": "VISION IS NOT A CAMERA", "highlight": "NOT", "emphasis": "fact"},
+    {"startSec": 38.3, "endSec": 40, "text": "YOUR BRAIN BUILDS IT", "highlight": "BUILDS", "emphasis": "positive"}
+  ],
+  "sources": [
+    {
+      "title": "The Blind Spot",
+      "publisher": "Scholarpedia editorial reference",
+      "url": "https://www.scholarpedia.org/article/Blind_spot",
+      "status": "needs_verification"
+    },
+    {
+      "title": "Predictive coding: A Possible Explanation of Filling-in at the Blind Spot",
+      "publisher": "arXiv research reference",
+      "url": "https://arxiv.org/abs/1507.01390",
+      "status": "verified"
+    }
+  ],
+  "render": {
+    "width": 1080,
+    "height": 1920,
+    "fps": 30,
+    "codec": "h264",
+    "durationSeconds": 40
+  },
+  "disclosure": "Original animated explanation · human review required",
+  "callToAction": "FOLLOW FOR MORE REAL FACTS",
+  "humanReviewRequired": true,
+  "editorialStatus": "demo_only_not_approved"
+}

@@ -1,0 +1,37 @@
+{
+  "schema_version": "p67.facebook_sources.v1",
+  "rights_declaration": "public-internal-research",
+  "source_media_policy": "temporary-analysis-only-do-not-commit-or-republish",
+  "sources": [
+    {
+      "id": "known-reel-865258312526732",
+      "kind": "reel",
+      "url": "https://www.facebook.com/reel/865258312526732",
+      "priority": 1
+    },
+    {
+      "id": "historiq-page",
+      "kind": "page",
+      "url": "https://www.facebook.com/profile.php?id=61580906280508",
+      "priority": 2
+    },
+    {
+      "id": "rawr-nation-page",
+      "kind": "page",
+      "url": "https://www.facebook.com/RawrNationTV",
+      "priority": 1
+    },
+    {
+      "id": "animal-x-page",
+      "kind": "page",
+      "url": "https://www.facebook.com/profile.php?id=61566325046583",
+      "priority": 1
+    },
+    {
+      "id": "ani-films-page",
+      "kind": "page",
+      "url": "https://www.facebook.com/profile.php?id=61563298430902",
+      "priority": 2
+    }
+  ]
+}

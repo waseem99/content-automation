@@ -58,18 +58,34 @@ export interface RenderSettings {
   durationSeconds: number;
 }
 
+export interface VoiceGeneration {
+  provider: string;
+  model?: string;
+  voice?: string;
+  speed?: number;
+  sampleRate?: number;
+  audioDurationSeconds?: number;
+  timingBasis?: string;
+  alignmentFile?: string;
+  costModel?: string;
+  generatedAt?: string;
+}
+
 export interface VideoProject {
   schemaVersion: "p65.video_project.v1";
   id: string;
   title: string;
   brand: BrandProfile;
   format: "vertical_short";
+  compositionId?: "RawrNationShort" | "ReferenceStoryShort";
+  visualTheme?: "vision" | "elephants" | "ants" | "abstract";
   narration: string;
   scenes: StoryScene[];
   captions: CaptionChunk[];
   sources: EditorialSource[];
   render: RenderSettings;
   voiceoverFile?: string;
+  voiceGeneration?: VoiceGeneration;
   disclosure: string;
   callToAction: string;
   humanReviewRequired: true;

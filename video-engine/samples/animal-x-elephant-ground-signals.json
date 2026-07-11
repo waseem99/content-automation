@@ -1,0 +1,141 @@
+{
+  "schemaVersion": "p65.video_project.v1",
+  "id": "animal-x-elephant-ground-signals-p67",
+  "title": "The Messages Elephants Send Through the Ground",
+  "brand": {
+    "id": "animal_x",
+    "name": "Animal X",
+    "tagline": "Wildlife explained with accuracy and respect.",
+    "primaryColor": "#F3F4F6",
+    "secondaryColor": "#7DD3FC",
+    "backgroundColor": "#05070A",
+    "captionColor": "#FFFFFF",
+    "watermark": "ANIMAL X",
+    "tone": "calm, curious, documentary",
+    "voiceStyle": "measured international English wildlife narrator"
+  },
+  "format": "vertical_short",
+  "compositionId": "ReferenceStoryShort",
+  "visualTheme": "elephants",
+  "narration": "Elephants can send messages through the ground. Their deep rumbles do not only travel through the air. Part of the vibration couples into the soil and moves outward as a seismic signal. Another elephant can detect those vibrations through sensitive structures in its feet and trunk. Researchers have observed animals freeze, lean forward, and shift weight toward their front feet while listening. These low-frequency signals may help herds coordinate, recognize warnings, and stay connected over long distances. To an elephant, the ground is not silent. It is another communication channel.",
+  "scenes": [
+    {
+      "id": "hook",
+      "startSec": 0,
+      "endSec": 4,
+      "headline": "ELEPHANTS CAN HEAR THE GROUND",
+      "body": "A hidden message may be moving under their feet.",
+      "visual": "hook",
+      "accent": "#7DD3FC",
+      "safetyLevel": "safe",
+      "objectives": ["engagement"]
+    },
+    {
+      "id": "rumble",
+      "startSec": 4,
+      "endSec": 10,
+      "headline": "A DEEP RUMBLE STARTS THE SIGNAL",
+      "body": "The call travels through air and into the soil.",
+      "visual": "swarm",
+      "accent": "#C1CBD7",
+      "safetyLevel": "safe",
+      "objectives": ["engagement", "compliance"]
+    },
+    {
+      "id": "soil",
+      "startSec": 10,
+      "endSec": 16.5,
+      "headline": "THE VIBRATION MOVES THROUGH EARTH",
+      "body": "Low-frequency energy spreads as a seismic wave.",
+      "visual": "bridge",
+      "accent": "#65E7A2",
+      "safetyLevel": "safe",
+      "objectives": ["engagement"]
+    },
+    {
+      "id": "detect",
+      "startSec": 16.5,
+      "endSec": 23.5,
+      "headline": "ANOTHER ELEPHANT CAN DETECT IT",
+      "body": "Feet and trunk help sense the vibration.",
+      "visual": "traffic",
+      "accent": "#FFD84D",
+      "safetyLevel": "safe",
+      "objectives": ["engagement", "compliance"]
+    },
+    {
+      "id": "listen",
+      "startSec": 23.5,
+      "endSec": 30.5,
+      "headline": "THE HERD CHANGES POSTURE TO LISTEN",
+      "body": "Animals may freeze and lean onto their front feet.",
+      "visual": "swarm",
+      "accent": "#B794F4",
+      "safetyLevel": "safe",
+      "objectives": ["engagement"]
+    },
+    {
+      "id": "purpose",
+      "startSec": 30.5,
+      "endSec": 38,
+      "headline": "THE SIGNAL MAY CARRY WARNINGS",
+      "body": "It can help distant family groups stay coordinated.",
+      "visual": "reveal",
+      "accent": "#7DD3FC",
+      "safetyLevel": "safe",
+      "objectives": ["engagement", "monetization"]
+    },
+    {
+      "id": "cta",
+      "startSec": 38,
+      "endSec": 42,
+      "headline": "THE GROUND IS NOT SILENT",
+      "body": "FOLLOW FOR MORE WILDLIFE STORIES",
+      "visual": "cta",
+      "accent": "#F3F4F6",
+      "safetyLevel": "safe",
+      "objectives": ["monetization"]
+    }
+  ],
+  "captions": [
+    {"startSec": 0, "endSec": 2, "text": "ELEPHANTS HEAR THE GROUND", "highlight": "GROUND", "emphasis": "fact"},
+    {"startSec": 2, "endSec": 4, "text": "NOT JUST THE AIR", "highlight": "NOT", "emphasis": "danger"},
+    {"startSec": 4, "endSec": 7, "text": "A DEEP RUMBLE BEGINS", "highlight": "RUMBLE", "emphasis": "fact"},
+    {"startSec": 7, "endSec": 10, "text": "PART OF IT ENTERS THE SOIL", "highlight": "SOIL", "emphasis": "fact"},
+    {"startSec": 10, "endSec": 13.2, "text": "THE VIBRATION MOVES OUTWARD", "highlight": "OUTWARD", "emphasis": "positive"},
+    {"startSec": 13.2, "endSec": 16.5, "text": "AS A SEISMIC SIGNAL", "highlight": "SEISMIC", "emphasis": "fact"},
+    {"startSec": 16.5, "endSec": 20, "text": "ANOTHER ELEPHANT CAN DETECT IT", "highlight": "DETECT", "emphasis": "positive"},
+    {"startSec": 20, "endSec": 23.5, "text": "THROUGH FEET AND TRUNK", "highlight": "FEET", "emphasis": "fact"},
+    {"startSec": 23.5, "endSec": 27, "text": "THE HERD MAY FREEZE", "highlight": "FREEZE", "emphasis": "fact"},
+    {"startSec": 27, "endSec": 30.5, "text": "AND LEAN FORWARD TO LISTEN", "highlight": "LISTEN", "emphasis": "positive"},
+    {"startSec": 30.5, "endSec": 34.2, "text": "THE SIGNAL CAN CARRY WARNINGS", "highlight": "WARNINGS", "emphasis": "danger"},
+    {"startSec": 34.2, "endSec": 38, "text": "AND KEEP HERDS CONNECTED", "highlight": "CONNECTED", "emphasis": "positive"},
+    {"startSec": 38, "endSec": 40, "text": "THE GROUND IS NOT SILENT", "highlight": "NOT", "emphasis": "fact"},
+    {"startSec": 40, "endSec": 42, "text": "IT CARRIES A MESSAGE", "highlight": "MESSAGE", "emphasis": "positive"}
+  ],
+  "sources": [
+    {
+      "title": "Keeping an Ear to the Ground: Seismic Communication in Elephants",
+      "publisher": "Physiology",
+      "url": "https://doi.org/10.1152/physiol.00008.2007",
+      "status": "verified"
+    },
+    {
+      "title": "Detection of Seismic Infrasonic Elephant Rumbles Using Spectrogram-Based Machine Learning",
+      "publisher": "arXiv research reference",
+      "url": "https://arxiv.org/abs/2312.02831",
+      "status": "verified"
+    }
+  ],
+  "render": {
+    "width": 1080,
+    "height": 1920,
+    "fps": 30,
+    "codec": "h264",
+    "durationSeconds": 42
+  },
+  "disclosure": "Original animated reconstruction · human review required",
+  "callToAction": "FOLLOW FOR MORE WILDLIFE STORIES",
+  "humanReviewRequired": true,
+  "editorialStatus": "demo_only_not_approved"
+}

@@ -1,149 +1,187 @@
-# P65 Actual Video Generation MVP
+# P65/P67 Local Video Generation Engine
 
-This package is the first real media-production layer in the content automation repository. It turns a structured Rawr Nation story project into a playable vertical MP4 using Remotion.
+This package turns structured, human-reviewable story projects into real 1080×1920 H.264 MP4 videos with Remotion. P67 adds a no-cost local narration path and brand-neutral compositions for original reference-inspired samples.
 
 ## Current output
 
 - 1080×1920 vertical video
 - 30 fps
-- H.264 MP4
-- 30–45 second template
-- animated scene system
-- phrase captions with semantic word highlighting
-- Rawr Nation watermark and CTA
-- disclosure and progress treatment
+- H.264/AAC MP4
+- timed scenes and phrase captions
+- semantic word highlighting
+- brand watermark, disclosure, CTA, and progress treatment
+- local Kokoro narration by default
 - optional ElevenLabs narration
-- render manifest for review traceability
+- render and timing manifests
+- mandatory human review
 
-The sample is a production-system demonstration, not approved factual content. Its source record is intentionally marked `needs_verification`.
+The sample projects are demonstrations, not automatically approved publications.
 
 ## Requirements
 
-- Node.js 18 or newer
+- Node.js 18+
 - npm
-- Chrome/Chromium downloaded automatically by Remotion when required
-- ElevenLabs credentials only when narration is needed
+- Python 3.10+
+- FFmpeg and ffprobe
+- `espeak-ng` for Kokoro text normalization
+- internet access once to download the open model weights
 
 ## Install
 
 ```bash
 cd video-engine
 npm install
+python -m pip install -r voice-requirements.txt
 ```
 
-## Validate the sample
+On Ubuntu/Debian:
 
 ```bash
-npm run validate
+sudo apt-get install ffmpeg espeak-ng
 ```
 
-Validation checks the schema, dimensions, duration, scene coverage, captions, source record, and mandatory human-review flag.
-
-## Preview in Remotion Studio
-
-```bash
-npm run studio
-```
-
-Open the local URL and select `RawrNationShort`.
-
-## Render immediately without an API key
-
-```bash
-npm run render
-```
-
-Output:
+## Available samples
 
 ```text
-video-engine/out/rawr-nation-army-ant-bridge-demo.mp4
-video-engine/out/rawr-nation-army-ant-bridge-demo.render.json
+samples/rawr-nation-army-ants.json
+samples/rawr-nation-blind-spot.json
+samples/animal-x-elephant-ground-signals.json
 ```
 
-This fallback render is caption-led and silent. It proves the composition, scene animation, captions, branding, and MP4 pipeline without using a paid service.
+The P67 samples use the `ReferenceStoryShort` composition and new visual themes:
 
-## Generate ElevenLabs narration
+```text
+vision
+elephants
+```
 
-Never commit credentials. Set them in the shell or a local `.env` loader:
+## Validate
 
 ```bash
+npm run validate:p67
+npx tsc --noEmit
+```
+
+## Generate free local narration
+
+Kokoro is the default provider. No API key is required:
+
+```bash
+node scripts/generate-voice.mjs samples/rawr-nation-blind-spot.json
+node scripts/generate-voice.mjs samples/animal-x-elephant-ground-signals.json
+```
+
+Optional settings:
+
+```bash
+export VOICE_PROVIDER=kokoro
+export KOKORO_VOICE=af_heart
+export KOKORO_SPEED=1.08
+```
+
+The command writes:
+
+```text
+public/generated/<project-id>-kokoro.wav
+out/<project-id>-kokoro-alignment.json
+out/<project-id>-kokoro-voiced.json
+```
+
+Kokoro does not currently provide forced word alignment in this integration. The alignment file contains proportional word-timing estimates, while the full scene/caption timeline is scaled to the measured audio duration.
+
+## Render the narrated samples
+
+```bash
+node scripts/render.mjs \
+  out/rawr-nation-hidden-blind-spot-p67-kokoro-voiced.json \
+  out/rawr-nation-hidden-blind-spot-p67.mp4
+
+node scripts/render.mjs \
+  out/animal-x-elephant-ground-signals-p67-kokoro-voiced.json \
+  out/animal-x-elephant-ground-signals-p67.mp4
+```
+
+## Use ElevenLabs optionally
+
+ElevenLabs remains available but is no longer the default:
+
+```bash
+export VOICE_PROVIDER=elevenlabs
 export ELEVENLABS_API_KEY="..."
 export ELEVENLABS_VOICE_ID="..."
 export ELEVENLABS_MODEL_ID="eleven_multilingual_v2"
-npm run voice
+node scripts/generate-voice.mjs path/to/project.json
 ```
 
-The command uses ElevenLabs' speech-with-timestamps endpoint and writes:
+Never commit credentials.
 
-```text
-public/generated/rawr-nation-army-ant-bridge-demo.mp3
-out/rawr-nation-army-ant-bridge-demo-alignment.json
-out/rawr-nation-army-ant-bridge-demo-voiced.json
-```
-
-Render the voiced project:
+## Caption-only mode
 
 ```bash
-node scripts/render.mjs out/rawr-nation-army-ant-bridge-demo-voiced.json
+VOICE_PROVIDER=caption_only node scripts/generate-voice.mjs path/to/project.json
 ```
 
-## Render another project
+Or render the original unvoiced project directly.
 
-```bash
-node scripts/validate-project.mjs path/to/project.json
-node scripts/render.mjs path/to/project.json out/custom-name.mp4
-```
+## Reference-driven production
 
-The current composition supports the `vertical_short` format and these visual variants:
+P67 accepts P66 outputs:
 
 ```text
-hook
-swarm
-bridge
-traffic
-reveal
-cta
+reference_fingerprint.json
+original_content_brief.json
 ```
+
+Use the project builder:
+
+```bash
+python ../reference-engine/scripts/p67_build_sample_project.py \
+  --fingerprint /path/reference_fingerprint.json \
+  --brief /path/original_content_brief.json \
+  --template samples/rawr-nation-blind-spot.json \
+  --output out/reference-tuned-project.json
+```
+
+The builder may carry forward only abstract mechanics:
+
+- hook type and timing
+- general story stages
+- target visual-change rate
+- target caption-change rate
+- CTA placement
+- engagement/safety/monetization priorities
+
+It must not copy:
+
+- exact wording
+- source footage or shot composition
+- source branding or watermarks
+- source music or voice identity
+- source characters or proprietary artwork
+- a scene sequence shot-for-shot
 
 ## Project contract
 
 A project contains:
 
 - brand profile
-- narration
+- original narration
 - timed scenes
-- timed caption chunks
-- source records
-- safety level for every scene
-- engagement/compliance/monetization responsibility
+- timed captions
+- editorial sources
+- safety and objective tags
+- composition and visual theme
 - render settings
-- disclosure
-- CTA
+- disclosure and CTA
 - editorial status
 - mandatory human-review flag
 
-See `src/types.ts` and `samples/rawr-nation-army-ants.json`.
-
-## What is real now
-
-The current package genuinely renders an MP4. It does not merely produce a script or storyboard.
-
-The visual layer is a reusable motion-graphics/illustrated reconstruction template. It does not yet generate cinematic AI footage, select licensed stock, render Blender scenes, upload assets, or publish to social platforms.
-
-## Next production milestones
-
-1. Connect verified research and script generation.
-2. Convert ElevenLabs character alignment into regenerated phrase timing.
-3. Add brand profiles for Animal X, Historiq, and Ani Films.
-4. Add owned/licensed media ingestion.
-5. Add a remote job queue, object storage, and container render worker.
-6. Add browser job submission, preview, revision, and download.
+See `src/types.ts`.
 
 ## Guardrails
 
-- No credentials in GitHub.
 - No automatic publishing.
 - No final approval automation.
-- No unlicensed asset downloading.
-- No claims are considered verified merely because they render successfully.
-- Human editorial and policy review remains required.
+- No source footage reuse by default.
+- No claims are considered verified merely because they render.
+- Rights, factual, originality, advertiser-suitability, and quality review remain human responsibilities.

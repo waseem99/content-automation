@@ -1,15 +1,19 @@
 {
   "name": "content-automation-video-engine",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
-  "description": "P65 local video rendering engine for reusable branded vertical shorts.",
+  "description": "Local Remotion video engine with paid and no-cost local narration providers.",
   "scripts": {
     "studio": "remotion studio src/index.ts",
     "validate": "node scripts/validate-project.mjs samples/rawr-nation-army-ants.json",
     "voice": "node scripts/generate-voice.mjs samples/rawr-nation-army-ants.json",
+    "voice:project": "node scripts/generate-voice.mjs",
+    "voice:kokoro": "VOICE_PROVIDER=kokoro node scripts/generate-voice.mjs",
+    "voice:elevenlabs": "VOICE_PROVIDER=elevenlabs node scripts/generate-voice.mjs",
     "render": "node scripts/render.mjs samples/rawr-nation-army-ants.json",
-    "render:project": "node scripts/render.mjs"
+    "render:project": "node scripts/render.mjs",
+    "validate:p67": "node scripts/validate-project.mjs samples/rawr-nation-blind-spot.json && node scripts/validate-project.mjs samples/animal-x-elephant-ground-signals.json"
   },
   "dependencies": {
     "@remotion/bundler": "^4.0.0",
