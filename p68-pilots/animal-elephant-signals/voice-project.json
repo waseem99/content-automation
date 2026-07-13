@@ -1,0 +1,156 @@
+{
+  "id": "animal-elephant-signals",
+  "brand": {
+    "id": "animal_x",
+    "name": "Animal X",
+    "tagline": "Wild behavior. Clearly explained.",
+    "primaryColor": "#D6B56D",
+    "secondaryColor": "#87B8A2",
+    "backgroundColor": "#101814",
+    "captionColor": "#FFFFFF",
+    "watermark": "ANIMAL X",
+    "tone": "cinematic, respectful, factual",
+    "voiceStyle": "warm restrained wildlife-documentary narrator"
+  },
+  "narration": "This elephant may be listening to a message you cannot hear, through the ground. A deep rumble does not travel only through air. Some energy enters the soil as vibration. The signal can move across the landscape while the receiving elephant stands completely still. Sensitive feet and body pathways can help turn that vibration into useful information. Studies suggest elephants can distinguish information in these signals, including who produced a call. When a herd suddenly pauses, the conversation may already be beneath them.",
+  "render": {
+    "width": 1080,
+    "height": 1920,
+    "fps": 30,
+    "codec": "h264",
+    "durationSeconds": 33.0
+  },
+  "scenes": [
+    {
+      "id": "S01",
+      "startSec": 0.0,
+      "endSec": 5.0,
+      "headline": "A MESSAGE BENEATH ITS FEET",
+      "body": "This elephant may be listening to a message you cannot hear, through the ground.",
+      "visual": "generated_clip",
+      "accent": "#D6B56D",
+      "safetyLevel": "pending_human_review",
+      "objectives": [
+        "engagement",
+        "compliance"
+      ]
+    },
+    {
+      "id": "S02",
+      "startSec": 5.0,
+      "endSec": 10.5,
+      "headline": "RUMBLE \u2192 GROUND VIBRATION",
+      "body": "A deep rumble does not travel only through air. Some energy enters the soil as vibration.",
+      "visual": "generated_clip",
+      "accent": "#D6B56D",
+      "safetyLevel": "pending_human_review",
+      "objectives": [
+        "engagement",
+        "compliance"
+      ]
+    },
+    {
+      "id": "S03",
+      "startSec": 10.5,
+      "endSec": 16.0,
+      "headline": "THE GROUND CARRIES IT",
+      "body": "The signal can move across the landscape while the receiving elephant stands completely still.",
+      "visual": "generated_clip",
+      "accent": "#D6B56D",
+      "safetyLevel": "pending_human_review",
+      "objectives": [
+        "engagement",
+        "compliance"
+      ]
+    },
+    {
+      "id": "S04",
+      "startSec": 16.0,
+      "endSec": 21.5,
+      "headline": "FEET DETECT THE SIGNAL",
+      "body": "Sensitive feet and body pathways can help turn that vibration into useful information.",
+      "visual": "generated_clip",
+      "accent": "#D6B56D",
+      "safetyLevel": "pending_human_review",
+      "objectives": [
+        "engagement",
+        "compliance"
+      ]
+    },
+    {
+      "id": "S05",
+      "startSec": 21.5,
+      "endSec": 27.0,
+      "headline": "THE SIGNAL CARRIES IDENTITY",
+      "body": "Studies suggest elephants can distinguish information in these signals, including who produced a call.",
+      "visual": "generated_clip",
+      "accent": "#D6B56D",
+      "safetyLevel": "pending_human_review",
+      "objectives": [
+        "engagement",
+        "compliance"
+      ]
+    },
+    {
+      "id": "S06",
+      "startSec": 27.0,
+      "endSec": 33.0,
+      "headline": "A CONVERSATION UNDERFOOT",
+      "body": "When a herd suddenly pauses, the conversation may already be beneath them.",
+      "visual": "generated_clip",
+      "accent": "#D6B56D",
+      "safetyLevel": "pending_human_review",
+      "objectives": [
+        "engagement",
+        "compliance"
+      ]
+    }
+  ],
+  "captions": [
+    {
+      "startSec": 0.0,
+      "endSec": 5.0,
+      "text": "A MESSAGE BENEATH ITS FEET",
+      "highlight": "FEET",
+      "emphasis": "fact"
+    },
+    {
+      "startSec": 5.0,
+      "endSec": 10.5,
+      "text": "RUMBLE \u2192 GROUND VIBRATION",
+      "highlight": "VIBRATION",
+      "emphasis": "fact"
+    },
+    {
+      "startSec": 10.5,
+      "endSec": 16.0,
+      "text": "THE GROUND CARRIES IT",
+      "highlight": "IT",
+      "emphasis": "fact"
+    },
+    {
+      "startSec": 16.0,
+      "endSec": 21.5,
+      "text": "FEET DETECT THE SIGNAL",
+      "highlight": "SIGNAL",
+      "emphasis": "fact"
+    },
+    {
+      "startSec": 21.5,
+      "endSec": 27.0,
+      "text": "THE SIGNAL CARRIES IDENTITY",
+      "highlight": "IDENTITY",
+      "emphasis": "fact"
+    },
+    {
+      "startSec": 27.0,
+      "endSec": 33.0,
+      "text": "A CONVERSATION UNDERFOOT",
+      "highlight": "UNDERFOOT",
+      "emphasis": "fact"
+    }
+  ],
+  "editorialStatus": "draft_for_human_review",
+  "humanReviewRequired": true,
+  "publishAllowed": false
+}

@@ -1,0 +1,44 @@
+[
+  {
+    "shot_id": "S01",
+    "prompt": "Original vertical cinematic clip. Extreme macro of the same hazel eye opening; a tiny circular region of the reflected scene vanishes without a glitch effect. Subject lock: the same adult viewer represented only by one hazel human eye and one consistent clean anatomical eye model. Environment lock: dark charcoal science studio with a single warm practical reflection and restrained teal optical graphics. Lighting: soft key from camera left, narrow warm rim from camera right, black-to-charcoal background. Color: photoreal neutral skin and eye color, deep charcoal, restrained teal signal paths, amber payoff accent. Camera: 100mm macro, slow centered push toward pupil. Entry: Begin on black and reveal the eye with one natural blink. Exit: End pushing directly toward the pupil while the missing region stays visually stable. Screen direction: visual information travels left-to-right toward the optic nerve and brain. Leave clean motion handles at both ends; no embedded text.",
+    "negative_prompt": "identity drift, anatomy change, wardrobe change, background jump, lighting flip, reversed screen direction, duplicate subject, watermark, logo, embedded captions",
+    "entry_action": "Begin on black and reveal the eye with one natural blink",
+    "exit_action": "End pushing directly toward the pupil while the missing region stays visually stable"
+  },
+  {
+    "shot_id": "S02",
+    "prompt": "Original vertical cinematic clip. Seamless travel through the pupil into the same anatomically clean eye model as focused light reaches the curved retina. Subject lock: the same adult viewer represented only by one hazel human eye and one consistent clean anatomical eye model. Environment lock: dark charcoal science studio with a single warm practical reflection and restrained teal optical graphics. Lighting: soft key from camera left, narrow warm rim from camera right, black-to-charcoal background. Color: photoreal neutral skin and eye color, deep charcoal, restrained teal signal paths, amber payoff accent. Camera: Controlled macro fly-through, medically plausible proportions. Entry: Continue the forward movement through the pupil from shot one. Exit: Follow one teal signal left-to-right across the retina. Screen direction: visual information travels left-to-right toward the optic nerve and brain. Leave clean motion handles at both ends; no embedded text.",
+    "negative_prompt": "identity drift, anatomy change, wardrobe change, background jump, lighting flip, reversed screen direction, duplicate subject, watermark, logo, embedded captions",
+    "entry_action": "Continue the forward movement through the pupil from shot one",
+    "exit_action": "Follow one teal signal left-to-right across the retina"
+  },
+  {
+    "shot_id": "S03",
+    "prompt": "Original vertical cinematic clip. The retinal surface reveals one small optic-disc region without photoreceptor markers while surrounding cells remain dense. Subject lock: the same adult viewer represented only by one hazel human eye and one consistent clean anatomical eye model. Environment lock: dark charcoal science studio with a single warm practical reflection and restrained teal optical graphics. Lighting: soft key from camera left, narrow warm rim from camera right, black-to-charcoal background. Color: photoreal neutral skin and eye color, deep charcoal, restrained teal signal paths, amber payoff accent. Camera: Slow lateral macro track across retinal surface. Entry: Enter following the same teal signal across the retina. Exit: Signal curves toward the optic nerve opening at frame right. Screen direction: visual information travels left-to-right toward the optic nerve and brain. Leave clean motion handles at both ends; no embedded text.",
+    "negative_prompt": "identity drift, anatomy change, wardrobe change, background jump, lighting flip, reversed screen direction, duplicate subject, watermark, logo, embedded captions",
+    "entry_action": "Enter following the same teal signal across the retina",
+    "exit_action": "Signal curves toward the optic nerve opening at frame right"
+  },
+  {
+    "shot_id": "S04",
+    "prompt": "Original vertical cinematic clip. Same eye model rotates slightly as signal paths converge and leave through the optic nerve toward an abstract brain silhouette. Subject lock: the same adult viewer represented only by one hazel human eye and one consistent clean anatomical eye model. Environment lock: dark charcoal science studio with a single warm practical reflection and restrained teal optical graphics. Lighting: soft key from camera left, narrow warm rim from camera right, black-to-charcoal background. Color: photoreal neutral skin and eye color, deep charcoal, restrained teal signal paths, amber payoff accent. Camera: Measured pullback from retina to eye-and-nerve profile. Entry: Continue the signal movement from the optic-disc region. Exit: End with the signal exiting frame right toward the brain. Screen direction: visual information travels left-to-right toward the optic nerve and brain. Leave clean motion handles at both ends; no embedded text.",
+    "negative_prompt": "identity drift, anatomy change, wardrobe change, background jump, lighting flip, reversed screen direction, duplicate subject, watermark, logo, embedded captions",
+    "entry_action": "Continue the signal movement from the optic-disc region",
+    "exit_action": "End with the signal exiting frame right toward the brain"
+  },
+  {
+    "shot_id": "S05",
+    "prompt": "Original vertical cinematic clip. Minimal original dot-and-cross demonstration in the same charcoal studio; the dot naturally disappears at one viewing position. Subject lock: the same adult viewer represented only by one hazel human eye and one consistent clean anatomical eye model. Environment lock: dark charcoal science studio with a single warm practical reflection and restrained teal optical graphics. Lighting: soft key from camera left, narrow warm rim from camera right, black-to-charcoal background. Color: photoreal neutral skin and eye color, deep charcoal, restrained teal signal paths, amber payoff accent. Camera: Locked perpendicular demonstration view with a subtle controlled push. Entry: Brain-bound signal becomes the horizontal test line. Exit: Hold briefly after the dot disappears, then begin restoring the surrounding pattern. Screen direction: visual information travels left-to-right toward the optic nerve and brain. Leave clean motion handles at both ends; no embedded text.",
+    "negative_prompt": "identity drift, anatomy change, wardrobe change, background jump, lighting flip, reversed screen direction, duplicate subject, watermark, logo, embedded captions",
+    "entry_action": "Brain-bound signal becomes the horizontal test line",
+    "exit_action": "Hold briefly after the dot disappears, then begin restoring the surrounding pattern"
+  },
+  {
+    "shot_id": "S06",
+    "prompt": "Original vertical cinematic clip. Return to the same hazel eye as the surrounding studio reflection flows smoothly across the blind-spot region; restrained amber highlight marks the reveal. Subject lock: the same adult viewer represented only by one hazel human eye and one consistent clean anatomical eye model. Environment lock: dark charcoal science studio with a single warm practical reflection and restrained teal optical graphics. Lighting: soft key from camera left, narrow warm rim from camera right, black-to-charcoal background. Color: photoreal neutral skin and eye color, deep charcoal, restrained teal signal paths, amber payoff accent. Camera: Slow pull back from macro eye to a composed final close-up. Entry: The test pattern flows into the reflection on the eye. Exit: End on a steady eye with the complete reflection and a clean half-second hold. Screen direction: visual information travels left-to-right toward the optic nerve and brain. Leave clean motion handles at both ends; no embedded text.",
+    "negative_prompt": "identity drift, anatomy change, wardrobe change, background jump, lighting flip, reversed screen direction, duplicate subject, watermark, logo, embedded captions",
+    "entry_action": "The test pattern flows into the reflection on the eye",
+    "exit_action": "End on a steady eye with the complete reflection and a clean half-second hold"
+  }
+]

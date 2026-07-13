@@ -19,3 +19,6 @@ data/campaigns/**/*
 *.wav
 *.m4a
 *.mp3
+
+# Local P68 renders, generated plates, narration, and review evidence.
+p68-artifacts/

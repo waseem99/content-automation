@@ -1,0 +1,38 @@
+[
+  {
+    "shot_id": "S01",
+    "story_stage": "hook",
+    "visual": "The same elephant abruptly pauses mid-step beside the fallen acacia branch and lowers its weight onto the front feet",
+    "caption": "A MESSAGE BENEATH ITS FEET"
+  },
+  {
+    "shot_id": "S02",
+    "story_stage": "setup",
+    "visual": "Long-lens profile of the same elephant producing a subtle low rumble; dust grains near the feet tremble almost imperceptibly",
+    "caption": "RUMBLE \u2192 GROUND VIBRATION"
+  },
+  {
+    "shot_id": "S03",
+    "story_stage": "evidence",
+    "visual": "Macro ground view travels from a distant dust ripple past cracked soil toward the same elephant foot; no glowing fantasy waves",
+    "caption": "THE GROUND CARRIES IT"
+  },
+  {
+    "shot_id": "S04",
+    "story_stage": "mechanism",
+    "visual": "Close view of the same planted foot and lower leg, then a restrained anatomical overlay traces a plausible pathway upward without labeling certainty",
+    "caption": "FEET DETECT THE SIGNAL"
+  },
+  {
+    "shot_id": "S05",
+    "story_stage": "reveal",
+    "visual": "The same elephant lifts its head and turns slightly toward a distant off-screen herd; ear notch and lighting remain identical",
+    "caption": "THE SIGNAL CARRIES IDENTITY"
+  },
+  {
+    "shot_id": "S06",
+    "story_stage": "resolution",
+    "visual": "Wide dawn view reveals two distant herd silhouettes while the same foreground elephant remains still beside the fallen acacia branch",
+    "caption": "A CONVERSATION UNDERFOOT"
+  }
+]
