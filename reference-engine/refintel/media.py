@@ -193,6 +193,34 @@ def interval_timestamps(duration_seconds: float, interval_seconds: int = 60) -> 
     return sorted(set(round(value, 3) for value in timestamps))
 
 
+def adaptive_interval_seconds(duration_seconds: float) -> int:
+    """Choose useful evidence density while retaining minute frames for long media."""
+    if duration_seconds <= 0:
+        return 60
+    if duration_seconds <= 15:
+        return 2
+    if duration_seconds <= 45:
+        return 3
+    if duration_seconds <= 90:
+        return 5
+    if duration_seconds <= 180:
+        return 10
+    if duration_seconds <= 600:
+        return 30
+    return 60
+
+
+def resolve_interval_seconds(
+    duration_seconds: float,
+    requested_interval_seconds: int | None = None,
+) -> tuple[int, str]:
+    if requested_interval_seconds is not None:
+        if requested_interval_seconds <= 0:
+            raise ValueError("requested_interval_seconds must be greater than zero")
+        return requested_interval_seconds, "fixed"
+    return adaptive_interval_seconds(duration_seconds), "adaptive"
+
+
 def _extract_frame(video: Path, timestamp: float, target: Path) -> None:
     ffmpeg = require_binary("ffmpeg")
     target.parent.mkdir(parents=True, exist_ok=True)
@@ -344,12 +372,15 @@ def save_frame_manifest(
     workspace: Path,
     frames: list[FrameArtifact],
     scenes: list[SceneArtifact],
+    *,
+    sampling: dict[str, Any] | None = None,
 ) -> Path:
     target = workspace / "frames" / "frame_manifest.json"
     target.write_text(
         json.dumps(
             {
                 "schema_version": "p66.frame_manifest.v1",
+                "sampling": sampling or {},
                 "frames": [item.model_dump(mode="json") for item in frames],
                 "scenes": [item.model_dump(mode="json") for item in scenes],
             },
