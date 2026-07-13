@@ -1,0 +1,26 @@
+services:
+  p68-rn-worker:
+    build:
+      context: .
+      args:
+        COMFYUI_REF: ${COMFYUI_REF:?Pin COMFYUI_REF to a tested commit SHA}
+    restart: unless-stopped
+    ports:
+      # Keep the raw ComfyUI API private. Put authenticated TLS in front of it
+      # before using a non-loopback address.
+      - "${RN_BIND_ADDRESS:-127.0.0.1}:${RN_COMFYUI_PORT:-8188}:8188"
+    volumes:
+      - ${RN_MODEL_DIR:?Set RN_MODEL_DIR}:/opt/ComfyUI/models
+      - ${RN_OUTPUT_DIR:?Set RN_OUTPUT_DIR}:/opt/ComfyUI/output
+      - ${RN_INPUT_DIR:?Set RN_INPUT_DIR}:/opt/ComfyUI/input
+    environment:
+      COMFYUI_LISTEN: 0.0.0.0
+      COMFYUI_PORT: 8188
+      COMFYUI_EXTRA_ARGS: ${COMFYUI_EXTRA_ARGS:---lowvram}
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]

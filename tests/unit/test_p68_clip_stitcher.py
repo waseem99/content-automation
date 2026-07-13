@@ -122,6 +122,8 @@ def test_real_ffmpeg_normalize_stitch_mix_and_probe(tmp_path: Path) -> None:
     assert result["probe"]["height"] == 1920
     assert result["probe"]["video_codec"] == "h264"
     assert result["probe"]["audio_codec"] == "aac"
+    assert result["probe"]["sample_rate"] == 48000
+    assert result["probe"]["channels"] == 2
     assert result["quality_approved"] is False
     assert result["publish_allowed"] is False
     assert (tmp_path / "output" / "render_manifest.json").is_file()

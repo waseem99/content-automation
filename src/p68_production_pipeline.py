@@ -10,6 +10,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import re
 import shutil
 import subprocess
 from pathlib import Path
@@ -42,6 +43,16 @@ def _fingerprint(stage: str, *values: str) -> str:
     for value in values:
         digest.update(value.encode())
     return digest.hexdigest()
+
+
+def _generated_asset_fingerprint(artifact_dir: Path) -> str:
+    paths = sorted((artifact_dir / "generated-assets").glob("*.png"))
+    if not paths:
+        raise FileNotFoundError(f"A continuity master is required under {artifact_dir / 'generated-assets'}")
+    designation = artifact_dir / "generated-assets" / "shot-keyframes.json"
+    if designation.is_file():
+        paths.append(designation)
+    return sha256_paths(paths)
 
 
 def _run(command: list[str], timeout: int = 1800) -> subprocess.CompletedProcess[str]:
@@ -91,22 +102,45 @@ def prepare_asset_manifest(pilot_dir: Path, artifact_dir: Path) -> dict[str, Any
     if not masters:
         raise FileNotFoundError(f"A continuity master is required under {asset_root}")
     master = masters[0]
+    designations_path = asset_root / "shot-keyframes.json"
+    designations = _json(designations_path).get("shots", {}) if designations_path.is_file() else {}
     assets = []
     for shot in plan["shots"]:
         shot_id = shot["shot_id"]
         variants = sorted(asset_root.glob(f"{shot_id.lower()}-*.png")) + sorted(
             asset_root.glob(f"{shot_id.lower()}.png")
         )
-        selected = variants[-1] if variants else master
+        designation = designations.get(shot_id)
+        designated_path = None
+        if designation:
+            if not designation.get("approved_for_generation"):
+                raise ValueError(f"{shot_id} master-keyframe designation is not approved for generation")
+            candidate = Path(str(designation.get("path") or ""))
+            designated_path = candidate if candidate.is_absolute() else asset_root / candidate
+            if not designated_path.is_file():
+                raise FileNotFoundError(designated_path)
+            try:
+                designated_path.resolve().relative_to(asset_root.resolve())
+            except ValueError as exc:
+                raise ValueError(f"{shot_id} designated keyframe must stay under {asset_root}") from exc
+        selected = variants[-1] if variants else designated_path or master
+        source = (
+            "derived_shot_asset"
+            if variants
+            else "designated_continuity_master_keyframe"
+            if designated_path
+            else "continuity_master_preview_fallback"
+        )
         assets.append(
             {
                 "shot_id": shot_id,
                 "path": str(selected),
-                "source": "derived_shot_asset" if variants else "continuity_master_preview_fallback",
+                "source": source,
                 "master_path": str(master),
                 "sha256": sha256_file(selected),
-                "quality_status": "pending_final_review" if variants else "preview_only",
+                "quality_status": "preview_only" if source == "continuity_master_preview_fallback" else "pending_final_review",
                 "rights_status": "generated_for_project",
+                "generation_designation": designation if designated_path else None,
             }
         )
     manifest = {
@@ -114,6 +148,9 @@ def prepare_asset_manifest(pilot_dir: Path, artifact_dir: Path) -> dict[str, Any
         "pilot_id": plan["pilot_id"],
         "assets": assets,
         "all_shots_have_derived_assets": all(item["source"] == "derived_shot_asset" for item in assets),
+        "all_shots_have_generation_keyframes": all(
+            item["source"] != "continuity_master_preview_fallback" for item in assets
+        ),
         "publish_allowed": False,
     }
     path = artifact_dir / "assets" / "asset-manifest.json"
@@ -216,14 +253,20 @@ def automated_quality(render_manifest: dict[str, Any], clip_manifest: dict[str, 
     detections = ""
     if ffmpeg:
         result = subprocess.run(
-            [ffmpeg, "-hide_banner", "-i", str(output), "-vf", "blackdetect=d=0.25:pix_th=0.02,freezedetect=n=-55dB:d=1.5", "-an", "-f", "null", "-"],
+            [ffmpeg, "-hide_banner", "-i", str(output), "-vf", "blackdetect=d=0.25:pix_th=0.02", "-an", "-f", "null", "-"],
             capture_output=True,
             text=True,
             timeout=300,
         )
         detections = result.stderr
     black_segments = detections.count("black_start:")
-    freeze_segments = detections.count("freeze_start:")
+    motion_ratios = {
+        item["shot_id"]: _temporal_uniqueness_ratio(Path(item["path"]))
+        for item in clip_manifest["clips"]
+        if Path(item["path"]).is_file()
+    }
+    low_motion_shots = sorted(shot_id for shot_id, ratio in motion_ratios.items() if ratio < 0.08)
+    freeze_segments = len(low_motion_shots)
     checks = {
         "technical_profile": bool(render_manifest.get("technical_pass")),
         "no_black_segments": black_segments == 0,
@@ -238,6 +281,8 @@ def automated_quality(render_manifest: dict[str, Any], clip_manifest: dict[str, 
         "checks": checks,
         "black_segment_count": black_segments,
         "long_freeze_count": freeze_segments,
+        "temporal_uniqueness_ratios": motion_ratios,
+        "low_motion_shot_ids": low_motion_shots,
         "automated_pass": all(value for name, value in checks.items() if name not in {"human_review_present", "all_shots_have_final_assets"}),
         "production_candidate": all(checks.values()),
         "revision_tasks": [
@@ -245,7 +290,10 @@ def automated_quality(render_manifest: dict[str, Any], clip_manifest: dict[str, 
             for failed, message in (
                 (not checks["technical_profile"], "Re-render to the required 1080x1920 H.264/AAC profile."),
                 (not checks["no_black_segments"], "Inspect and replace detected black-frame segments."),
-                (not checks["no_long_freezes"], "Replace shots containing unintended long visual freezes."),
+                (
+                    not checks["no_long_freezes"],
+                    f"Replace shots with insufficient temporal change: {', '.join(low_motion_shots)}.",
+                ),
                 (not checks["all_shots_have_final_assets"], "Replace continuity-master preview fallbacks with shot-specific approved assets."),
                 (not checks["human_review_present"], "Complete the 12-dimension human benchmark review."),
             )
@@ -256,6 +304,48 @@ def automated_quality(render_manifest: dict[str, Any], clip_manifest: dict[str, 
     path = artifact_dir / "quality" / "automated-quality.json"
     atomic_write_json(path, result)
     return {**result, "quality_path": str(path)}
+
+
+def _temporal_uniqueness_ratio(path: Path) -> float:
+    """Estimate meaningful temporal change using FFmpeg's block-aware deduper.
+
+    This is more suitable than a whole-frame freeze detector for motion graphics,
+    where a small explanatory region may move over a deliberately stable field.
+    """
+    ffprobe, ffmpeg = shutil.which("ffprobe"), shutil.which("ffmpeg")
+    if not ffprobe or not ffmpeg:
+        return 0.0
+    total_result = subprocess.run(
+        [
+            ffprobe,
+            "-v",
+            "error",
+            "-count_frames",
+            "-select_streams",
+            "v:0",
+            "-show_entries",
+            "stream=nb_read_frames",
+            "-of",
+            "default=nw=1:nk=1",
+            str(path),
+        ],
+        capture_output=True,
+        text=True,
+        timeout=120,
+    )
+    try:
+        total = int(total_result.stdout.strip())
+    except ValueError:
+        return 0.0
+    deduped = subprocess.run(
+        [ffmpeg, "-hide_banner", "-i", str(path), "-vf", "mpdecimate", "-an", "-f", "null", "-"],
+        capture_output=True,
+        text=True,
+        timeout=180,
+    )
+    frames = re.findall(r"frame=\s*(\d+)", deduped.stderr)
+    kept = int(frames[-1]) if frames else 0
+    return round(kept / max(total, 1), 4)
 
 
 class ProductionPipeline:
@@ -294,7 +384,7 @@ class ProductionPipeline:
             return validation
         assets = self._stage(
             "assets",
-            _fingerprint("assets", self.input_digest, sha256_file(next(iter(sorted((self.artifact_dir / 'generated-assets').glob('master-*.png')))))),
+            _fingerprint("assets", self.input_digest, _generated_asset_fingerprint(self.artifact_dir)),
             lambda: prepare_asset_manifest(self.pilot_dir, self.artifact_dir),
         )
         if through == "assets":
