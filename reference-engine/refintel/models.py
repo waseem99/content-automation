@@ -35,6 +35,12 @@ class Platform(StrEnum):
     UNKNOWN = "unknown"
 
 
+class EvidenceSource(StrEnum):
+    MEASURED = "measured"
+    MODEL_OBSERVATION = "model_observation"
+    DETERMINISTIC_FALLBACK = "deterministic_fallback"
+
+
 class SourceAccess(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -125,6 +131,9 @@ class AnalysisFinding(BaseModel):
     end_seconds: float | None = None
     confidence: float = Field(default=0.5, ge=0, le=1)
     evidence: list[str] = Field(default_factory=list)
+    source_type: EvidenceSource = EvidenceSource.DETERMINISTIC_FALLBACK
+    provider: str = "rule-based-fallback"
+    human_review_required: Literal[True] = True
     measured: bool = False
 
 
@@ -143,6 +152,9 @@ class ReferenceAnalysis(BaseModel):
     findings: list[AnalysisFinding] = Field(default_factory=list)
     objective_scores: dict[str, ObjectiveScore] = Field(default_factory=dict)
     analyzer: dict[str, str] = Field(default_factory=dict)
+    evidence_summary: dict[str, int] = Field(default_factory=dict)
+    fallback_reasons: list[str] = Field(default_factory=list)
+    human_review_required: Literal[True] = True
 
 
 class ReferenceFingerprint(BaseModel):

@@ -10,6 +10,7 @@ from typing import Protocol
 
 from .models import (
     AnalysisFinding,
+    EvidenceSource,
     FrameArtifact,
     MediaMetadata,
     ObjectiveScore,
@@ -89,19 +90,70 @@ class OllamaVisionProvider:
                 observation = json.loads(content) if isinstance(content, str) else content
             except (urllib.error.URLError, TimeoutError, json.JSONDecodeError, OSError) as exc:
                 raise RuntimeError(f"Local visual model request failed: {exc}") from exc
+            confidence = _model_confidence(observation.get("confidence"))
+            common = {
+                "start_seconds": frame.timestamp_seconds,
+                "confidence": confidence,
+                "evidence": [frame.relative_path],
+                "source_type": EvidenceSource.MODEL_OBSERVATION,
+                "provider": f"{self.name}:{self.model}",
+                "measured": False,
+            }
             findings.append(
                 AnalysisFinding(
-                    id=f"vision-{frame.id}",
-                    category="visual",
-                    label=str(observation.get("shot_type") or "frame observation"),
-                    summary=json.dumps(observation, ensure_ascii=False),
-                    start_seconds=frame.timestamp_seconds,
-                    confidence=0.65,
-                    evidence=[frame.relative_path],
-                    measured=False,
+                    id=f"shot-{frame.id}",
+                    category="shot_taxonomy",
+                    label=str(observation.get("shot_type") or "unclassified shot"),
+                    summary=(
+                        f"Subject: {observation.get('subject') or 'unknown'}; "
+                        f"setting: {observation.get('setting') or 'unknown'}; "
+                        f"style: {observation.get('visual_style') or 'unknown'}."
+                    ),
+                    **common,
+                )
+            )
+            on_screen_text = observation.get("on_screen_text")
+            if on_screen_text not in (None, "", [], {}):
+                findings.append(
+                    AnalysisFinding(
+                        id=f"ocr-{frame.id}",
+                        category="ocr",
+                        label="on-screen text observation",
+                        summary=(
+                            on_screen_text
+                            if isinstance(on_screen_text, str)
+                            else json.dumps(on_screen_text, ensure_ascii=False)
+                        ),
+                        **common,
+                    )
+                )
+            findings.append(
+                AnalysisFinding(
+                    id=f"emotion-{frame.id}",
+                    category="emotional_beat",
+                    label=str(observation.get("emotional_tone") or "uncertain emotion"),
+                    summary="Frame-level emotional tone inferred by the local vision model.",
+                    **common,
+                )
+            )
+            findings.append(
+                AnalysisFinding(
+                    id=f"motion-{frame.id}",
+                    category="motion",
+                    label="motion clue",
+                    summary=str(observation.get("motion_clues") or "No reliable motion clue."),
+                    **common,
                 )
             )
         return findings
+
+
+def _model_confidence(value: object) -> float:
+    try:
+        confidence = float(value)
+    except (TypeError, ValueError):
+        return 0.65
+    return round(min(0.95, max(0.35, confidence)), 3)
 
 
 def _story_arc(duration: float) -> list[dict[str, object]]:
@@ -120,9 +172,124 @@ def _story_arc(duration: float) -> list[dict[str, object]]:
             "start_seconds": round(duration * start, 3),
             "end_seconds": round(duration * end, 3),
             "basis": "duration-proportional fallback; confirm during human review",
+            "source_type": EvidenceSource.DETERMINISTIC_FALLBACK.value,
+            "confidence": 0.35,
         }
         for name, start, end in sections
     ]
+
+
+def _multimodal_fallback_findings(
+    *,
+    duration: float,
+    metadata: MediaMetadata,
+    scenes: list[SceneArtifact],
+    transcript: list[TranscriptSegment],
+    transcript_metrics: dict[str, object],
+) -> list[AnalysisFinding]:
+    findings: list[AnalysisFinding] = []
+    if transcript:
+        findings.append(
+            AnalysisFinding(
+                id="caption-rhythm",
+                category="caption_rhythm",
+                label="spoken phrase rhythm",
+                summary=(
+                    f"{transcript_metrics['caption_phrase_count']} phrases at "
+                    f"{transcript_metrics['words_per_minute']} words per minute; average "
+                    f"phrase length {transcript_metrics['average_caption_phrase_words']} words."
+                ),
+                start_seconds=transcript[0].start_seconds,
+                end_seconds=transcript[-1].end_seconds,
+                confidence=0.75,
+                evidence=["transcript/transcript.json", "transcript/word_timestamps.json"],
+                source_type=EvidenceSource.MODEL_OBSERVATION,
+                provider="local-transcription",
+            )
+        )
+        emotional_text = " ".join(segment.text.lower() for segment in transcript)
+        if any(term in emotional_text for term in ("but", "until", "suddenly", "surprise", "why")):
+            label = "curiosity-to-reveal"
+        elif "?" in emotional_text:
+            label = "question-led curiosity"
+        else:
+            label = "neutral information progression"
+        findings.append(
+            AnalysisFinding(
+                id="emotional-progression-fallback",
+                category="emotional_beat",
+                label=label,
+                summary="Heuristic emotional progression derived from locally transcribed wording.",
+                start_seconds=0,
+                end_seconds=duration,
+                confidence=0.4,
+                evidence=["transcript/transcript.json"],
+                source_type=EvidenceSource.DETERMINISTIC_FALLBACK,
+                provider="transcript-keyword-heuristic:v1",
+            )
+        )
+    else:
+        findings.append(
+            AnalysisFinding(
+                id="caption-rhythm-unavailable",
+                category="caption_rhythm",
+                label="transcript unavailable",
+                summary="Caption rhythm cannot be inferred until local transcription succeeds.",
+                confidence=1,
+                source_type=EvidenceSource.DETERMINISTIC_FALLBACK,
+                provider="missing-transcript-fallback",
+            )
+        )
+
+    if metadata.silence_intervals:
+        findings.append(
+            AnalysisFinding(
+                id="measured-audio-cues",
+                category="audio_cue",
+                label="silence and pause pattern",
+                summary=f"Detected {len(metadata.silence_intervals)} measured silence intervals.",
+                start_seconds=0,
+                end_seconds=duration,
+                confidence=0.95,
+                evidence=["media/media_metadata.json"],
+                source_type=EvidenceSource.MEASURED,
+                provider="ffmpeg-metadata",
+                measured=True,
+            )
+        )
+    else:
+        findings.append(
+            AnalysisFinding(
+                id="audio-cues-fallback",
+                category="audio_cue",
+                label="speech-density proxy",
+                summary=(
+                    "No measured silence intervals are available; speech density is retained "
+                    "as a weak timing proxy, not as music or SFX recognition."
+                ),
+                start_seconds=0,
+                end_seconds=duration,
+                confidence=0.3,
+                evidence=["transcript/transcript.json"] if transcript else [],
+                source_type=EvidenceSource.DETERMINISTIC_FALLBACK,
+                provider="speech-density-fallback:v1",
+            )
+        )
+
+    findings.append(
+        AnalysisFinding(
+            id="shot-rhythm-measured",
+            category="editing",
+            label="measured shot rhythm",
+            summary=f"{len(scenes)} detected scenes provide cut timing but not shot-size labels.",
+            confidence=0.95 if scenes else 0.5,
+            evidence=["frames/frame_manifest.json"],
+            source_type=EvidenceSource.MEASURED,
+            provider="pyscenedetect" if scenes else "duration-fallback",
+            measured=True,
+        )
+    )
+    return findings
 
 
 def analyze_reference(
@@ -153,6 +320,8 @@ def analyze_reference(
             start_seconds=0,
             confidence=1,
             evidence=["media/media_metadata.json"],
+            source_type=EvidenceSource.MEASURED,
+            provider="ffprobe",
             measured=True,
         ),
         AnalysisFinding(
@@ -165,9 +334,25 @@ def analyze_reference(
             ),
             confidence=1,
             evidence=["frames/frame_manifest.json"],
+            source_type=EvidenceSource.MEASURED,
+            provider="frame-extractor",
             measured=True,
         ),
     ]
+    findings.extend(
+        _multimodal_fallback_findings(
+            duration=duration,
+            metadata=metadata,
+            scenes=scenes,
+            transcript=transcript,
+            transcript_metrics=transcript_metrics,
+        )
+    )
+    fallback_reasons: list[str] = []
+    if not transcript:
+        fallback_reasons.append("local transcription returned no segments")
+    if not metadata.silence_intervals:
+        fallback_reasons.append("measured silence intervals are unavailable")
     analyzer_name = "rule-based-fallback"
     analyzer_version = "1"
     if visual_provider is not None:
@@ -184,9 +369,44 @@ def analyze_reference(
                     summary=str(exc),
                     confidence=1,
                     evidence=[],
+                    source_type=EvidenceSource.MEASURED,
+                    provider=visual_provider.name,
                     measured=True,
                 )
             )
+            fallback_reasons.append("local visual provider failed")
+    else:
+        fallback_reasons.append("local visual provider was not enabled")
+
+    if not any(finding.category == "ocr" for finding in findings):
+        findings.append(
+            AnalysisFinding(
+                id="ocr-unavailable",
+                category="ocr",
+                label="on-screen text unavailable",
+                summary="No reliable OCR observation is available; do not infer source captions.",
+                confidence=1,
+                source_type=EvidenceSource.DETERMINISTIC_FALLBACK,
+                provider="missing-ocr-fallback",
+            )
+        )
+        fallback_reasons.append("no reliable OCR observation was produced")
+    if not any(finding.category == "shot_taxonomy" for finding in findings):
+        findings.append(
+            AnalysisFinding(
+                id="shot-taxonomy-unavailable",
+                category="shot_taxonomy",
+                label="shot size unclassified",
+                summary=(
+                    "Cut timing is measured, but close-up/wide/POV taxonomy requires visual "
+                    "model output or human review."
+                ),
+                confidence=1,
+                evidence=["frames/frame_manifest.json"],
+                source_type=EvidenceSource.DETERMINISTIC_FALLBACK,
+                provider="missing-vision-fallback",
+            )
+        )
 
     average_shot = round(statistics.mean(scene_lengths), 3) if scene_lengths else duration
     visual_change_rate = round(len(scenes) / max(duration / 60, 1 / 60), 2)
@@ -198,6 +418,20 @@ def analyze_reference(
     rights_safety = 65 if evidence_count else 40
     monetization = min(100, int(50 + engagement * 0.35))
     originality_risk = 45 if visual_provider else 30
+    evidence_summary = {
+        source.value: sum(1 for finding in findings if finding.source_type == source)
+        for source in EvidenceSource
+    }
+    audio_cues = [
+        {
+            "label": finding.label,
+            "summary": finding.summary,
+            "source_type": finding.source_type.value,
+            "confidence": finding.confidence,
+        }
+        for finding in findings
+        if finding.category == "audio_cue"
+    ]
 
     return ReferenceAnalysis(
         hook={
@@ -222,11 +456,22 @@ def analyze_reference(
             "orientation": metadata.orientation,
             "resolution": [metadata.width, metadata.height],
             "provider_observation_count": len(
-                [finding for finding in findings if finding.category == "visual"]
+                [
+                    finding
+                    for finding in findings
+                    if finding.source_type == EvidenceSource.MODEL_OBSERVATION
+                    and finding.category in {"shot_taxonomy", "ocr", "emotional_beat", "motion"}
+                ]
+            ),
+            "shot_taxonomy": [
+                finding.label for finding in findings if finding.category == "shot_taxonomy"
+            ],
+            "ocr_observation_count": len(
+                [finding for finding in findings if finding.category == "ocr" and finding.evidence]
             ),
             "human_style_classification_required": True,
         },
-        audio_language=transcript_metrics,
+        audio_language={**transcript_metrics, "audio_cues": audio_cues},
         findings=findings,
         objective_scores={
             "engagement": ObjectiveScore(
@@ -263,4 +508,6 @@ def analyze_reference(
             ),
         },
         analyzer={"name": analyzer_name, "version": analyzer_version},
+        evidence_summary=evidence_summary,
+        fallback_reasons=sorted(set(fallback_reasons)),
     )
