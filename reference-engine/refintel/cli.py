@@ -80,6 +80,10 @@ def ingest_url(
     rights: RightsDeclaration = typer.Option(..., help="Mandatory rights declaration."),
     title: str | None = typer.Option(None),
     note: str | None = typer.Option(None),
+    cookies_from_browser: str | None = typer.Option(
+        None,
+        help="Optional operator-owned local browser profile; cookies are never logged or stored.",
+    ),
     force_new: bool = typer.Option(False),
     workspace: Path = typer.Option(Path("workspace")),
 ) -> None:
@@ -89,6 +93,7 @@ def ingest_url(
         rights=rights,
         title=title,
         operator_note=note,
+        cookies_from_browser=cookies_from_browser,
         force_new=force_new,
     )
     console.print(f"[green]{project.reference_id}[/green] {project.workspace_path}")
@@ -97,7 +102,11 @@ def ingest_url(
 @app.command("process")
 def process_reference(
     reference_id: str,
-    interval: int = typer.Option(60, min=1, help="Fixed frame interval in seconds."),
+    interval: int | None = typer.Option(
+        None,
+        min=1,
+        help="Fixed interval override. Omit for adaptive short-form sampling.",
+    ),
     transcription_model: str = typer.Option("small"),
     transcription_device: str = typer.Option("auto"),
     local_vision: bool = typer.Option(False, help="Use configured local Ollama vision model."),

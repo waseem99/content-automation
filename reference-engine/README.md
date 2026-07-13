@@ -79,6 +79,11 @@ refintel ingest-url 'https://www.youtube.com/watch?v=...' \
   --title "Authorized reference"
 ```
 
+Use a direct reel/video/post URL, not a platform profile, channel, or home page.
+Supported direct-input contracts cover Facebook, Instagram, YouTube, TikTok, and X.
+If an extractor cannot access an otherwise authorized video, download it through
+the platform's permitted/operator-owned route and use `ingest-file`.
+
 For an operator-owned session, cookies can be read locally by yt-dlp:
 
 ```bash
@@ -91,12 +96,13 @@ The engine never uploads cookies or includes them in logs. If a platform extract
 
 ## Frame extraction
 
-Default processing generates:
+Default processing uses adaptive evidence density and generates:
 
 - a normalized analysis proxy;
 - extracted WAV audio;
 - technical metadata;
-- frames at 00:00, 01:00, 02:00, and subsequent minute boundaries;
+- frames every 2–5 seconds for most short-form references;
+- frames at minute boundaries for long references;
 - scene keyframes when PySceneDetect is available;
 - a quality-filtered preferred frame gallery;
 - a contact sheet and machine-readable manifests.
@@ -106,6 +112,20 @@ A custom interval can be selected:
 ```bash
 refintel process <reference-id> --interval 30
 ```
+
+Adaptive defaults:
+
+| Reference duration | Interval |
+| --- | ---: |
+| up to 15 seconds | 2 seconds |
+| 15–45 seconds | 3 seconds |
+| 45–90 seconds | 5 seconds |
+| 90–180 seconds | 10 seconds |
+| 3–10 minutes | 30 seconds |
+| over 10 minutes | 60 seconds |
+
+Scene keyframes are added independently, so editorial cuts remain visible even
+when they fall between interval frames.
 
 ## Local browser application
 

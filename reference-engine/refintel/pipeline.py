@@ -17,6 +17,7 @@ from .media import (
     find_source_media,
     make_contact_sheet,
     normalize_media,
+    resolve_interval_seconds,
     save_frame_manifest,
 )
 from .models import ProcessingEvent, ProjectStatus, ReferenceProject, RightsDeclaration
@@ -94,6 +95,7 @@ class ReferencePipeline:
         rights: RightsDeclaration,
         title: str | None = None,
         operator_note: str | None = None,
+        cookies_from_browser: str | None = None,
         force_new: bool = False,
     ) -> ReferenceProject:
         return self.ingestion.ingest_url(
@@ -101,6 +103,7 @@ class ReferencePipeline:
             rights=rights,
             title=title,
             operator_note=operator_note,
+            cookies_from_browser=cookies_from_browser,
             force_new=force_new,
         )
 
@@ -133,7 +136,7 @@ class ReferencePipeline:
         self,
         reference_id: str,
         *,
-        interval_seconds: int = 60,
+        interval_seconds: int | None = None,
         transcription_model: str = "small",
         transcription_device: str = "auto",
         use_local_vision: bool | None = None,
@@ -161,16 +164,30 @@ class ReferencePipeline:
             frame_manifest = workspace / "frames" / "frame_manifest.json"
             if force or not frame_manifest.exists():
                 self._event(project, "frames", "started", "Extracting interval and scene frames.")
+                resolved_interval, sampling_mode = resolve_interval_seconds(
+                    project.media.duration_seconds,
+                    interval_seconds,
+                )
                 interval_frames = extract_interval_frames(
                     proxy_path,
                     workspace,
                     duration_seconds=project.media.duration_seconds,
-                    interval_seconds=interval_seconds,
+                    interval_seconds=resolved_interval,
                 )
                 scenes, scene_frames = detect_scenes(proxy_path, workspace)
                 project.frames = interval_frames + scene_frames
                 project.scenes = scenes
-                save_frame_manifest(workspace, project.frames, project.scenes)
+                save_frame_manifest(
+                    workspace,
+                    project.frames,
+                    project.scenes,
+                    sampling={
+                        "mode": sampling_mode,
+                        "interval_seconds": resolved_interval,
+                        "duration_seconds": project.media.duration_seconds,
+                        "scene_detection_enabled": True,
+                    },
+                )
                 if project.frames:
                     make_contact_sheet(workspace, project.frames)
                 self._event(
@@ -178,7 +195,8 @@ class ReferencePipeline:
                     "frames",
                     "completed",
                     "Frame extraction completed.",
-                    interval_seconds=interval_seconds,
+                    sampling_mode=sampling_mode,
+                    interval_seconds=resolved_interval,
                     frame_count=len(project.frames),
                     scene_count=len(project.scenes),
                 )

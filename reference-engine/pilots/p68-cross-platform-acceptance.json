@@ -1,0 +1,52 @@
+{
+  "schema_version": "p68.cross_platform_acceptance.v1",
+  "rights_policy": "authorized-direct-video-or-local-file-only",
+  "source_media_policy": "temporary-local-analysis-only-do-not-commit-or-republish",
+  "platforms": [
+    {
+      "platform": "facebook",
+      "direct_url_patterns": ["/reel/", "/videos/", "/watch?v=", "fb.watch/<id>"],
+      "live_status": "validated_direct_reel",
+      "evidence": "P67 workflow run 29146959999",
+      "fallback": "ingest-file"
+    },
+    {
+      "platform": "youtube",
+      "direct_url_patterns": ["/watch?v=", "/shorts/", "/live/", "youtu.be/<id>"],
+      "live_status": "operator_reference_required",
+      "evidence": null,
+      "fallback": "ingest-file"
+    },
+    {
+      "platform": "instagram",
+      "direct_url_patterns": ["/reel/", "/reels/", "/tv/", "/p/"],
+      "live_status": "operator_reference_required",
+      "evidence": null,
+      "fallback": "ingest-file"
+    },
+    {
+      "platform": "tiktok",
+      "direct_url_patterns": ["/video/"],
+      "live_status": "operator_reference_required",
+      "evidence": null,
+      "fallback": "ingest-file"
+    },
+    {
+      "platform": "x",
+      "direct_url_patterns": ["/status/"],
+      "live_status": "operator_reference_required",
+      "evidence": null,
+      "fallback": "ingest-file"
+    }
+  ],
+  "prohibited": [
+    "profile_or_channel_page_crawling",
+    "playlist_download",
+    "private_account_circumvention",
+    "paywall_or_drm_bypass",
+    "captcha_bypass",
+    "cookie_upload_or_logging",
+    "automatic_source_media_republication"
+  ],
+  "human_review_required": true
+}

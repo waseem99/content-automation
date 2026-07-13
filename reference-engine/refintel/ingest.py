@@ -4,7 +4,7 @@ import hashlib
 import shutil
 import uuid
 from pathlib import Path
-from urllib.parse import urlparse
+from urllib.parse import parse_qs, urlparse
 
 from .models import (
     Platform,
@@ -30,6 +30,26 @@ PLATFORM_HOSTS: tuple[tuple[str, Platform], ...] = (
 )
 
 
+DIRECT_VIDEO_PATH_HINTS: dict[Platform, tuple[str, ...]] = {
+    Platform.FACEBOOK: ("/reel/", "/videos/"),
+    Platform.INSTAGRAM: ("/reel/", "/reels/", "/tv/", "/p/"),
+    Platform.YOUTUBE: ("/shorts/", "/live/"),
+    Platform.TIKTOK: ("/video/",),
+    Platform.X: ("/status/",),
+}
+
+LOCAL_COOKIE_BROWSERS = {
+    "brave",
+    "chrome",
+    "chromium",
+    "edge",
+    "firefox",
+    "opera",
+    "safari",
+    "vivaldi",
+}
+
+
 def sha256_file(path: Path, chunk_size: int = 1024 * 1024) -> str:
     digest = hashlib.sha256()
     with path.open("rb") as handle:
@@ -44,6 +64,56 @@ def detect_platform(url: str) -> Platform:
         if host == known or host.endswith(f".{known}"):
             return platform
     return Platform.UNKNOWN
+
+
+def validate_direct_video_url(url: str) -> Platform:
+    """Require a direct video/post URL instead of a platform profile or home page."""
+    parsed = urlparse(url)
+    platform = detect_platform(url)
+    path = parsed.path.lower()
+    query = parse_qs(parsed.query)
+    host = (parsed.hostname or "").lower()
+
+    direct = False
+    if platform == Platform.FACEBOOK:
+        direct = (
+            (host == "fb.watch" and path not in {"", "/"})
+            or any(hint in path for hint in DIRECT_VIDEO_PATH_HINTS[platform])
+            or (path.rstrip("/") == "/watch" and bool(query.get("v")))
+        )
+    elif platform == Platform.YOUTUBE:
+        direct = (
+            (host == "youtu.be" and path not in {"", "/"})
+            or any(hint in path for hint in DIRECT_VIDEO_PATH_HINTS[platform])
+            or (path.rstrip("/") == "/watch" and bool(query.get("v")))
+        )
+    elif platform in DIRECT_VIDEO_PATH_HINTS:
+        direct = any(hint in path for hint in DIRECT_VIDEO_PATH_HINTS[platform])
+
+    if direct:
+        return platform
+
+    supported = "Facebook, Instagram, YouTube, TikTok, or X"
+    if platform == Platform.UNKNOWN:
+        raise ValueError(
+            f"Unsupported platform URL. Use a direct {supported} video URL or ingest-file."
+        )
+    raise ValueError(
+        f"{platform.value} profile/page URLs are not direct video inputs. "
+        "Use a direct reel/video/post URL or ingest-file with an authorized local copy."
+    )
+
+
+def validate_local_cookie_browser(browser: str | None) -> str | None:
+    if browser is None:
+        return None
+    normalized = browser.strip().lower()
+    if normalized not in LOCAL_COOKIE_BROWSERS:
+        raise ValueError(
+            "cookies_from_browser must name a supported local browser: "
+            + ", ".join(sorted(LOCAL_COOKIE_BROWSERS))
+        )
+    return normalized
 
 
 def canonical_url_key(url: str) -> str:
@@ -117,9 +187,11 @@ class IngestionService:
         rights: RightsDeclaration,
         title: str | None = None,
         operator_note: str | None = None,
+        cookies_from_browser: str | None = None,
         force_new: bool = False,
     ) -> ReferenceProject:
-        platform = detect_platform(url)
+        platform = validate_direct_video_url(url)
+        local_cookie_browser = validate_local_cookie_browser(cookies_from_browser)
         canonical_key = canonical_url_key(url)
         existing_id = self.store.find_by_canonical_key(canonical_key)
         if existing_id and not force_new:
@@ -145,7 +217,11 @@ class IngestionService:
         )
         self.store.save_project(project)
         try:
-            metadata = self._download_public_reference(url, workspace)
+            metadata = self._download_public_reference(
+                url,
+                workspace,
+                cookies_from_browser=local_cookie_browser,
+            )
             source_file = self._find_downloaded_media(workspace / "source")
             project.source.source_sha256 = sha256_file(source_file)
             project.source.title = str(metadata.get("title") or project.source.title)
@@ -174,7 +250,12 @@ class IngestionService:
             raise
 
     @staticmethod
-    def _download_public_reference(url: str, workspace: Path) -> dict[str, object]:
+    def _download_public_reference(
+        url: str,
+        workspace: Path,
+        *,
+        cookies_from_browser: str | None = None,
+    ) -> dict[str, object]:
         try:
             import yt_dlp  # type: ignore
         except ImportError as exc:
@@ -194,6 +275,10 @@ class IngestionService:
             "quiet": True,
             "no_warnings": True,
         }
+        if cookies_from_browser:
+            # yt-dlp reads this operator-owned browser profile locally. The value,
+            # cookies, and session data are never persisted in project metadata.
+            options["cookiesfrombrowser"] = (cookies_from_browser,)
         with yt_dlp.YoutubeDL(options) as downloader:
             info = downloader.extract_info(url, download=True)
             return downloader.sanitize_info(info)
