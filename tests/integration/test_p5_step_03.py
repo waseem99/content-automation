@@ -22,6 +22,7 @@ def test_runtime_settings_defaults_are_safe() -> None:
     assert settings.demo_mode is False
     assert settings.database_require_schema is True
     assert settings.database_migrations_dir == Path("migrations")
+    assert settings.auto_connect_database is False
     assert settings.public_snapshot() == {
         "api_host": "127.0.0.1",
         "api_port": 8000,
@@ -29,6 +30,7 @@ def test_runtime_settings_defaults_are_safe() -> None:
         "demo_mode": False,
         "database_require_schema": True,
         "database_migrations_dir": "migrations",
+        "auto_connect_database": False,
     }
 
 

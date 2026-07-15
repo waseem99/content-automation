@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import date, datetime
 import os
-from typing import Any, Annotated
+from typing import Any
 from uuid import UUID
 
 from fastapi import Depends, FastAPI
@@ -15,7 +15,7 @@ from src.application.p4_demo_flow import P4DemoFlowService
 from src.application.p4_surface import P4OperatorSurface
 from src.application.portfolio_service import PortfolioService
 from src.infrastructure.database.connection import Database
-from src.operator_api.auth import OperatorAuthSettings, OperatorIdentity, build_operator_auth
+from src.operator_api.auth import OperatorAuthSettings, build_operator_auth
 
 
 class WorkflowRunRequest(BaseModel):
@@ -115,7 +115,7 @@ def create_app(database: Database | None = None, auth_settings: OperatorAuthSett
     def run_workflow(
         workflow_run_id: UUID,
         request: WorkflowRunRequest,
-        operator: Annotated[OperatorIdentity, Depends(require_operator)],
+        operator=Depends(require_operator),
     ) -> dict[str, Any]:
         return P4OperatorSurface(_database(app)).run_workflow(
             workflow_run_id=workflow_run_id,
@@ -127,21 +127,21 @@ def create_app(database: Database | None = None, auth_settings: OperatorAuthSett
     @app.get("/workflows/{workflow_run_id}/queue")
     def queue(
         workflow_run_id: UUID,
-        operator: Annotated[OperatorIdentity, Depends(require_operator)],
+        operator=Depends(require_operator),
     ) -> dict[str, Any]:
         return {"operator": operator.operator_id, **P4OperatorSurface(_database(app)).queue(workflow_run_id=workflow_run_id)}
 
     @app.get("/workflows/{workflow_run_id}/dashboard/queue")
     def dashboard_queue(
         workflow_run_id: UUID,
-        operator: Annotated[OperatorIdentity, Depends(require_operator)],
+        operator=Depends(require_operator),
     ) -> dict[str, Any]:
         return {"operator": operator.operator_id, **P4DashboardContracts(_database(app)).queue_cards(workflow_run_id=workflow_run_id)}
 
     @app.get("/workflows/{workflow_run_id}/dashboard/schema")
     def dashboard_schema(
         workflow_run_id: UUID,
-        operator: Annotated[OperatorIdentity, Depends(require_operator)],
+        operator=Depends(require_operator),
     ) -> dict[str, Any]:
         return {"operator": operator.operator_id, "workflow_run_id": str(workflow_run_id), **P4DashboardContracts(_database(app)).schema()}
 
@@ -149,7 +149,7 @@ def create_app(database: Database | None = None, auth_settings: OperatorAuthSett
     def approval_action(
         workflow_run_id: UUID,
         request: ApprovalRequest,
-        operator: Annotated[OperatorIdentity, Depends(require_operator)],
+        operator=Depends(require_operator),
     ) -> dict[str, Any]:
         return P4DashboardContracts(_database(app)).approval_action(
             action=request.action,
@@ -162,18 +162,18 @@ def create_app(database: Database | None = None, auth_settings: OperatorAuthSett
     @app.get("/workflows/{workflow_run_id}/audit")
     def audit(
         workflow_run_id: UUID,
-        operator: Annotated[OperatorIdentity, Depends(require_operator)],
+        operator=Depends(require_operator),
     ) -> dict[str, Any]:
         return {"operator": operator.operator_id, **P4AuditReportService(_database(app)).report(workflow_run_id=workflow_run_id)}
 
     @app.get("/demo/scenario")
-    def demo_scenario(operator: Annotated[OperatorIdentity, Depends(require_operator)]) -> dict[str, Any]:
+    def demo_scenario(operator=Depends(require_operator)) -> dict[str, Any]:
         return {"operator": operator.operator_id, **P4DemoFlowService(_database(app)).scenario()}
 
     @app.post("/demo/{workflow_run_id}/start")
     def demo_start(
         workflow_run_id: UUID,
-        operator: Annotated[OperatorIdentity, Depends(require_operator)],
+        operator=Depends(require_operator),
     ) -> dict[str, Any]:
         return P4DemoFlowService(_database(app)).start(workflow_run_id=workflow_run_id)
 
@@ -181,7 +181,7 @@ def create_app(database: Database | None = None, auth_settings: OperatorAuthSett
     def demo_approve_current(
         workflow_run_id: UUID,
         request: DemoApprovalRequest,
-        operator: Annotated[OperatorIdentity, Depends(require_operator)],
+        operator=Depends(require_operator),
     ) -> dict[str, Any]:
         return P4DemoFlowService(_database(app)).approve_current(
             workflow_run_id=workflow_run_id,
@@ -192,21 +192,21 @@ def create_app(database: Database | None = None, auth_settings: OperatorAuthSett
     @app.get("/demo/{workflow_run_id}/status")
     def demo_status(
         workflow_run_id: UUID,
-        operator: Annotated[OperatorIdentity, Depends(require_operator)],
+        operator=Depends(require_operator),
     ) -> dict[str, Any]:
         return {"operator": operator.operator_id, **P4DemoFlowService(_database(app)).status(workflow_run_id=workflow_run_id)}
 
     @app.post("/portfolio/brands")
     def upsert_brand(
         request: BrandRequest,
-        operator: Annotated[OperatorIdentity, Depends(require_operator)],
+        operator=Depends(require_operator),
     ) -> dict[str, Any]:
         brand = PortfolioService(_database(app)).create_brand(request.model_dump())
         return {"ok": True, "operator": operator.operator_id, "brand": brand}
 
     @app.get("/portfolio/brands")
     def list_brands(
-        operator: Annotated[OperatorIdentity, Depends(require_operator)],
+        operator=Depends(require_operator),
         include_inactive: bool = False,
     ) -> dict[str, Any]:
         brands = PortfolioService(_database(app)).list_brands(active_only=not include_inactive)
@@ -214,7 +214,7 @@ def create_app(database: Database | None = None, auth_settings: OperatorAuthSett
 
     @app.get("/portfolio/queue")
     def portfolio_queue(
-        operator: Annotated[OperatorIdentity, Depends(require_operator)],
+        operator=Depends(require_operator),
         brand_id: UUID | None = None,
         stage: str | None = None,
     ) -> dict[str, Any]:
@@ -224,7 +224,7 @@ def create_app(database: Database | None = None, auth_settings: OperatorAuthSett
     @app.post("/portfolio/plans")
     def create_portfolio_plan(
         request: MonthPlanRequest,
-        operator: Annotated[OperatorIdentity, Depends(require_operator)],
+        operator=Depends(require_operator),
     ) -> dict[str, Any]:
         return PortfolioService(_database(app)).create_month_plan(
             **request.model_dump(), created_by=operator.operator_id
@@ -233,7 +233,7 @@ def create_app(database: Database | None = None, auth_settings: OperatorAuthSett
     @app.post("/portfolio/content")
     def add_portfolio_content(
         request: PortfolioContentRequest,
-        operator: Annotated[OperatorIdentity, Depends(require_operator)],
+        operator=Depends(require_operator),
     ) -> dict[str, Any]:
         result = PortfolioService(_database(app)).add_content(**request.model_dump())
         return {"operator": operator.operator_id, **result}
@@ -242,7 +242,7 @@ def create_app(database: Database | None = None, auth_settings: OperatorAuthSett
     def approve_portfolio_gate(
         content_id: UUID,
         request: PortfolioApprovalRequest,
-        operator: Annotated[OperatorIdentity, Depends(require_operator)],
+        operator=Depends(require_operator),
     ) -> dict[str, Any]:
         return PortfolioService(_database(app)).approve_gate(
             content_id=content_id,
@@ -256,7 +256,7 @@ def create_app(database: Database | None = None, auth_settings: OperatorAuthSett
     def create_platform_packages(
         content_id: UUID,
         request: PlatformPackageRequest,
-        operator: Annotated[OperatorIdentity, Depends(require_operator)],
+        operator=Depends(require_operator),
     ) -> dict[str, Any]:
         result = PortfolioService(_database(app)).create_platform_packages(content_id=content_id, **request.model_dump())
         return {"operator": operator.operator_id, **result}
@@ -265,7 +265,7 @@ def create_app(database: Database | None = None, auth_settings: OperatorAuthSett
     def record_platform_metrics(
         package_id: UUID,
         request: PerformanceRequest,
-        operator: Annotated[OperatorIdentity, Depends(require_operator)],
+        operator=Depends(require_operator),
     ) -> dict[str, Any]:
         result = PortfolioService(_database(app)).record_metrics(package_id=package_id, **request.model_dump())
         return {"operator": operator.operator_id, **result}

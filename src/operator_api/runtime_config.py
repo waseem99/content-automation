@@ -23,6 +23,7 @@ class OperatorRuntimeSettings(BaseSettings):
     demo_mode: bool = Field(default=False)
     database_require_schema: bool = Field(default=True)
     database_migrations_dir: Path = Field(default=Path("migrations"))
+    auto_connect_database: bool = Field(default=False)
 
     @field_validator("log_level")
     @classmethod
@@ -55,6 +56,7 @@ class OperatorRuntimeSettings(BaseSettings):
             "demo_mode": self.demo_mode,
             "database_require_schema": self.database_require_schema,
             "database_migrations_dir": str(self.database_migrations_dir),
+            "auto_connect_database": self.auto_connect_database,
         }
 
 

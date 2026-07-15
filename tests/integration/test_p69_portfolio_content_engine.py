@@ -77,3 +77,5 @@ def test_operator_api_cors_is_explicit_and_never_wildcarded():
     assert "allow_origins=allowed_origins" in source
     assert 'allow_origins=["*"]' not in source
     assert 'allow_headers=["Content-Type", "X-Operator-Key"]' in source
+    assert "Annotated[OperatorIdentity" not in source
+    assert "operator=Depends(require_operator)" in source
