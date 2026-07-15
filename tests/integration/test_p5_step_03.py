@@ -72,4 +72,5 @@ def test_configured_app_exposes_runtime_snapshot() -> None:
         "demo_mode": True,
         "database_require_schema": False,
         "database_migrations_dir": "migrations",
+        "auto_connect_database": False,
     }
