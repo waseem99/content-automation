@@ -49,6 +49,7 @@
     },
     health: () => request("/health"),
     brands: () => request("/portfolio/brands"),
+    readiness: (monthStart) => request(`/portfolio/readiness?month_start=${encodeURIComponent(monthStart)}`),
     queue: (filters = {}) => {
       const query = new URLSearchParams();
       if (filters.brandId) query.set("brand_id", filters.brandId);

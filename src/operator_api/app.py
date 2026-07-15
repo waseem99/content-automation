@@ -221,6 +221,14 @@ def create_app(database: Database | None = None, auth_settings: OperatorAuthSett
         items = PortfolioService(_database(app)).queue(brand_id=brand_id, stage=stage)
         return {"ok": True, "operator": operator.operator_id, "count": len(items), "items": items}
 
+    @app.get("/portfolio/readiness")
+    def portfolio_readiness(
+        month_start: date,
+        operator=Depends(require_operator),
+    ) -> dict[str, Any]:
+        result = PortfolioService(_database(app)).month_readiness(month_start=month_start)
+        return {"operator": operator.operator_id, **result}
+
     @app.post("/portfolio/plans")
     def create_portfolio_plan(
         request: MonthPlanRequest,

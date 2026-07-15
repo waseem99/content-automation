@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Idempotently onboard brands and monthly plans through the protected operator API."""
+"""Idempotently onboard brands, monthly plans, and reviewable planning inventory."""
 
 from __future__ import annotations
 
@@ -56,8 +56,39 @@ def main() -> int:
                 },
             },
         )
-        results.append({"brand": brand_record["slug"], "plan_id": plan["plan"]["id"]})
-    print(json.dumps({"ok": True, "count": len(results), "items": results}, indent=2))
+        created_count = 0
+        duplicate_count = 0
+        for idea in brand.get("ideas", []):
+            content = call(
+                args.api_url,
+                operator_key,
+                "/portfolio/content",
+                {
+                    "plan_id": plan["plan"]["id"],
+                    "brand_slug": brand_record["slug"],
+                    "scheduled_for": idea["scheduled_for"],
+                    "title": idea["title"],
+                    "concept": idea["concept"],
+                    "format_name": idea["format_name"],
+                },
+            )
+            created_count += int(content.get("ok") is True)
+            duplicate_count += int(content.get("duplicate") is True)
+        results.append(
+            {
+                "brand": brand_record["slug"],
+                "plan_id": plan["plan"]["id"],
+                "inventory_created": created_count,
+                "inventory_duplicates_skipped": duplicate_count,
+                "onboarding_status": brand.get("metadata", {}).get("onboarding_status", "unknown"),
+            }
+        )
+    readiness = call(
+        args.api_url,
+        operator_key,
+        f"/portfolio/readiness?month_start={config['month_start']}",
+    )
+    print(json.dumps({"ok": True, "count": len(results), "items": results, "readiness": readiness}, indent=2, default=str))
     return 0
 
 

@@ -132,6 +132,59 @@ class PortfolioService:
         with self.database.connection() as conn:
             return [dict(row) for row in conn.execute(sql, tuple(values)).fetchall()]
 
+    def month_readiness(self, *, month_start: date) -> dict[str, Any]:
+        """Return factual inventory readiness without advancing or publishing content."""
+        if month_start.day != 1:
+            return {"ok": False, "error": "month_start_must_be_first_day"}
+        with self.database.connection() as conn:
+            rows = conn.execute(
+                """SELECT b.id AS brand_id, b.slug AS brand_slug, b.display_name AS brand_name,
+                          b.metadata, mp.id AS plan_id, COALESCE(mp.target_count, b.monthly_target) AS target_count,
+                          pc.stage, COUNT(pc.id)::int AS stage_count
+                   FROM football_brief.brands b
+                   LEFT JOIN football_brief.monthly_content_plans mp
+                     ON mp.brand_id=b.id AND mp.month_start=%s
+                   LEFT JOIN football_brief.portfolio_content pc ON pc.plan_id=mp.id
+                   WHERE b.active=true
+                   GROUP BY b.id, b.slug, b.display_name, b.metadata, mp.id, mp.target_count, b.monthly_target, pc.stage
+                   ORDER BY b.display_name, pc.stage""",
+                (month_start,),
+            ).fetchall()
+        brands: dict[str, dict[str, Any]] = {}
+        for raw in rows:
+            row = dict(raw)
+            brand_id = str(row["brand_id"])
+            item = brands.setdefault(
+                brand_id,
+                {
+                    "brand_id": row["brand_id"],
+                    "brand_slug": row["brand_slug"],
+                    "brand_name": row["brand_name"],
+                    "plan_id": row["plan_id"],
+                    "target_count": int(row["target_count"]),
+                    "onboarding_status": (row.get("metadata") or {}).get("onboarding_status", "unknown"),
+                    "stage_counts": {},
+                },
+            )
+            if row.get("stage"):
+                item["stage_counts"][row["stage"]] = int(row["stage_count"])
+        items = []
+        for item in brands.values():
+            planned_count = sum(item["stage_counts"].values())
+            item["planned_count"] = planned_count
+            item["gap"] = max(item["target_count"] - planned_count, 0)
+            item["inventory_ready"] = item["plan_id"] is not None and planned_count >= item["target_count"]
+            items.append(item)
+        return {
+            "ok": True,
+            "month_start": month_start,
+            "brand_count": len(items),
+            "target_count": sum(item["target_count"] for item in items),
+            "planned_count": sum(item["planned_count"] for item in items),
+            "ready_brand_count": sum(1 for item in items if item["inventory_ready"]),
+            "brands": items,
+        }
+
     def add_content(self, *, plan_id: UUID, brand_slug: str, scheduled_for: date, title: str, concept: str, format_name: str) -> dict[str, Any]:
         fingerprint = concept_fingerprint(brand_slug=brand_slug, concept=concept, format_name=format_name)
         key = semantic_key(concept)

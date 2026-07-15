@@ -59,6 +59,7 @@ def test_operator_api_exposes_portfolio_without_publish_endpoint():
         '/portfolio/brands',
         '/portfolio/plans',
         '/portfolio/queue',
+        '/portfolio/readiness',
         '/portfolio/content',
         '/portfolio/content/{content_id}/approvals',
         '/portfolio/content/{content_id}/packages',
