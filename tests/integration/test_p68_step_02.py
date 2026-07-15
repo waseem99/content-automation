@@ -33,6 +33,9 @@ def test_p68_step_02_implements_direct_url_validation_and_adaptive_sampling() ->
     ingest = (ROOT / "reference-engine" / "refintel" / "ingest.py").read_text(
         encoding="utf-8"
     )
+    acquisition = (
+        ROOT / "reference-engine" / "refintel" / "acquisition.py"
+    ).read_text(encoding="utf-8")
     media = (ROOT / "reference-engine" / "refintel" / "media.py").read_text(
         encoding="utf-8"
     )
@@ -41,7 +44,9 @@ def test_p68_step_02_implements_direct_url_validation_and_adaptive_sampling() ->
     )
     assert "validate_direct_video_url" in ingest
     assert "profile/page URLs are not direct video inputs" in ingest
-    assert 'options["cookiesfrombrowser"]' in ingest
+    assert "AcquisitionService().acquire(" in ingest
+    assert 'options["cookiesfrombrowser"]' in acquisition
+    assert "cookie paths" not in acquisition.lower()
     assert "adaptive_interval_seconds" in media
     assert 'return 60\n\n\ndef resolve_interval_seconds' in media
     assert '"mode": sampling_mode' in pipeline
