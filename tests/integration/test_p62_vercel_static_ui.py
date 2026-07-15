@@ -49,9 +49,32 @@ def test_interactive_engine_map_is_present_and_decision_oriented():
         "How output is controlled against the three objectives",
         "How the engine proves what happened",
         "Planned AI Generation Layer",
+        'id="portfolio-studio"',
+        'id="brand-filter"',
+        'id="content-queue"',
+        "30-Day Content Portfolio",
     ]
     for marker in required:
         assert marker in html
+
+
+def test_portfolio_dashboard_exposes_brand_queue_and_approval_economics():
+    app = read(STATIC_ROOT / "assets" / "app.js")
+    required = [
+        "portfolioBrands",
+        "portfolioItems",
+        "Rawr Nation",
+        "Animal X",
+        "News Brand",
+        "monthlyTarget",
+        "renderPortfolio",
+        "bindPortfolioControls",
+        "portfolio-30-day-plan.json",
+        'primary: "facebook"',
+        'approval_required: true',
+    ]
+    for marker in required:
+        assert marker in app
 
 
 def test_engine_map_js_tracks_modules_tools_outputs_and_quality_gates():

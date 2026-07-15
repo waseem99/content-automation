@@ -22,6 +22,10 @@ ALLOWED_TRANSITIONS = {"cold_open", "direct_cut", "action_cut", "match_cut", "j_
 MAX_CROSSFADE_SECONDS = 0.3
 
 
+def _partial_path(path: Path) -> Path:
+    return path.with_name(f"{path.stem}.partial{path.suffix}")
+
+
 def _require_binary(name: str) -> str:
     path = shutil.which(name)
     if not path:
@@ -78,6 +82,7 @@ def probe_media(path: str | Path) -> dict[str, Any]:
         "audio_codec": audio.get("codec_name"),
         "has_audio": bool(audio),
         "sample_rate": int(audio.get("sample_rate") or 0),
+        "channels": int(audio.get("channels") or 0),
     }
 
 
@@ -152,6 +157,8 @@ def normalize_clip(
             f"{handle_seconds:.3f}s transition handle"
         )
     target_path.parent.mkdir(parents=True, exist_ok=True)
+    partial = _partial_path(target_path)
+    partial.unlink(missing_ok=True)
     ffmpeg = _require_binary("ffmpeg")
     trim_start = handle_seconds / 2
     video_filter = (
@@ -194,20 +201,26 @@ def normalize_clip(
         "-movflags",
         "+faststart",
         "-shortest",
-        str(target_path),
+        str(partial),
     ]
-    _run(command)
-    normalized_probe = probe_media(target_path)
-    if (normalized_probe["width"], normalized_probe["height"]) != (1080, 1920):
-        raise RuntimeError("Normalized clip is not 1080x1920")
-    if abs(normalized_probe["fps"] - 30) > 0.05:
-        raise RuntimeError("Normalized clip is not 30 fps")
+    try:
+        _run(command)
+        normalized_probe = probe_media(partial)
+        if (normalized_probe["width"], normalized_probe["height"]) != (1080, 1920):
+            raise RuntimeError("Normalized clip is not 1080x1920")
+        if abs(normalized_probe["fps"] - 30) > 0.05:
+            raise RuntimeError("Normalized clip is not 30 fps")
+        partial.replace(target_path)
+    finally:
+        partial.unlink(missing_ok=True)
     return normalized_probe
 
 
 def _concat_clips(clips: list[Path], target: Path) -> None:
     ffmpeg = _require_binary("ffmpeg")
     list_path = target.with_suffix(".concat.txt")
+    partial = _partial_path(target)
+    partial.unlink(missing_ok=True)
     list_path.write_text(
         "\n".join(f"file '{path.resolve().as_posix().replace(chr(39), chr(39) * 2)}'" for path in clips),
         encoding="utf-8",
@@ -227,11 +240,14 @@ def _concat_clips(clips: list[Path], target: Path) -> None:
                 "copy",
                 "-movflags",
                 "+faststart",
-                str(target),
+                str(partial),
             ]
         )
+        probe_media(partial)
+        partial.replace(target)
     finally:
         list_path.unlink(missing_ok=True)
+        partial.unlink(missing_ok=True)
 
 
 def _escape_subtitle_path(path: Path) -> str:
@@ -248,8 +264,10 @@ def finish_master(
     captions_path: Path | None = None,
 ) -> None:
     ffmpeg = _require_binary("ffmpeg")
+    partial = _partial_path(output_path)
+    partial.unlink(missing_ok=True)
     command = [ffmpeg, "-y", "-i", str(stitched_path)]
-    audio_labels = ["[0:a]volume=0.28[clipaudio]"]
+    audio_labels = ["[0:a]aresample=48000,volume=0.28[clipaudio]"]
     mix_inputs = ["[clipaudio]"]
     input_index = 1
     for path, volume, label in (
@@ -270,7 +288,7 @@ def finish_master(
     audio_labels.append(
         "".join(mix_inputs)
         + f"amix=inputs={len(mix_inputs)}:duration=first:dropout_transition=0,"
-        "loudnorm=I=-14:LRA=7:TP=-1.5[aout]"
+        "loudnorm=I=-14:LRA=7:TP=-1.5,aresample=48000[aout]"
     )
     command += ["-filter_complex", ";".join(audio_labels), "-map", "0:v:0", "-map", "[aout]"]
     if captions_path:
@@ -286,12 +304,21 @@ def finish_master(
         "aac",
         "-b:a",
         "192k",
+        "-ar",
+        "48000",
+        "-ac",
+        "2",
         "-movflags",
         "+faststart",
         "-shortest",
-        str(output_path),
+        str(partial),
     ]
-    _run(command)
+    try:
+        _run(command)
+        probe_media(partial)
+        partial.replace(output_path)
+    finally:
+        partial.unlink(missing_ok=True)
 
 
 def assemble_clip_plan(
@@ -354,6 +381,8 @@ def assemble_clip_plan(
         and abs(final_probe["fps"] - 30) <= 0.05
         and final_probe["video_codec"] == "h264"
         and final_probe["audio_codec"] == "aac"
+        and final_probe["sample_rate"] == 48000
+        and final_probe["channels"] == 2
         and abs(final_probe["duration_seconds"] - expected_duration) <= 0.35
     )
     manifest = {

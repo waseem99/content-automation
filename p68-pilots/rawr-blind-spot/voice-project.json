@@ -1,0 +1,156 @@
+{
+  "id": "rawr-blind-spot",
+  "brand": {
+    "id": "rawr_nation",
+    "name": "Rawr Nation",
+    "tagline": "Real facts. Clear reveals.",
+    "primaryColor": "#FFD84D",
+    "secondaryColor": "#70D6FF",
+    "backgroundColor": "#0B1018",
+    "captionColor": "#FFFFFF",
+    "watermark": "RAWR NATION",
+    "tone": "energetic, curious, factual",
+    "voiceStyle": "clear, quick international English narrator"
+  },
+  "narration": "There is a hole in your vision right now, and you almost never notice it. Inside each eye, light lands on a retina packed with cells that detect it. But one small spot has no visual cells at all. That is where the optic nerve leaves the eye, carrying signals toward the brain. Close one eye during a dot test, and the missing mark can disappear completely. Your brain fills the gap from the surrounding pattern. Seeing is partly reconstruction.",
+  "render": {
+    "width": 1080,
+    "height": 1920,
+    "fps": 30,
+    "codec": "h264",
+    "durationSeconds": 30.5
+  },
+  "scenes": [
+    {
+      "id": "S01",
+      "startSec": 0.0,
+      "endSec": 4.5,
+      "headline": "A HOLE IN YOUR VISION",
+      "body": "There is a hole in your vision right now, and you almost never notice it.",
+      "visual": "generated_clip",
+      "accent": "#FFD84D",
+      "safetyLevel": "pending_human_review",
+      "objectives": [
+        "engagement",
+        "compliance"
+      ]
+    },
+    {
+      "id": "S02",
+      "startSec": 4.5,
+      "endSec": 9.5,
+      "headline": "LIGHT \u2192 RETINA",
+      "body": "Inside each eye, light lands on a retina packed with cells that detect it.",
+      "visual": "generated_clip",
+      "accent": "#FFD84D",
+      "safetyLevel": "pending_human_review",
+      "objectives": [
+        "engagement",
+        "compliance"
+      ]
+    },
+    {
+      "id": "S03",
+      "startSec": 9.5,
+      "endSec": 14.5,
+      "headline": "NO VISUAL CELLS HERE",
+      "body": "But one small spot has no visual cells at all.",
+      "visual": "generated_clip",
+      "accent": "#FFD84D",
+      "safetyLevel": "pending_human_review",
+      "objectives": [
+        "engagement",
+        "compliance"
+      ]
+    },
+    {
+      "id": "S04",
+      "startSec": 14.5,
+      "endSec": 20.0,
+      "headline": "THE OPTIC NERVE EXIT",
+      "body": "That is where the optic nerve leaves the eye, carrying signals toward the brain.",
+      "visual": "generated_clip",
+      "accent": "#FFD84D",
+      "safetyLevel": "pending_human_review",
+      "objectives": [
+        "engagement",
+        "compliance"
+      ]
+    },
+    {
+      "id": "S05",
+      "startSec": 20.0,
+      "endSec": 25.5,
+      "headline": "TRY THE DOT TEST",
+      "body": "Close one eye during a dot test, and the missing mark can disappear completely.",
+      "visual": "generated_clip",
+      "accent": "#FFD84D",
+      "safetyLevel": "pending_human_review",
+      "objectives": [
+        "engagement",
+        "compliance"
+      ]
+    },
+    {
+      "id": "S06",
+      "startSec": 25.5,
+      "endSec": 30.5,
+      "headline": "SEEING IS RECONSTRUCTION",
+      "body": "Your brain fills the gap from the surrounding pattern. Seeing is partly reconstruction.",
+      "visual": "generated_clip",
+      "accent": "#FFD84D",
+      "safetyLevel": "pending_human_review",
+      "objectives": [
+        "engagement",
+        "compliance"
+      ]
+    }
+  ],
+  "captions": [
+    {
+      "startSec": 0.0,
+      "endSec": 4.5,
+      "text": "A HOLE IN YOUR VISION",
+      "highlight": "VISION",
+      "emphasis": "fact"
+    },
+    {
+      "startSec": 4.5,
+      "endSec": 9.5,
+      "text": "LIGHT \u2192 RETINA",
+      "highlight": "RETINA",
+      "emphasis": "fact"
+    },
+    {
+      "startSec": 9.5,
+      "endSec": 14.5,
+      "text": "NO VISUAL CELLS HERE",
+      "highlight": "HERE",
+      "emphasis": "fact"
+    },
+    {
+      "startSec": 14.5,
+      "endSec": 20.0,
+      "text": "THE OPTIC NERVE EXIT",
+      "highlight": "EXIT",
+      "emphasis": "fact"
+    },
+    {
+      "startSec": 20.0,
+      "endSec": 25.5,
+      "text": "TRY THE DOT TEST",
+      "highlight": "TEST",
+      "emphasis": "fact"
+    },
+    {
+      "startSec": 25.5,
+      "endSec": 30.5,
+      "text": "SEEING IS RECONSTRUCTION",
+      "highlight": "RECONSTRUCTION",
+      "emphasis": "fact"
+    }
+  ],
+  "editorialStatus": "draft_for_human_review",
+  "humanReviewRequired": true,
+  "publishAllowed": false
+}

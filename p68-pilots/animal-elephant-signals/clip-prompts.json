@@ -1,0 +1,44 @@
+[
+  {
+    "shot_id": "S01",
+    "prompt": "Original vertical cinematic clip. The same elephant abruptly pauses mid-step beside the fallen acacia branch and lowers its weight onto the front feet. Subject lock: one adult African savanna elephant with a small triangular notch in the right ear, intact tusks, natural proportions, dust on lower legs. Environment lock: the same dry East African savanna clearing with one fallen acacia branch at frame left and distant low hills. Lighting: warm dawn light from camera right with long soft shadows and light ground haze. Color: natural earth tones, warm restrained highlights, soft blue-gray distant hills, documentary contrast. Camera: Ground-level 85mm documentary close shot, gentle forward creep. Entry: Begin on a low ground-level view as the right front foot settles into dust. Exit: End with the elephant completely still, right ear notch visible, facing left. Screen direction: the elephant faces or moves right-to-left; vibration energy travels left-to-right toward the elephant. Leave clean motion handles at both ends; no embedded text.",
+    "negative_prompt": "identity drift, anatomy change, wardrobe change, background jump, lighting flip, reversed screen direction, duplicate subject, watermark, logo, embedded captions",
+    "entry_action": "Begin on a low ground-level view as the right front foot settles into dust",
+    "exit_action": "End with the elephant completely still, right ear notch visible, facing left"
+  },
+  {
+    "shot_id": "S02",
+    "prompt": "Original vertical cinematic clip. Long-lens profile of the same elephant producing a subtle low rumble; dust grains near the feet tremble almost imperceptibly. Subject lock: one adult African savanna elephant with a small triangular notch in the right ear, intact tusks, natural proportions, dust on lower legs. Environment lock: the same dry East African savanna clearing with one fallen acacia branch at frame left and distant low hills. Lighting: warm dawn light from camera right with long soft shadows and light ground haze. Color: natural earth tones, warm restrained highlights, soft blue-gray distant hills, documentary contrast. Camera: Stable 135mm side profile, slow tilt from head to feet. Entry: Continue from the still listening pose, maintaining right-to-left orientation. Exit: End tilting down toward the right front foot and vibrating dust. Screen direction: the elephant faces or moves right-to-left; vibration energy travels left-to-right toward the elephant. Leave clean motion handles at both ends; no embedded text.",
+    "negative_prompt": "identity drift, anatomy change, wardrobe change, background jump, lighting flip, reversed screen direction, duplicate subject, watermark, logo, embedded captions",
+    "entry_action": "Continue from the still listening pose, maintaining right-to-left orientation",
+    "exit_action": "End tilting down toward the right front foot and vibrating dust"
+  },
+  {
+    "shot_id": "S03",
+    "prompt": "Original vertical cinematic clip. Macro ground view travels from a distant dust ripple past cracked soil toward the same elephant foot; no glowing fantasy waves. Subject lock: one adult African savanna elephant with a small triangular notch in the right ear, intact tusks, natural proportions, dust on lower legs. Environment lock: the same dry East African savanna clearing with one fallen acacia branch at frame left and distant low hills. Lighting: warm dawn light from camera right with long soft shadows and light ground haze. Color: natural earth tones, warm restrained highlights, soft blue-gray distant hills, documentary contrast. Camera: Low tracking macro parallel to the ground, left-to-right energy movement. Entry: Enter on the vibrating dust from shot two. Exit: End when the subtle ripple reaches the planted front foot from frame left. Screen direction: the elephant faces or moves right-to-left; vibration energy travels left-to-right toward the elephant. Leave clean motion handles at both ends; no embedded text.",
+    "negative_prompt": "identity drift, anatomy change, wardrobe change, background jump, lighting flip, reversed screen direction, duplicate subject, watermark, logo, embedded captions",
+    "entry_action": "Enter on the vibrating dust from shot two",
+    "exit_action": "End when the subtle ripple reaches the planted front foot from frame left"
+  },
+  {
+    "shot_id": "S04",
+    "prompt": "Original vertical cinematic clip. Close view of the same planted foot and lower leg, then a restrained anatomical overlay traces a plausible pathway upward without labeling certainty. Subject lock: one adult African savanna elephant with a small triangular notch in the right ear, intact tusks, natural proportions, dust on lower legs. Environment lock: the same dry East African savanna clearing with one fallen acacia branch at frame left and distant low hills. Lighting: warm dawn light from camera right with long soft shadows and light ground haze. Color: natural earth tones, warm restrained highlights, soft blue-gray distant hills, documentary contrast. Camera: Documentary close-up transitioning to a slow vertical rise. Entry: Continue exactly as the ripple reaches the front foot. Exit: Overlay fades while camera rises toward the elephant's attentive head. Screen direction: the elephant faces or moves right-to-left; vibration energy travels left-to-right toward the elephant. Leave clean motion handles at both ends; no embedded text.",
+    "negative_prompt": "identity drift, anatomy change, wardrobe change, background jump, lighting flip, reversed screen direction, duplicate subject, watermark, logo, embedded captions",
+    "entry_action": "Continue exactly as the ripple reaches the front foot",
+    "exit_action": "Overlay fades while camera rises toward the elephant's attentive head"
+  },
+  {
+    "shot_id": "S05",
+    "prompt": "Original vertical cinematic clip. The same elephant lifts its head and turns slightly toward a distant off-screen herd; ear notch and lighting remain identical. Subject lock: one adult African savanna elephant with a small triangular notch in the right ear, intact tusks, natural proportions, dust on lower legs. Environment lock: the same dry East African savanna clearing with one fallen acacia branch at frame left and distant low hills. Lighting: warm dawn light from camera right with long soft shadows and light ground haze. Color: natural earth tones, warm restrained highlights, soft blue-gray distant hills, documentary contrast. Camera: Long-lens close portrait with a gentle motivated pan left. Entry: Enter as the camera rise reaches the attentive eye. Exit: End on the elephant holding its gaze toward frame left. Screen direction: the elephant faces or moves right-to-left; vibration energy travels left-to-right toward the elephant. Leave clean motion handles at both ends; no embedded text.",
+    "negative_prompt": "identity drift, anatomy change, wardrobe change, background jump, lighting flip, reversed screen direction, duplicate subject, watermark, logo, embedded captions",
+    "entry_action": "Enter as the camera rise reaches the attentive eye",
+    "exit_action": "End on the elephant holding its gaze toward frame left"
+  },
+  {
+    "shot_id": "S06",
+    "prompt": "Original vertical cinematic clip. Wide dawn view reveals two distant herd silhouettes while the same foreground elephant remains still beside the fallen acacia branch. Subject lock: one adult African savanna elephant with a small triangular notch in the right ear, intact tusks, natural proportions, dust on lower legs. Environment lock: the same dry East African savanna clearing with one fallen acacia branch at frame left and distant low hills. Lighting: warm dawn light from camera right with long soft shadows and light ground haze. Color: natural earth tones, warm restrained highlights, soft blue-gray distant hills, documentary contrast. Camera: Slow pullback to a wide grounded wildlife composition. Entry: Continue the elephant's gaze direction into the wide landscape. Exit: Hold the quiet tableau for a clean half second as dust moves through warm light. Screen direction: the elephant faces or moves right-to-left; vibration energy travels left-to-right toward the elephant. Leave clean motion handles at both ends; no embedded text.",
+    "negative_prompt": "identity drift, anatomy change, wardrobe change, background jump, lighting flip, reversed screen direction, duplicate subject, watermark, logo, embedded captions",
+    "entry_action": "Continue the elephant's gaze direction into the wide landscape",
+    "exit_action": "Hold the quiet tableau for a clean half second as dust moves through warm light"
+  }
+]
