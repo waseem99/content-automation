@@ -79,6 +79,9 @@ Inspect cross-platform support or normalize inputs without downloading:
 refintel capabilities
 refintel capabilities --json
 refintel plan-url 'https://www.youtube.com/shorts/VIDEO_ID'
+refintel acquire-batch '<direct-url-1>' '<direct-url-2>' \
+  --rights public-internal-research
+refintel discover-url 'https://www.youtube.com/@channel' --limit 20
 ```
 
 The planner covers YouTube/Shorts, Instagram, TikTok, X/Twitter, Facebook, and
@@ -106,6 +109,11 @@ refintel ingest-url '<url>' \
 ```
 
 The engine never uploads cookies or includes them in logs. If a platform extractor cannot access a video, use `ingest-file` as the supported fallback.
+
+Every URL attempt writes a sanitized, resumable
+`source/acquisition-manifest.json` with asset hashes, allowlisted metadata, retry status,
+and a local-file fallback. Use `--acquire-only` with `facebook-page` to download and review
+references before running frame, transcript, and storytelling analysis.
 
 ## Facebook page batch ingestion
 

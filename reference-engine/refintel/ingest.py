@@ -5,6 +5,7 @@ import shutil
 import uuid
 from pathlib import Path
 
+from .acquisition import AcquisitionService, sanitize_diagnostic
 from .adapters import (
     ReferenceInputType,
     canonicalize_url,
@@ -168,7 +169,7 @@ class IngestionService:
             source=SourceDescriptor(
                 kind="url",
                 platform=platform,
-                original_url=url,
+                original_url=canonicalize_url(url),
                 title=title or f"{platform.value} reference",
                 canonical_key=canonical_key,
             ),
@@ -177,13 +178,15 @@ class IngestionService:
         )
         self.store.save_project(project)
         try:
-            metadata = self._download_public_reference(
+            outcome = AcquisitionService().acquire(
                 url,
                 workspace,
+                rights=rights,
                 cookies_from_browser=local_cookie_browser,
                 cookie_file=local_cookie_file,
             )
-            source_file = self._find_downloaded_media(workspace / "source")
+            source_file = outcome.primary_path
+            metadata = outcome.manifest.metadata
             project.source.source_sha256 = sha256_file(source_file)
             project.source.title = str(metadata.get("title") or project.source.title)
             project.source.uploader = metadata.get("uploader")
@@ -194,15 +197,20 @@ class IngestionService:
                 stage="ingest",
                 status="completed",
                 message="Authorized public URL ingestion completed.",
-                details={"platform": platform.value, "source_file": source_file.name},
+                details={
+                    "platform": platform.value,
+                    "source_file": source_file.name,
+                    "acquisition_status": outcome.manifest.status.value,
+                    "asset_count": len(outcome.manifest.assets),
+                    "manifest": "source/acquisition-manifest.json",
+                },
             )
             return project
         except Exception as exc:
-            sanitized_error = str(exc)
-            if local_cookie_file:
-                sanitized_error = sanitized_error.replace(
-                    str(local_cookie_file), "<local-cookie-file>"
-                )
+            sanitized_error = sanitize_diagnostic(
+                exc,
+                private_paths=[path for path in (local_cookie_file,) if path],
+            )
             project.status = ProjectStatus.FAILED
             project.errors.append(sanitized_error)
             self.store.save_project(project)
@@ -217,54 +225,3 @@ class IngestionService:
                 details={"error": sanitized_error},
             )
             raise
-
-    @staticmethod
-    def _download_public_reference(
-        url: str,
-        workspace: Path,
-        *,
-        cookies_from_browser: str | None = None,
-        cookie_file: Path | None = None,
-    ) -> dict[str, object]:
-        try:
-            import yt_dlp  # type: ignore
-        except ImportError as exc:
-            raise RuntimeError("Install the media extra to enable URL ingestion") from exc
-        options: dict[str, object] = {
-            "outtmpl": str(workspace / "source" / "original.%(ext)s"),
-            "format": "bv*+ba/b",
-            "merge_output_format": "mp4",
-            "writesubtitles": True,
-            "writeautomaticsub": True,
-            "writethumbnail": True,
-            "writeinfojson": True,
-            "noplaylist": True,
-            "retries": 3,
-            "fragment_retries": 3,
-            "socket_timeout": 30,
-            "quiet": True,
-            "no_warnings": True,
-        }
-        if cookies_from_browser:
-            # yt-dlp reads this operator-owned browser profile locally. The value,
-            # cookies, and session data are never persisted in project metadata.
-            options["cookiesfrombrowser"] = (cookies_from_browser,)
-        if cookie_file:
-            # The local cookie jar is used only by yt-dlp. Its path and contents
-            # are deliberately excluded from project metadata and event logs.
-            options["cookiefile"] = str(cookie_file)
-        with yt_dlp.YoutubeDL(options) as downloader:
-            info = downloader.extract_info(url, download=True)
-            return downloader.sanitize_info(info)
-
-    @staticmethod
-    def _find_downloaded_media(source_dir: Path) -> Path:
-        candidates = [
-            path
-            for path in source_dir.iterdir()
-            if path.is_file()
-            and path.suffix.lower() in {".mp4", ".mov", ".mkv", ".webm", ".m4v"}
-        ]
-        if not candidates:
-            raise RuntimeError("No supported media file was produced")
-        return max(candidates, key=lambda path: path.stat().st_size)

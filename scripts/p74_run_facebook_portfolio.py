@@ -8,7 +8,6 @@ import json
 import sys
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parents[1]
 ENGINE = ROOT / "reference-engine"
 sys.path.insert(0, str(ENGINE))
@@ -53,6 +52,7 @@ def main() -> int:
     parser.add_argument("--brand", action="append", default=[])
     parser.add_argument("--limit", type=int, default=6)
     parser.add_argument("--discover-only", action="store_true")
+    parser.add_argument("--acquire-only", action="store_true")
     parser.add_argument("--headed", action="store_true")
     parser.add_argument("--no-local-vision", action="store_true")
     parser.add_argument("--transcription-model", default="small")
@@ -76,6 +76,7 @@ def main() -> int:
                 limit=args.limit,
                 headless=not args.headed,
                 discover_only=args.discover_only,
+                acquire_only=args.acquire_only,
                 use_local_vision=not args.no_local_vision,
                 transcription_model=args.transcription_model,
             )
