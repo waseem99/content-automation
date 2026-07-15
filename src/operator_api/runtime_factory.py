@@ -8,7 +8,7 @@ from fastapi.responses import JSONResponse
 from src.infrastructure.database.connection import Database
 from src.operator_api.auth import OperatorAuthSettings
 from src.operator_api.observability import observability_contract
-from src.operator_api.runtime_app import create_app
+from src.operator_api.app import create_app
 from src.operator_api.runtime_config import OperatorRuntimeSettings, get_operator_runtime_settings
 
 

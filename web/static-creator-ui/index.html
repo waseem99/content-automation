@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Content Engine Studio</title>
   <meta name="description" content="Interactive architecture map and static creator studio for the content automation engine.">
+  <meta name="content-api-base" content="">
   <link rel="stylesheet" href="assets/styles.css">
 </head>
 <body>
@@ -51,6 +52,8 @@
           <option value="ready">Ready to publish</option>
         </select>
         <button id="export-calendar" type="button">Export 30-Day Plan</button>
+        <button id="connect-api" class="secondary" type="button">Connect Data</button>
+        <span id="data-mode" class="data-mode demo">Demo data</span>
       </div>
 
       <div class="portfolio-layout">
@@ -371,6 +374,7 @@ Do not use celebrity likeness, copied music, third-party clips, or brand logos.<
     <span>Architecture map · Static Creator Studio · Human-controlled workflow</span>
   </footer>
 
+  <script src="assets/portfolio-api.js" defer></script>
   <script src="assets/app.js" defer></script>
 </body>
 </html>

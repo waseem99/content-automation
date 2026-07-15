@@ -10,7 +10,7 @@
 
   const $ = (id) => document.getElementById(id);
 
-  const portfolioBrands = [
+  const demoPortfolioBrands = [
     { id: "rawr-nation", name: "Rawr Nation", niche: "Wildlife facts", kind: "video", cadence: "5 shorts + 1 feature weekly", monthlyTarget: 24, primary: "Facebook", pillars: ["Animal senses", "Survival mechanisms", "Myth vs fact", "Behaviour reveals"] },
     { id: "animal-x", name: "Animal X", niche: "Animal behaviour", kind: "video", cadence: "5 shorts + 1 feature weekly", monthlyTarget: 24, primary: "Facebook", pillars: ["Hidden signals", "Social intelligence", "Anatomy in action", "Field discoveries"] },
     { id: "brand-03", name: "Brand 03", niche: "Awaiting linked-page import", kind: "video", cadence: "5 shorts + 1 feature weekly", monthlyTarget: 24, primary: "Facebook", pillars: ["Import brand links to generate pillars"] },
@@ -20,7 +20,7 @@
     { id: "news-brand", name: "News Brand", niche: "News and explainers", kind: "mixed", cadence: "2 timely posts daily", monthlyTarget: 60, primary: "Facebook", pillars: ["Breaking update", "Context card", "What changes next", "Daily roundup"] }
   ];
 
-  const portfolioItems = [
+  const demoPortfolioItems = [
     { date: "Day 01", brand: "rawr-nation", title: "The hidden blind spot predators exploit", format: "45s vertical", stage: "ready", assets: ["3 exports", "thumbnail", "caption", "hashtags"] },
     { date: "Day 02", brand: "animal-x", title: "How elephants hear through the ground", format: "50s vertical", stage: "premium", assets: ["VO", "captions", "4 premium shots"] },
     { date: "Day 03", brand: "rawr-nation", title: "Why owl flight sounds almost silent", format: "35s vertical", stage: "preview", assets: ["script", "VO", "rough preview"] },
@@ -28,8 +28,10 @@
     { date: "Day 05", brand: "rawr-nation", title: "The animal that sees colors we cannot", format: "40s vertical", stage: "idea", assets: ["sources", "hook options"] },
     { date: "Day 06", brand: "news-brand", title: "Daily context card and source summary", format: "1080×1350", stage: "script", assets: ["sources", "headline", "image brief"] }
   ];
+  let portfolioBrands = demoPortfolioBrands.slice();
+  let portfolioItems = demoPortfolioItems.slice();
 
-  const stageLabels = { idea: "Idea review", script: "Script review", preview: "Preview review", premium: "Premium render", ready: "Ready" };
+  const stageLabels = { idea: "Idea review", script: "Script review", preview: "Preview review", premium: "Premium render", package: "Package review", ready: "Ready", published: "Published record", blocked: "Blocked", archived: "Archived" };
 
   function renderPortfolio() {
     const brands = state.brandFilter === "all" ? portfolioBrands : portfolioBrands.filter((brand) => brand.id === state.brandFilter);
@@ -52,13 +54,110 @@
     }).join("") : '<tr><td colspan="6" class="empty-row">No content matches these filters.</td></tr>';
   }
 
+  function mapApiBrand(brand) {
+    return {
+      id: brand.id,
+      name: brand.display_name,
+      niche: brand.niche,
+      kind: brand.content_mode,
+      cadence: brand.metadata?.cadence || `${brand.monthly_target} masters monthly`,
+      monthlyTarget: brand.monthly_target,
+      primary: brand.primary_platform === "facebook" ? "Facebook" : brand.primary_platform,
+      pillars: Array.isArray(brand.content_pillars) ? brand.content_pillars : []
+    };
+  }
+
+  function mapApiItem(item) {
+    return {
+      id: item.id,
+      date: item.scheduled_for,
+      brand: item.brand_id || portfolioBrands.find((brand) => brand.name === item.brand_name)?.id,
+      title: item.title,
+      format: item.format,
+      stage: item.stage === "package" ? "premium" : item.stage,
+      sourceStage: item.stage,
+      assets: [item.script ? "script" : "concept", item.voiceover ? "VO" : "VO pending", item.preview_asset_id ? "preview" : "preview pending"]
+    };
+  }
+
+  function updateDataMode(message, connected) {
+    $("data-mode").textContent = message;
+    $("data-mode").className = `data-mode ${connected ? "connected" : "demo"}`;
+    $("connect-api").textContent = connected ? "Disconnect" : "Connect Data";
+  }
+
+  async function refreshPortfolioFromApi() {
+    if (!window.PortfolioApi?.configured()) return false;
+    try {
+      const [brandPayload, queuePayload] = await Promise.all([
+        window.PortfolioApi.brands(),
+        window.PortfolioApi.queue()
+      ]);
+      portfolioBrands = brandPayload.brands.map(mapApiBrand);
+      portfolioItems = queuePayload.items.map(mapApiItem);
+      state.brandFilter = "all";
+      $("brand-filter").innerHTML = '<option value="all">All brands</option>' + portfolioBrands.map((brand) => `<option value="${brand.id}">${escapeHtml(brand.name)}</option>`).join("");
+      updateDataMode(`${queuePayload.count} database items`, true);
+      renderPortfolio();
+      return true;
+    } catch (error) {
+      updateDataMode(`Connection error: ${error.message}`, false);
+      return false;
+    }
+  }
+
+  function restoreDemoPortfolio() {
+    portfolioBrands = demoPortfolioBrands.slice();
+    portfolioItems = demoPortfolioItems.slice();
+    state.brandFilter = "all";
+    $("brand-filter").innerHTML = '<option value="all">All brands</option>' + portfolioBrands.map((brand) => `<option value="${brand.id}">${escapeHtml(brand.name)}</option>`).join("");
+    updateDataMode("Demo data", false);
+    renderPortfolio();
+  }
+
   function bindPortfolioControls() {
     $("brand-filter").innerHTML = '<option value="all">All brands</option>' + portfolioBrands.map((brand) => `<option value="${brand.id}">${escapeHtml(brand.name)}</option>`).join("");
     $("brand-filter").addEventListener("change", (event) => { state.brandFilter = event.target.value; renderPortfolio(); });
     $("status-filter").addEventListener("change", (event) => { state.statusFilter = event.target.value; renderPortfolio(); });
     $("export-calendar").addEventListener("click", () => download("portfolio-30-day-plan.json", JSON.stringify({ schema_version: "portfolio_plan.v1", brands: portfolioBrands, items: portfolioItems, publishing_policy: { primary: "facebook", derivatives: ["youtube_shorts", "tiktok"], approval_required: true } }, null, 2), "application/json"));
-    $("content-queue").addEventListener("click", (event) => { if (event.target.matches(".table-action")) alert(`${event.target.dataset.item}\n\nThe connected review workspace will open here when the database API is enabled.`); });
+    $("connect-api").addEventListener("click", async () => {
+      if (window.PortfolioApi?.configured()) {
+        window.PortfolioApi.disconnect();
+        restoreDemoPortfolio();
+        return;
+      }
+      const base = prompt("Operator API URL (HTTPS in staging/production):", "http://127.0.0.1:8000");
+      if (!base) return;
+      const key = prompt("Operator key (stored for this browser tab only):", "");
+      if (!key) return;
+      try {
+        window.PortfolioApi.connect(base, key);
+        await refreshPortfolioFromApi();
+      } catch (error) {
+        updateDataMode(error.message, false);
+      }
+    });
+    $("content-queue").addEventListener("click", async (event) => {
+      if (!event.target.matches(".table-action")) return;
+      const item = portfolioItems.find((candidate) => candidate.title === event.target.dataset.item);
+      if (!item?.id || !window.PortfolioApi?.configured()) {
+        alert(`${event.target.dataset.item}\n\nConnect the operator API to perform database-backed review actions.`);
+        return;
+      }
+      const gateByStage = { idea: "idea", script: "script", preview: "preview", premium: "premium_spend", package: "package", ready: "publish" };
+      const gate = gateByStage[item.sourceStage || item.stage];
+      if (!gate || !confirm(`Approve the ${gate} gate for “${item.title}”?`)) return;
+      const rationale = prompt("Approval rationale:", "Reviewed and approved for the next controlled stage.");
+      if (!rationale) return;
+      try {
+        await window.PortfolioApi.approve(item.id, gate, "approved", rationale);
+        await refreshPortfolioFromApi();
+      } catch (error) {
+        alert(`Approval failed: ${error.message}`);
+      }
+    });
     renderPortfolio();
+    refreshPortfolioFromApi();
   }
 
   const engineStages = [

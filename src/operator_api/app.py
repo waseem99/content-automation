@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 from datetime import date, datetime
+import os
 from typing import Any, Annotated
 from uuid import UUID
 
 from fastapi import Depends, FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
 from src.application.p4_audit import P4AuditReportService
@@ -83,6 +85,19 @@ def create_app(database: Database | None = None, auth_settings: OperatorAuthSett
     app.state.database = database
     app.state.auth_settings = auth_settings or OperatorAuthSettings()
     require_operator = build_operator_auth(app.state.auth_settings)
+    allowed_origins = [
+        origin.strip()
+        for origin in os.getenv("OPERATOR_CORS_ORIGINS", "").split(",")
+        if origin.strip()
+    ]
+    if allowed_origins:
+        app.add_middleware(
+            CORSMiddleware,
+            allow_origins=allowed_origins,
+            allow_credentials=False,
+            allow_methods=["GET", "POST"],
+            allow_headers=["Content-Type", "X-Operator-Key"],
+        )
 
     @app.get("/health")
     def health() -> dict[str, Any]:
@@ -188,6 +203,14 @@ def create_app(database: Database | None = None, auth_settings: OperatorAuthSett
     ) -> dict[str, Any]:
         brand = PortfolioService(_database(app)).create_brand(request.model_dump())
         return {"ok": True, "operator": operator.operator_id, "brand": brand}
+
+    @app.get("/portfolio/brands")
+    def list_brands(
+        operator: Annotated[OperatorIdentity, Depends(require_operator)],
+        include_inactive: bool = False,
+    ) -> dict[str, Any]:
+        brands = PortfolioService(_database(app)).list_brands(active_only=not include_inactive)
+        return {"ok": True, "operator": operator.operator_id, "count": len(brands), "brands": brands}
 
     @app.get("/portfolio/queue")
     def portfolio_queue(
