@@ -64,12 +64,12 @@ def test_acquisition_writes_resumable_sanitized_asset_manifest(tmp_path: Path) -
                 "title": "Authorized reference",
                 "uploader": "Creator",
                 "duration": 31.5,
-                "webpage_url": "https://secret.invalid/?token=do-not-persist",
+                "webpage_url": "https://private.invalid/?token=placeholder",
             },
         )
 
     outcome = AcquisitionService(downloader_factory=factory).acquire(
-        "https://www.youtube.com/watch?v=abc123&utm_source=test&token=secret",
+        "https://www.youtube.com/watch?v=abc123&utm_source=test&token=placeholder",
         tmp_path,
         rights=RightsDeclaration.PUBLIC_INTERNAL_RESEARCH,
     )
@@ -90,8 +90,8 @@ def test_acquisition_writes_resumable_sanitized_asset_manifest(tmp_path: Path) -
     assert any(asset.role == AssetRole.PRIMARY_VIDEO for asset in outcome.manifest.assets)
     assert all(len(asset.sha256) == 64 for asset in outcome.manifest.assets)
     manifest_text = outcome.manifest_path.read_text(encoding="utf-8")
-    assert "secret" not in manifest_text
-    assert "do-not-persist" not in manifest_text
+    assert "placeholder" not in manifest_text
+    assert "private.invalid" not in manifest_text
 
     options = captured[0]
     assert options["continuedl"] is True
@@ -270,7 +270,7 @@ def test_ingestion_service_persists_safe_provenance_and_acquisition_event(
     monkeypatch.setattr("refintel.ingest.AcquisitionService", FakeAcquisitionService)
     store = WorkspaceStore(tmp_path / "library")
     project = IngestionService(store).ingest_url(
-        "https://youtube.com/watch?v=abc&token=never-persist&utm_source=test",
+        "https://youtube.com/watch?v=abc&token=placeholder&utm_source=test",
         rights=RightsDeclaration.PUBLIC_INTERNAL_RESEARCH,
     )
     assert project.status == ProjectStatus.INGESTED
@@ -278,7 +278,7 @@ def test_ingestion_service_persists_safe_provenance_and_acquisition_event(
     assert project.source.title == "Safe title"
     assert len(project.source.source_sha256 or "") == 64
     rendered = store.project_path(project.reference_id).read_text(encoding="utf-8")
-    assert "never-persist" not in rendered
+    assert "placeholder" not in rendered
     with store.connection() as connection:
         details = connection.execute(
             "SELECT details_json FROM processing_events WHERE reference_id = ?",
