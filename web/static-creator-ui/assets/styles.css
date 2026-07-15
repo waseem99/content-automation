@@ -372,6 +372,10 @@ main {
 .portfolio-toolbar label { margin: 0 0 0 6px; }
 .portfolio-toolbar select { width: auto; min-width: 180px; }
 .portfolio-toolbar button { margin-left: auto; }
+.portfolio-toolbar button + button { margin-left: 0; }
+.data-mode { display: inline-flex; align-items: center; min-height: 34px; padding: 6px 10px; border-radius: 999px; font-size: 11px; font-weight: 850; white-space: nowrap; }
+.data-mode.demo { color: #92400e; background: #fef3c7; }
+.data-mode.connected { color: #166534; background: #dcfce7; }
 .portfolio-layout { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 18px; }
 .brand-summary, .calendar-panel, .workflow-policy { padding: 20px; border: 1px solid var(--line); border-radius: 22px; background: #fff; box-shadow: var(--shadow); }
 .brand-summary h3, .calendar-panel h3, .workflow-policy h3 { margin-top: 0; }

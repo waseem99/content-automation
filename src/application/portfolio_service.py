@@ -95,6 +95,14 @@ class PortfolioService:
             ).fetchone()
         return dict(row)
 
+    def list_brands(self, *, active_only: bool = True) -> list[dict[str, Any]]:
+        where = "WHERE active = true" if active_only else ""
+        with self.database.connection() as conn:
+            rows = conn.execute(
+                f"SELECT * FROM football_brief.brands {where} ORDER BY display_name"
+            ).fetchall()
+        return [dict(row) for row in rows]
+
     def create_month_plan(self, *, brand_id: UUID, month_start: date, target_count: int, strategy: dict[str, Any], created_by: str) -> dict[str, Any]:
         if month_start.day != 1:
             return {"ok": False, "error": "month_start_must_be_first_day"}
@@ -116,7 +124,7 @@ class PortfolioService:
             conditions.append("b.id = %s"); values.append(brand_id)
         if stage:
             conditions.append("pc.stage = %s"); values.append(stage)
-        sql = f"""SELECT pc.*, b.slug AS brand_slug, b.display_name AS brand_name, mp.month_start
+        sql = f"""SELECT pc.*, b.id AS brand_id, b.slug AS brand_slug, b.display_name AS brand_name, mp.month_start
                   FROM football_brief.portfolio_content pc
                   JOIN football_brief.monthly_content_plans mp ON mp.id=pc.plan_id
                   JOIN football_brief.brands b ON b.id=mp.brand_id

@@ -66,3 +66,14 @@ def test_operator_api_exposes_portfolio_without_publish_endpoint():
     ):
         assert route in source
     assert '/portfolio/publish' not in source
+    runtime_factory = (ROOT / "src" / "operator_api" / "runtime_factory.py").read_text()
+    assert "from src.operator_api.app import create_app" in runtime_factory
+    assert "from src.operator_api.runtime_app import create_app" not in runtime_factory
+
+
+def test_operator_api_cors_is_explicit_and_never_wildcarded():
+    source = (ROOT / "src" / "operator_api" / "app.py").read_text()
+    assert "OPERATOR_CORS_ORIGINS" in source
+    assert "allow_origins=allowed_origins" in source
+    assert 'allow_origins=["*"]' not in source
+    assert 'allow_headers=["Content-Type", "X-Operator-Key"]' in source
