@@ -56,6 +56,7 @@ P68_VIDEO_HARD_CAP_USD=10.00
 These commands return quickly; generation continues on RN, avoiding a long client request that can time out.
 
 ```bash
+PYTHONPATH=. python scripts/p68_prepare_rn_batch.py
 PYTHONPATH=. python scripts/p68_generate_clips.py health
 
 PYTHONPATH=. python scripts/p68_generate_clips.py submit \
