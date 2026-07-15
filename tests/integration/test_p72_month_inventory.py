@@ -13,14 +13,14 @@ def _config():
 
 def test_confirmed_brands_have_complete_august_inventory():
     config = _config()
-    active = [brand for brand in config["brands"] if brand["metadata"]["onboarding_status"] == "active"]
-    assert {brand["slug"] for brand in active} == {"rawr-nation", "animal-x"}
-    assert sum(len(brand["ideas"]) for brand in active) == 48
-    assert all(len(brand["ideas"]) == brand["monthly_target"] == 24 for brand in active)
+    inventoried = [brand for brand in config["brands"] if brand.get("ideas")]
+    assert {brand["slug"] for brand in inventoried} == {"rawr-nation", "animal-x"}
+    assert sum(len(brand["ideas"]) for brand in inventoried) == 48
+    assert all(len(brand["ideas"]) == brand["monthly_target"] == 24 for brand in inventoried)
 
     titles, concepts = set(), set()
     valid_formats = {"vertical_short", "vertical_feature"}
-    for brand in active:
+    for brand in inventoried:
         assert sum(idea["format_name"] == "vertical_feature" for idea in brand["ideas"]) == 5
         for idea in brand["ideas"]:
             scheduled = date.fromisoformat(idea["scheduled_for"])
@@ -34,10 +34,25 @@ def test_confirmed_brands_have_complete_august_inventory():
 
 
 def test_unverified_brands_remain_blocked_without_invented_inventory():
-    blocked = [brand for brand in _config()["brands"] if brand["metadata"]["onboarding_status"] != "active"]
-    assert len(blocked) == 5
+    blocked = [brand for brand in _config()["brands"] if brand["metadata"]["onboarding_status"] == "blocked_missing_links"]
+    assert len(blocked) == 3
     assert all(not brand.get("ideas") for brand in blocked)
     assert all(not brand["source_links"] for brand in blocked)
+
+
+def test_four_priority_facebook_brands_are_mapped_without_guessing_inventory():
+    brands = {brand["slug"]: brand for brand in _config()["brands"]}
+    assert {"historiq", "rawr-nation", "animal-x", "ani-films"} <= brands.keys()
+    assert brands["historiq"]["metadata"]["facebook_page_id"] == "61580906280508"
+    assert brands["animal-x"]["metadata"]["facebook_page_id"] == "61566325046583"
+    assert brands["ani-films"]["metadata"]["facebook_page_id"] == "61563298430902"
+    assert brands["rawr-nation"]["metadata"]["facebook_display_name"] == "Rawr Nation TV"
+    assert brands["historiq"]["source_links"] == ["https://www.facebook.com/share/1F6ytSUb6X/?mibextid=wwXIfr"]
+    assert brands["rawr-nation"]["source_links"] == ["https://www.facebook.com/share/1CybMu9Z9N/?mibextid=wwXIfr"]
+    assert brands["animal-x"]["source_links"] == ["https://www.facebook.com/share/1GYNMEGwZe/?mibextid=wwXIfr"]
+    assert brands["ani-films"]["source_links"] == ["https://www.facebook.com/share/18vUPDSLGa/?mibextid=wwXIfr"]
+    assert not brands["historiq"].get("ideas")
+    assert not brands["ani-films"].get("ideas")
 
 
 def test_bootstrap_creates_inventory_and_reads_readiness_without_publishing():
