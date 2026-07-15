@@ -188,10 +188,16 @@ class IngestionService:
         title: str | None = None,
         operator_note: str | None = None,
         cookies_from_browser: str | None = None,
+        cookie_file: Path | str | None = None,
         force_new: bool = False,
     ) -> ReferenceProject:
         platform = validate_direct_video_url(url)
         local_cookie_browser = validate_local_cookie_browser(cookies_from_browser)
+        local_cookie_file = Path(cookie_file).expanduser().resolve() if cookie_file else None
+        if local_cookie_file and not local_cookie_file.is_file():
+            raise FileNotFoundError(local_cookie_file)
+        if local_cookie_browser and local_cookie_file:
+            raise ValueError("Use either cookies_from_browser or cookie_file, not both")
         canonical_key = canonical_url_key(url)
         existing_id = self.store.find_by_canonical_key(canonical_key)
         if existing_id and not force_new:
@@ -221,6 +227,7 @@ class IngestionService:
                 url,
                 workspace,
                 cookies_from_browser=local_cookie_browser,
+                cookie_file=local_cookie_file,
             )
             source_file = self._find_downloaded_media(workspace / "source")
             project.source.source_sha256 = sha256_file(source_file)
@@ -237,15 +244,23 @@ class IngestionService:
             )
             return project
         except Exception as exc:
+            sanitized_error = str(exc)
+            if local_cookie_file:
+                sanitized_error = sanitized_error.replace(
+                    str(local_cookie_file), "<local-cookie-file>"
+                )
             project.status = ProjectStatus.FAILED
-            project.errors.append(str(exc))
+            project.errors.append(sanitized_error)
             self.store.save_project(project)
             self.store.record_event(
                 reference_id,
                 stage="ingest",
                 status="failed",
-                message="URL ingestion failed. Download the authorized file manually and use ingest-file.",
-                details={"error": str(exc)},
+                message=(
+                    "URL ingestion failed. Download the authorized file manually and use "
+                    "ingest-file."
+                ),
+                details={"error": sanitized_error},
             )
             raise
 
@@ -255,6 +270,7 @@ class IngestionService:
         workspace: Path,
         *,
         cookies_from_browser: str | None = None,
+        cookie_file: Path | None = None,
     ) -> dict[str, object]:
         try:
             import yt_dlp  # type: ignore
@@ -279,6 +295,10 @@ class IngestionService:
             # yt-dlp reads this operator-owned browser profile locally. The value,
             # cookies, and session data are never persisted in project metadata.
             options["cookiesfrombrowser"] = (cookies_from_browser,)
+        if cookie_file:
+            # The local cookie jar is used only by yt-dlp. Its path and contents
+            # are deliberately excluded from project metadata and event logs.
+            options["cookiefile"] = str(cookie_file)
         with yt_dlp.YoutubeDL(options) as downloader:
             info = downloader.extract_info(url, download=True)
             return downloader.sanitize_info(info)

@@ -10,6 +10,7 @@ from pathlib import Path
 
 from .analysis import OllamaVisionProvider, analyze_reference
 from .fingerprint import create_fingerprint, create_original_brief
+from .frame_stream import analyze_every_frame
 from .ingest import IngestionService
 from .media import (
     detect_scenes,
@@ -60,6 +61,7 @@ def tool_versions() -> dict[str, str]:
         "yt-dlp": _version("yt-dlp"),
         "pyscenedetect": _version("scenedetect"),
         "faster-whisper": _version("faster-whisper"),
+        "playwright": _version("playwright"),
         "pillow": _version("pillow"),
         "pydantic": _version("pydantic"),
     }
@@ -96,6 +98,7 @@ class ReferencePipeline:
         title: str | None = None,
         operator_note: str | None = None,
         cookies_from_browser: str | None = None,
+        cookie_file: Path | str | None = None,
         force_new: bool = False,
     ) -> ReferenceProject:
         return self.ingestion.ingest_url(
@@ -104,6 +107,7 @@ class ReferencePipeline:
             title=title,
             operator_note=operator_note,
             cookies_from_browser=cookies_from_browser,
+            cookie_file=cookie_file,
             force_new=force_new,
         )
 
@@ -140,6 +144,7 @@ class ReferencePipeline:
         transcription_model: str = "small",
         transcription_device: str = "auto",
         use_local_vision: bool | None = None,
+        every_frame: bool = False,
         force: bool = False,
     ) -> ReferenceProject:
         project = self.store.load_project(reference_id)
@@ -199,6 +204,24 @@ class ReferencePipeline:
                     interval_seconds=resolved_interval,
                     frame_count=len(project.frames),
                     scene_count=len(project.scenes),
+                )
+
+            every_frame_path = workspace / "frames" / "every_frame_metrics.json"
+            if every_frame and (force or not every_frame_path.exists()):
+                self._event(
+                    project,
+                    "every_frame",
+                    "started",
+                    "Decoding and measuring every source frame.",
+                )
+                frame_metrics = analyze_every_frame(proxy_path, workspace)
+                self._event(
+                    project,
+                    "every_frame",
+                    "completed",
+                    "Every-frame motion analysis completed.",
+                    frame_count=frame_metrics["frame_count"],
+                    candidate_cut_count=frame_metrics["candidate_cut_count"],
                 )
 
             transcript_json = workspace / "transcript" / "transcript.json"

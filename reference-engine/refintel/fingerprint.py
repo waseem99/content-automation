@@ -32,6 +32,24 @@ def create_fingerprint(project: ReferenceProject, workspace: Path) -> ReferenceF
         "Keep captions understandable without audio and use purposeful emphasis.",
         "Place the CTA after the narrative payoff rather than before it.",
     ]
+    sequence = analysis.visual_language.get("sequence_storytelling") or {}
+    observed_mechanics = sequence.get("reusable_mechanics") or []
+    if not isinstance(observed_mechanics, list):
+        observed_mechanics = []
+    mechanics.extend(
+        f"Sequence observation for human review: {str(item)[:300]}"
+        for item in observed_mechanics[:8]
+        if str(item).strip()
+    )
+    observed_exclusions = sequence.get("source_specific_elements_to_avoid") or []
+    if not isinstance(observed_exclusions, list):
+        observed_exclusions = []
+    exclusions = list(
+        dict.fromkeys(
+            EXCLUDED_SOURCE_ELEMENTS
+            + [str(item)[:300] for item in observed_exclusions[:12] if str(item).strip()]
+        )
+    )
     timestamps = sorted(
         {
             round(float(value), 3)
@@ -51,7 +69,7 @@ def create_fingerprint(project: ReferenceProject, workspace: Path) -> ReferenceF
         audio_language=analysis.audio_language,
         objective_scores=analysis.objective_scores,
         reusable_mechanics=mechanics,
-        source_specific_elements_to_exclude=EXCLUDED_SOURCE_ELEMENTS,
+        source_specific_elements_to_exclude=exclusions,
         evidence_timestamps=timestamps,
     )
     target = workspace / "exports" / "reference_fingerprint.json"

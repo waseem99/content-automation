@@ -11,6 +11,7 @@ from rich.console import Console
 from rich.table import Table
 
 from .fingerprint import compare_fingerprints, load_fingerprint
+from .facebook import open_facebook_session, run_facebook_page_batch
 from .models import RightsDeclaration
 from .pipeline import ReferencePipeline, tool_versions
 
@@ -43,6 +44,7 @@ def doctor(
         "yt-dlp": versions.get("yt-dlp"),
         "PySceneDetect": versions.get("pyscenedetect"),
         "faster-whisper": versions.get("faster-whisper"),
+        "Playwright": versions.get("playwright"),
         "Ollama": shutil.which("ollama"),
     }
     for name, value in checks.items():
@@ -84,6 +86,13 @@ def ingest_url(
         None,
         help="Optional operator-owned local browser profile; cookies are never logged or stored.",
     ),
+    cookie_file: Path | None = typer.Option(
+        None,
+        exists=True,
+        file_okay=True,
+        dir_okay=False,
+        help="Optional local Netscape cookie jar; its path and contents are never persisted.",
+    ),
     force_new: bool = typer.Option(False),
     workspace: Path = typer.Option(Path("workspace")),
 ) -> None:
@@ -94,6 +103,7 @@ def ingest_url(
         title=title,
         operator_note=note,
         cookies_from_browser=cookies_from_browser,
+        cookie_file=cookie_file,
         force_new=force_new,
     )
     console.print(f"[green]{project.reference_id}[/green] {project.workspace_path}")
@@ -110,6 +120,10 @@ def process_reference(
     transcription_model: str = typer.Option("small"),
     transcription_device: str = typer.Option("auto"),
     local_vision: bool = typer.Option(False, help="Use configured local Ollama vision model."),
+    every_frame: bool = typer.Option(
+        False,
+        help="Decode every frame for motion/change metrics without storing every image.",
+    ),
     force: bool = typer.Option(False, help="Rebuild existing artifacts."),
     workspace: Path = typer.Option(Path("workspace")),
 ) -> None:
@@ -120,10 +134,59 @@ def process_reference(
         transcription_model=transcription_model,
         transcription_device=transcription_device,
         use_local_vision=local_vision,
+        every_frame=every_frame,
         force=force,
     )
     console.print(f"[green]complete[/green] {project.reference_id}")
     console.print(Path(project.workspace_path) / "reports" / "index.html")
+
+
+@app.command("facebook-login")
+def facebook_login(
+    browser_profile: Path = typer.Option(
+        Path.home() / ".local" / "share" / "refintel" / "facebook-browser",
+        help="Dedicated local Playwright profile; keep it outside the repository.",
+    ),
+) -> None:
+    """Open a dedicated Chromium profile for one-time authorized Facebook login."""
+    cookie_file = open_facebook_session(browser_profile)
+    console.print(f"[green]session ready[/green] {browser_profile.expanduser().resolve()}")
+    console.print(f"Local cookie jar: {cookie_file} (never commit or share this file)")
+
+
+@app.command("facebook-page")
+def facebook_page(
+    page_url: str = typer.Argument(..., help="Stable Facebook page ID or handle URL."),
+    brand: str = typer.Option(..., help="Portfolio brand slug."),
+    rights: RightsDeclaration = typer.Option(..., help="Mandatory rights declaration."),
+    limit: int = typer.Option(12, min=1, max=100),
+    browser_profile: Path = typer.Option(
+        Path.home() / ".local" / "share" / "refintel" / "facebook-browser"
+    ),
+    workspace: Path = typer.Option(Path("workspace")),
+    headed: bool = typer.Option(False, help="Show Chromium while discovering page videos."),
+    discover_only: bool = typer.Option(False, help="Save direct video URLs without downloading."),
+    local_vision: bool = typer.Option(
+        True,
+        help="Use local Ollama vision for frame and sequence storytelling analysis.",
+    ),
+    transcription_model: str = typer.Option("small"),
+) -> None:
+    """Discover and batch-analyze authorized videos from a Facebook brand page."""
+    payload = run_facebook_page_batch(
+        page_url,
+        brand=brand,
+        rights=rights,
+        workspace_root=workspace,
+        profile_dir=browser_profile,
+        limit=limit,
+        headless=not headed,
+        discover_only=discover_only,
+        use_local_vision=local_vision,
+        transcription_model=transcription_model,
+    )
+    console.print_json(json.dumps(payload["summary"]))
+    console.print(payload["run_dir"])
 
 
 @app.command("report")
