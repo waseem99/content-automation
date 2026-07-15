@@ -33,7 +33,8 @@ python scripts/p71_smoke_portfolio.py
 ```
 
 Secrets are read from environment variables and never written to the brand configuration.
-The bootstrap is idempotent for brands and month plans.
+The bootstrap is idempotent for brands, month plans, and the confirmed-brand idea inventory.
+See `docs/operations/p72-month-inventory.md` for the readiness contract and review gate.
 
 ## Dashboard
 

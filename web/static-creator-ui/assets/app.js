@@ -30,6 +30,7 @@
   ];
   let portfolioBrands = demoPortfolioBrands.slice();
   let portfolioItems = demoPortfolioItems.slice();
+  let portfolioReadiness = null;
 
   const stageLabels = { idea: "Idea review", script: "Script review", preview: "Preview review", premium: "Premium render", package: "Package review", ready: "Ready", published: "Published record", blocked: "Blocked", archived: "Archived" };
 
@@ -38,9 +39,15 @@
     const items = portfolioItems.filter((item) => (state.brandFilter === "all" || item.brand === state.brandFilter) && (state.statusFilter === "all" || item.stage === state.statusFilter));
     const monthlyMasters = portfolioBrands.reduce((total, brand) => total + brand.monthlyTarget, 0);
     const videoMasters = portfolioBrands.filter((brand) => brand.kind === "video").reduce((total, brand) => total + brand.monthlyTarget, 0);
-    $("portfolio-metrics").innerHTML = [
+    const metrics = portfolioReadiness ? [
+      [String(portfolioReadiness.brand_count), "brand workspaces"],
+      [`${portfolioReadiness.planned_count}/${portfolioReadiness.target_count}`, "ideas planned"],
+      [String(portfolioReadiness.ready_brand_count), "inventories complete"],
+      [String(Math.max(portfolioReadiness.target_count - portfolioReadiness.planned_count, 0)), "remaining idea gap"]
+    ] : [
       ["7", "brand workspaces"], [String(monthlyMasters), "monthly master assets"], [String(videoMasters * 3), "video platform exports"], ["30 days", "target approval buffer"]
-    ].map(([value, label]) => `<article><strong>${value}</strong><span>${label}</span></article>`).join("");
+    ];
+    $("portfolio-metrics").innerHTML = metrics.map(([value, label]) => `<article><strong>${value}</strong><span>${label}</span></article>`).join("");
 
     const selected = brands[0];
     $("brand-summary").innerHTML = state.brandFilter === "all"
@@ -89,12 +96,15 @@
   async function refreshPortfolioFromApi() {
     if (!window.PortfolioApi?.configured()) return false;
     try {
-      const [brandPayload, queuePayload] = await Promise.all([
+      const planMonth = document.querySelector('meta[name="content-plan-month"]')?.content || "2026-08-01";
+      const [brandPayload, queuePayload, readinessPayload] = await Promise.all([
         window.PortfolioApi.brands(),
-        window.PortfolioApi.queue()
+        window.PortfolioApi.queue(),
+        window.PortfolioApi.readiness(planMonth)
       ]);
       portfolioBrands = brandPayload.brands.map(mapApiBrand);
       portfolioItems = queuePayload.items.map(mapApiItem);
+      portfolioReadiness = readinessPayload;
       state.brandFilter = "all";
       $("brand-filter").innerHTML = '<option value="all">All brands</option>' + portfolioBrands.map((brand) => `<option value="${brand.id}">${escapeHtml(brand.name)}</option>`).join("");
       updateDataMode(`${queuePayload.count} database items`, true);
@@ -109,6 +119,7 @@
   function restoreDemoPortfolio() {
     portfolioBrands = demoPortfolioBrands.slice();
     portfolioItems = demoPortfolioItems.slice();
+    portfolioReadiness = null;
     state.brandFilter = "all";
     $("brand-filter").innerHTML = '<option value="all">All brands</option>' + portfolioBrands.map((brand) => `<option value="${brand.id}">${escapeHtml(brand.name)}</option>`).join("");
     updateDataMode("Demo data", false);
