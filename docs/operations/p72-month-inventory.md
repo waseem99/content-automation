@@ -5,8 +5,9 @@ buying, or publishing media. Rawr Nation and Animal X each receive 24 differenti
 concepts: 19 short-form videos and five feature videos. All ideas remain at the `idea`
 stage until a human approves the next gate.
 
-The other five portfolio slots remain deliberately blocked. Their names, page links,
-audience positioning, and source policies must be verified before any ideas are created.
+Historiq and Ani Films are now identified and marked research-pending; no inventory is
+invented for them before page analysis. The other three portfolio slots remain deliberately
+blocked until their names, page links, audience positioning, and source policies are verified.
 
 ## Load the inventory
 
@@ -36,5 +37,5 @@ premium spend, packaging, and publishing retain their separate gates.
 
 Research and source the first six concepts per confirmed brand, then generate scripts and
 voice drafts for human review. Do not purchase premium video renders until those scripts
-and shot plans pass review. Do not activate placeholder brands until verified links and
-brand identities are provided.
+and shot plans pass review. Do not activate the final three placeholder brands until
+verified links and brand identities are provided.

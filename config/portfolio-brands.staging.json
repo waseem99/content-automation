@@ -8,9 +8,9 @@
       "content_mode": "video",
       "monthly_target": 24,
       "primary_platform": "facebook",
-      "source_links": [],
+      "source_links": ["https://www.facebook.com/share/1CybMu9Z9N/?mibextid=wwXIfr"],
       "content_pillars": ["Animal senses", "Survival mechanisms", "Myth versus fact", "Behaviour reveals"],
-      "metadata": {"cadence": "5 shorts and 1 feature weekly", "onboarding_status": "active"},
+      "metadata": {"cadence": "5 shorts and 1 feature weekly", "onboarding_status": "active", "facebook_display_name": "Rawr Nation TV"},
       "ideas": [
         {"scheduled_for":"2026-08-01","title":"The blind spot predators exploit","concept":"Show where common prey animals cannot see and how stalking predators approach through that narrow visual gap.","format_name":"vertical_feature","pillar":"Animal senses"},
         {"scheduled_for":"2026-08-02","title":"Why owl flight sounds like nothing","concept":"Explain how fringed feather edges break up airflow and reduce the sound made by a hunting owl in flight.","format_name":"vertical_short","pillar":"Survival mechanisms"},
@@ -45,9 +45,9 @@
       "content_mode": "video",
       "monthly_target": 24,
       "primary_platform": "facebook",
-      "source_links": [],
+      "source_links": ["https://www.facebook.com/share/1GYNMEGwZe/?mibextid=wwXIfr"],
       "content_pillars": ["Hidden signals", "Social intelligence", "Anatomy in action", "Field discoveries"],
-      "metadata": {"cadence": "5 shorts and 1 feature weekly", "onboarding_status": "active"},
+      "metadata": {"cadence": "5 shorts and 1 feature weekly", "onboarding_status": "active", "facebook_page_id": "61566325046583"},
       "ideas": [
         {"scheduled_for":"2026-08-01","title":"Elephants hear through the ground","concept":"Show how elephant foot and trunk receptors detect low-frequency seismic vibrations travelling through soil.","format_name":"vertical_feature","pillar":"Hidden signals"},
         {"scheduled_for":"2026-08-02","title":"The dance that gives directions","concept":"Decode how a honeybee waggle dance communicates the direction and relative distance of a food source.","format_name":"vertical_short","pillar":"Hidden signals"},
@@ -76,26 +76,26 @@
       ]
     },
     {
-      "slug": "brand-03",
-      "display_name": "Brand 03 — onboarding required",
-      "niche": "Awaiting verified page links",
+      "slug": "historiq",
+      "display_name": "Historiq",
+      "niche": "AI-assisted history, philosophy, and ideas",
       "content_mode": "video",
       "monthly_target": 24,
       "primary_platform": "facebook",
-      "source_links": [],
-      "content_pillars": [],
-      "metadata": {"onboarding_status": "blocked_missing_links"}
+      "source_links": ["https://www.facebook.com/share/1F6ytSUb6X/?mibextid=wwXIfr"],
+      "content_pillars": ["Hidden history", "Ideas that changed society", "Historical turning points", "Myth versus record"],
+      "metadata": {"cadence": "5 shorts and 1 feature weekly", "onboarding_status": "active_research_pending", "facebook_page_id": "61580906280508"}
     },
     {
-      "slug": "brand-04",
-      "display_name": "Brand 04 — onboarding required",
-      "niche": "Awaiting verified page links",
+      "slug": "ani-films",
+      "display_name": "Ani Films",
+      "niche": "Simple animation for complex ideas",
       "content_mode": "video",
       "monthly_target": 24,
       "primary_platform": "facebook",
-      "source_links": [],
-      "content_pillars": [],
-      "metadata": {"onboarding_status": "blocked_missing_links"}
+      "source_links": ["https://www.facebook.com/share/18vUPDSLGa/?mibextid=wwXIfr"],
+      "content_pillars": ["Visual explainers", "How systems work", "Everyday science", "Big ideas made simple"],
+      "metadata": {"cadence": "5 shorts and 1 feature weekly", "onboarding_status": "active_research_pending", "facebook_page_id": "61563298430902"}
     },
     {
       "slug": "brand-05",
