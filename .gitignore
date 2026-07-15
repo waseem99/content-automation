@@ -22,3 +22,8 @@ data/campaigns/**/*
 
 # Local P68 renders, generated plates, narration, and review evidence.
 p68-artifacts/
+
+# Local reference media, authenticated browser profiles, and cookie jars.
+reference-engine/workspace/
+reference-engine/.refintel-browser/
+**/facebook-cookies.txt

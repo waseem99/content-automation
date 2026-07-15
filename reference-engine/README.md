@@ -94,6 +94,23 @@ refintel ingest-url '<url>' \
 
 The engine never uploads cookies or includes them in logs. If a platform extractor cannot access a video, use `ingest-file` as the supported fallback.
 
+## Facebook page batch ingestion
+
+P74 adds a dedicated Playwright profile for authorized Facebook page discovery, followed by
+yt-dlp download and the existing local analysis pipeline. See
+`docs/operations/p74-facebook-reference-ingestion.md` from the repository root.
+
+```bash
+refintel facebook-login
+refintel facebook-page 'https://www.facebook.com/RawrNationTV' \
+  --brand rawr-nation --rights owned --limit 12 --discover-only
+refintel facebook-page 'https://www.facebook.com/RawrNationTV' \
+  --brand rawr-nation --rights owned --limit 12 --local-vision
+```
+
+The browser profile and cookie jar stay local. Public share redirects are rejected; stable
+page-ID or handle URLs are required.
+
 ## Frame extraction
 
 Default processing uses adaptive evidence density and generates:
@@ -126,6 +143,13 @@ Adaptive defaults:
 
 Scene keyframes are added independently, so editorial cuts remain visible even
 when they fall between interval frames.
+
+For exhaustive motion analysis, pass `--every-frame`. This decodes every source frame and
+writes change/brightness metrics without retaining thousands of redundant images:
+
+```bash
+refintel process <reference-id> --every-frame --local-vision
+```
 
 ## Local browser application
 
