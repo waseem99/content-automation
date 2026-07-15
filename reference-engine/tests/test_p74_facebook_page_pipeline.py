@@ -12,8 +12,10 @@ from refintel.facebook import (
     canonical_video_url,
     export_netscape_cookies,
     page_discovery_urls,
+    resolve_facebook_share_url,
     save_discovery,
     validate_facebook_page_url,
+    validate_facebook_share_url,
 )
 from refintel.frame_stream import analyze_every_frame
 
@@ -55,6 +57,35 @@ def test_page_discovery_targets_handle_and_page_id_tabs():
     )
     assert page_id[-2].endswith("id=61563298430902&sk=reels_tab")
     assert page_id[-1].endswith("id=61563298430902&sk=videos")
+
+
+def test_share_redirect_resolution_is_normalized_without_browser_secrets(tmp_path: Path):
+    share = "https://www.facebook.com/share/1F6ytSUb6X/?mibextid=tracking"
+    assert validate_facebook_share_url(share) == (
+        "https://facebook.com/share/1F6ytSUb6X"
+    )
+    payload = resolve_facebook_share_url(
+        share,
+        profile_dir=tmp_path / "private-profile",
+        navigation_resolver=lambda _url: (
+            "https://www.facebook.com/reel/865258312526732/?tracking=yes"
+        ),
+    )
+    assert payload["resolved_url"] == (
+        "https://www.facebook.com/reel/865258312526732"
+    )
+    assert payload["input_type"] == "direct_media"
+    assert payload["requires_resolution"] is False
+    assert "private-profile" not in json.dumps(payload)
+
+
+def test_share_redirect_that_does_not_resolve_has_actionable_error(tmp_path: Path):
+    with pytest.raises(RuntimeError, match="facebook-login"):
+        resolve_facebook_share_url(
+            "https://www.facebook.com/share/temporary/",
+            profile_dir=tmp_path,
+            navigation_resolver=lambda url: url,
+        )
 
 
 def test_discovered_video_urls_are_canonical_and_tracking_free():

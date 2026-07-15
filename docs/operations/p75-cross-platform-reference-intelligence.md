@@ -53,6 +53,64 @@ Ordinary tracking parameters and fragments are removed. Identity-bearing query p
 6. Produce temporal or carousel maps, evidence-backed observations, and fingerprints.
 7. Generate an originality-safe brief and require human approval before production.
 
+## Acquisition checkpoint
+
+P75-02 adds a resumable acquisition layer beneath `ingest-url`. Every attempt writes
+`source/acquisition-manifest.json` before download begins and updates it on success or
+failure. The manifest contains the normalized reference, rights declaration, route,
+attempt count, allowlisted source metadata, primary asset, cryptographic hashes, asset
+inventory, sanitized diagnostics, and the supported local-file fallback. Cookie values,
+cookie paths, authorization parameters, signed query values, and raw extractor URLs are
+not persisted.
+
+Downloads use bounded retries, partial-file continuation, one fragment at a time, request
+sleeping, an optional rate limit, and a per-reference download archive. A completed asset
+is reused only when its stored SHA-256 still matches; invalid resume state is quarantined
+inside the local reference workspace before retry.
+
+Plan and acquire independent direct links:
+
+```bash
+refintel plan-url '<direct-url-1>' '<direct-url-2>'
+refintel acquire-batch '<direct-url-1>' '<direct-url-2>' \
+  --rights public-internal-research
+```
+
+Discover public candidates without downloading them:
+
+```bash
+refintel discover-url 'https://www.youtube.com/@channel' --limit 20
+```
+
+Facebook page discovery remains on the dedicated local Playwright profile. After the
+operator completes the one-time login, acquire references for all four configured brands
+without analysis:
+
+```bash
+refintel facebook-login
+python scripts/p74_run_facebook_portfolio.py \
+  --rights public-internal-research \
+  --limit 6 \
+  --acquire-only
+```
+
+Run the same command without `--acquire-only` only after reviewing acquisition manifests;
+that proceeds into every-frame, transcript, sequence, report, and fingerprint processing.
+
+### Current acquisition limits
+
+- YouTube/Shorts direct URLs are the strongest public extractor route; channel discovery
+  remains conditional on public visibility.
+- Facebook direct videos use the extractor, while page discovery uses the dedicated local
+  browser profile. Share redirects must first resolve to stable page or media URLs.
+- Instagram, TikTok, and X direct public routes remain conditional and can require an
+  operator-owned local browser session or authorized local export.
+- Snapchat Spotlight/Story acquisition is experimental. Snapchat profile discovery is not
+  claimed; an authorized local export is the dependable fallback.
+- Acquisition does not publish, deploy, analyze similarity, or send media to paid providers.
+
 ## Next implementation slices
 
-The adapter contract unblocks the remaining P75 issues: platform acquisition implementations, image/carousel processing, multimodal reports, cross-reference clustering and originality gates, operator UI/API integration, and the full offline acceptance pack.
+The acquisition contract unblocks image/carousel processing, multimodal reports,
+cross-reference clustering and originality gates, operator UI/API integration, and the
+full offline acceptance pack.

@@ -4,11 +4,13 @@ import json
 import os
 import re
 import shutil
+from collections.abc import Callable
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 from urllib.parse import parse_qs, urlencode, urlparse, urlunparse
 
+from .adapters import canonicalize_url, normalize_reference
 
 FACEBOOK_HOSTS = {"facebook.com", "www.facebook.com", "m.facebook.com"}
 DIRECT_ID = re.compile(r"^[A-Za-z0-9._-]+$")
@@ -22,6 +24,67 @@ def validate_facebook_page_url(url: str) -> str:
     if "/share/" in parsed.path.lower():
         raise ValueError("Use a stable Facebook page ID or handle URL, not a share redirect")
     return url.strip()
+
+
+def validate_facebook_share_url(url: str) -> str:
+    parsed = urlparse(url.strip())
+    valid_host = (parsed.hostname or "").lower() in FACEBOOK_HOSTS
+    if parsed.scheme not in {"http", "https"} or not valid_host:
+        raise ValueError("A facebook.com share URL is required")
+    if not parsed.path.lower().startswith("/share/"):
+        raise ValueError("The Facebook URL is not a share redirect")
+    return canonicalize_url(url)
+
+
+def resolve_facebook_share_url(
+    url: str,
+    *,
+    profile_dir: Path,
+    headless: bool = True,
+    navigation_resolver: Callable[[str], str] | None = None,
+) -> dict[str, Any]:
+    """Resolve an authorized Facebook share redirect using the dedicated local profile."""
+    canonical_share = validate_facebook_share_url(url)
+    if navigation_resolver:
+        final_url = navigation_resolver(url)
+    else:
+        try:
+            from playwright.sync_api import sync_playwright  # type: ignore
+        except ImportError as exc:
+            raise RuntimeError(
+                "Install the browser extra and run: playwright install chromium"
+            ) from exc
+        profile_dir = profile_dir.expanduser().resolve()
+        profile_dir.mkdir(parents=True, exist_ok=True)
+        with sync_playwright() as playwright:
+            context = playwright.chromium.launch_persistent_context(
+                user_data_dir=str(profile_dir),
+                headless=headless,
+                viewport={"width": 1440, "height": 1000},
+            )
+            page = context.pages[0] if context.pages else context.new_page()
+            page.goto(url, wait_until="domcontentloaded", timeout=90_000)
+            page.wait_for_timeout(1500)
+            final_url = page.url
+            context.close()
+    if "/share/" in urlparse(final_url).path.lower():
+        raise RuntimeError(
+            "Facebook did not resolve the share link. Open facebook-login and retry, "
+            "or provide the stable page/reel URL."
+        )
+    canonical_media = canonical_video_url(final_url)
+    resolved_url = canonical_media or canonicalize_url(final_url)
+    normalized = normalize_reference(resolved_url)
+    return {
+        "schema_version": "p75.facebook_share_resolution.v1",
+        "share_url": canonical_share,
+        "resolved_url": resolved_url,
+        "input_type": normalized.input_type.value,
+        "platform": normalized.platform.value,
+        "media_kind": normalized.media_kind.value,
+        "requires_resolution": normalized.requires_resolution,
+        "authentication": "authorized_local_browser",
+    }
 
 
 def canonical_video_url(url: str) -> str | None:
@@ -189,6 +252,7 @@ def run_facebook_page_batch(
     limit: int = 12,
     headless: bool = True,
     discover_only: bool = False,
+    acquire_only: bool = False,
     use_local_vision: bool = True,
     transcription_model: str = "small",
 ) -> dict[str, Any]:
@@ -222,6 +286,25 @@ def run_facebook_page_batch(
                     ),
                     cookie_file=discovery["cookie_file"],
                 )
+                if acquire_only:
+                    acquisition_manifest = (
+                        Path(project.workspace_path)
+                        / "source"
+                        / "acquisition-manifest.json"
+                    )
+                    result.update(
+                        {
+                            "status": "acquired",
+                            "reference_id": project.reference_id,
+                            "acquisition_manifest": (
+                                str(acquisition_manifest)
+                                if acquisition_manifest.is_file()
+                                else None
+                            ),
+                        }
+                    )
+                    results.append(result)
+                    continue
                 processed = pipeline.process(
                     project.reference_id,
                     transcription_model=transcription_model,
@@ -280,9 +363,11 @@ def run_facebook_page_batch(
         "page_url": page_url,
         "rights_declaration": getattr(rights, "value", str(rights)),
         "discover_only": discover_only,
+        "acquire_only": acquire_only,
         "entry_count": discovery["entry_count"],
         "summary": {
             "attempted": len(results),
+            "acquired": sum(item["status"] == "acquired" for item in results),
             "analyzed": sum(item["status"] == "analyzed" for item in results),
             "failed": sum(item["status"] == "failed" for item in results),
         },

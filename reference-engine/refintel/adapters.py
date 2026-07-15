@@ -68,11 +68,19 @@ class NormalizedReference(BaseModel):
 
 
 TRACKING_PARAMETERS = {
+    "access_token",
+    "auth",
+    "authorization",
     "fbclid",
     "gclid",
     "igshid",
     "mibextid",
+    "password",
+    "secret",
     "si",
+    "sig",
+    "signature",
+    "token",
     "utm_campaign",
     "utm_content",
     "utm_medium",
