@@ -10,9 +10,9 @@ by the owner:
 | 3 | Animal X | Page ID `61566325046583` | Active, August inventory ready |
 | 4 | Ani Films | Page ID `61563298430902` | Active, research pending |
 
-The exact Facebook share URLs are stored as source links. Because public automated access
-does not resolve Facebook share redirects reliably, the repository does not substitute
-guessed canonical URLs.
+The stable Facebook handle or page-ID URLs are stored as source links. Public automated
+access still does not render Facebook page feeds reliably, but these identifiers are safe
+for configuration, deduplication, and future authorized page analysis.
 
 Historiq and Ani Films intentionally have no generated ideas yet. Their next gate is page
 and competitor research followed by a 24-item August inventory. Brand 05, Brand 06, and
