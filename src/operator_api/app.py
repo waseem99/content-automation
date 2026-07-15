@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import date, datetime
 from typing import Any, Annotated
 from uuid import UUID
 
@@ -10,6 +11,7 @@ from src.application.p4_audit import P4AuditReportService
 from src.application.p4_dashboard import P4DashboardContracts
 from src.application.p4_demo_flow import P4DemoFlowService
 from src.application.p4_surface import P4OperatorSurface
+from src.application.portfolio_service import PortfolioService
 from src.infrastructure.database.connection import Database
 from src.operator_api.auth import OperatorAuthSettings, OperatorIdentity, build_operator_auth
 
@@ -29,8 +31,55 @@ class DemoApprovalRequest(BaseModel):
     rationale: str | None = None
 
 
+class BrandRequest(BaseModel):
+    slug: str
+    display_name: str
+    niche: str
+    content_mode: str
+    monthly_target: int = Field(ge=1, le=180)
+    primary_platform: str = "facebook"
+    source_links: list[str] = Field(default_factory=list)
+    content_pillars: list[str] = Field(default_factory=list)
+    metadata: dict[str, Any] = Field(default_factory=dict)
+
+
+class PortfolioContentRequest(BaseModel):
+    plan_id: UUID
+    brand_slug: str
+    scheduled_for: date
+    title: str
+    concept: str
+    format_name: str
+
+
+class PortfolioApprovalRequest(BaseModel):
+    gate: str
+    decision: str
+    rationale: str
+
+
+class MonthPlanRequest(BaseModel):
+    brand_id: UUID
+    month_start: date
+    target_count: int = Field(ge=1, le=180)
+    strategy: dict[str, Any] = Field(default_factory=dict)
+
+
+class PlatformPackageRequest(BaseModel):
+    title: str
+    caption: str
+    hashtags: list[str] = Field(default_factory=list)
+    disclosure: dict[str, Any] = Field(default_factory=dict)
+
+
+class PerformanceRequest(BaseModel):
+    observed_at: datetime
+    metrics: dict[str, Any]
+    source: str = "manual"
+
+
 def create_app(database: Database | None = None, auth_settings: OperatorAuthSettings | None = None) -> FastAPI:
-    app = FastAPI(title="Content Automation Operator API", version="0.5.0")
+    app = FastAPI(title="Content Automation Operator API", version="0.6.0")
     app.state.database = database
     app.state.auth_settings = auth_settings or OperatorAuthSettings()
     require_operator = build_operator_auth(app.state.auth_settings)
@@ -42,7 +91,7 @@ def create_app(database: Database | None = None, auth_settings: OperatorAuthSett
         return {
             "ok": True,
             "service": "content-automation-operator-api",
-            "version": "0.5.0",
+            "version": "0.6.0",
             "database_configured": db is not None,
             "auth_required": not auth.disabled,
         }
@@ -131,6 +180,72 @@ def create_app(database: Database | None = None, auth_settings: OperatorAuthSett
         operator: Annotated[OperatorIdentity, Depends(require_operator)],
     ) -> dict[str, Any]:
         return {"operator": operator.operator_id, **P4DemoFlowService(_database(app)).status(workflow_run_id=workflow_run_id)}
+
+    @app.post("/portfolio/brands")
+    def upsert_brand(
+        request: BrandRequest,
+        operator: Annotated[OperatorIdentity, Depends(require_operator)],
+    ) -> dict[str, Any]:
+        brand = PortfolioService(_database(app)).create_brand(request.model_dump())
+        return {"ok": True, "operator": operator.operator_id, "brand": brand}
+
+    @app.get("/portfolio/queue")
+    def portfolio_queue(
+        operator: Annotated[OperatorIdentity, Depends(require_operator)],
+        brand_id: UUID | None = None,
+        stage: str | None = None,
+    ) -> dict[str, Any]:
+        items = PortfolioService(_database(app)).queue(brand_id=brand_id, stage=stage)
+        return {"ok": True, "operator": operator.operator_id, "count": len(items), "items": items}
+
+    @app.post("/portfolio/plans")
+    def create_portfolio_plan(
+        request: MonthPlanRequest,
+        operator: Annotated[OperatorIdentity, Depends(require_operator)],
+    ) -> dict[str, Any]:
+        return PortfolioService(_database(app)).create_month_plan(
+            **request.model_dump(), created_by=operator.operator_id
+        )
+
+    @app.post("/portfolio/content")
+    def add_portfolio_content(
+        request: PortfolioContentRequest,
+        operator: Annotated[OperatorIdentity, Depends(require_operator)],
+    ) -> dict[str, Any]:
+        result = PortfolioService(_database(app)).add_content(**request.model_dump())
+        return {"operator": operator.operator_id, **result}
+
+    @app.post("/portfolio/content/{content_id}/approvals")
+    def approve_portfolio_gate(
+        content_id: UUID,
+        request: PortfolioApprovalRequest,
+        operator: Annotated[OperatorIdentity, Depends(require_operator)],
+    ) -> dict[str, Any]:
+        return PortfolioService(_database(app)).approve_gate(
+            content_id=content_id,
+            gate=request.gate,
+            reviewer=operator.operator_id,
+            rationale=request.rationale,
+            decision=request.decision,
+        )
+
+    @app.post("/portfolio/content/{content_id}/packages")
+    def create_platform_packages(
+        content_id: UUID,
+        request: PlatformPackageRequest,
+        operator: Annotated[OperatorIdentity, Depends(require_operator)],
+    ) -> dict[str, Any]:
+        result = PortfolioService(_database(app)).create_platform_packages(content_id=content_id, **request.model_dump())
+        return {"operator": operator.operator_id, **result}
+
+    @app.post("/portfolio/packages/{package_id}/metrics")
+    def record_platform_metrics(
+        package_id: UUID,
+        request: PerformanceRequest,
+        operator: Annotated[OperatorIdentity, Depends(require_operator)],
+    ) -> dict[str, Any]:
+        result = PortfolioService(_database(app)).record_metrics(package_id=package_id, **request.model_dump())
+        return {"operator": operator.operator_id, **result}
 
     return app
 

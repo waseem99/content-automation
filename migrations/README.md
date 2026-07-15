@@ -66,6 +66,9 @@ The test database must be disposable because the fixtures drop and recreate the 
 - Store media outside PostgreSQL; store references, hashes, rights links, and audit records in PostgreSQL.
 - Do not store provider secrets or raw confidential payloads.
 - Treat approval, workflow-event, provider-call, cost, and manifest records as audit evidence.
+- `0026_portfolio_content_engine.sql` adds multi-brand monthly plans, duplicate-safe concepts,
+  staged human approvals, rights-linked reusable clips, platform delivery packages, and
+  append-only analytics observations. It does not enable automatic publishing.
 
 ## Rollback
 
