@@ -47,10 +47,10 @@ def test_four_priority_facebook_brands_are_mapped_without_guessing_inventory():
     assert brands["animal-x"]["metadata"]["facebook_page_id"] == "61566325046583"
     assert brands["ani-films"]["metadata"]["facebook_page_id"] == "61563298430902"
     assert brands["rawr-nation"]["metadata"]["facebook_display_name"] == "Rawr Nation TV"
-    assert brands["historiq"]["source_links"] == ["https://www.facebook.com/share/1F6ytSUb6X/?mibextid=wwXIfr"]
-    assert brands["rawr-nation"]["source_links"] == ["https://www.facebook.com/share/1CybMu9Z9N/?mibextid=wwXIfr"]
-    assert brands["animal-x"]["source_links"] == ["https://www.facebook.com/share/1GYNMEGwZe/?mibextid=wwXIfr"]
-    assert brands["ani-films"]["source_links"] == ["https://www.facebook.com/share/18vUPDSLGa/?mibextid=wwXIfr"]
+    assert brands["historiq"]["source_links"] == ["https://www.facebook.com/profile.php?id=61580906280508"]
+    assert brands["rawr-nation"]["source_links"] == ["https://www.facebook.com/RawrNationTV"]
+    assert brands["animal-x"]["source_links"] == ["https://www.facebook.com/profile.php?id=61566325046583"]
+    assert brands["ani-films"]["source_links"] == ["https://www.facebook.com/profile.php?id=61563298430902"]
     assert not brands["historiq"].get("ideas")
     assert not brands["ani-films"].get("ideas")
 
