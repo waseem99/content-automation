@@ -101,15 +101,16 @@ class ReferencePipeline:
         cookie_file: Path | str | None = None,
         force_new: bool = False,
     ) -> ReferenceProject:
-        return self.ingestion.ingest_url(
-            url,
-            rights=rights,
-            title=title,
-            operator_note=operator_note,
-            cookies_from_browser=cookies_from_browser,
-            cookie_file=cookie_file,
-            force_new=force_new,
-        )
+        options: dict[str, object] = {
+            "rights": rights,
+            "title": title,
+            "operator_note": operator_note,
+            "cookies_from_browser": cookies_from_browser,
+            "force_new": force_new,
+        }
+        if cookie_file is not None:
+            options["cookie_file"] = cookie_file
+        return self.ingestion.ingest_url(url, **options)
 
     def _event(
         self,
