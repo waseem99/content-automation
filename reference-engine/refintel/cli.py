@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import json
 import shutil
-import sys
 import webbrowser
 from pathlib import Path
 
@@ -10,11 +9,11 @@ import typer
 from rich.console import Console
 from rich.table import Table
 
-from .fingerprint import compare_fingerprints, load_fingerprint
+from .adapters import capability_matrix, normalize_reference
 from .facebook import open_facebook_session, run_facebook_page_batch
+from .fingerprint import compare_fingerprints, load_fingerprint
 from .models import RightsDeclaration
 from .pipeline import ReferencePipeline, tool_versions
-
 
 app = typer.Typer(
     no_args_is_help=True,
@@ -25,6 +24,35 @@ console = Console()
 
 def pipeline(workspace: Path) -> ReferencePipeline:
     return ReferencePipeline(workspace.expanduser().resolve())
+
+
+@app.command("capabilities")
+def capabilities(
+    as_json: bool = typer.Option(False, "--json", help="Print the machine-readable matrix."),
+) -> None:
+    """Show honest acquisition support for every social platform adapter."""
+    rows = capability_matrix()
+    if as_json:
+        console.print_json(json.dumps([row.model_dump(mode="json") for row in rows]))
+        return
+    table = Table(title="Social Reference Adapter Capabilities")
+    for column in ("platform", "direct video", "image/carousel", "profile discovery"):
+        table.add_column(column)
+    for row in rows:
+        table.add_row(
+            row.platform.value,
+            row.direct_video.value,
+            row.image_or_carousel.value,
+            row.profile_discovery.value,
+        )
+    console.print(table)
+
+
+@app.command("plan-url")
+def plan_url(urls: list[str] = typer.Argument(..., min=1)) -> None:
+    """Normalize social URLs and plan acquisition without downloading anything."""
+    plans = [normalize_reference(url).model_dump(mode="json") for url in urls]
+    console.print_json(json.dumps({"plans": plans}))
 
 
 @app.command("doctor")

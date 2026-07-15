@@ -4,8 +4,12 @@ import hashlib
 import shutil
 import uuid
 from pathlib import Path
-from urllib.parse import parse_qs, urlparse
 
+from .adapters import (
+    ReferenceInputType,
+    canonicalize_url,
+    normalize_reference,
+)
 from .models import (
     Platform,
     ProjectStatus,
@@ -15,28 +19,6 @@ from .models import (
     SourceDescriptor,
 )
 from .storage import WorkspaceStore
-
-
-PLATFORM_HOSTS: tuple[tuple[str, Platform], ...] = (
-    ("facebook.com", Platform.FACEBOOK),
-    ("fb.watch", Platform.FACEBOOK),
-    ("instagram.com", Platform.INSTAGRAM),
-    ("youtube.com", Platform.YOUTUBE),
-    ("youtu.be", Platform.YOUTUBE),
-    ("tiktok.com", Platform.TIKTOK),
-    ("twitter.com", Platform.X),
-    ("x.com", Platform.X),
-    ("drive.google.com", Platform.GOOGLE_DRIVE),
-)
-
-
-DIRECT_VIDEO_PATH_HINTS: dict[Platform, tuple[str, ...]] = {
-    Platform.FACEBOOK: ("/reel/", "/videos/"),
-    Platform.INSTAGRAM: ("/reel/", "/reels/", "/tv/", "/p/"),
-    Platform.YOUTUBE: ("/shorts/", "/live/"),
-    Platform.TIKTOK: ("/video/",),
-    Platform.X: ("/status/",),
-}
 
 LOCAL_COOKIE_BROWSERS = {
     "brave",
@@ -58,48 +40,23 @@ def sha256_file(path: Path, chunk_size: int = 1024 * 1024) -> str:
     return digest.hexdigest()
 
 
-def detect_platform(url: str) -> Platform:
-    host = (urlparse(url).hostname or "").lower()
-    for known, platform in PLATFORM_HOSTS:
-        if host == known or host.endswith(f".{known}"):
-            return platform
-    return Platform.UNKNOWN
-
-
 def validate_direct_video_url(url: str) -> Platform:
     """Require a direct video/post URL instead of a platform profile or home page."""
-    parsed = urlparse(url)
-    platform = detect_platform(url)
-    path = parsed.path.lower()
-    query = parse_qs(parsed.query)
-    host = (parsed.hostname or "").lower()
-
-    direct = False
-    if platform == Platform.FACEBOOK:
-        direct = (
-            (host == "fb.watch" and path not in {"", "/"})
-            or any(hint in path for hint in DIRECT_VIDEO_PATH_HINTS[platform])
-            or (path.rstrip("/") == "/watch" and bool(query.get("v")))
-        )
-    elif platform == Platform.YOUTUBE:
-        direct = (
-            (host == "youtu.be" and path not in {"", "/"})
-            or any(hint in path for hint in DIRECT_VIDEO_PATH_HINTS[platform])
-            or (path.rstrip("/") == "/watch" and bool(query.get("v")))
-        )
-    elif platform in DIRECT_VIDEO_PATH_HINTS:
-        direct = any(hint in path for hint in DIRECT_VIDEO_PATH_HINTS[platform])
-
-    if direct:
-        return platform
-
-    supported = "Facebook, Instagram, YouTube, TikTok, or X"
-    if platform == Platform.UNKNOWN:
+    reference = normalize_reference(url)
+    if reference.input_type == ReferenceInputType.DIRECT_MEDIA:
+        return reference.platform
+    supported = "Facebook, Instagram, YouTube, TikTok, X, or Snapchat"
+    if reference.platform == Platform.UNKNOWN:
         raise ValueError(
             f"Unsupported platform URL. Use a direct {supported} video URL or ingest-file."
         )
+    if reference.requires_resolution:
+        raise ValueError(
+            f"{reference.platform.value} share links must be resolved to a direct media URL "
+            "before ingestion, or use ingest-file with an authorized local copy."
+        )
     raise ValueError(
-        f"{platform.value} profile/page URLs are not direct video inputs. "
+        f"{reference.platform.value} profile/page URLs are not direct video inputs. "
         "Use a direct reel/video/post URL or ingest-file with an authorized local copy."
     )
 
@@ -117,10 +74,7 @@ def validate_local_cookie_browser(browser: str | None) -> str | None:
 
 
 def canonical_url_key(url: str) -> str:
-    parsed = urlparse(url)
-    host = (parsed.hostname or "").lower()
-    path = parsed.path.rstrip("/") or "/"
-    return f"url:{host}{path}"
+    return f"url:{canonicalize_url(url)}"
 
 
 def reference_id_from_key(canonical_key: str) -> str:

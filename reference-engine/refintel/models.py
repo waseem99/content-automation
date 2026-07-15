@@ -30,6 +30,7 @@ class Platform(StrEnum):
     YOUTUBE = "youtube"
     TIKTOK = "tiktok"
     X = "x"
+    SNAPCHAT = "snapchat"
     GOOGLE_DRIVE = "google-drive"
     LOCAL = "local"
     UNKNOWN = "unknown"

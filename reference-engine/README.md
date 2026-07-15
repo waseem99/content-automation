@@ -73,6 +73,18 @@ The workspace is stored under `reference-engine/workspace/` by default.
 
 ## Authorized URL ingestion
 
+Inspect cross-platform support or normalize inputs without downloading:
+
+```bash
+refintel capabilities
+refintel capabilities --json
+refintel plan-url 'https://www.youtube.com/shorts/VIDEO_ID'
+```
+
+The planner covers YouTube/Shorts, Instagram, TikTok, X/Twitter, Facebook, and
+Snapchat. It labels conditional routes honestly and preserves identity-bearing
+query parameters while removing ordinary tracking parameters.
+
 ```bash
 refintel ingest-url 'https://www.youtube.com/watch?v=...' \
   --rights permitted \
@@ -80,7 +92,8 @@ refintel ingest-url 'https://www.youtube.com/watch?v=...' \
 ```
 
 Use a direct reel/video/post URL, not a platform profile, channel, or home page.
-Supported direct-input contracts cover Facebook, Instagram, YouTube, TikTok, and X.
+Supported direct-input contracts cover Facebook, Instagram, YouTube, TikTok, X,
+and conditional public Snapchat Spotlight/Story inputs.
 If an extractor cannot access an otherwise authorized video, download it through
 the platform's permitted/operator-owned route and use `ingest-file`.
 
