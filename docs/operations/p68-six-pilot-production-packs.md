@@ -23,6 +23,7 @@ Run the deterministic offline preparation and validation with:
 ```bash
 PYTHONPATH=. python scripts/p68_prepare_gold_pilots.py
 PYTHONPATH=. python scripts/p68_validate_six_pilots.py
+PYTHONPATH=. python scripts/p68_plan_motion_batch.py
 ```
 
 `spec_ready` means only that the production pack is complete and internally
@@ -34,3 +35,10 @@ The next gate is natural-motion generation or licensed footage selection for
 every unauthored shot, followed by continuity assembly, technical QA, benchmark
 scoring, and human review. Static-plate motion remains preview-only. No Vercel
 deployment is required for this offline media phase.
+
+The motion batch plan inventories all 36 shots. Seven existing mechanism shots
+route to deterministic authored animation; 29 route to the private open-source
+Wan worker after a purpose-built keyframe exists. Hooks and payoffs receive two
+variants while standard shots receive one. A premium provider can be proposed
+only for the individual shot when two reviewed open-source variants fail motion
+or continuity; it always requires separate human spend approval.
