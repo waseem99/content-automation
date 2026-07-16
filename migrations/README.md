@@ -69,6 +69,9 @@ The test database must be disposable because the fixtures drop and recreate the 
 - `0026_portfolio_content_engine.sql` adds multi-brand monthly plans, duplicate-safe concepts,
   staged human approvals, rights-linked reusable clips, platform delivery packages, and
   append-only analytics observations. It does not enable automatic publishing.
+- `0027_reference_intelligence_portfolio.sql` adds metadata-only reference queues, resumable
+  local-worker jobs, review-artifact fingerprints, brand assignments, human approval gates, and
+  research-to-idea traceability. Source media and automatic publication are prohibited.
 
 ## Rollback
 

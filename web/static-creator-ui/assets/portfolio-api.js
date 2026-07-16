@@ -56,6 +56,38 @@
       if (filters.stage) query.set("stage", filters.stage);
       return request(`/portfolio/queue${query.size ? `?${query}` : ""}`);
     },
+    references: (filters = {}) => {
+      const query = new URLSearchParams();
+      if (filters.brandId) query.set("brand_id", filters.brandId);
+      if (filters.platform) query.set("platform", filters.platform);
+      if (filters.status) query.set("status", filters.status);
+      return request(`/portfolio/references${query.size ? `?${query}` : ""}`);
+    },
+    reference: (referenceId) => request(`/portfolio/references/${referenceId}`),
+    enqueueReference: (payload) => request("/portfolio/references", {
+      method: "POST",
+      body: JSON.stringify(payload)
+    }),
+    recordReferenceProgress: (jobId, payload) => request(`/portfolio/reference-jobs/${jobId}/progress`, {
+      method: "POST",
+      body: JSON.stringify(payload)
+    }),
+    registerReferenceArtifact: (referenceId, payload) => request(`/portfolio/references/${referenceId}/artifacts`, {
+      method: "POST",
+      body: JSON.stringify(payload)
+    }),
+    assignReferenceBrand: (referenceId, brandId, rationale) => request(`/portfolio/references/${referenceId}/brands`, {
+      method: "POST",
+      body: JSON.stringify({ brand_id: brandId, rationale })
+    }),
+    decideReferenceGate: (referenceId, gate, decision, rationale, evidenceDigest) => request(`/portfolio/references/${referenceId}/approvals`, {
+      method: "POST",
+      body: JSON.stringify({ gate, decision, rationale, evidence_digest: evidenceDigest })
+    }),
+    linkReferenceIdea: (referenceId, payload) => request(`/portfolio/references/${referenceId}/ideas`, {
+      method: "POST",
+      body: JSON.stringify(payload)
+    }),
     approve: (contentId, gate, decision, rationale) => request(`/portfolio/content/${contentId}/approvals`, {
       method: "POST",
       body: JSON.stringify({ gate, decision, rationale })

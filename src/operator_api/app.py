@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import date, datetime
 import os
-from typing import Any
+from typing import Any, Literal
 from uuid import UUID
 
 from fastapi import Depends, FastAPI
@@ -14,6 +14,7 @@ from src.application.p4_dashboard import P4DashboardContracts
 from src.application.p4_demo_flow import P4DemoFlowService
 from src.application.p4_surface import P4OperatorSurface
 from src.application.portfolio_service import PortfolioService
+from src.application.reference_intelligence_service import ReferenceIntelligenceService
 from src.infrastructure.database.connection import Database
 from src.operator_api.auth import OperatorAuthSettings, build_operator_auth
 
@@ -80,8 +81,71 @@ class PerformanceRequest(BaseModel):
     source: str = "manual"
 
 
+class ReferenceSourceRequest(BaseModel):
+    local_reference_id: str = Field(min_length=3, max_length=120, pattern=r"^[A-Za-z0-9._-]+$")
+    source_url: str | None = Field(default=None, max_length=2000)
+    title: str = Field(min_length=1, max_length=300)
+    platform: Literal[
+        "facebook", "instagram", "youtube", "tiktok", "x", "snapchat",
+        "google-drive", "local", "unknown",
+    ]
+    media_type: Literal["video", "image", "carousel", "mixed", "unknown"] = "unknown"
+    rights_declaration: Literal[
+        "owned", "permitted", "public-internal-research", "rights-holder-upload"
+    ]
+    limitations: list[str] = Field(default_factory=list, max_length=30)
+    metadata: dict[str, Any] = Field(default_factory=dict)
+
+
+class ReferenceJobProgressRequest(BaseModel):
+    status: Literal["queued", "running", "partial", "succeeded", "failed", "cancelled"]
+    stage: Literal[
+        "intake", "acquisition", "normalization", "frames", "transcript",
+        "analysis", "temporal_report", "fingerprint", "comparison", "complete",
+    ]
+    progress_percent: int = Field(ge=0, le=100)
+    worker_label: str | None = Field(default=None, max_length=120)
+    error_code: str | None = Field(default=None, max_length=120)
+    error: str | None = Field(default=None, max_length=2000)
+
+
+class ReferenceArtifactRequest(BaseModel):
+    job_id: UUID | None = None
+    artifact_kind: Literal[
+        "contact_sheet", "analysis_report", "temporal_report", "fingerprint",
+        "comparison_report", "pattern_library", "pattern_brief", "originality_gate",
+    ]
+    version: int = Field(default=1, ge=1)
+    local_locator: str = Field(max_length=500)
+    sha256: str = Field(pattern=r"^[a-f0-9]{64}$")
+    mime_type: str = Field(min_length=3, max_length=120)
+    summary: dict[str, Any] = Field(default_factory=dict)
+    contains_source_media: bool = False
+
+
+class ReferenceBrandRequest(BaseModel):
+    brand_id: UUID
+    rationale: str | None = Field(default=None, max_length=1000)
+
+
+class ReferenceGateRequest(BaseModel):
+    gate: Literal["rights", "originality", "editorial"]
+    decision: Literal["pending", "approved", "changes_requested", "rejected"]
+    rationale: str = Field(min_length=10, max_length=2000)
+    evidence_digest: str = Field(pattern=r"^[a-f0-9]{64}$")
+
+
+class ResearchIdeaLinkRequest(BaseModel):
+    portfolio_content_id: UUID
+    relationship: Literal[
+        "pattern_evidence", "topic_signal", "format_evidence", "risk_reference"
+    ]
+    pattern_ids: list[str] = Field(default_factory=list, max_length=50)
+    transformation_note: str = Field(min_length=20, max_length=3000)
+
+
 def create_app(database: Database | None = None, auth_settings: OperatorAuthSettings | None = None) -> FastAPI:
-    app = FastAPI(title="Content Automation Operator API", version="0.6.0")
+    app = FastAPI(title="Content Automation Operator API", version="0.7.0")
     app.state.database = database
     app.state.auth_settings = auth_settings or OperatorAuthSettings()
     require_operator = build_operator_auth(app.state.auth_settings)
@@ -106,7 +170,7 @@ def create_app(database: Database | None = None, auth_settings: OperatorAuthSett
         return {
             "ok": True,
             "service": "content-automation-operator-api",
-            "version": "0.6.0",
+            "version": "0.7.0",
             "database_configured": db is not None,
             "auth_required": not auth.disabled,
         }
@@ -276,6 +340,102 @@ def create_app(database: Database | None = None, auth_settings: OperatorAuthSett
         operator=Depends(require_operator),
     ) -> dict[str, Any]:
         result = PortfolioService(_database(app)).record_metrics(package_id=package_id, **request.model_dump())
+        return {"operator": operator.operator_id, **result}
+
+    @app.post("/portfolio/references")
+    def enqueue_reference(
+        request: ReferenceSourceRequest,
+        operator=Depends(require_operator),
+    ) -> dict[str, Any]:
+        result = ReferenceIntelligenceService(_database(app)).enqueue_reference(
+            request.model_dump(), created_by=operator.operator_id
+        )
+        return {"operator": operator.operator_id, **result}
+
+    @app.get("/portfolio/references")
+    def reference_queue(
+        operator=Depends(require_operator),
+        brand_id: UUID | None = None,
+        platform: str | None = None,
+        status: str | None = None,
+    ) -> dict[str, Any]:
+        items = ReferenceIntelligenceService(_database(app)).queue(
+            brand_id=brand_id, platform=platform, status=status
+        )
+        return {
+            "ok": True,
+            "operator": operator.operator_id,
+            "count": len(items),
+            "items": items,
+            "processing_runtime": "operator-controlled-local-worker",
+            "source_media_in_api": False,
+            "automatic_publication": False,
+        }
+
+    @app.get("/portfolio/references/{source_id}")
+    def reference_detail(
+        source_id: UUID,
+        operator=Depends(require_operator),
+    ) -> dict[str, Any]:
+        result = ReferenceIntelligenceService(_database(app)).detail(source_id)
+        return {"operator": operator.operator_id, **result}
+
+    @app.post("/portfolio/reference-jobs/{job_id}/progress")
+    def record_reference_progress(
+        job_id: UUID,
+        request: ReferenceJobProgressRequest,
+        operator=Depends(require_operator),
+    ) -> dict[str, Any]:
+        result = ReferenceIntelligenceService(_database(app)).record_job_progress(
+            job_id, request.model_dump()
+        )
+        return {"operator": operator.operator_id, **result}
+
+    @app.post("/portfolio/references/{source_id}/artifacts")
+    def register_reference_artifact(
+        source_id: UUID,
+        request: ReferenceArtifactRequest,
+        operator=Depends(require_operator),
+    ) -> dict[str, Any]:
+        result = ReferenceIntelligenceService(_database(app)).register_artifact(
+            source_id, request.model_dump()
+        )
+        return {"operator": operator.operator_id, **result}
+
+    @app.post("/portfolio/references/{source_id}/brands")
+    def assign_reference_brand(
+        source_id: UUID,
+        request: ReferenceBrandRequest,
+        operator=Depends(require_operator),
+    ) -> dict[str, Any]:
+        result = ReferenceIntelligenceService(_database(app)).assign_brand(
+            source_id,
+            brand_id=request.brand_id,
+            assigned_by=operator.operator_id,
+            rationale=request.rationale,
+        )
+        return {"operator": operator.operator_id, **result}
+
+    @app.post("/portfolio/references/{source_id}/approvals")
+    def decide_reference_gate(
+        source_id: UUID,
+        request: ReferenceGateRequest,
+        operator=Depends(require_operator),
+    ) -> dict[str, Any]:
+        result = ReferenceIntelligenceService(_database(app)).decide_gate(
+            source_id, request.model_dump(), reviewer=operator.operator_id
+        )
+        return {"operator": operator.operator_id, **result}
+
+    @app.post("/portfolio/references/{source_id}/ideas")
+    def link_reference_idea(
+        source_id: UUID,
+        request: ResearchIdeaLinkRequest,
+        operator=Depends(require_operator),
+    ) -> dict[str, Any]:
+        result = ReferenceIntelligenceService(_database(app)).link_idea(
+            source_id, request.model_dump(), created_by=operator.operator_id
+        )
         return {"operator": operator.operator_id, **result}
 
     return app

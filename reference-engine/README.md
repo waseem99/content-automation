@@ -1,8 +1,6 @@
 # Local Reference Intelligence Engine
 
-This package ingests authorized social-video, image, thumbnail, and carousel references or
-local files, decomposes them into measurable evidence, and exports originality-safe inputs for
-the existing content workflow.
+This package ingests authorized social-video references or local files, decomposes them into measurable media artifacts, generates a synchronized local report, saves a reusable reference fingerprint, and exports an original production brief for the existing content workflow and P65 video renderer.
 
 ## Product boundaries
 
@@ -17,7 +15,7 @@ the existing content workflow.
 ## Architecture
 
 ```text
-URL, local video, image, or carousel folder
+URL or local video
   -> rights declaration
   -> local ingestion / yt-dlp
   -> FFmpeg normalization + ffprobe metadata
@@ -73,41 +71,6 @@ refintel export-brief <reference-id> --brand rawr_nation
 
 The workspace is stored under `reference-engine/workspace/` by default.
 
-## Image, thumbnail, and carousel analysis
-
-Analyze one image or an ordered local folder. Filenames are naturally ordered, so `slide-2`
-precedes `slide-10`:
-
-```bash
-refintel process-images /absolute/path/carousel-folder \
-  --rights public-internal-research \
-  --title "Authorized carousel"
-```
-
-The local run produces a typed `p75.image_reference.v1` manifest, SHA-256 provenance,
-dimensions, orientation, palette, brightness, contrast, saturation, entropy, edge density,
-visual center, OCR regions and confidence when Tesseract is available, ordered sequence-role
-candidates, per-slide failures, and a contact sheet. Add `--local-vision` to obtain explicitly
-labeled local-model observations for generic subjects, layout, hierarchy, and narrative role.
-
-Sequence roles are candidates, not asserted story facts. Source text and source imagery are
-blocked from verbatim reuse, and human review remains mandatory.
-
-## Local environment configuration
-
-Copy `.env.example` values into your private shell or secret manager. Environment values are
-read directly; the CLI does not parse or upload `.env` files.
-
-```bash
-export REFINTEL_WORKSPACE="$PWD/workspace"
-export REFINTEL_FACEBOOK_PROFILE="$HOME/.local/share/refintel/facebook-browser"
-export REFINTEL_FACEBOOK_COOKIE_FILE="$REFINTEL_FACEBOOK_PROFILE/facebook-cookies.txt"
-```
-
-Store only paths in these variables, never Facebook email/password values or raw cookie
-contents. Explicit CLI authentication flags override environment defaults. Media processing
-remains on the local/private worker and is excluded from Vercel.
-
 ## Authorized URL ingestion
 
 Inspect cross-platform support or normalize inputs without downloading:
@@ -145,8 +108,7 @@ refintel ingest-url '<url>' \
   --cookies-from-browser chrome
 ```
 
-The engine never uploads cookies or includes them in logs. If a platform extractor cannot
-access a video, use `ingest-file` as the supported fallback.
+The engine never uploads cookies or includes them in logs. If a platform extractor cannot access a video, use `ingest-file` as the supported fallback.
 
 Every URL attempt writes a sanitized, resumable
 `source/acquisition-manifest.json` with asset hashes, allowlisted metadata, retry status,
@@ -210,48 +172,6 @@ writes change/brightness metrics without retaining thousands of redundant images
 refintel process <reference-id> --every-frame --local-vision
 ```
 
-Each video run now also creates a typed temporal report. It combines measured every-frame
-motion and cut candidates, WAV energy, transcript/caption timing, OCR from preferred frames,
-and chronological local-model observations when available. Open it independently with:
-
-```bash
-refintel temporal-report <reference-id> --open-browser
-```
-
-The command is hash-resumable; use `--force` only when intentionally rebuilding unchanged
-inputs. Missing optional modalities produce a `partial` report with named limitations instead
-of invented evidence. In particular, actual motion is never asserted without every-frame
-measurements, and still/slideshow-like sources are disclosed explicitly.
-
-## Cross-reference pattern and originality review
-
-Compare two or more processed fingerprints without sending source media to a hosted service:
-
-```bash
-refintel compare-library \
-  workspace/references/<reference-a>/exports/reference_fingerprint.json \
-  workspace/references/<reference-b>/exports/reference_fingerprint.json \
-  --output-dir workspace/comparisons/animal-x-july \
-  --brand animal-x \
-  --target-format facebook_reel \
-  --topic "A new editorial topic"
-```
-
-Use `--metadata-file comparison-metadata.json` to label each reference independently:
-
-```json
-{
-  "ref-a": {"brand_id": "animal-x", "format_name": "vertical_short"},
-  "ref-b": {"brand_id": "rawr", "format_name": "vertical_short"}
-}
-```
-
-The resumable run produces pairwise scores, deterministic clusters, brand/format/platform/hook
-facets, a recurring controlled-mechanics library, a draft multi-reference pattern brief, rights
-decisions, and transcript-overlap checks. Only abstract controlled terms enter reusable patterns;
-source excerpts are never persisted. Missing rights block readiness, missing transcripts remain
-explicit limitations, and source assets are never approved for production automatically.
-
 ## Local browser application
 
 ```bash
@@ -274,6 +194,19 @@ The base pipeline works without a speech or visual model. It still produces:
 - an original brief starter.
 
 Optional providers add richer transcription, visual descriptions, embeddings, and semantic search.
+
+## Portfolio metadata handoff
+
+After local analysis, create a review-safe packet for the portfolio operator API:
+
+```bash
+refintel portfolio-sync-packet <reference-id>
+```
+
+This writes `exports/portfolio_sync_packet.json`. It contains sanitized metadata and hashes for
+whitelisted review artifacts only. Source media, absolute local paths, credentials, generation,
+approval, and publication instructions are excluded. Uploading or registering the packet remains
+an explicit operator action.
 
 ## Output structure
 
@@ -300,26 +233,15 @@ workspace/
       captions.vtt
     analysis/
       reference_analysis.json
-      every_frame_metrics.json
-      temporal_report.json
     reports/
       index.html
-      temporal.html
     exports/
       reference_fingerprint.json
       original_content_brief.json
+      portfolio_sync_packet.json
     logs/
-  comparisons/<comparison-id>/
-    comparison_report.json
-    pattern_library.json
-    pattern_brief.json
-    originality_gate.json
-    index.html
 ```
 
 ## Deployment-credit policy
 
-The local reference engine is isolated under `reference-engine/` and excluded from the static
-Vercel bundle. GitHub CI uses offline fixtures. No Vercel preview is required for P75 analysis
-development. A single optional UI-integration deployment may be considered only after the local
-engine and operator surface are complete.
+P66 is intentionally isolated under `reference-engine/` and is excluded from the static Vercel bundle. GitHub CI uses offline fixtures. No Vercel preview is required for normal P66 development. A single optional UI integration deployment may be performed after the local engine is complete.

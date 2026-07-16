@@ -84,6 +84,23 @@
           <li><strong>Package:</strong> platform exports, thumbnail, caption, hashtags and provenance.</li>
         </ol>
       </section>
+
+      <section id="reference-intelligence" class="reference-intelligence" aria-labelledby="reference-heading">
+        <div class="reference-heading-row">
+          <div><p class="eyebrow dark-eyebrow">Reference Intelligence</p><h3 id="reference-heading">Research evidence ready for human review</h3></div>
+          <p>Heavy media processing and source files stay in the local workspace. This surface receives sanitized metadata and review-safe artifact fingerprints only; it cannot process or publish content.</p>
+        </div>
+        <div id="reference-metrics" class="reference-metrics" aria-label="Reference queue metrics"></div>
+        <div class="reference-toolbar">
+          <label for="reference-brand-filter">Brand</label><select id="reference-brand-filter"><option value="">All brands</option></select>
+          <label for="reference-platform-filter">Platform</label><select id="reference-platform-filter"><option value="">All platforms</option><option>facebook</option><option>instagram</option><option>youtube</option><option>tiktok</option><option>x</option><option>snapchat</option><option>local</option></select>
+          <label for="reference-status-filter">Status</label><select id="reference-status-filter"><option value="">All statuses</option><option value="queued">Queued</option><option value="processing">Processing</option><option value="partial">Partial</option><option value="ready_for_review">Ready for review</option><option value="failed">Failed</option><option value="blocked">Blocked</option></select>
+        </div>
+        <div class="reference-layout">
+          <div class="table-wrap"><table class="content-table"><thead><tr><th>Reference</th><th>Platform</th><th>Status</th><th>Progress</th><th>Evidence</th><th>Action</th></tr></thead><tbody id="reference-queue"></tbody></table></div>
+          <aside id="reference-detail" class="reference-detail" aria-live="polite"><h4>Select a reference</h4><p>Connect the operator API to inspect artifacts, brand assignments, approval gates, and research-to-idea links.</p></aside>
+        </div>
+      </section>
     </section>
 
     <section id="engine-map" class="engine-section" aria-labelledby="engine-heading">

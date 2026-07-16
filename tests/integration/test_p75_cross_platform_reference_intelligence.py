@@ -9,12 +9,7 @@ def test_p75_adapter_contract_and_operator_docs_exist() -> None:
         assert (ENGINE / relative).is_file()
     assert (ENGINE / "refintel" / "acquisition.py").is_file()
     assert (ENGINE / "tests" / "test_p75_acquisition.py").is_file()
-    assert (ENGINE / "refintel" / "images.py").is_file()
-    assert (ENGINE / "refintel" / "settings.py").is_file()
-    assert (ENGINE / "tests" / "test_p75_images.py").is_file()
-    assert (
-        ROOT / "docs" / "operations" / "p75-cross-platform-reference-intelligence.md"
-    ).is_file()
+    assert (ROOT / "docs" / "operations" / "p75-cross-platform-reference-intelligence.md").is_file()
 
 
 def test_p75_covers_requested_platforms_and_media_shapes() -> None:
@@ -147,3 +142,13 @@ def test_p75_comparison_contract_is_typed_resumable_and_originality_gated() -> N
     assert '@app.command("compare-library")' in cli
     assert "controlled visual/audio/mechanics terms" in docs
     assert "missing transcript never becomes an originality pass" in docs.lower()
+
+
+def test_p75_portfolio_bridge_is_metadata_only_and_human_gated() -> None:
+    sync = (ENGINE / "refintel" / "portfolio_sync.py").read_text(encoding="utf-8")
+    cli = (ENGINE / "refintel" / "cli.py").read_text(encoding="utf-8")
+    assert 'schema_version: str = "p75.portfolio_sync_packet.v1"' in sync
+    assert "source_media_included: bool = False" in sync
+    assert "automatic_publication: bool = False" in sync
+    assert "human_review_required: bool = True" in sync
+    assert '@app.command("portfolio-sync-packet")' in cli

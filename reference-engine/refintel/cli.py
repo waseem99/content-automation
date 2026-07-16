@@ -12,47 +12,28 @@ from rich.table import Table
 
 from .acquisition import AcquisitionService, sanitize_diagnostic
 from .adapters import capability_matrix, normalize_reference
-from .comparison import build_comparison_library, load_comparison_metadata
 from .facebook import (
     open_facebook_session,
     resolve_facebook_share_url,
     run_facebook_page_batch,
 )
 from .fingerprint import compare_fingerprints, load_fingerprint
-from .images import ImageReferenceProcessor, OllamaImageObserver
 from .ingest import validate_local_cookie_browser
 from .models import RightsDeclaration
 from .pipeline import ReferencePipeline, tool_versions
+from .portfolio_sync import build_portfolio_sync_packet
 from .settings import RefIntelSettings
 from .temporal import build_temporal_report
 
 app = typer.Typer(
     no_args_is_help=True,
-    help="Local-first video, image, and carousel reference intelligence.",
+    help="Local-first video reference ingestion, analysis, reporting, and brief export.",
 )
 console = Console()
-settings = RefIntelSettings.from_env()
 
 
 def pipeline(workspace: Path) -> ReferencePipeline:
     return ReferencePipeline(workspace.expanduser().resolve())
-
-
-def local_auth(
-    cookies_from_browser: str | None,
-    cookie_file: Path | None,
-) -> tuple[str | None, Path | None]:
-    """Resolve explicit CLI auth before environment defaults without exposing either path."""
-    if cookies_from_browser or cookie_file:
-        browser = validate_local_cookie_browser(cookies_from_browser)
-        local_cookie_file = cookie_file.expanduser().resolve() if cookie_file else None
-    else:
-        settings.validate_local_auth()
-        browser = validate_local_cookie_browser(settings.cookies_from_browser)
-        local_cookie_file = settings.facebook_cookie_file
-    if browser and local_cookie_file:
-        raise typer.BadParameter("Use either cookies-from-browser or cookie-file, not both")
-    return browser, local_cookie_file
 
 
 @app.command("capabilities")
@@ -99,10 +80,11 @@ def discover_url(
         dir_okay=False,
         help="Optional local cookie jar; path and contents are never persisted.",
     ),
-    workspace: Path = typer.Option(settings.workspace),
+    workspace: Path = typer.Option(Path("workspace")),
 ) -> None:
     """Discover direct candidates without downloading source media."""
-    browser, local_cookie_file = local_auth(cookies_from_browser, cookie_file)
+    browser = validate_local_cookie_browser(cookies_from_browser)
+    local_cookie_file = cookie_file.expanduser().resolve() if cookie_file else None
     manifest = AcquisitionService().discover(
         url,
         limit=limit,
@@ -111,7 +93,9 @@ def discover_url(
     )
     run_dir = workspace.expanduser().resolve() / "discovery-runs"
     run_dir.mkdir(parents=True, exist_ok=True)
-    target = run_dir / (f"{manifest.platform.value}-{datetime.now(UTC):%Y%m%dT%H%M%SZ}.json")
+    target = run_dir / (
+        f"{manifest.platform.value}-{datetime.now(UTC):%Y%m%dT%H%M%SZ}.json"
+    )
     target.write_text(manifest.model_dump_json(indent=2), encoding="utf-8")
     console.print_json(manifest.model_dump_json())
     console.print(target)
@@ -134,17 +118,20 @@ def acquire_batch(
     ),
     force_new: bool = typer.Option(False),
     facebook_browser_profile: Path = typer.Option(
-        settings.facebook_profile,
+        Path.home() / ".local" / "share" / "refintel" / "facebook-browser",
         help="Dedicated local profile used only to resolve Facebook share links.",
     ),
     headed_facebook: bool = typer.Option(
         False,
         help="Show Chromium while resolving Facebook share links.",
     ),
-    workspace: Path = typer.Option(settings.workspace),
+    workspace: Path = typer.Option(Path("workspace")),
 ) -> None:
     """Acquire direct references independently and preserve per-item failures."""
-    browser, local_cookie_file = local_auth(cookies_from_browser, cookie_file)
+    browser = validate_local_cookie_browser(cookies_from_browser)
+    local_cookie_file = cookie_file.expanduser().resolve() if cookie_file else None
+    if browser and local_cookie_file:
+        raise typer.BadParameter("Use either cookies-from-browser or cookie-file, not both")
     engine = pipeline(workspace)
     results: list[dict[str, object]] = []
     for index, url in enumerate(urls, start=1):
@@ -261,7 +248,7 @@ def acquire_batch(
 
 @app.command("doctor")
 def doctor(
-    workspace: Path = typer.Option(settings.workspace, help="Local workspace root."),
+    workspace: Path = typer.Option(Path("workspace"), help="Local workspace root."),
 ) -> None:
     """Check the local machine before processing media."""
     versions = tool_versions()
@@ -283,12 +270,6 @@ def doctor(
         table.add_row(name, "ready" if value else "optional/missing", str(value or "—"))
     store = pipeline(workspace).store
     table.add_row("Workspace", "ready", str(store.root))
-    table.add_row("Facebook profile", "configured", "private local path")
-    table.add_row(
-        "Facebook cookie file",
-        "configured" if settings.facebook_cookie_file else "optional/missing",
-        "private local path" if settings.facebook_cookie_file else "—",
-    )
     console.print(table)
     if not versions.get("ffmpeg") or not versions.get("ffprobe"):
         raise typer.Exit(code=2)
@@ -301,7 +282,7 @@ def ingest_file(
     title: str | None = typer.Option(None),
     note: str | None = typer.Option(None, help="Internal rights/provenance note."),
     force_new: bool = typer.Option(False),
-    workspace: Path = typer.Option(settings.workspace),
+    workspace: Path = typer.Option(Path("workspace")),
 ) -> None:
     """Copy a local authorized video into the reference library."""
     project = pipeline(workspace).ingest_file(
@@ -332,17 +313,16 @@ def ingest_url(
         help="Optional local Netscape cookie jar; its path and contents are never persisted.",
     ),
     force_new: bool = typer.Option(False),
-    workspace: Path = typer.Option(settings.workspace),
+    workspace: Path = typer.Option(Path("workspace")),
 ) -> None:
     """Download an authorized publicly accessible reference with yt-dlp."""
-    browser, local_cookie_file = local_auth(cookies_from_browser, cookie_file)
     project = pipeline(workspace).ingest_url(
         url,
         rights=rights,
         title=title,
         operator_note=note,
-        cookies_from_browser=browser,
-        cookie_file=local_cookie_file,
+        cookies_from_browser=cookies_from_browser,
+        cookie_file=cookie_file,
         force_new=force_new,
     )
     console.print(f"[green]{project.reference_id}[/green] {project.workspace_path}")
@@ -364,7 +344,7 @@ def process_reference(
         help="Decode every frame for motion/change metrics without storing every image.",
     ),
     force: bool = typer.Option(False, help="Rebuild existing artifacts."),
-    workspace: Path = typer.Option(settings.workspace),
+    workspace: Path = typer.Option(Path("workspace")),
 ) -> None:
     """Run media, frame, transcript, analysis, report, and fingerprint stages."""
     project = pipeline(workspace).process(
@@ -377,16 +357,13 @@ def process_reference(
         force=force,
     )
     console.print(f"[green]complete[/green] {project.reference_id}")
-    project_workspace = Path(project.workspace_path)
-    report_path = project_workspace / "reports" / "index.html"
-    image_manifests = sorted((project_workspace / "image-analysis").glob("*/image-reference.json"))
-    console.print(report_path if report_path.is_file() else image_manifests[-1])
+    console.print(Path(project.workspace_path) / "reports" / "index.html")
 
 
 @app.command("facebook-login")
 def facebook_login(
     browser_profile: Path = typer.Option(
-        settings.facebook_profile,
+        Path.home() / ".local" / "share" / "refintel" / "facebook-browser",
         help="Dedicated local Playwright profile; keep it outside the repository.",
     ),
 ) -> None:
@@ -402,8 +379,10 @@ def facebook_page(
     brand: str = typer.Option(..., help="Portfolio brand slug."),
     rights: RightsDeclaration = typer.Option(..., help="Mandatory rights declaration."),
     limit: int = typer.Option(12, min=1, max=100),
-    browser_profile: Path = typer.Option(settings.facebook_profile),
-    workspace: Path = typer.Option(settings.workspace),
+    browser_profile: Path = typer.Option(
+        Path.home() / ".local" / "share" / "refintel" / "facebook-browser"
+    ),
+    workspace: Path = typer.Option(Path("workspace")),
     headed: bool = typer.Option(False, help="Show Chromium while discovering page videos."),
     discover_only: bool = typer.Option(False, help="Save direct video URLs without downloading."),
     acquire_only: bool = typer.Option(
@@ -434,53 +413,11 @@ def facebook_page(
     console.print(payload["run_dir"])
 
 
-@app.command("process-images")
-def process_images(
-    source: Path = typer.Argument(..., exists=True),
-    rights: RightsDeclaration = typer.Option(..., help="Mandatory rights declaration."),
-    title: str | None = typer.Option(None),
-    local_vision: bool = typer.Option(
-        settings.use_ollama,
-        help="Use the configured local Ollama model for subject and layout observations.",
-    ),
-    force: bool = typer.Option(False, help="Rebuild an existing hash-matched analysis."),
-    workspace: Path = typer.Option(settings.workspace),
-) -> None:
-    """Analyze one authorized image or an ordered local carousel folder."""
-    observer = (
-        OllamaImageObserver(
-            model=settings.ollama_model,
-            endpoint=settings.ollama_endpoint,
-        )
-        if local_vision
-        else None
-    )
-    manifest, manifest_path = ImageReferenceProcessor(observer=observer).process(
-        source,
-        workspace / "image-references",
-        rights=rights,
-        title=title,
-        force=force,
-    )
-    console.print_json(
-        json.dumps(
-            {
-                "reference_id": manifest.reference_id,
-                "status": manifest.status.value,
-                "media_kind": manifest.media_kind,
-                "slide_count": manifest.slide_count,
-                "human_review_required": manifest.human_review_required,
-            }
-        )
-    )
-    console.print(manifest_path)
-
-
 @app.command("report")
 def open_report(
     reference_id: str,
     open_browser: bool = typer.Option(True),
-    workspace: Path = typer.Option(settings.workspace),
+    workspace: Path = typer.Option(Path("workspace")),
 ) -> None:
     """Locate or open the generated offline report."""
     project = pipeline(workspace).store.load_project(reference_id)
@@ -492,46 +429,16 @@ def open_report(
         webbrowser.open(report_path.as_uri())
 
 
-@app.command("temporal-report")
-def temporal_report(
-    reference_id: str,
-    force: bool = typer.Option(False, help="Rebuild a hash-matched temporal report."),
-    open_browser: bool = typer.Option(False),
-    workspace: Path = typer.Option(settings.workspace),
-) -> None:
-    """Build or open the evidence-backed temporal report for a processed video."""
-    engine = pipeline(workspace)
-    project = engine.store.load_project(reference_id)
-    report, manifest_path, html_path = build_temporal_report(
-        project,
-        Path(project.workspace_path),
-        force=force,
-    )
-    console.print_json(
-        json.dumps(
-            {
-                "reference_id": report.reference_id,
-                "status": report.status.value,
-                "window_count": len(report.windows),
-                "motion_classification": report.motion_disclosure["classification"],
-                "human_review_required": report.human_review_required,
-            }
-        )
-    )
-    console.print(manifest_path)
-    console.print(html_path)
-    if open_browser:
-        webbrowser.open(html_path.as_uri())
-
-
 @app.command("export-brief")
 def export_brief(
     reference_id: str,
     brand: str = typer.Option(..., help="rawr_nation, animal_x, historiq, or ani_films"),
     topic: str | None = typer.Option(None),
-    audience: str = typer.Option("social video viewers interested in surprising, useful stories"),
+    audience: str = typer.Option(
+        "social video viewers interested in surprising, useful stories"
+    ),
     duration: int = typer.Option(60, min=15, max=600),
-    workspace: Path = typer.Option(settings.workspace),
+    workspace: Path = typer.Option(Path("workspace")),
 ) -> None:
     """Export an original, human-reviewable content brief."""
     target = pipeline(workspace).export_brief(
@@ -546,7 +453,7 @@ def export_brief(
 
 @app.command("library")
 def list_library(
-    workspace: Path = typer.Option(settings.workspace),
+    workspace: Path = typer.Option(Path("workspace")),
 ) -> None:
     """List locally stored references."""
     rows = pipeline(workspace).store.list_references()
@@ -554,13 +461,33 @@ def list_library(
     for column in ("reference_id", "platform", "status", "duration_seconds", "title"):
         table.add_column(column)
     for row in rows:
-        table.add_row(
-            *(
-                str(row.get(column) or "—")
-                for column in ("reference_id", "platform", "status", "duration_seconds", "title")
-            )
-        )
+        table.add_row(*(str(row.get(column) or "—") for column in (
+            "reference_id", "platform", "status", "duration_seconds", "title"
+        )))
     console.print(table)
+
+
+@app.command("portfolio-sync-packet")
+def portfolio_sync_packet(
+    reference_id: str,
+    workspace: Path = typer.Option(settings.workspace),
+) -> None:
+    """Create a sanitized metadata packet for the portfolio API handoff."""
+    project = pipeline(workspace).store.load_project(reference_id)
+    packet = build_portfolio_sync_packet(project, Path(project.workspace_path))
+    console.print_json(
+        json.dumps(
+            {
+                "reference_id": packet.local_reference_id,
+                "status": packet.status,
+                "progress_percent": packet.progress_percent,
+                "artifact_count": len(packet.artifacts),
+                "source_media_included": packet.source_media_included,
+                "human_review_required": packet.human_review_required,
+            }
+        )
+    )
+    console.print(Path(project.workspace_path) / "exports" / "portfolio_sync_packet.json")
 
 
 @app.command("compare")
@@ -578,58 +505,11 @@ def compare(
         console.print_json(rendered)
 
 
-@app.command("compare-library")
-def compare_library(
-    fingerprint_paths: list[Path] = typer.Argument(..., min=2),
-    output_dir: Path = typer.Option(Path("comparison-output")),
-    metadata_file: Path | None = typer.Option(
-        None,
-        exists=True,
-        file_okay=True,
-        dir_okay=False,
-        help="Optional JSON mapping reference IDs to brand_id and format_name.",
-    ),
-    brand: str = typer.Option("unassigned", help="Brand for the draft pattern brief."),
-    target_format: str = typer.Option("vertical_short"),
-    topic: str | None = typer.Option(None, help="A new topic; never source wording."),
-    cluster_threshold: float = typer.Option(0.62, min=0, max=1),
-    force: bool = typer.Option(False),
-) -> None:
-    """Build a resumable, originality-gated cross-reference pattern library."""
-    metadata = load_comparison_metadata(metadata_file)
-    report, report_path, html_path = build_comparison_library(
-        [path.expanduser().resolve() for path in fingerprint_paths],
-        output_dir.expanduser().resolve(),
-        metadata=metadata,
-        cluster_threshold=cluster_threshold,
-        brand_id=brand,
-        target_format=target_format,
-        topic=topic,
-        force=force,
-    )
-    console.print_json(
-        json.dumps(
-            {
-                "status": report.status.value,
-                "reference_count": report.reference_count,
-                "failure_count": len(report.failures),
-                "cluster_count": len(report.clusters),
-                "pattern_count": len(report.patterns),
-                "ready_for_human_review": report.ready_for_human_review,
-                "automatic_generation": report.automatic_generation,
-                "automatic_publication": report.automatic_publication,
-            }
-        )
-    )
-    console.print(report_path)
-    console.print(html_path)
-
-
 @app.command("serve")
 def serve(
     host: str = typer.Option("127.0.0.1"),
     port: int = typer.Option(8765, min=1, max=65535),
-    workspace: Path = typer.Option(settings.workspace),
+    workspace: Path = typer.Option(Path("workspace")),
 ) -> None:
     """Run the local browser interface."""
     import os
