@@ -23,6 +23,7 @@ from .images import ImageReferenceProcessor, OllamaImageObserver
 from .ingest import validate_local_cookie_browser
 from .models import RightsDeclaration
 from .pipeline import ReferencePipeline, tool_versions
+from .portfolio_sync import build_portfolio_sync_packet
 from .settings import RefIntelSettings
 from .temporal import build_temporal_report
 
@@ -561,6 +562,29 @@ def list_library(
             )
         )
     console.print(table)
+
+
+@app.command("portfolio-sync-packet")
+def portfolio_sync_packet(
+    reference_id: str,
+    workspace: Path = typer.Option(settings.workspace),
+) -> None:
+    """Create a sanitized metadata packet for the portfolio API handoff."""
+    project = pipeline(workspace).store.load_project(reference_id)
+    packet = build_portfolio_sync_packet(project, Path(project.workspace_path))
+    console.print_json(
+        json.dumps(
+            {
+                "reference_id": packet.local_reference_id,
+                "status": packet.status,
+                "progress_percent": packet.progress_percent,
+                "artifact_count": len(packet.artifacts),
+                "source_media_included": packet.source_media_included,
+                "human_review_required": packet.human_review_required,
+            }
+        )
+    )
+    console.print(Path(project.workspace_path) / "exports" / "portfolio_sync_packet.json")
 
 
 @app.command("compare")

@@ -5,7 +5,10 @@
     engineFilter: "all",
     selectedStage: "brief-intake",
     brandFilter: "all",
-    statusFilter: "all"
+    statusFilter: "all",
+    referenceBrandFilter: "",
+    referencePlatformFilter: "",
+    referenceStatusFilter: ""
   };
 
   const $ = (id) => document.getElementById(id);
@@ -31,6 +34,7 @@
   let portfolioBrands = demoPortfolioBrands.slice();
   let portfolioItems = demoPortfolioItems.slice();
   let portfolioReadiness = null;
+  let portfolioReferences = [];
 
   const stageLabels = { idea: "Idea review", script: "Script review", preview: "Preview review", premium: "Premium render", package: "Package review", ready: "Ready", published: "Published record", blocked: "Blocked", archived: "Archived" };
 
@@ -59,6 +63,32 @@
       const next = { idea: "Review idea", script: "Review script", preview: "Watch preview", premium: "Inspect render", ready: "Open package" }[item.stage];
       return `<tr><td>${item.date}</td><td><strong>${escapeHtml(brand.name)}</strong><span>${escapeHtml(item.title)}</span></td><td>${escapeHtml(item.format)}</td><td><span class="stage-pill ${item.stage}">${stageLabels[item.stage]}</span></td><td>${item.assets.map((asset) => `<span class="asset-chip">${escapeHtml(asset)}</span>`).join("")}</td><td><button class="table-action" type="button" data-item="${escapeHtml(item.title)}">${next}</button></td></tr>`;
     }).join("") : '<tr><td colspan="6" class="empty-row">No content matches these filters.</td></tr>';
+  }
+
+  function renderReferenceQueue() {
+    const ready = portfolioReferences.filter((item) => item.status === "ready_for_review").length;
+    const failed = portfolioReferences.filter((item) => ["failed", "blocked"].includes(item.status)).length;
+    const artifacts = portfolioReferences.reduce((total, item) => total + Number(item.artifact_count || 0), 0);
+    $("reference-metrics").innerHTML = [[portfolioReferences.length, "references"], [ready, "ready for review"], [artifacts, "review artifacts"], [failed, "need attention"]].map(([value, label]) => `<article><strong>${value}</strong><span>${label}</span></article>`).join("");
+    $("reference-queue").innerHTML = portfolioReferences.length ? portfolioReferences.map((item) => `<tr><td><strong>${escapeHtml(item.title)}</strong><span>${escapeHtml(item.local_reference_id)}</span></td><td>${escapeHtml(item.platform)}</td><td><span class="stage-pill ${item.status === "ready_for_review" ? "ready" : item.status === "processing" ? "preview" : "idea"}">${escapeHtml(item.status.replaceAll("_", " "))}</span></td><td>${Number(item.progress_percent || 0)}%</td><td>${Number(item.artifact_count || 0)} artifacts · ${Number(item.approved_gate_count || 0)}/3 gates · ${Number(item.idea_link_count || 0)} ideas</td><td><button class="table-action reference-review" type="button" data-reference-id="${item.id}">Review</button></td></tr>`).join("") : '<tr><td colspan="6" class="empty-row">No database-backed references match these filters. Source media remains local.</td></tr>';
+  }
+
+  function renderReferenceDetail(payload) {
+    const source = payload.source;
+    const gates = Object.fromEntries((payload.gates || []).map((gate) => [gate.gate, gate.decision]));
+    const evidence = (payload.artifacts || [])[0]?.sha256 || "";
+    $("reference-detail").innerHTML = `<p class="eyebrow dark-eyebrow">Human review</p><h4>${escapeHtml(source.title)}</h4><p>${escapeHtml(source.platform)} · ${escapeHtml(source.media_type)} · rights declared: ${escapeHtml(source.rights_declaration)}</p><dl><div><dt>Artifacts</dt><dd>${(payload.artifacts || []).map((item) => escapeHtml(item.artifact_kind)).join(", ") || "None yet"}</dd></div><div><dt>Brands</dt><dd>${(payload.brand_assignments || []).map((item) => escapeHtml(item.brand_name)).join(", ") || "Unassigned"}</dd></div><div><dt>Idea links</dt><dd>${(payload.idea_links || []).length}</dd></div></dl><div class="reference-gates">${["rights", "originality", "editorial"].map((gate) => `<button type="button" data-reference-gate="${gate}" data-reference-id="${source.id}" data-evidence="${evidence}" ${evidence ? "" : "disabled"}>${escapeHtml(gate)}: ${escapeHtml(gates[gate] || "pending")}</button>`).join("")}</div><small>Approvals are explicit, append-only human decisions. No approval triggers generation or publication.</small>`;
+  }
+
+  async function refreshReferencesFromApi() {
+    if (!window.PortfolioApi?.configured()) {
+      portfolioReferences = [];
+      renderReferenceQueue();
+      return;
+    }
+    const payload = await window.PortfolioApi.references({ brandId: state.referenceBrandFilter, platform: state.referencePlatformFilter, status: state.referenceStatusFilter });
+    portfolioReferences = payload.items || [];
+    renderReferenceQueue();
   }
 
   function mapApiBrand(brand) {
@@ -97,18 +127,22 @@
     if (!window.PortfolioApi?.configured()) return false;
     try {
       const planMonth = document.querySelector('meta[name="content-plan-month"]')?.content || "2026-08-01";
-      const [brandPayload, queuePayload, readinessPayload] = await Promise.all([
+      const [brandPayload, queuePayload, readinessPayload, referencePayload] = await Promise.all([
         window.PortfolioApi.brands(),
         window.PortfolioApi.queue(),
-        window.PortfolioApi.readiness(planMonth)
+        window.PortfolioApi.readiness(planMonth),
+        window.PortfolioApi.references()
       ]);
       portfolioBrands = brandPayload.brands.map(mapApiBrand);
       portfolioItems = queuePayload.items.map(mapApiItem);
       portfolioReadiness = readinessPayload;
+      portfolioReferences = referencePayload.items || [];
       state.brandFilter = "all";
       $("brand-filter").innerHTML = '<option value="all">All brands</option>' + portfolioBrands.map((brand) => `<option value="${brand.id}">${escapeHtml(brand.name)}</option>`).join("");
+      $("reference-brand-filter").innerHTML = '<option value="">All brands</option>' + portfolioBrands.map((brand) => `<option value="${brand.id}">${escapeHtml(brand.name)}</option>`).join("");
       updateDataMode(`${queuePayload.count} database items`, true);
       renderPortfolio();
+      renderReferenceQueue();
       return true;
     } catch (error) {
       updateDataMode(`Connection error: ${error.message}`, false);
@@ -120,10 +154,12 @@
     portfolioBrands = demoPortfolioBrands.slice();
     portfolioItems = demoPortfolioItems.slice();
     portfolioReadiness = null;
+    portfolioReferences = [];
     state.brandFilter = "all";
     $("brand-filter").innerHTML = '<option value="all">All brands</option>' + portfolioBrands.map((brand) => `<option value="${brand.id}">${escapeHtml(brand.name)}</option>`).join("");
     updateDataMode("Demo data", false);
     renderPortfolio();
+    renderReferenceQueue();
   }
 
   function bindPortfolioControls() {
@@ -167,7 +203,29 @@
         alert(`Approval failed: ${error.message}`);
       }
     });
+    ["reference-brand-filter", "reference-platform-filter", "reference-status-filter"].forEach((id) => $(id).addEventListener("change", async () => {
+      state.referenceBrandFilter = $("reference-brand-filter").value;
+      state.referencePlatformFilter = $("reference-platform-filter").value;
+      state.referenceStatusFilter = $("reference-status-filter").value;
+      try { await refreshReferencesFromApi(); } catch (error) { alert(`Reference queue failed: ${error.message}`); }
+    }));
+    $("reference-queue").addEventListener("click", async (event) => {
+      if (!event.target.matches(".reference-review")) return;
+      try { renderReferenceDetail(await window.PortfolioApi.reference(event.target.dataset.referenceId)); } catch (error) { alert(`Reference review failed: ${error.message}`); }
+    });
+    $("reference-detail").addEventListener("click", async (event) => {
+      if (!event.target.matches("[data-reference-gate]")) return;
+      const rationale = prompt(`Rationale for approving ${event.target.dataset.referenceGate}:`, "Evidence reviewed and approved for controlled research use.");
+      if (!rationale) return;
+      if (!confirm("Record this human approval? This does not generate or publish content.")) return;
+      try {
+        await window.PortfolioApi.decideReferenceGate(event.target.dataset.referenceId, event.target.dataset.referenceGate, "approved", rationale, event.target.dataset.evidence);
+        renderReferenceDetail(await window.PortfolioApi.reference(event.target.dataset.referenceId));
+        await refreshReferencesFromApi();
+      } catch (error) { alert(`Reference approval failed: ${error.message}`); }
+    });
     renderPortfolio();
+    renderReferenceQueue();
     refreshPortfolioFromApi();
   }
 

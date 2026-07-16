@@ -228,5 +228,31 @@ take precedence. Conflicting cookie-file/browser routes fail closed.
 
 ## Next implementation slices
 
-The completed adapter, acquisition, image/carousel, temporal-report, and comparison/gate contracts
-now unblock operator UI/API integration and the full offline acceptance pack.
+The completed adapter, acquisition, image/carousel, temporal-report, comparison/gate, and
+portfolio-integration contracts now unblock the reusable CLI skill and full offline acceptance
+pack.
+
+## Portfolio API and operator UI checkpoint
+
+P75-06 connects local reference research to the database-backed portfolio without moving source
+media into PostgreSQL, the API, or Vercel. Migration `0027_reference_intelligence_portfolio.sql`
+adds source queues, resumable local-worker jobs, review-artifact pointers, brand assignments,
+append-only human gates, and traceable research-to-idea links.
+
+Create a sanitized handoff packet after processing a local reference:
+
+```bash
+refintel portfolio-sync-packet <reference-id>
+```
+
+The packet includes a sanitized public locator, locator hash, job status, progress, artifact
+fingerprints, limitations, and pending human gates. It includes no source bytes, absolute local
+paths, cookies, credentials, automatic generation decision, or publication instruction. The
+operator API accepts that metadata through `/portfolio/references` and related job, artifact,
+brand, approval, and idea-link endpoints. Heavy processing remains an operator-controlled local
+worker responsibility.
+
+The static portfolio UI can list and filter the queue, inspect artifact and gate state, and record
+explicit rights, originality, and editorial decisions. An approval is audit evidence only: it
+does not render or publish content. Linking research to an idea additionally requires approved
+rights and originality gates plus a written transformation note.

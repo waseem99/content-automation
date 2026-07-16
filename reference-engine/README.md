@@ -275,6 +275,19 @@ The base pipeline works without a speech or visual model. It still produces:
 
 Optional providers add richer transcription, visual descriptions, embeddings, and semantic search.
 
+## Portfolio metadata handoff
+
+After local analysis, create a review-safe packet for the portfolio operator API:
+
+```bash
+refintel portfolio-sync-packet <reference-id>
+```
+
+This writes `exports/portfolio_sync_packet.json`. It contains sanitized metadata and hashes for
+whitelisted review artifacts only. Source media, absolute local paths, credentials, generation,
+approval, and publication instructions are excluded. Uploading or registering the packet remains
+an explicit operator action.
+
 ## Output structure
 
 ```text
@@ -308,6 +321,7 @@ workspace/
     exports/
       reference_fingerprint.json
       original_content_brief.json
+      portfolio_sync_packet.json
     logs/
   comparisons/<comparison-id>/
     comparison_report.json
