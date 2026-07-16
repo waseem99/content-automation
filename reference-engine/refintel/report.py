@@ -26,12 +26,12 @@ video{width:100%;max-height:70vh;background:#000;border-radius:12px}.tabs{displa
 .panel{display:none}.panel.active{display:block}.timeline{position:relative;height:52px;background:#202531;border-radius:10px;margin:12px 0}.marker{position:absolute;top:0;bottom:0;width:2px;background:#ffcf33}.marker span{position:absolute;top:6px;left:5px;font-size:10px;white-space:nowrap;color:#ffcf33}
 .transcript{max-height:520px;overflow:auto}.segment{padding:10px;border-bottom:1px solid #292e3a;cursor:pointer}.segment:hover{background:#222733}.time{color:#ffcf33;font-variant-numeric:tabular-nums;font-size:12px}.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px}.frame{background:#0e1117;border:1px solid #2b303c;border-radius:10px;overflow:hidden;cursor:pointer}.frame img{width:100%;aspect-ratio:16/9;object-fit:cover;display:block}.frame div{padding:8px;font-size:12px}.scores{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}.score{padding:14px;background:#10131a;border-radius:11px}.score strong{font-size:30px;color:#ffcf33;display:block}
 .finding{padding:12px 0;border-bottom:1px solid #2a2f3a}.story{display:grid;gap:8px}.story-item{display:grid;grid-template-columns:130px 1fr;gap:10px;padding:10px;background:#10131a;border-radius:8px}
-pre{white-space:pre-wrap;word-break:break-word;background:#0c0f15;padding:12px;border-radius:9px}.warning{border-left:4px solid #ffcf33;padding:12px;background:#211e12;border-radius:8px}
+pre{white-space:pre-wrap;word-break:break-word;background:#0c0f15;padding:12px;border-radius:9px}.warning{border-left:4px solid #ffcf33;padding:12px;background:#211e12;border-radius:8px}a{color:#ffcf33}
 @media(max-width:960px){.grid{grid-template-columns:1fr}.header{flex-direction:column}.shell{padding:14px}}
 </style>
 </head>
 <body><main class="shell">
-<header class="header"><div><div class="kicker">P66 Local Reference Intelligence</div><h1 class="title">{{ project.source.title }}</h1><div class="muted">{{ project.source.platform }} · {{ duration }}s · {{ project.access.declaration }} · {{ project.status }}</div></div><div><span class="pill">{{ project.reference_id }}</span><span class="pill">Human review required</span></div></header>
+<header class="header"><div><div class="kicker">P75 Local Reference Intelligence</div><h1 class="title">{{ project.source.title }}</h1><div class="muted">{{ project.source.platform }} · {{ duration }}s · {{ project.access.declaration }} · {{ project.status }}</div></div><div><span class="pill">{{ project.reference_id }}</span><span class="pill">Human review required</span>{% if temporal_available %}<a class="pill" href="temporal.html">Temporal evidence report</a>{% endif %}</div></header>
 <div class="warning">This report supports internal research and original content development. Do not reuse source footage, wording, branding, music, voices, or proprietary artwork without permission.</div>
 <section class="grid" style="margin-top:18px">
 <div class="card"><video id="player" controls preload="metadata" src="{{ video_src }}"></video>
@@ -89,6 +89,7 @@ def generate_report(project: ReferenceProject, workspace: Path) -> Path:
     html = template.render(
         project=project_payload,
         duration=round(duration, 2),
+        temporal_available=(workspace / "reports" / "temporal.html").is_file(),
         video_src="assets/analysis.mp4",
         story_arc=story_arc,
         findings=project.analysis.findings,
@@ -105,7 +106,9 @@ def generate_report(project: ReferenceProject, workspace: Path) -> Path:
             ensure_ascii=False,
             default=str,
         ),
-        raw_json=json.dumps(project.model_dump(mode="json"), indent=2, ensure_ascii=False, default=str),
+        raw_json=json.dumps(
+            project.model_dump(mode="json"), indent=2, ensure_ascii=False, default=str
+        ),
     )
     target = report_dir / "index.html"
     target.write_text(html, encoding="utf-8")

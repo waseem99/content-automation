@@ -26,6 +26,7 @@ from .media import (
 from .models import ProcessingEvent, ProjectStatus, ReferenceProject, RightsDeclaration
 from .report import generate_report
 from .storage import WorkspaceStore
+from .temporal import build_temporal_report
 from .transcript import transcribe_audio
 
 
@@ -330,6 +331,28 @@ class ReferencePipeline:
             analysis_path = workspace / "analysis" / "reference_analysis.json"
             analysis_path.write_text(project.analysis.model_dump_json(indent=2), encoding="utf-8")
             self._event(project, "analysis", "completed", "Reference analysis completed.")
+
+            self._event(
+                project,
+                "temporal_report",
+                "started",
+                "Building temporal and multimodal evidence report.",
+            )
+            temporal_report, temporal_path, temporal_html = build_temporal_report(
+                project,
+                workspace,
+                force=force,
+            )
+            self._event(
+                project,
+                "temporal_report",
+                "completed",
+                "Temporal and multimodal evidence report completed.",
+                temporal_status=temporal_report.status.value,
+                manifest=str(temporal_path.relative_to(workspace)),
+                report=str(temporal_html.relative_to(workspace)),
+                window_count=len(temporal_report.windows),
+            )
 
             self._event(project, "report", "started", "Generating offline interactive report.")
             report_path = generate_report(project, workspace)

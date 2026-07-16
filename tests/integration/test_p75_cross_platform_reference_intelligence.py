@@ -12,7 +12,9 @@ def test_p75_adapter_contract_and_operator_docs_exist() -> None:
     assert (ENGINE / "refintel" / "images.py").is_file()
     assert (ENGINE / "refintel" / "settings.py").is_file()
     assert (ENGINE / "tests" / "test_p75_images.py").is_file()
-    assert (ROOT / "docs" / "operations" / "p75-cross-platform-reference-intelligence.md").is_file()
+    assert (
+        ROOT / "docs" / "operations" / "p75-cross-platform-reference-intelligence.md"
+    ).is_file()
 
 
 def test_p75_covers_requested_platforms_and_media_shapes() -> None:
@@ -96,3 +98,26 @@ def test_p75_local_auth_env_contract_uses_paths_not_raw_credentials() -> None:
     assert "FACEBOOK_PASSWORD" not in settings
     assert "FACEBOOK_EMAIL" not in settings
     assert "Never paste cookie contents" in example
+
+
+def test_p75_temporal_report_contract_combines_modalities_without_overclaiming() -> (
+    None
+):
+    temporal = (ENGINE / "refintel" / "temporal.py").read_text(encoding="utf-8")
+    pipeline = (ENGINE / "refintel" / "pipeline.py").read_text(encoding="utf-8")
+    report = (ENGINE / "refintel" / "report.py").read_text(encoding="utf-8")
+    assert 'schema_version: str = "p75.temporal_report.v1"' in temporal
+    for expected in (
+        "every_frame_metrics.json",
+        "audio.wav",
+        "transcript.json",
+        "extract_ocr",
+        "motion_disclosure",
+        "production_difficulty",
+        "source_media_must_not_enter_generated_content: bool = True",
+        "source_text_must_not_be_reused_verbatim: bool = True",
+        "human_review_required: bool = True",
+    ):
+        assert expected in temporal
+    assert "build_temporal_report(" in pipeline
+    assert "Temporal evidence report" in report

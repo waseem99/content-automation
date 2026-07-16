@@ -210,6 +210,19 @@ writes change/brightness metrics without retaining thousands of redundant images
 refintel process <reference-id> --every-frame --local-vision
 ```
 
+Each video run now also creates a typed temporal report. It combines measured every-frame
+motion and cut candidates, WAV energy, transcript/caption timing, OCR from preferred frames,
+and chronological local-model observations when available. Open it independently with:
+
+```bash
+refintel temporal-report <reference-id> --open-browser
+```
+
+The command is hash-resumable; use `--force` only when intentionally rebuilding unchanged
+inputs. Missing optional modalities produce a `partial` report with named limitations instead
+of invented evidence. In particular, actual motion is never asserted without every-frame
+measurements, and still/slideshow-like sources are disclosed explicitly.
+
 ## Local browser application
 
 ```bash
@@ -258,8 +271,11 @@ workspace/
       captions.vtt
     analysis/
       reference_analysis.json
+      every_frame_metrics.json
     reports/
       index.html
+      temporal-report.json
+      temporal.html
     exports/
       reference_fingerprint.json
       original_content_brief.json
