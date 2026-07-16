@@ -82,6 +82,44 @@ The workspace stages enforce these minimum review artifacts:
 **Request changes** records the rationale and opens a new content version. Approval never
 starts generation, spends provider credits, or publishes content.
 
+## Synchronize a P68 pilot
+
+First inspect the proposed synchronization without writing files or calling the API:
+
+```bash
+python scripts/p76_sync_pilot.py \
+  --pilot-id rawr-blind-spot \
+  --content-id DRY-RUN-CONTENT-ID \
+  --dry-run
+```
+
+For a real synchronization, use the UUID of the matching portfolio content item. The pilot
+topic and database concept must describe the same content; never attach a technically
+similar but editorially different pilot merely because its title contains similar words.
+
+```bash
+set -a
+. deploy/portfolio-staging/.env
+set +a
+export PORTFOLIO_API_URL=http://127.0.0.1:8000
+export PORTFOLIO_MEDIA_ROOT=var/portfolio-media
+python scripts/p76_sync_pilot.py \
+  --pilot-id YOUR_MATCHING_PILOT_ID \
+  --content-id YOUR_PORTFOLIO_CONTENT_UUID \
+  --confirm-editorial-match
+```
+
+The bridge is idempotent: unchanged workspace JSON is not versioned again, media filenames
+include their SHA-256 digest, and already-registered artifacts are skipped. It prefers the
+hybrid free preview when present and registers local narration, the review render, and
+keyframes. It never approves a gate or publishes content.
+
+Run the read-only readiness report at any time:
+
+```bash
+python scripts/p76_local_production_doctor.py
+```
+
 ## Promotion gate
 
 Do not create a Vercel preview until migrations, readiness, authentication, brand counts,
