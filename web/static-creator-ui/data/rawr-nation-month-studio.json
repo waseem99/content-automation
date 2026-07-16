@@ -32,11 +32,24 @@
       "duration_seconds": 35,
       "workflow_stage": "preview_queue",
       "script": {
-        "hook": "A prey animal can look alert and still never see the predator coming.",
-        "narration": "A prey animal can look alert and still never see the predator coming. Watch the prey scan left and right while one narrow approach corridor remains uncovered. Show where common prey animals cannot see and how stalking predators approach through that narrow visual gap. Eye placement creates broad awareness, but the remaining visual gap can become an approach lane. Survival can turn on the few degrees an animal cannot monitor.",
-        "payoff": "Survival can turn on the few degrees an animal cannot monitor.",
-        "word_count": 70,
-        "fact_review_required": true
+        "hook": "A bird can scan almost everything around it and still leave one approach unseen.",
+        "narration": "A bird can scan almost everything around it and still leave one approach unseen. Map the bird's measured visual field first, then show the rear sector that its eyes do not cover at that instant. Show where common prey animals cannot see and how stalking predators approach through that narrow visual gap. Many birds trade a wide visual field for a blind area behind the head; head movements help them sample that missing space. The gap creates vulnerability, but species, posture, movement, sound, and group vigilance all change the outcome.",
+        "payoff": "The gap creates vulnerability, but species, posture, movement, sound, and group vigilance all change the outcome.",
+        "word_count": 90,
+        "fact_review_required": true,
+        "fact_status": "source_ready_pending_human",
+        "sources": [
+          {
+            "title": "What Drives Bird Vision? Bill Control and Predator Detection Overshadow Flight",
+            "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC5682009/",
+            "supports": "Many birds have extensive visual fields but retain a blind area behind the head that can increase vulnerability."
+          },
+          {
+            "title": "Fine-scale tracking reveals visual field use for predator detection",
+            "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC11392528/",
+            "supports": "Head orientation changes which parts of the environment fall inside an animal's visual field and blind area."
+          }
+        ]
       },
       "scene_plan": [
         {
@@ -44,7 +57,7 @@
           "start_seconds": 0,
           "end_seconds": 4,
           "purpose": "hook",
-          "narration": "A prey animal can look alert and still never see the predator coming.",
+          "narration": "A bird can scan almost everything around it and still leave one approach unseen.",
           "visual_direction": "Immediate behavior-led close-up; movement begins in frame one.",
           "preview_route": "open_source_motion",
           "final_route": "premium_video",
@@ -55,7 +68,7 @@
           "start_seconds": 4,
           "end_seconds": 11,
           "purpose": "observable_evidence",
-          "narration": "Watch the prey scan left and right while one narrow approach corridor remains uncovered.",
+          "narration": "Map the bird's measured visual field first, then show the rear sector that its eyes do not cover at that instant.",
           "visual_direction": "One continuous wildlife action with a restrained tracking move.",
           "preview_route": "open_source_motion",
           "final_route": "premium_video",
@@ -77,7 +90,7 @@
           "start_seconds": 20,
           "end_seconds": 28,
           "purpose": "clarifier",
-          "narration": "Eye placement creates broad awareness, but the remaining visual gap can become an approach lane.",
+          "narration": "Many birds trade a wide visual field for a blind area behind the head; head movements help them sample that missing space.",
           "visual_direction": "Return to real behavior; one minimal label separates evidence from myth.",
           "preview_route": "open_source_motion",
           "final_route": "deterministic_or_premium",
@@ -88,7 +101,7 @@
           "start_seconds": 28,
           "end_seconds": 35,
           "purpose": "payoff",
-          "narration": "Survival can turn on the few degrees an animal cannot monitor.",
+          "narration": "The gap creates vulnerability, but species, posture, movement, sound, and group vigilance all change the outcome.",
           "visual_direction": "Complete the action in a wider hero frame and hold the final readable pose.",
           "preview_route": "open_source_motion",
           "final_route": "premium_video",
@@ -105,14 +118,14 @@
         "primary_text": "THE GAP IT CAN'T SEE",
         "alternates": [
           "THE BLIND SPOT PREDATORS EXPLOIT",
-          "A PREY ANIMAL CAN LOOK ALERT AND STILL NEVER SEE"
+          "A BIRD CAN SCAN ALMOST EVERYTHING AROUND IT AND "
         ],
         "composition": "single animal, one impossible-looking action, clean dark negative space, no collage"
       },
       "platform_packages": [
         {
           "platform": "facebook",
-          "caption": "A prey animal can look alert and still never see the predator coming. Survival can turn on the few degrees an animal cannot monitor.",
+          "caption": "A bird can scan almost everything around it and still leave one approach unseen. The gap creates vulnerability, but species, posture, movement, sound, and group vigilance all change the outcome.",
           "title": "The blind spot predators exploit",
           "hashtags": [
             "Wildlife",
@@ -124,7 +137,7 @@
         },
         {
           "platform": "youtube_shorts",
-          "caption": "Survival can turn on the few degrees an animal cannot monitor.",
+          "caption": "The gap creates vulnerability, but species, posture, movement, sound, and group vigilance all change the outcome.",
           "title": "The blind spot predators exploit",
           "hashtags": [
             "Wildlife",
@@ -135,7 +148,7 @@
         },
         {
           "platform": "tiktok",
-          "caption": "A prey animal can look alert and still never see the predator coming. Watch the mechanism unfold.",
+          "caption": "A bird can scan almost everything around it and still leave one approach unseen. Watch the mechanism unfold.",
           "title": "The blind spot predators exploit",
           "hashtags": [
             "Wildlife",
@@ -158,7 +171,7 @@
         "visual": "pending_preview",
         "premium_spend": "blocked"
       },
-      "content_fingerprint": "2e69f19e1bb46cabcdd4ee07acd2bec0c6fb7b357d9ba1ea3a193d0bf3cc9d11"
+      "content_fingerprint": "a8869186892785c0109eb1f05195e22482edfac45ef8cca0bec82b5529b13a2e"
     },
     {
       "id": "rawr-nation-2026-08-01-02",
@@ -175,7 +188,20 @@
         "narration": "An owl does not merely fly quietly. Its wings dismantle the sound before prey can react. Compare an ordinary wing beat with the owl's feather edge as air passes across it. Explain how fringed feather edges break up airflow and reduce the sound made by a hunting owl in flight. Comb-like leading edges and soft fringes break turbulent airflow into smaller, quieter patterns. The silence is not magic; it is feather structure controlling air.",
         "payoff": "The silence is not magic; it is feather structure controlling air.",
         "word_count": 74,
-        "fact_review_required": true
+        "fact_review_required": true,
+        "fact_status": "source_ready_pending_human",
+        "sources": [
+          {
+            "title": "Sound-reducing mechanisms in the owl wing",
+            "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC5206597/",
+            "supports": "Owl wing and feather specializations reduce flight noise across several mechanisms."
+          },
+          {
+            "title": "Leading-edge serrations delay transition and reduce noise",
+            "url": "https://doi.org/10.1177/1475472X17706131",
+            "supports": "Leading-edge comb structures influence airflow and aerodynamic noise."
+          }
+        ]
       },
       "scene_plan": [
         {
@@ -314,7 +340,20 @@
         "narration": "This strike is so fast that the water delivers a second hit. Follow the club through the water before the first impact reaches the target. Visualize how a mantis shrimp strike creates a collapsing cavitation bubble and a brief flash, separate from the direct impact. The club accelerates water into a low-pressure cavitation bubble that collapses with shock, heat, and a tiny flash. The prey faces the punch\u2014and then the bubble's collapse.",
         "payoff": "The prey faces the punch\u2014and then the bubble's collapse.",
         "word_count": 72,
-        "fact_review_required": true
+        "fact_review_required": true,
+        "fact_status": "source_ready_pending_human",
+        "sources": [
+          {
+            "title": "Deadly strike mechanism of a mantis shrimp",
+            "url": "https://pubmed.ncbi.nlm.nih.gov/16169943/",
+            "supports": "The ultrafast strike produces cavitation; bubble collapse contributes a second impact and emits light."
+          },
+          {
+            "title": "Mechanics of movement: mantis shrimp",
+            "url": "https://pateklab.biology.duke.edu/research/mechanics-of-ultrafast-movement/mechanics-of-movement-mantis-shrimp/",
+            "supports": "Laboratory overview of the spring-loaded strike and cavitation mechanism."
+          }
+        ]
       },
       "scene_plan": [
         {
@@ -453,7 +492,20 @@
         "narration": "Even buried prey cannot hide its heartbeat from this shark. A hidden animal still produces tiny electrical changes with every muscle and heartbeat. Reveal how ampullae around a shark's snout detect weak electrical fields produced by nearby living animals. Gel-filled pores around the snout conduct weak electrical changes toward sensory cells. In dark or cloudy water, electricity becomes another map of life.",
         "payoff": "In dark or cloudy water, electricity becomes another map of life.",
         "word_count": 62,
-        "fact_review_required": true
+        "fact_review_required": true,
+        "fact_status": "source_ready_pending_human",
+        "sources": [
+          {
+            "title": "The electric sense of sharks and rays",
+            "url": "https://www1.pbrc.hawaii.edu/~danh/Neurodiversity/Spring%202010/Session12-ElasmobranchElectroreception%5BTim%5D/Kalmijn%201971.pdf",
+            "supports": "Elasmobranchs detect weak bioelectric fields and use electroreception while locating prey."
+          },
+          {
+            "title": "The electrosensory world of sharks",
+            "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC2211453/",
+            "supports": "Ampullary electroreceptors and their ecological role in prey detection."
+          }
+        ]
       },
       "scene_plan": [
         {
@@ -592,7 +644,20 @@
         "narration": "Corner this lizard and the defence may come from its eyes. The defence begins only after escape, camouflage, and inflation have failed. Explain the horned lizard's eye-sinus defence and why the surprising blood spray can deter particular predators. Pressure around the eye sinuses can rupture tiny vessels and direct a blood stream toward a threat. Against some predators, the surprise\u2014and the chemistry\u2014can end the attack.",
         "payoff": "Against some predators, the surprise\u2014and the chemistry\u2014can end the attack.",
         "word_count": 65,
-        "fact_review_required": true
+        "fact_review_required": true,
+        "fact_status": "source_ready_pending_human",
+        "sources": [
+          {
+            "title": "Responses of kit foxes to antipredator blood-squirting",
+            "url": "https://bioone.org/journals/ichthyology-and-herpetology/volume-2004/issue-3/CH-03-157R1/Responses-of-Kit-Foxes-Vulpes-macrotis-to-Antipredator-Blood-Squirting/10.1643/CH-03-157R1.short",
+            "supports": "Experimental evidence that horned-lizard blood-squirting can deter a canid predator."
+          },
+          {
+            "title": "Blood-squirting in horned lizards",
+            "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC8131779/",
+            "supports": "Anatomical and behavioral context for ocular-sinus blood-squirting defense."
+          }
+        ]
       },
       "scene_plan": [
         {
@@ -731,7 +796,15 @@
         "narration": "A camel's hump is not a water tank. Open the hump and the supposed water reservoir is nowhere to be found. Correct the hump myth by showing fat storage, water conservation, and the body systems that help camels endure arid conditions. It stores fat, while the rest of the body limits water loss and tolerates dehydration unusually well. The hump stores fuel; the camel's whole physiology saves water.",
         "payoff": "The hump stores fuel; the camel's whole physiology saves water.",
         "word_count": 68,
-        "fact_review_required": true
+        "fact_review_required": true,
+        "fact_status": "source_ready_pending_human",
+        "sources": [
+          {
+            "title": "What do camels store in their humps?",
+            "url": "https://www.worldwildlife.org/resources/explainers/wildlife-climate-heroes/what-do-camels-store-in-their-humps-and-other-camel-superpowers/",
+            "supports": "Camel humps store fat rather than water; multiple physiological traits conserve water."
+          }
+        ]
       },
       "scene_plan": [
         {
@@ -870,7 +943,9 @@
         "narration": "A gecko climbs glass without glue, suction, or sticky liquid. One planted toe holds while the next foot peels and resets higher on the glass. Zoom from a gecko foot to microscopic setae and explain how enormous contact area enables dry adhesion. Microscopic setae branch into vast numbers of close contacts that add weak molecular attractions together. By changing toe angle, the same powerful grip releases in an instant.",
         "payoff": "By changing toe angle, the same powerful grip releases in an instant.",
         "word_count": 69,
-        "fact_review_required": true
+        "fact_review_required": true,
+        "fact_status": "research_pending",
+        "sources": []
       },
       "scene_plan": [
         {
@@ -1009,7 +1084,9 @@
         "narration": "In darkness, this snake can detect the warm outline of prey. A warm body stands out even when visible detail disappears into darkness. Map how pit vipers combine infrared-sensitive pit organs with vision to locate warm prey in darkness. Pit membranes respond to infrared energy and the brain combines that signal with ordinary vision. The result is not a photograph, but a second channel for locating heat.",
         "payoff": "The result is not a photograph, but a second channel for locating heat.",
         "word_count": 67,
-        "fact_review_required": true
+        "fact_review_required": true,
+        "fact_status": "research_pending",
+        "sources": []
       },
       "scene_plan": [
         {
@@ -1148,7 +1225,9 @@
         "narration": "This frog can stop moving, partly freeze, and wake when winter releases it. As temperature falls, the frog becomes rigid and its heartbeat can become undetectable. Follow a wood frog through winter as ice forms outside its cells while glucose helps protect vulnerable tissues. Ice forms mainly outside cells while glucose rises through vulnerable tissues and limits damaging dehydration. Its winter survival is controlled freezing\u2014not invulnerability to ice.",
         "payoff": "Its winter survival is controlled freezing\u2014not invulnerability to ice.",
         "word_count": 68,
-        "fact_review_required": true
+        "fact_review_required": true,
+        "fact_status": "research_pending",
+        "sources": []
       },
       "scene_plan": [
         {
@@ -1287,7 +1366,9 @@
         "narration": "Zebra stripes may confuse something much smaller than a lion. Watch a fly approach normally, then lose control during the final centimetres above stripes. Test the evidence that zebra stripes disrupt the final landing approach of biting flies rather than simply hiding zebras from lions. Experiments show biting flies struggle with their final approach and landing on striped surfaces. The strongest evidence points to disrupted landings, not camouflage from big predators.",
         "payoff": "The strongest evidence points to disrupted landings, not camouflage from big predators.",
         "word_count": 71,
-        "fact_review_required": true
+        "fact_review_required": true,
+        "fact_status": "research_pending",
+        "sources": []
       },
       "scene_plan": [
         {
@@ -1426,7 +1507,9 @@
         "narration": "In a desert with almost no rain, this beetle waits for water in the air. At the right angle, droplets grow on the raised body instead of vanishing into sand. Show how a desert beetle positions its body to collect fog droplets and channel usable water toward its mouth. It raises its body into fog so droplets collect, merge, and travel down its surface toward the mouth. A change in posture turns moving mist into a drink.",
         "payoff": "A change in posture turns moving mist into a drink.",
         "word_count": 77,
-        "fact_review_required": true
+        "fact_review_required": true,
+        "fact_status": "research_pending",
+        "sources": []
       },
       "scene_plan": [
         {
@@ -1565,7 +1648,9 @@
         "narration": "A crocodile can detect a disturbance too small for us to notice. A single drop spreads across the surface before the animal turns toward its source. Explain the pressure-sensitive dome organs around crocodilian jaws that detect tiny disturbances at the water surface. Dome pressure receptors around the jaws respond when surface ripples bend the skin by tiny amounts. At the waterline, its face works like a field of motion sensors.",
         "payoff": "At the waterline, its face works like a field of motion sensors.",
         "word_count": 70,
-        "fact_review_required": true
+        "fact_review_required": true,
+        "fact_status": "research_pending",
+        "sources": []
       },
       "scene_plan": [
         {
@@ -1704,7 +1789,9 @@
         "narration": "A goat's rectangular pupil is a panoramic survival tool. Lower the goat's head and notice that the long pupil remains aligned with the horizon. Compare horizontal pupils with round and vertical pupils to show how grazing animals monitor a broad horizon. Horizontal pupils admit a broad strip of the horizon, and the eyes rotate as the head lowers to graze. The landscape stays level even while the animal's head points down.",
         "payoff": "The landscape stays level even while the animal's head points down.",
         "word_count": 71,
-        "fact_review_required": true
+        "fact_review_required": true,
+        "fact_status": "research_pending",
+        "sources": []
       },
       "scene_plan": [
         {
@@ -1843,7 +1930,9 @@
         "narration": "This fish carries living lights beneath its eyes. Two luminous patches blink beneath the eyes as the fish moves through darkness. Explore how flashlight fish use light-producing bacteria beneath their eyes and control the visible glow. Symbiotic bacteria produce the glow, while the fish can cover or rotate the light organs to control flashes. The light can help with orientation, signalling, and feeding in darkness.",
         "payoff": "The light can help with orientation, signalling, and feeding in darkness.",
         "word_count": 65,
-        "fact_review_required": true
+        "fact_review_required": true,
+        "fact_status": "research_pending",
+        "sources": []
       },
       "scene_plan": [
         {
@@ -1982,7 +2071,9 @@
         "narration": "Porcupines cannot fire their quills across a room. Create distance and no quills fly; contact the coat and the real transfer mechanism appears. Debunk the projectile-quill myth and demonstrate how loose, barbed quills transfer through direct contact. The quills detach during direct contact, and microscopic barbs can make some of them difficult to remove. The danger is real\u2014but the projectile story is a myth.",
         "payoff": "The danger is real\u2014but the projectile story is a myth.",
         "word_count": 64,
-        "fact_review_required": true
+        "fact_review_required": true,
+        "fact_status": "research_pending",
+        "sources": []
       },
       "scene_plan": [
         {
@@ -2121,7 +2212,9 @@
         "narration": "This bird appears to break a wing exactly when a predator gets close. A threat approaches the nest and the parent suddenly becomes the easiest target in view. Reconstruct a killdeer's broken-wing display that draws a threat away from a vulnerable ground nest. A killdeer moves away from its ground nest while exaggerating a vulnerable, dragging-wing display. Once the threat follows far enough, the injured bird suddenly flies normally.",
         "payoff": "Once the threat follows far enough, the injured bird suddenly flies normally.",
         "word_count": 69,
-        "fact_review_required": true
+        "fact_review_required": true,
+        "fact_status": "research_pending",
+        "sources": []
       },
       "scene_plan": [
         {
@@ -2260,7 +2353,9 @@
         "narration": "Sleeping at sea requires remembering every breath. Breathing stays tied to access to air even when the animal enters a resting state. Explain unihemispheric sleep and surface-resting strategies that let some seals balance breathing with vigilance. Some seals rest at the surface or sleep with one brain hemisphere more alert while breathing remains deliberate. Their sleep strategy changes with species, location, and danger.",
         "payoff": "Their sleep strategy changes with species, location, and danger.",
         "word_count": 63,
-        "fact_review_required": true
+        "fact_review_required": true,
+        "fact_status": "research_pending",
+        "sources": []
       },
       "scene_plan": [
         {
@@ -2399,7 +2494,9 @@
         "narration": "A cricket's ears are not on its head. Trace sound toward two small membranes just below the cricket's front-leg joints. Locate tympanal hearing organs on a cricket's forelegs and trace how vibrations reach its nervous system. Thin tympanal membranes on the forelegs vibrate with sound and transmit the pattern into sensory pathways. Its knees place hearing close to the ground\u2014and close to danger.",
         "payoff": "Its knees place hearing close to the ground\u2014and close to danger.",
         "word_count": 63,
-        "fact_review_required": true
+        "fact_review_required": true,
+        "fact_status": "research_pending",
+        "sources": []
       },
       "scene_plan": [
         {
@@ -2538,7 +2635,9 @@
         "narration": "A meal full of dangerous microbes enters this bird\u2014and most do not survive the journey. The meal may contain microbes that would be dangerous to many other animals. Follow a scavenged meal through highly acidic digestion and explain the limits of a vulture's pathogen defences. Highly acidic digestion destroys many pathogens, while immune and microbial defences add protection. Vultures are resilient, not disease-proof; the defence has limits.",
         "payoff": "Vultures are resilient, not disease-proof; the defence has limits.",
         "word_count": 67,
-        "fact_review_required": true
+        "fact_review_required": true,
+        "fact_status": "research_pending",
+        "sources": []
       },
       "scene_plan": [
         {
@@ -2677,7 +2776,9 @@
         "narration": "This spider walks like an ant because being mistaken can keep it alive. Count the legs, then watch the front pair rise and move like ant antennae. Show how ant-mimicking spiders copy body shape and movement to avoid predators or approach prey. Body shape, raised front legs, stop-start movement, and association with ants strengthen the disguise. For some species, the mimicry also helps them approach prey.",
         "payoff": "For some species, the mimicry also helps them approach prey.",
         "word_count": 66,
-        "fact_review_required": true
+        "fact_review_required": true,
+        "fact_status": "research_pending",
+        "sources": []
       },
       "scene_plan": [
         {
@@ -2816,7 +2917,9 @@
         "narration": "A toothed whale receives much of its underwater sound through the lower jaw. Sound reaches the head from water without relying on an external ear flap. Trace underwater sound through specialized tissues in a toothed whale's lower jaw toward the middle and inner ear. Specialized fatty tissues guide vibration toward the middle and inner ear complexes. Underwater hearing reshapes the pathway, not the need for an ear.",
         "payoff": "Underwater hearing reshapes the pathway, not the need for an ear.",
         "word_count": 67,
-        "fact_review_required": true
+        "fact_review_required": true,
+        "fact_status": "research_pending",
+        "sources": []
       },
       "scene_plan": [
         {
@@ -2955,7 +3058,9 @@
         "narration": "An octopus does not change only its colour\u2014it rebuilds the visible surface of its body. Hold the background constant while the animal changes colour, texture, outline, and posture. Break down how chromatophores, reflective cells, papillae, and posture combine to change an octopus's appearance. Chromatophores, reflective cells, skin papillae, and posture combine in a coordinated display. The disguise works because colour, texture, shape, and movement change together.",
         "payoff": "The disguise works because colour, texture, shape, and movement change together.",
         "word_count": 66,
-        "fact_review_required": true
+        "fact_review_required": true,
+        "fact_status": "research_pending",
+        "sources": []
       },
       "scene_plan": [
         {
@@ -3094,7 +3199,9 @@
         "narration": "Bats are not blind. A bat can use visible landmarks before echolocation resolves a nearby obstacle or insect. Replace the blind-bat myth with a comparison of bat vision and echolocation across different species and tasks. Many species use useful vision alongside echolocation, shifting between channels as light, distance, and task change. Echolocation is an extra sense\u2014not proof that the eyes do not work.",
         "payoff": "Echolocation is an extra sense\u2014not proof that the eyes do not work.",
         "word_count": 63,
-        "fact_review_required": true
+        "fact_review_required": true,
+        "fact_status": "research_pending",
+        "sources": []
       },
       "scene_plan": [
         {
@@ -3233,7 +3340,9 @@
         "narration": "A fox can locate prey it cannot see beneath deep snow. Before the leap, the fox freezes and triangulates a sound moving beneath the surface. Examine how a red fox listens for hidden prey and commits to a steep pounce through deep snow. It pauses, rotates its ears toward faint movement, estimates position, and commits to a steep head-first pounce. The spectacular dive begins with patient listening.",
         "payoff": "The spectacular dive begins with patient listening.",
         "word_count": 67,
-        "fact_review_required": true
+        "fact_review_required": true,
+        "fact_status": "research_pending",
+        "sources": []
       },
       "scene_plan": [
         {
