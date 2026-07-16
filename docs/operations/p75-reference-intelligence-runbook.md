@@ -55,6 +55,21 @@ refintel run-reference /absolute/path/authorized-video.mp4 \
   --topic "A separately researched original topic"
 ```
 
+For a Facebook page, one command performs discovery, verified acquisition, and analysis:
+
+```bash
+refintel facebook-page https://www.facebook.com/RawrNationTV \
+  --brand rawr-nation \
+  --rights public-internal-research \
+  --limit 3 \
+  --no-local-vision
+```
+
+Items are processed sequentially so one failure is isolated. A cached acquisition is reused only
+when its successful manifest, primary file, size, and SHA-256 all verify. Failed or incomplete
+cached acquisitions are retried automatically. The final summary reports `verified_media`
+separately from `analyzed`; analysis cannot succeed without non-empty video evidence artifacts.
+
 For a public direct-media URL, replace the file path with the URL. Profile/page inputs require
 discovery first. Facebook share links require local resolution. If acquisition fails, obtain an
 authorized local export and use the file command.
