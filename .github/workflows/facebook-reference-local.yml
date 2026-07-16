@@ -22,7 +22,7 @@ on:
       - .github/workflows/facebook-reference-local.yml
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: facebook-reference-local
@@ -37,7 +37,7 @@ jobs:
       run:
         shell: powershell
     env:
-      ENGINE_RECOVERY_REVISION: "3"
+      ENGINE_RECOVERY_REVISION: "4"
       PYTHONUNBUFFERED: "1"
     steps:
       - name: Check out verified development code
@@ -110,3 +110,51 @@ jobs:
           }
 
           Write-Host "VERIFIED: $expected downloaded videos contain complete analysis evidence."
+
+      - name: Sync sanitized evidence to the private review branch
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          $latest = Get-ChildItem "$env:REFINTEL_WORKSPACE\page-runs" -Directory |
+            Sort-Object LastWriteTime -Descending |
+            Select-Object -First 1
+          $result = Get-Content (Join-Path $latest.FullName "batch-result.json") -Raw | ConvertFrom-Json
+          $references = @()
+          foreach ($item in $result.results) {
+            $artifactDir = Join-Path (Join-Path $latest.FullName "analysis") $item.reference_id
+            $analysisPath = Join-Path $artifactDir "reference_analysis.json"
+            $fingerprintPath = Join-Path $artifactDir "reference_fingerprint.json"
+            $transcriptPath = Join-Path $artifactDir "transcript.txt"
+            $references += @{
+              id = $item.reference_id
+              index = $item.index
+              source_url = $item.url
+              status = $item.status
+              duration_seconds = $item.duration_seconds
+              decoded_frame_count = $item.decoded_frame_count
+              scene_count = $item.scene_count
+              transcript_segment_count = $item.transcript_segment_count
+              analysis = if (Test-Path $analysisPath) { Get-Content $analysisPath -Raw | ConvertFrom-Json } else { $null }
+              creative_fingerprint = if (Test-Path $fingerprintPath) { Get-Content $fingerprintPath -Raw | ConvertFrom-Json } else { $null }
+              transcript = if (Test-Path $transcriptPath) { Get-Content $transcriptPath -Raw } else { "" }
+            }
+          }
+          $payload = @{
+            schema_version = "p80.static_reference_evidence.v1"
+            brand = "rawr-nation"
+            generated_at = (Get-Date).ToUniversalTime().ToString("o")
+            run_id = $result.run_id
+            summary = $result.summary
+            references = $references
+            security = @{ source_media_included = $false; cookies_included = $false; browser_profile_included = $false }
+          } | ConvertTo-Json -Depth 30
+          $target = "web/static-creator-ui/data/rawr-nation-reference-evidence.json"
+          $api = "https://api.github.com/repos/$env:GITHUB_REPOSITORY/contents/$target"
+          $headers = @{ Authorization = "Bearer $env:GITHUB_TOKEN"; Accept = "application/vnd.github+json"; "X-GitHub-Api-Version" = "2022-11-28" }
+          $existingSha = $null
+          try { $existingSha = (Invoke-RestMethod -Headers $headers -Uri "$api?ref=local-next-720").sha } catch { if ($_.Exception.Response.StatusCode.value__ -ne 404) { throw } }
+          $body = @{ message = "Sync sanitized Rawr Nation reference evidence"; content = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($payload)); branch = "local-next-720" }
+          if ($existingSha) { $body.sha = $existingSha }
+          Invoke-RestMethod -Method Put -Headers $headers -Uri $api -Body ($body | ConvertTo-Json) -ContentType "application/json" | Out-Null
+          Write-Host "Sanitized reference evidence synced without source media, cookies, or browser data."
+
