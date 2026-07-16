@@ -8,12 +8,16 @@ from typing import Any
 import pytest
 
 from refintel.acquisition import (
+    AcquiredAsset,
+    AcquisitionManifest,
     AcquisitionService,
     AcquisitionStatus,
     AssetRole,
     safe_source_url,
     sanitize_diagnostic,
+    sha256_path,
 )
+from refintel.adapters import AcquisitionRoute, normalize_reference
 from refintel.ingest import IngestionService
 from refintel.models import Platform, ProjectStatus, RightsDeclaration
 from refintel.storage import WorkspaceStore
@@ -285,3 +289,58 @@ def test_ingestion_service_persists_safe_provenance_and_acquisition_event(
             (project.reference_id,),
         ).fetchone()["details_json"]
     assert json.loads(details)["manifest"] == "source/acquisition-manifest.json"
+
+
+def test_ingestion_retries_failed_cached_url_instead_of_claiming_reuse(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls = 0
+
+    class RecoveringAcquisitionService:
+        def acquire(self, _url: str, workspace: Path, **_kwargs: object) -> SimpleNamespace:
+            nonlocal calls
+            calls += 1
+            if calls == 1:
+                raise RuntimeError("simulated missing ffmpeg")
+            primary = workspace / "source" / "original.mp4"
+            primary.write_bytes(b"verified-video")
+            asset = SimpleNamespace(
+                relative_path="source/original.mp4", sha256=sha256_path(primary)
+            )
+            manifest = AcquisitionManifest(
+                acquisition_id="acq-recovery",
+                reference=normalize_reference("https://youtube.com/watch?v=recovery"),
+                rights_declaration=RightsDeclaration.PUBLIC_INTERNAL_RESEARCH,
+                status=AcquisitionStatus.SUCCEEDED,
+                route=AcquisitionRoute.EXTRACTOR,
+                primary_asset="source/original.mp4",
+                assets=[
+                    AcquiredAsset(
+                        relative_path=asset.relative_path,
+                        role=AssetRole.PRIMARY_VIDEO,
+                        media_type="video/mp4",
+                        size_bytes=primary.stat().st_size,
+                        sha256=asset.sha256,
+                    )
+                ],
+            )
+            (workspace / "source" / "acquisition-manifest.json").write_text(
+                manifest.model_dump_json(), encoding="utf-8"
+            )
+            return SimpleNamespace(primary_path=primary, manifest=manifest)
+
+    monkeypatch.setattr(
+        "refintel.ingest.AcquisitionService", RecoveringAcquisitionService
+    )
+    service = IngestionService(WorkspaceStore(tmp_path / "library"))
+    url = "https://youtube.com/watch?v=recovery"
+    with pytest.raises(RuntimeError, match="missing ffmpeg"):
+        service.ingest_url(url, rights=RightsDeclaration.PUBLIC_INTERNAL_RESEARCH)
+
+    recovered = service.ingest_url(
+        url, rights=RightsDeclaration.PUBLIC_INTERNAL_RESEARCH
+    )
+
+    assert calls == 2
+    assert recovered.status == ProjectStatus.INGESTED
