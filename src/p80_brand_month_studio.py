@@ -8,7 +8,7 @@ from typing import Any
 
 
 EDITORIAL: dict[str, tuple[str, str, str, str]] = {
-    "The blind spot predators exploit": ("A prey animal can look alert and still never see the predator coming.", "Eye placement creates broad awareness, but the remaining visual gap can become an approach lane.", "Survival can turn on the few degrees an animal cannot monitor.", "THE GAP IT CAN'T SEE"),
+    "The blind spot predators exploit": ("A bird can scan almost everything around it and still leave one approach unseen.", "Many birds trade a wide visual field for a blind area behind the head; head movements help them sample that missing space.", "The gap creates vulnerability, but species, posture, movement, sound, and group vigilance all change the outcome.", "THE GAP IT CAN'T SEE"),
     "Why owl flight sounds like nothing": ("An owl does not merely fly quietly. Its wings dismantle the sound before prey can react.", "Comb-like leading edges and soft fringes break turbulent airflow into smaller, quieter patterns.", "The silence is not magic; it is feather structure controlling air.", "WHY OWLS FLY SILENT"),
     "The shrimp punch that flashes": ("This strike is so fast that the water delivers a second hit.", "The club accelerates water into a low-pressure cavitation bubble that collapses with shock, heat, and a tiny flash.", "The prey faces the punch—and then the bubble's collapse.", "A PUNCH THAT FLASHES"),
     "A shark's hidden electric map": ("Even buried prey cannot hide its heartbeat from this shark.", "Gel-filled pores around the snout conduct weak electrical changes toward sensory cells.", "In dark or cloudy water, electricity becomes another map of life.", "SHARKS SENSE ELECTRICITY"),
@@ -35,7 +35,7 @@ EDITORIAL: dict[str, tuple[str, str, str, str]] = {
 }
 
 SETUPS = {
-    "The blind spot predators exploit": "Watch the prey scan left and right while one narrow approach corridor remains uncovered.",
+    "The blind spot predators exploit": "Map the bird's measured visual field first, then show the rear sector that its eyes do not cover at that instant.",
     "Why owl flight sounds like nothing": "Compare an ordinary wing beat with the owl's feather edge as air passes across it.",
     "The shrimp punch that flashes": "Follow the club through the water before the first impact reaches the target.",
     "A shark's hidden electric map": "A hidden animal still produces tiny electrical changes with every muscle and heartbeat.",
@@ -59,6 +59,32 @@ SETUPS = {
     "The octopus disappearing act": "Hold the background constant while the animal changes colour, texture, outline, and posture.",
     "Do bats really have bad eyesight?": "A bat can use visible landmarks before echolocation resolves a nearby obstacle or insect.",
     "The fox that dives into snow": "Before the leap, the fox freezes and triangulates a sound moving beneath the surface.",
+}
+
+FACT_SOURCES: dict[str, list[dict[str, str]]] = {
+    "The blind spot predators exploit": [
+        {"title": "What Drives Bird Vision? Bill Control and Predator Detection Overshadow Flight", "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC5682009/", "supports": "Many birds have extensive visual fields but retain a blind area behind the head that can increase vulnerability."},
+        {"title": "Fine-scale tracking reveals visual field use for predator detection", "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC11392528/", "supports": "Head orientation changes which parts of the environment fall inside an animal's visual field and blind area."},
+    ],
+    "Why owl flight sounds like nothing": [
+        {"title": "Sound-reducing mechanisms in the owl wing", "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC5206597/", "supports": "Owl wing and feather specializations reduce flight noise across several mechanisms."},
+        {"title": "Leading-edge serrations delay transition and reduce noise", "url": "https://doi.org/10.1177/1475472X17706131", "supports": "Leading-edge comb structures influence airflow and aerodynamic noise."},
+    ],
+    "The shrimp punch that flashes": [
+        {"title": "Deadly strike mechanism of a mantis shrimp", "url": "https://pubmed.ncbi.nlm.nih.gov/16169943/", "supports": "The ultrafast strike produces cavitation; bubble collapse contributes a second impact and emits light."},
+        {"title": "Mechanics of movement: mantis shrimp", "url": "https://pateklab.biology.duke.edu/research/mechanics-of-ultrafast-movement/mechanics-of-movement-mantis-shrimp/", "supports": "Laboratory overview of the spring-loaded strike and cavitation mechanism."},
+    ],
+    "A shark's hidden electric map": [
+        {"title": "The electric sense of sharks and rays", "url": "https://www1.pbrc.hawaii.edu/~danh/Neurodiversity/Spring%202010/Session12-ElasmobranchElectroreception%5BTim%5D/Kalmijn%201971.pdf", "supports": "Elasmobranchs detect weak bioelectric fields and use electroreception while locating prey."},
+        {"title": "The electrosensory world of sharks", "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC2211453/", "supports": "Ampullary electroreceptors and their ecological role in prey detection."},
+    ],
+    "The lizard that shoots blood": [
+        {"title": "Responses of kit foxes to antipredator blood-squirting", "url": "https://bioone.org/journals/ichthyology-and-herpetology/volume-2004/issue-3/CH-03-157R1/Responses-of-Kit-Foxes-Vulpes-macrotis-to-Antipredator-Blood-Squirting/10.1643/CH-03-157R1.short", "supports": "Experimental evidence that horned-lizard blood-squirting can deter a canid predator."},
+        {"title": "Blood-squirting in horned lizards", "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC8131779/", "supports": "Anatomical and behavioral context for ocular-sinus blood-squirting defense."},
+    ],
+    "Do camels really store water?": [
+        {"title": "What do camels store in their humps?", "url": "https://www.worldwildlife.org/resources/explainers/wildlife-climate-heroes/what-do-camels-store-in-their-humps-and-other-camel-superpowers/", "supports": "Camel humps store fat rather than water; multiple physiological traits conserve water."},
+    ],
 }
 
 
@@ -117,7 +143,7 @@ def build_brand_month_studio(config: dict[str, Any], *, brand_slug: str) -> dict
             "concept": idea["concept"], "pillar": idea["pillar"], "format": idea["format_name"],
             "batch": ((index - 1) // 6) + 1, "duration_seconds": scenes[-1]["end_seconds"],
             "workflow_stage": "preview_queue" if index <= 6 else "script_review",
-            "script": {"hook": hook, "narration": narration, "payoff": payoff, "word_count": len(narration.split()), "fact_review_required": True},
+            "script": {"hook": hook, "narration": narration, "payoff": payoff, "word_count": len(narration.split()), "fact_review_required": True, "fact_status": "source_ready_pending_human" if idea["title"] in FACT_SOURCES else "research_pending", "sources": FACT_SOURCES.get(idea["title"], [])},
             "scene_plan": scenes,
             "voice": {"development_provider": "kokoro_local", "style": "energetic, credible wildlife explainer", "pace": "fast but intelligible", "production_provider": "human-approved premium or retained local voice"},
             "thumbnail": {"primary_text": thumbnail, "alternates": [idea["title"].upper(), hook.upper()[:48]], "composition": "single animal, one impossible-looking action, clean dark negative space, no collage"},
