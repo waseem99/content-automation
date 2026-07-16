@@ -47,8 +47,11 @@ services:
       OPERATOR_RUNTIME_AUTO_CONNECT_DATABASE: "true"
       OPERATOR_API_KEYS_JSON: '{"${OPERATOR_KEY}":"${OPERATOR_ID}"}'
       OPERATOR_CORS_ORIGINS: ${OPERATOR_CORS_ORIGINS:?set OPERATOR_CORS_ORIGINS}
+      PORTFOLIO_MEDIA_ROOT: /workspace/portfolio-media
     ports:
       - "127.0.0.1:${OPERATOR_API_PORT:-8000}:8000"
+    volumes:
+      - ${PORTFOLIO_MEDIA_DIR:-../../var/portfolio-media}:/workspace/portfolio-media:ro
 
 volumes:
   portfolio-postgres:

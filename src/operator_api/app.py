@@ -2,11 +2,13 @@ from __future__ import annotations
 
 from datetime import date, datetime
 import os
+from pathlib import Path
 from typing import Any, Literal
 from uuid import UUID
 
-from fastapi import Depends, FastAPI
+from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 
 from src.application.p4_audit import P4AuditReportService
@@ -59,6 +61,25 @@ class PortfolioApprovalRequest(BaseModel):
     gate: str
     decision: str
     rationale: str
+
+
+class PortfolioWorkspaceRequest(BaseModel):
+    script: dict[str, Any] | None = None
+    scene_plan: dict[str, Any] | None = None
+    voiceover: dict[str, Any] | None = None
+    premium_budget_usd: float | None = Field(default=None, ge=0)
+    metadata: dict[str, Any] | None = None
+
+
+class PortfolioArtifactRequest(BaseModel):
+    kind: Literal["voiceover", "keyframe", "preview", "premium_clip", "thumbnail", "final_video", "package"]
+    label: str = Field(min_length=1, max_length=200)
+    version: int | None = Field(default=None, ge=1)
+    local_locator: str = Field(pattern=r"^content://[A-Za-z0-9._/-]+$", max_length=500)
+    mime_type: str = Field(min_length=3, max_length=120)
+    sha256: str = Field(pattern=r"^[a-f0-9]{64}$")
+    size_bytes: int | None = Field(default=None, ge=0)
+    metadata: dict[str, Any] = Field(default_factory=dict)
 
 
 class MonthPlanRequest(BaseModel):
@@ -309,6 +330,49 @@ def create_app(database: Database | None = None, auth_settings: OperatorAuthSett
     ) -> dict[str, Any]:
         result = PortfolioService(_database(app)).add_content(**request.model_dump())
         return {"operator": operator.operator_id, **result}
+
+    @app.get("/portfolio/content/{content_id}")
+    def portfolio_content_detail(
+        content_id: UUID,
+        operator=Depends(require_operator),
+    ) -> dict[str, Any]:
+        return {"operator": operator.operator_id, **PortfolioService(_database(app)).detail(content_id)}
+
+    @app.post("/portfolio/content/{content_id}/workspace")
+    def update_portfolio_workspace(
+        content_id: UUID,
+        request: PortfolioWorkspaceRequest,
+        operator=Depends(require_operator),
+    ) -> dict[str, Any]:
+        result = PortfolioService(_database(app)).update_workspace(content_id=content_id, **request.model_dump())
+        return {"operator": operator.operator_id, **result}
+
+    @app.post("/portfolio/content/{content_id}/artifacts")
+    def register_portfolio_artifact(
+        content_id: UUID,
+        request: PortfolioArtifactRequest,
+        operator=Depends(require_operator),
+    ) -> dict[str, Any]:
+        result = PortfolioService(_database(app)).register_artifact(
+            content_id=content_id, payload=request.model_dump(), created_by=operator.operator_id
+        )
+        return {"operator": operator.operator_id, **result}
+
+    @app.get("/portfolio/content/{content_id}/artifacts/{artifact_id}/media")
+    def portfolio_artifact_media(
+        content_id: UUID,
+        artifact_id: UUID,
+        operator=Depends(require_operator),
+    ) -> FileResponse:
+        artifact = PortfolioService(_database(app)).artifact(content_id=content_id, artifact_id=artifact_id)
+        if not artifact:
+            raise HTTPException(status_code=404, detail="artifact_not_found")
+        root = Path(os.getenv("PORTFOLIO_MEDIA_ROOT", "var/portfolio-media")).resolve()
+        relative = str(artifact["local_locator"]).removeprefix("content://")
+        media_path = (root / relative).resolve()
+        if root not in media_path.parents or not media_path.is_file():
+            raise HTTPException(status_code=404, detail="local_media_not_available")
+        return FileResponse(media_path, media_type=str(artifact["mime_type"]), filename=media_path.name)
 
     @app.post("/portfolio/content/{content_id}/approvals")
     def approve_portfolio_gate(

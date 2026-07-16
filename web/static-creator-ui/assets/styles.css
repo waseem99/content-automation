@@ -498,6 +498,46 @@ footer {
 .reference-detail dl div { margin: 10px 0; }
 .reference-detail dt { color: var(--muted); font-size: 12px; font-weight: 800; text-transform: uppercase; }
 .reference-detail dd { margin: 3px 0 0; }
+.content-review {
+  width: min(1180px, calc(100vw - 32px));
+  max-height: calc(100vh - 32px);
+  padding: 0;
+  border: 0;
+  border-radius: 24px;
+  color: var(--ink);
+  background: #fff;
+  box-shadow: var(--shadow-strong);
+}
+.content-review::backdrop { background: rgba(15, 23, 42, .72); backdrop-filter: blur(4px); }
+.review-close-row { position: sticky; top: 0; z-index: 3; display: flex; justify-content: flex-end; padding: 12px 16px 0; background: #fff; }
+.review-close-row button { padding: 8px 12px; border: 1px solid var(--line); border-radius: 10px; background: #fff; cursor: pointer; }
+#content-review-body { padding: 4px 28px 28px; }
+.review-header { display: flex; justify-content: space-between; gap: 20px; align-items: flex-start; padding-bottom: 20px; border-bottom: 1px solid var(--line); }
+.review-header h2 { margin: 4px 0 8px; font-size: clamp(26px, 3vw, 40px); letter-spacing: -.035em; }
+.review-header p { max-width: 800px; margin: 0; color: #475569; line-height: 1.55; }
+.review-grid { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(320px, .95fr); gap: 24px; padding: 24px 0; }
+.review-grid h3, .review-decision h3 { margin: 0 0 14px; }
+.review-editor label, .review-decision label { display: grid; gap: 6px; margin-bottom: 14px; color: #334155; font-size: 13px; font-weight: 800; }
+.review-editor textarea, .review-editor input, .review-decision textarea { width: 100%; padding: 11px; border: 1px solid #cbd5e1; border-radius: 12px; color: var(--ink); background: #fff; font-family: inherit; }
+.review-editor textarea { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; line-height: 1.5; }
+.review-editor button, .decision-actions button { padding: 10px 14px; border: 0; border-radius: 11px; color: #fff; background: var(--brand); font-weight: 850; cursor: pointer; }
+.decision-actions button.secondary { color: #334155; background: #e2e8f0; }
+.decision-actions button.danger { background: #b91c1c; }
+.decision-actions button:disabled { opacity: .45; cursor: not-allowed; }
+.review-artifact { display: grid; gap: 10px; margin-bottom: 12px; padding: 14px; border: 1px solid var(--line); border-radius: 16px; background: #f8fafc; }
+.review-artifact strong, .review-artifact span { display: block; }
+.review-artifact span, .review-artifact small { margin-top: 3px; color: var(--muted); font-size: 12px; }
+.review-artifact video, .review-artifact audio { display: block; width: 100%; max-height: 440px; border-radius: 12px; background: #0f172a; }
+.review-history { display: grid; gap: 10px; padding-left: 20px; }
+.review-history li { color: #334155; line-height: 1.45; }
+.review-history span { display: block; color: var(--muted); font-size: 12px; }
+.review-decision { padding: 20px; border: 1px solid #bfdbfe; border-radius: 18px; background: #eff6ff; }
+.review-decision > div:first-child { display: flex; justify-content: space-between; gap: 18px; }
+.review-decision p { margin: 0 0 14px; color: #475569; }
+.decision-actions { display: flex; flex-wrap: wrap; gap: 9px; }
+.review-status { display: block; margin-top: 8px; color: #b91c1c; font-size: 13px; font-weight: 750; }
+.empty-review, .review-loading, .review-error { padding: 20px; border-radius: 14px; color: var(--muted); background: #f8fafc; }
+.review-error { color: #991b1b; background: #fef2f2; }
 .reference-gates { display: grid; gap: 8px; margin: 16px 0; }
 
 @media (max-width: 1180px) {
@@ -511,6 +551,7 @@ footer {
   .hero, .two-col, .engine-heading-row, .portfolio-head, .portfolio-layout, .workflow-policy, .reference-heading-row, .reference-layout { grid-template-columns: 1fr; }
   main, .hero { padding-left: 20px; padding-right: 20px; }
   .portfolio-section { padding-left: 20px; padding-right: 20px; }
+  .review-grid { grid-template-columns: 1fr; }
   .portfolio-metrics, .reference-metrics { grid-template-columns: repeat(2, 1fr); }
   .workflow-policy ol { grid-template-columns: repeat(2, 1fr); }
   .objective-grid { grid-template-columns: 1fr; }

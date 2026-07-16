@@ -56,6 +56,17 @@
       if (filters.stage) query.set("stage", filters.stage);
       return request(`/portfolio/queue${query.size ? `?${query}` : ""}`);
     },
+    content: (contentId) => request(`/portfolio/content/${contentId}`),
+    updateWorkspace: (contentId, payload) => request(`/portfolio/content/${contentId}/workspace`, {
+      method: "POST",
+      body: JSON.stringify(payload)
+    }),
+    registerArtifact: (contentId, payload) => request(`/portfolio/content/${contentId}/artifacts`, {
+      method: "POST",
+      body: JSON.stringify(payload)
+    }),
+    mediaUrl: (contentId, artifactId) => `${base}/portfolio/content/${contentId}/artifacts/${artifactId}/media`,
+    mediaHeaders: () => ({ "X-Operator-Key": operatorKey }),
     references: (filters = {}) => {
       const query = new URLSearchParams();
       if (filters.brandId) query.set("brand_id", filters.brandId);

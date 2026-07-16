@@ -35,6 +35,8 @@
   let portfolioItems = demoPortfolioItems.slice();
   let portfolioReadiness = null;
   let portfolioReferences = [];
+  let activeContentReview = null;
+  let reviewMediaUrls = [];
 
   const stageLabels = { idea: "Idea review", script: "Script review", preview: "Preview review", premium: "Premium render", package: "Package review", ready: "Ready", published: "Published record", blocked: "Blocked", archived: "Archived" };
 
@@ -60,8 +62,8 @@
 
     $("content-queue").innerHTML = items.length ? items.map((item) => {
       const brand = portfolioBrands.find((candidate) => candidate.id === item.brand);
-      const next = { idea: "Review idea", script: "Review script", preview: "Watch preview", premium: "Inspect render", ready: "Open package" }[item.stage];
-      return `<tr><td>${item.date}</td><td><strong>${escapeHtml(brand.name)}</strong><span>${escapeHtml(item.title)}</span></td><td>${escapeHtml(item.format)}</td><td><span class="stage-pill ${item.stage}">${stageLabels[item.stage]}</span></td><td>${item.assets.map((asset) => `<span class="asset-chip">${escapeHtml(asset)}</span>`).join("")}</td><td><button class="table-action" type="button" data-item="${escapeHtml(item.title)}">${next}</button></td></tr>`;
+      const next = { idea: "Review idea", script: "Review script", preview: "Watch preview", premium: "Inspect render", package: "Review package", ready: "Open package" }[item.stage];
+      return `<tr><td>${item.date}</td><td><strong>${escapeHtml(brand.name)}</strong><span>${escapeHtml(item.title)}</span></td><td>${escapeHtml(item.format)}</td><td><span class="stage-pill ${item.stage}">${stageLabels[item.stage]}</span></td><td>${item.assets.map((asset) => `<span class="asset-chip">${escapeHtml(asset)}</span>`).join("")}</td><td><button class="table-action" type="button" data-item-id="${escapeHtml(item.id || "")}" data-item-title="${escapeHtml(item.title)}">${next || "Review"}</button></td></tr>`;
     }).join("") : '<tr><td colspan="6" class="empty-row">No content matches these filters.</td></tr>';
   }
 
@@ -111,10 +113,69 @@
       brand: item.brand_id || portfolioBrands.find((brand) => brand.name === item.brand_name)?.id,
       title: item.title,
       format: item.format,
-      stage: item.stage === "package" ? "premium" : item.stage,
+      stage: item.stage,
       sourceStage: item.stage,
-      assets: [item.script ? "script" : "concept", item.voiceover ? "VO" : "VO pending", item.preview_asset_id ? "preview" : "preview pending"]
+      assets: [item.script ? "script" : "concept", item.has_voiceover_artifact ? "VO" : item.voiceover ? "VO metadata" : "VO pending", item.has_preview_artifact ? "preview" : "preview pending"]
     };
+  }
+
+  function prettyJson(value) {
+    return value ? JSON.stringify(value, null, 2) : "";
+  }
+
+  function reviewGate(stage) {
+    return { idea: "idea", script: "script", preview: "preview", premium: "premium_spend", package: "package", ready: "publish" }[stage];
+  }
+
+  async function hydrateReviewMedia(payload) {
+    reviewMediaUrls.forEach((url) => URL.revokeObjectURL(url));
+    reviewMediaUrls = [];
+    for (const artifact of payload.artifacts || []) {
+      if (!String(artifact.mime_type).startsWith("audio/") && !String(artifact.mime_type).startsWith("video/")) continue;
+      const mount = document.querySelector(`[data-media-artifact="${artifact.id}"]`);
+      if (!mount) continue;
+      try {
+        const response = await fetch(window.PortfolioApi.mediaUrl(payload.item.id, artifact.id), { headers: window.PortfolioApi.mediaHeaders() });
+        if (!response.ok) throw new Error("Media is not mounted in the local API runtime.");
+        const url = URL.createObjectURL(await response.blob());
+        reviewMediaUrls.push(url);
+        const tag = String(artifact.mime_type).startsWith("video/") ? "video" : "audio";
+        mount.innerHTML = `<${tag} controls preload="metadata" src="${url}"></${tag}>`;
+      } catch (error) {
+        mount.innerHTML = `<small>${escapeHtml(error.message)}</small>`;
+      }
+    }
+  }
+
+  function renderContentReview(payload) {
+    activeContentReview = payload;
+    const item = payload.item;
+    const gate = reviewGate(item.stage);
+    const missing = item.missing_for_approval || [];
+    const artifacts = payload.artifacts || [];
+    const artifactCards = artifacts.length ? artifacts.map((artifact) => `<article class="review-artifact"><div><strong>${escapeHtml(artifact.label)}</strong><span>${escapeHtml(artifact.kind)} · v${artifact.version} · ${escapeHtml(artifact.review_status)}</span></div><div data-media-artifact="${artifact.id}"><small>${escapeHtml(artifact.mime_type)} · local review media</small></div></article>`).join("") : '<p class="empty-review">No review media has been registered yet. Local generation workers can attach narration, keyframes, and preview files through the artifact API.</p>';
+    const history = (payload.approvals || []).length ? payload.approvals.map((approval) => `<li><strong>${escapeHtml(approval.decision.replaceAll("_", " "))}</strong> ${escapeHtml(approval.gate)} v${approval.content_version}<span>${escapeHtml(approval.rationale)} · ${escapeHtml(approval.reviewer)}</span></li>`).join("") : "<li>No review decisions yet.</li>";
+    $("content-review-body").innerHTML = `
+      <header class="review-header"><div><p class="eyebrow dark-eyebrow">${escapeHtml(item.brand_name)} · ${escapeHtml(item.scheduled_for)}</p><h2>${escapeHtml(item.title)}</h2><p>${escapeHtml(item.concept)}</p></div><span class="stage-pill ${escapeHtml(item.stage)}">${escapeHtml(stageLabels[item.stage] || item.stage)}</span></header>
+      <div class="review-grid">
+        <section class="review-editor"><h3>Script workspace</h3><label>Script JSON<textarea id="review-script" rows="12" placeholder='{"hook":"...","narration":["..."]}'>${escapeHtml(prettyJson(item.script))}</textarea></label><label>Scene plan JSON<textarea id="review-scenes" rows="12" placeholder='{"scenes":[{"id":"s1","visual":"..."}]}'>${escapeHtml(prettyJson(item.scene_plan))}</textarea></label><label>Voice metadata JSON<textarea id="review-voice" rows="6" placeholder='{"provider":"kokoro","voice":"..."}'>${escapeHtml(prettyJson(item.voiceover))}</textarea></label><label>Premium budget (USD)<input id="review-budget" type="number" min="0" step="0.01" value="${item.premium_budget_usd ?? ""}"></label><button id="save-workspace" type="button">Save new version</button><span id="review-save-status" class="review-status"></span></section>
+        <section class="review-media"><h3>Narration & video</h3>${artifactCards}<h3>Review history</h3><ol class="review-history">${history}</ol></section>
+      </div>
+      <section class="review-decision"><div><h3>Human decision</h3><p>${missing.length ? `Approval blocked until: <strong>${missing.map(escapeHtml).join(", ")}</strong>` : "Required review evidence is present."}</p></div><label>Rationale<textarea id="review-rationale" rows="3" placeholder="What was reviewed, and why is this decision appropriate?"></textarea></label><div class="decision-actions"><button type="button" data-review-decision="approved" ${!gate || missing.length ? "disabled" : ""}>Approve next stage</button><button type="button" class="secondary" data-review-decision="changes_requested" ${!gate ? "disabled" : ""}>Request changes</button><button type="button" class="danger" data-review-decision="rejected" ${!gate ? "disabled" : ""}>Reject</button></div><span id="review-decision-status" class="review-status"></span></section>`;
+    hydrateReviewMedia(payload);
+  }
+
+  function parseReviewJson(id) {
+    const value = $(id).value.trim();
+    return value ? JSON.parse(value) : null;
+  }
+
+  async function openContentReview(contentId) {
+    const dialog = $("content-review");
+    $("content-review-body").innerHTML = '<p class="review-loading">Loading content workspace…</p>';
+    dialog.showModal();
+    try { renderContentReview(await window.PortfolioApi.content(contentId)); }
+    catch (error) { $("content-review-body").innerHTML = `<p class="review-error">${escapeHtml(error.message)}</p>`; }
   }
 
   function updateDataMode(message, connected) {
@@ -186,21 +247,33 @@
     });
     $("content-queue").addEventListener("click", async (event) => {
       if (!event.target.matches(".table-action")) return;
-      const item = portfolioItems.find((candidate) => candidate.title === event.target.dataset.item);
+      const item = portfolioItems.find((candidate) => candidate.id === event.target.dataset.itemId);
       if (!item?.id || !window.PortfolioApi?.configured()) {
-        alert(`${event.target.dataset.item}\n\nConnect the operator API to perform database-backed review actions.`);
+        alert(`${event.target.dataset.itemTitle}\n\nConnect the operator API to open the database-backed review workspace.`);
         return;
       }
-      const gateByStage = { idea: "idea", script: "script", preview: "preview", premium: "premium_spend", package: "package", ready: "publish" };
-      const gate = gateByStage[item.sourceStage || item.stage];
-      if (!gate || !confirm(`Approve the ${gate} gate for “${item.title}”?`)) return;
-      const rationale = prompt("Approval rationale:", "Reviewed and approved for the next controlled stage.");
-      if (!rationale) return;
-      try {
-        await window.PortfolioApi.approve(item.id, gate, "approved", rationale);
-        await refreshPortfolioFromApi();
-      } catch (error) {
-        alert(`Approval failed: ${error.message}`);
+      await openContentReview(item.id);
+    });
+    $("content-review").addEventListener("close", () => { reviewMediaUrls.forEach((url) => URL.revokeObjectURL(url)); reviewMediaUrls = []; activeContentReview = null; });
+    $("content-review-body").addEventListener("click", async (event) => {
+      if (!activeContentReview) return;
+      const contentId = activeContentReview.item.id;
+      if (event.target.id === "save-workspace") {
+        try {
+          await window.PortfolioApi.updateWorkspace(contentId, { script: parseReviewJson("review-script"), scene_plan: parseReviewJson("review-scenes"), voiceover: parseReviewJson("review-voice"), premium_budget_usd: $("review-budget").value === "" ? null : Number($("review-budget").value), metadata: { last_workspace_editor: "operator-ui" } });
+          renderContentReview(await window.PortfolioApi.content(contentId));
+          await refreshPortfolioFromApi();
+        } catch (error) { $("review-save-status").textContent = `Save failed: ${error.message}`; }
+      }
+      if (event.target.matches("[data-review-decision]")) {
+        const rationale = $("review-rationale").value.trim();
+        if (rationale.length < 10) { $("review-decision-status").textContent = "Add a specific rationale of at least 10 characters."; return; }
+        const decision = event.target.dataset.reviewDecision;
+        try {
+          await window.PortfolioApi.approve(contentId, reviewGate(activeContentReview.item.stage), decision, rationale);
+          renderContentReview(await window.PortfolioApi.content(contentId));
+          await refreshPortfolioFromApi();
+        } catch (error) { $("review-decision-status").textContent = `Decision failed: ${error.message}`; }
       }
     });
     ["reference-brand-filter", "reference-platform-filter", "reference-status-filter"].forEach((id) => $(id).addEventListener("change", async () => {

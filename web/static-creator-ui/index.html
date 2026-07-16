@@ -50,6 +50,7 @@
           <option value="script">Script review</option>
           <option value="preview">Preview review</option>
           <option value="premium">Premium render</option>
+          <option value="package">Package review</option>
           <option value="ready">Ready to publish</option>
         </select>
         <button id="export-calendar" type="button">Export 30-Day Plan</button>
@@ -72,6 +73,11 @@
           </div>
         </section>
       </div>
+
+      <dialog id="content-review" class="content-review">
+        <form method="dialog" class="review-close-row"><button aria-label="Close content review">Close</button></form>
+        <div id="content-review-body" aria-live="polite"></div>
+      </dialog>
 
       <section class="workflow-policy" aria-labelledby="workflow-policy-heading">
         <div><p class="eyebrow dark-eyebrow">Approval Economics</p><h3 id="workflow-policy-heading">Spend after the idea proves itself</h3></div>

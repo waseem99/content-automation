@@ -22,6 +22,33 @@ STAGE_GATE = {
     "ready": ("publish", "published"),
 }
 
+ARTIFACT_KINDS = {
+    "voiceover", "keyframe", "preview", "premium_clip", "thumbnail", "final_video", "package"
+}
+
+
+def approval_prerequisites(*, stage: str, item: dict[str, Any], artifacts: list[dict[str, Any]]) -> list[str]:
+    """Return missing human-review evidence for the current stage."""
+    kinds = {str(artifact["kind"]) for artifact in artifacts if artifact.get("review_status") != "superseded"}
+    missing: list[str] = []
+    if stage == "script":
+        if not item.get("script"):
+            missing.append("script")
+        if not item.get("scene_plan"):
+            missing.append("scene_plan")
+    elif stage == "preview":
+        if "voiceover" not in kinds:
+            missing.append("voiceover")
+        if "preview" not in kinds:
+            missing.append("preview")
+    elif stage == "premium":
+        if item.get("premium_budget_usd") is None:
+            missing.append("premium_budget_usd")
+    elif stage == "package":
+        if not ({"final_video", "preview"} & kinds):
+            missing.append("reviewable_video")
+    return missing
+
 
 def canonical_concept(value: str) -> str:
     words = re.findall(r"[a-z0-9]+", value.lower())
@@ -124,13 +151,113 @@ class PortfolioService:
             conditions.append("b.id = %s"); values.append(brand_id)
         if stage:
             conditions.append("pc.stage = %s"); values.append(stage)
-        sql = f"""SELECT pc.*, b.id AS brand_id, b.slug AS brand_slug, b.display_name AS brand_name, mp.month_start
+        sql = f"""SELECT pc.*, b.id AS brand_id, b.slug AS brand_slug, b.display_name AS brand_name, mp.month_start,
+                         EXISTS (SELECT 1 FROM football_brief.portfolio_content_artifacts a
+                                 WHERE a.portfolio_content_id=pc.id AND a.kind='voiceover'
+                                   AND a.review_status <> 'superseded') AS has_voiceover_artifact,
+                         EXISTS (SELECT 1 FROM football_brief.portfolio_content_artifacts a
+                                 WHERE a.portfolio_content_id=pc.id AND a.kind IN ('preview','final_video')
+                                   AND a.review_status <> 'superseded') AS has_preview_artifact
                   FROM football_brief.portfolio_content pc
                   JOIN football_brief.monthly_content_plans mp ON mp.id=pc.plan_id
                   JOIN football_brief.brands b ON b.id=mp.brand_id
                   WHERE {' AND '.join(conditions)} ORDER BY pc.scheduled_for, b.display_name"""
         with self.database.connection() as conn:
             return [dict(row) for row in conn.execute(sql, tuple(values)).fetchall()]
+
+    def detail(self, content_id: UUID) -> dict[str, Any]:
+        with self.database.connection() as conn:
+            item = conn.execute(
+                """SELECT pc.*, b.id AS brand_id, b.slug AS brand_slug, b.display_name AS brand_name,
+                          mp.month_start
+                   FROM football_brief.portfolio_content pc
+                   JOIN football_brief.monthly_content_plans mp ON mp.id=pc.plan_id
+                   JOIN football_brief.brands b ON b.id=mp.brand_id
+                   WHERE pc.id=%s""",
+                (content_id,),
+            ).fetchone()
+            if not item:
+                return {"ok": False, "error": "content_not_found"}
+            artifacts = [dict(row) for row in conn.execute(
+                """SELECT * FROM football_brief.portfolio_content_artifacts
+                   WHERE portfolio_content_id=%s ORDER BY created_at DESC""",
+                (content_id,),
+            ).fetchall()]
+            approvals = [dict(row) for row in conn.execute(
+                """SELECT * FROM football_brief.portfolio_approvals
+                   WHERE portfolio_content_id=%s ORDER BY created_at DESC""",
+                (content_id,),
+            ).fetchall()]
+            packages = [dict(row) for row in conn.execute(
+                """SELECT * FROM football_brief.platform_packages
+                   WHERE portfolio_content_id=%s ORDER BY platform, version DESC""",
+                (content_id,),
+            ).fetchall()]
+        payload = dict(item)
+        payload["missing_for_approval"] = approval_prerequisites(
+            stage=str(payload["stage"]), item=payload, artifacts=artifacts
+        )
+        return {"ok": True, "item": payload, "artifacts": artifacts, "approvals": approvals, "packages": packages}
+
+    def update_workspace(
+        self, *, content_id: UUID, script: dict[str, Any] | None, scene_plan: dict[str, Any] | None,
+        voiceover: dict[str, Any] | None, premium_budget_usd: float | None, metadata: dict[str, Any] | None,
+    ) -> dict[str, Any]:
+        fields: list[str] = []
+        values: list[Any] = []
+        for field, value in (("script", script), ("scene_plan", scene_plan), ("voiceover", voiceover)):
+            if value is not None:
+                fields.append(f"{field}=%s::jsonb")
+                values.append(json.dumps(value))
+        if premium_budget_usd is not None:
+            fields.append("premium_budget_usd=%s")
+            values.append(premium_budget_usd)
+        if metadata is not None:
+            fields.append("metadata=metadata || %s::jsonb")
+            values.append(json.dumps(metadata))
+        if not fields:
+            return {"ok": False, "error": "no_workspace_changes"}
+        fields.append("version=version+1")
+        values.append(content_id)
+        with self.database.transaction() as conn:
+            row = conn.execute(
+                f"UPDATE football_brief.portfolio_content SET {', '.join(fields)} WHERE id=%s RETURNING *",
+                tuple(values),
+            ).fetchone()
+        return {"ok": bool(row), "item": dict(row) if row else None, "error": None if row else "content_not_found"}
+
+    def register_artifact(self, *, content_id: UUID, payload: dict[str, Any], created_by: str) -> dict[str, Any]:
+        kind = str(payload["kind"])
+        if kind not in ARTIFACT_KINDS:
+            return {"ok": False, "error": "unsupported_artifact_kind"}
+        locator = str(payload["local_locator"])
+        if not re.fullmatch(r"content://[A-Za-z0-9._/-]+", locator):
+            return {"ok": False, "error": "unsafe_local_locator"}
+        with self.database.transaction() as conn:
+            item = conn.execute(
+                "SELECT version FROM football_brief.portfolio_content WHERE id=%s FOR UPDATE", (content_id,)
+            ).fetchone()
+            if not item:
+                return {"ok": False, "error": "content_not_found"}
+            version = int(payload.get("version") or item["version"])
+            row = conn.execute(
+                """INSERT INTO football_brief.portfolio_content_artifacts
+                   (portfolio_content_id, kind, label, version, local_locator, mime_type, sha256,
+                    size_bytes, metadata, created_by)
+                   VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s::jsonb,%s) RETURNING *""",
+                (content_id, kind, payload["label"], version, locator, payload["mime_type"], payload["sha256"],
+                 payload.get("size_bytes"), json.dumps(payload.get("metadata", {})), created_by),
+            ).fetchone()
+        return {"ok": True, "artifact": dict(row)}
+
+    def artifact(self, *, content_id: UUID, artifact_id: UUID) -> dict[str, Any] | None:
+        with self.database.connection() as conn:
+            row = conn.execute(
+                """SELECT * FROM football_brief.portfolio_content_artifacts
+                   WHERE id=%s AND portfolio_content_id=%s""",
+                (artifact_id, content_id),
+            ).fetchone()
+        return dict(row) if row else None
 
     def month_readiness(self, *, month_start: date) -> dict[str, Any]:
         """Return factual inventory readiness without advancing or publishing content."""
@@ -211,6 +338,13 @@ class PortfolioService:
             expected = STAGE_GATE.get(item["stage"])
             if not expected or expected[0] != gate:
                 return {"ok": False, "error": "gate_stage_mismatch", "stage": item["stage"], "expected_gate": expected[0] if expected else None}
+            artifacts = [dict(row) for row in conn.execute(
+                "SELECT kind, review_status FROM football_brief.portfolio_content_artifacts WHERE portfolio_content_id=%s",
+                (content_id,),
+            ).fetchall()]
+            missing = approval_prerequisites(stage=str(item["stage"]), item=dict(item), artifacts=artifacts)
+            if decision == "approved" and missing:
+                return {"ok": False, "error": "approval_prerequisites_missing", "missing": missing, "stage": item["stage"]}
             conn.execute(
                 """INSERT INTO football_brief.portfolio_approvals
                    (portfolio_content_id, gate, decision, reviewer, rationale, content_version)
@@ -218,7 +352,11 @@ class PortfolioService:
                 (content_id, gate, decision, reviewer, rationale, item["version"]),
             )
             next_stage = expected[1] if decision == "approved" else ("blocked" if decision == "rejected" else item["stage"])
-            conn.execute("UPDATE football_brief.portfolio_content SET stage=%s WHERE id=%s", (next_stage, content_id))
+            version_delta = 1 if decision == "changes_requested" else 0
+            conn.execute(
+                "UPDATE football_brief.portfolio_content SET stage=%s, version=version+%s WHERE id=%s",
+                (next_stage, version_delta, content_id),
+            )
         return {"ok": True, "previous_stage": item["stage"], "stage": next_stage, "decision": decision}
 
     def create_platform_packages(self, *, content_id: UUID, title: str, caption: str, hashtags: list[str], disclosure: dict[str, Any] | None = None) -> dict[str, Any]:

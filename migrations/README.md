@@ -72,6 +72,8 @@ The test database must be disposable because the fixtures drop and recreate the 
 - `0027_reference_intelligence_portfolio.sql` adds metadata-only reference queues, resumable
   local-worker jobs, review-artifact fingerprints, brand assignments, human approval gates, and
   research-to-idea traceability. Source media and automatic publication are prohibited.
+- `0028_portfolio_review_workspace.sql` adds versioned local review-media metadata for the
+  Brand 1 script, narration, storyboard, preview, and paid-shot approval workspace.
 
 ## Rollback
 

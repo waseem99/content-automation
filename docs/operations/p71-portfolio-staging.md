@@ -38,8 +38,49 @@ See `docs/operations/p72-month-inventory.md` for the readiness contract and revi
 
 ## Dashboard
 
-Open the static dashboard, choose **Connect Data**, enter the staging API URL and operator
-key, and verify the database item count. The key stays in browser session storage.
+Serve the dashboard locally from the repository root:
+
+```bash
+python -m http.server 3000 --directory web/static-creator-ui
+```
+
+Open `http://127.0.0.1:3000`, choose **Connect Data**, enter
+`http://127.0.0.1:8000` and the operator key, and verify the database item count. The key
+stays in browser session storage. Choose **Rawr Nation**, then open a queue item to review
+and version its script, scene plan, voice metadata, local narration/preview media, approval
+prerequisites, and decision history.
+
+## Attach locally generated review media
+
+Place generated files beneath `PORTFOLIO_MEDIA_DIR`. The default is
+`var/portfolio-media` in the repository. Keep the same relative path in a `content://`
+locator, compute its SHA-256 digest, then register metadata through the protected operator
+API. For example, a file stored at:
+
+```text
+var/portfolio-media/rawr-nation/<content-id>/preview-v1.mp4
+```
+
+uses this locator:
+
+```text
+content://rawr-nation/<content-id>/preview-v1.mp4
+```
+
+Register both a `voiceover` artifact and a `preview` artifact before the preview gate can
+be approved. The API container mounts this directory read-only. It does not accept browser
+uploads, expose arbitrary filesystem paths, or copy generated media to Vercel.
+
+The workspace stages enforce these minimum review artifacts:
+
+- Script approval requires saved script and scene-plan JSON.
+- Preview approval requires registered voiceover and preview media.
+- Premium-spend approval requires an explicit USD budget, including zero when no paid shot
+  is needed.
+- Package approval requires a final video or retained preview.
+
+**Request changes** records the rationale and opens a new content version. Approval never
+starts generation, spends provider credits, or publishes content.
 
 ## Promotion gate
 
