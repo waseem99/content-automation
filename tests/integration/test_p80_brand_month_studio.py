@@ -24,3 +24,6 @@ def test_rawr_month_has_complete_reviewable_packages_without_paid_or_publish_act
     assert all(len(item["scene_plan"]) == 5 for item in result["items"])
     assert all(len(item["platform_packages"]) == 3 for item in result["items"])
     assert all(item["production"]["publish"] == "blocked" for item in result["items"])
+    assert all(item["script"]["fact_status"] == "source_ready_pending_human" for item in result["items"][:6])
+    assert all(item["script"]["sources"] for item in result["items"][:6])
+    assert all(item["script"]["fact_review_required"] for item in result["items"])
