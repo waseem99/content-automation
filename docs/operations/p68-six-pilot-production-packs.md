@@ -24,6 +24,7 @@ Run the deterministic offline preparation and validation with:
 PYTHONPATH=. python scripts/p68_prepare_gold_pilots.py
 PYTHONPATH=. python scripts/p68_validate_six_pilots.py
 PYTHONPATH=. python scripts/p68_plan_motion_batch.py
+PYTHONPATH=. python scripts/p68_keyframes.py plan
 ```
 
 `spec_ready` means only that the production pack is complete and internally
@@ -42,3 +43,10 @@ Wan worker after a purpose-built keyframe exists. Hooks and payoffs receive two
 variants while standard shots receive one. A premium provider can be proposed
 only for the individual shot when two reviewed open-source variants fail motion
 or continuity; it always requires separate human spend approval.
+
+The keyframe command creates 29 continuity-locked still-image work orders. Asset
+intake requires the provider/model or licensed collection, rights evidence,
+SHA-256 provenance, a portrait image near 9:16, and at least 704×1280 pixels.
+Intake never implies approval: a separate named human review must approve the
+keyframe before the Wan request builder can use it. Normalized keyframes and
+their provenance stay in ignored `p68-artifacts/`, not Git or Vercel.

@@ -85,6 +85,8 @@ def build_requests(
         asset = assets_by_id[shot_id]
         if asset["source"] == "continuity_master_preview_fallback" and not allow_master_preview:
             raise ValueError(f"{shot_id} requires a shot-specific keyframe before real clip generation")
+        if asset.get("quality_status") == "pending_keyframe_review":
+            raise ValueError(f"{shot_id} keyframe requires explicit human approval before generation")
         prompt = prompts[shot_id]
         duration = float(shot["duration_seconds"]) + float(shot.get("transition_handle_seconds") or 0.5)
         variant_count = hero_variants if hero_variants is not None and shot["story_stage"] in {"hook", "reveal"} else variants

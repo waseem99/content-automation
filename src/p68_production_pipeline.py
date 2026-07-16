@@ -104,6 +104,8 @@ def prepare_asset_manifest(pilot_dir: Path, artifact_dir: Path) -> dict[str, Any
     master = masters[0]
     designations_path = asset_root / "shot-keyframes.json"
     designations = _json(designations_path).get("shots", {}) if designations_path.is_file() else {}
+    provenance_path = asset_root / "keyframe-provenance.json"
+    provenance = _json(provenance_path).get("shots", {}) if provenance_path.is_file() else {}
     assets = []
     for shot in plan["shots"]:
         shot_id = shot["shot_id"]
@@ -131,6 +133,22 @@ def prepare_asset_manifest(pilot_dir: Path, artifact_dir: Path) -> dict[str, Any
             if designated_path
             else "continuity_master_preview_fallback"
         )
+        provenance_record = provenance.get(shot_id) if variants else None
+        provenance_approved = bool(
+            provenance_record
+            and provenance_record.get("normalized_sha256") == sha256_file(selected)
+            and provenance_record.get("human_review_status") == "approved_for_generation"
+            and provenance_record.get("approved_for_generation") is True
+        )
+        quality_status = (
+            "pending_keyframe_review"
+            if provenance_record and not provenance_approved
+            else "approved_for_generation"
+            if provenance_approved
+            else "preview_only"
+            if source == "continuity_master_preview_fallback"
+            else "pending_final_review"
+        )
         assets.append(
             {
                 "shot_id": shot_id,
@@ -138,9 +156,10 @@ def prepare_asset_manifest(pilot_dir: Path, artifact_dir: Path) -> dict[str, Any
                 "source": source,
                 "master_path": str(master),
                 "sha256": sha256_file(selected),
-                "quality_status": "preview_only" if source == "continuity_master_preview_fallback" else "pending_final_review",
+                "quality_status": quality_status,
                 "rights_status": "generated_for_project",
                 "generation_designation": designation if designated_path else None,
+                "keyframe_provenance": provenance_record,
             }
         )
     manifest = {
