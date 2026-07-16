@@ -76,6 +76,7 @@ def discover_artifacts(artifact_dir: Path, *, include_keyframes: bool = True) ->
     preferred = [
         artifact_dir / "renders" / "hybrid-v1" / "final_review.mp4",
         artifact_dir / "renders" / "review-v1" / "final_review.mp4",
+        artifact_dir / "renders" / "visual-v1" / "final_review.mp4",
     ]
     preview = next((path for path in preferred if path.is_file()), None)
     if preview is None:

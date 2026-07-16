@@ -7,7 +7,7 @@ import argparse
 import json
 from pathlib import Path
 
-from src.p68_scientific_animation import render_pilot_science
+from src.p68_scientific_animation import ANIMATION_VERSION, render_pilot_science
 
 
 def main() -> int:
@@ -19,7 +19,7 @@ def main() -> int:
     plan = json.loads((Path(args.pilots_root) / args.pilot / "content-plan.json").read_text(encoding="utf-8"))
     output = render_pilot_science(
         plan,
-        Path(args.artifact_root) / "gold" / args.pilot / "clips" / "scientific-v3",
+        Path(args.artifact_root) / "gold" / args.pilot / "clips" / ANIMATION_VERSION.rsplit(".", 1)[-1],
     )
     print(json.dumps(output, indent=2))
     return 0

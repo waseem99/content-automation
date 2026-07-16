@@ -22,7 +22,7 @@ from src.p68_clip_stitcher import probe_media, sha256_file
 from src.p68_job_state import atomic_write_json
 
 
-ANIMATION_VERSION = "p68.scientific_animation.v3"
+ANIMATION_VERSION = "p68.scientific_animation.v4"
 CANVAS = (540, 960)
 FPS = 30
 
@@ -286,6 +286,145 @@ def _foot_pathway_frame(progress: float) -> Image.Image:
     return image
 
 
+def _glass_stage() -> Image.Image:
+    image = _gradient((7, 18, 27), (2, 6, 12))
+    draw = ImageDraw.Draw(image, "RGBA")
+    draw.rounded_rectangle((72, 80, 470, 900), radius=26, fill=(64, 112, 130, 32), outline=(136, 213, 226, 120), width=3)
+    for offset in range(7):
+        x = 105 + offset * 54
+        draw.line((x, 105, x - 35, 875), fill=(125, 205, 218, 22), width=2)
+    draw.line((455, 100, 455, 875), fill=(255, 191, 88, 90), width=4)
+    return image
+
+
+def _draw_gecko(draw: ImageDraw.ImageDraw, center: tuple[float, float], *, stride: float = 0, scale: float = 1.0) -> None:
+    cx, cy = center
+    body_w, body_h = 112 * scale, 260 * scale
+    skin, outline, spots = (73, 116, 132, 255), (145, 208, 211, 230), (232, 132, 62, 235)
+    draw.ellipse((cx - body_w / 2, cy - body_h / 2, cx + body_w / 2, cy + body_h / 2), fill=skin, outline=outline, width=max(2, round(3 * scale)))
+    draw.ellipse((cx - 48 * scale, cy - 180 * scale, cx + 48 * scale, cy - 90 * scale), fill=skin, outline=outline, width=max(2, round(3 * scale)))
+    draw.ellipse((cx - 23 * scale, cy - 155 * scale, cx - 7 * scale, cy - 138 * scale), fill=(245, 205, 92, 255))
+    draw.ellipse((cx + 7 * scale, cy - 155 * scale, cx + 23 * scale, cy - 138 * scale), fill=(245, 205, 92, 255))
+    for index in range(11):
+        x = cx + math.sin(index * 2.1) * body_w * 0.28
+        y = cy - body_h * 0.35 + index * body_h * 0.07
+        draw.ellipse((x - 7 * scale, y - 5 * scale, x + 7 * scale, y + 5 * scale), fill=spots)
+    tail = [(cx, cy + body_h / 2 - 8), (cx + 28 * scale, cy + 190 * scale), (cx - 6 * scale, cy + 260 * scale)]
+    draw.line(tail, fill=skin, width=max(8, round(28 * scale)), joint="curve")
+    for side in (-1, 1):
+        for pair in range(2):
+            anchor_y = cy - 65 * scale + pair * 125 * scale
+            phase = stride + pair * math.pi + (0 if side == 1 else math.pi)
+            lift = math.sin(phase) * 24 * scale
+            elbow = (cx + side * 75 * scale, anchor_y + lift)
+            foot = (cx + side * 118 * scale, anchor_y - 22 * scale + lift)
+            draw.line((cx + side * 35 * scale, anchor_y, *elbow, *foot), fill=skin, width=max(5, round(14 * scale)), joint="curve")
+            for toe in range(4):
+                angle = -0.55 + toe * 0.34
+                end = (foot[0] + side * math.cos(angle) * 34 * scale, foot[1] + math.sin(angle) * 22 * scale)
+                draw.line((*foot, *end), fill=outline, width=max(2, round(5 * scale)))
+
+
+def _gecko_climb_frame(progress: float) -> Image.Image:
+    image = _glass_stage()
+    draw = ImageDraw.Draw(image, "RGBA")
+    rise = 390 * _ease(progress)
+    _draw_gecko(draw, (275, 680 - rise), stride=progress * math.tau * 3, scale=0.82)
+    for index in range(3):
+        pulse = (progress * 3 - index) % 1
+        y = 705 - index * 125 - rise * 0.4
+        draw.ellipse((118, y - 18 - pulse * 22, 154, y + 18 + pulse * 22), outline=(255, 210, 88, int(180 * (1 - pulse))), width=4)
+    return image
+
+
+def _toe_setae_frame(progress: float) -> Image.Image:
+    image = _gradient((8, 20, 28), (3, 8, 14))
+    draw = ImageDraw.Draw(image, "RGBA")
+    zoom = _ease(progress)
+    pad_left, pad_top, pad_right, pad_bottom = 65, 255, 475, 705
+    draw.rounded_rectangle((pad_left, pad_top, pad_right, pad_bottom), radius=90, fill=(65, 112, 125, 255), outline=(147, 218, 218, 220), width=4)
+    for ridge in range(12):
+        y = pad_top + 38 + ridge * 31
+        draw.arc((95, y - 15, 445, y + 28), 185, 355, fill=(171, 224, 216, 180), width=5)
+    count = 35 + int(110 * zoom)
+    for index in range(count):
+        x = 95 + (index * 37) % 350
+        y = 325 + (index * 53) % 320
+        length = 18 + 38 * zoom
+        draw.line((x, y, x + math.sin(index) * 7, y + length), fill=(108, 225, 218, 150), width=2)
+    ring = 150 - 85 * zoom
+    draw.ellipse((270 - ring, 485 - ring, 270 + ring, 485 + ring), outline=(255, 195, 83, 190), width=5)
+    return image
+
+
+def _seta_branch_frame(progress: float) -> Image.Image:
+    image = _gradient((8, 15, 24), (2, 5, 10))
+    draw = ImageDraw.Draw(image, "RGBA")
+    trunk_x, base_y = 270, 800
+    reveal = _ease(progress)
+    draw.line((trunk_x, base_y, trunk_x, 420), fill=(97, 196, 188, 230), width=13)
+    branches = 8
+    for index in range(branches):
+        amount = _ease((reveal * branches - index) / 1.8)
+        if amount <= 0:
+            continue
+        side = -1 if index % 2 else 1
+        start_y = 470 + index * 36
+        end_x = trunk_x + side * 150 * amount
+        end_y = start_y - 105 * amount
+        draw.line((trunk_x, start_y, end_x, end_y), fill=(126, 224, 213, 220), width=6)
+        for tip in range(4):
+            tx = end_x + side * (18 + tip * 13) * amount
+            ty = end_y + (tip - 1.5) * 13
+            draw.ellipse((tx - 15, ty - 5, tx + 15, ty + 5), fill=(232, 180, 82, 210))
+    draw.line((48, 305, 492, 305), fill=(166, 218, 229, 170), width=5)
+    return image
+
+
+def _molecular_contact_frame(progress: float) -> Image.Image:
+    image = _seta_branch_frame(1.0)
+    draw = ImageDraw.Draw(image, "RGBA")
+    wave = _ease(progress)
+    for index in range(24):
+        x = 70 + index * 17
+        active = max(0.0, 1 - abs(index / 23 - wave) * 5)
+        if active:
+            _glow(image, lambda glow, x=x, active=active: glow.line((x, 280, x, 340), fill=(92, 232, 238, int(240 * active)), width=5), 10)
+        draw.line((x, 292, x, 318), fill=(96, 214, 220, 80 + int(110 * active)), width=2)
+    return image
+
+
+def _toe_release_frame(progress: float) -> Image.Image:
+    image = _gradient((8, 18, 26), (2, 6, 11))
+    draw = ImageDraw.Draw(image, "RGBA")
+    glass_x = 420
+    draw.line((glass_x, 90, glass_x, 875), fill=(142, 218, 229, 180), width=6)
+    peel = _ease(progress)
+    angle = peel * 0.9
+    origin = (glass_x - 5, 520)
+    pad_length = 285
+    end = (origin[0] - math.cos(angle) * pad_length, origin[1] - math.sin(angle) * pad_length)
+    draw.line((*origin, *end), fill=(70, 121, 133, 255), width=72)
+    for toe in range(5):
+        amount = toe / 4
+        x = origin[0] + (end[0] - origin[0]) * amount
+        y = origin[1] + (end[1] - origin[1]) * amount
+        draw.ellipse((x - 22, y - 15, x + 22, y + 15), outline=(149, 225, 217, 220), width=4)
+    draw.arc((205, 355, 485, 650), 120, 225, fill=(255, 193, 82, 180), width=5)
+    return image
+
+
+def _gecko_payoff_frame(progress: float) -> Image.Image:
+    image = _glass_stage()
+    draw = ImageDraw.Draw(image, "RGBA")
+    settle = math.sin(_ease(progress) * math.pi) * 8
+    _draw_gecko(draw, (275, 325 + settle), stride=math.pi * 0.25, scale=0.88)
+    glow = _ease((progress - 0.45) / 0.45)
+    if glow:
+        _glow(image, lambda layer: layer.ellipse((115, 120, 425, 535), outline=(255, 199, 82, int(190 * glow)), width=6), 22)
+    return image
+
+
 RENDERERS: dict[tuple[str, str], Callable[[float], Image.Image]] = {
     ("rawr-blind-spot", "S02"): _eye_optics_frame,
     ("rawr-blind-spot", "S03"): _retina_disc_frame,
@@ -294,6 +433,12 @@ RENDERERS: dict[tuple[str, str], Callable[[float], Image.Image]] = {
     ("rawr-blind-spot", "S06"): _reconstruction_frame,
     ("animal-elephant-signals", "S03"): _ground_signal_frame,
     ("animal-elephant-signals", "S04"): _foot_pathway_frame,
+    ("rawr-gecko-grip", "S01"): _gecko_climb_frame,
+    ("rawr-gecko-grip", "S02"): _toe_setae_frame,
+    ("rawr-gecko-grip", "S03"): _seta_branch_frame,
+    ("rawr-gecko-grip", "S04"): _molecular_contact_frame,
+    ("rawr-gecko-grip", "S05"): _toe_release_frame,
+    ("rawr-gecko-grip", "S06"): _gecko_payoff_frame,
 }
 
 
@@ -316,7 +461,10 @@ def render_animation(renderer: Callable[[float], Image.Image], output: Path, dur
         str(FPS),
         "-i",
         "-",
-        "-an",
+        "-f",
+        "lavfi",
+        "-i",
+        "anullsrc=channel_layout=stereo:sample_rate=48000",
         "-vf",
         "scale=1080:1920:flags=lanczos,format=yuv420p",
         "-c:v",
@@ -325,6 +473,11 @@ def render_animation(renderer: Callable[[float], Image.Image], output: Path, dur
         "medium",
         "-crf",
         "18",
+        "-c:a",
+        "aac",
+        "-b:a",
+        "128k",
+        "-shortest",
         "-movflags",
         "+faststart",
         str(output),

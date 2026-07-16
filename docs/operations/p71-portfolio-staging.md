@@ -120,6 +120,28 @@ Run the read-only readiness report at any time:
 python scripts/p76_local_production_doctor.py
 ```
 
+## Build the free gecko motion review
+
+The Rawr Nation gecko pilot has six code-authored animated scenes. This route requires
+FFmpeg and Pillow but no GPU service, model account, paid credits, or Vercel deployment.
+
+```bash
+PYTHONPATH=. python scripts/p68_render_science.py --pilot rawr-gecko-grip
+python scripts/p77_build_visual_review.py --pilot rawr-gecko-grip
+```
+
+Review the resulting file at:
+
+```text
+p68-artifacts/gold/rawr-gecko-grip/renders/visual-v1/final_review.mp4
+```
+
+This is intentionally a storyboard-quality motion and pacing review. It contains six
+different animated scenes and caption timing, but its audio track is silent until the
+correct Kokoro narration is generated. Its manifest sets `narration_required=true`,
+`approval_allowed=false`, and `publish_allowed=false`. Natural or premium wildlife shots
+should replace the simple vector hero shots after the concept and pacing are approved.
+
 ## Promotion gate
 
 Do not create a Vercel preview until migrations, readiness, authentication, brand counts,
