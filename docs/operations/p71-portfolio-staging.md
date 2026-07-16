@@ -142,6 +142,45 @@ correct Kokoro narration is generated. Its manifest sets `narration_required=tru
 `approval_allowed=false`, and `publish_allowed=false`. Natural or premium wildlife shots
 should replace the simple vector hero shots after the concept and pacing are approved.
 
+## Add local Kokoro narration
+
+Install the CPU-only narration runtime into the ignored `.runtime` directory. Download the
+Apache-2.0 Kokoro model and voices from the official `kokoro-onnx` v1.0 release; keep these
+large runtime files out of Git.
+
+```bash
+python -m pip install --target .runtime/kokoro-onnx \
+  'kokoro-onnx==0.5.0' 'soundfile>=0.12,<1.0'
+mkdir -p .runtime/kokoro-models
+curl -fL -o .runtime/kokoro-models/kokoro-v1.0.onnx \
+  https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.0/kokoro-v1.0.onnx
+curl -fL -o .runtime/kokoro-models/voices-v1.0.bin \
+  https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.0/voices-v1.0.bin
+```
+
+Generate normalized narration, then assemble it with the six animated scenes:
+
+```bash
+python scripts/p78_generate_kokoro_narration.py --pilot rawr-gecko-grip
+python scripts/p78_build_narrated_visual_review.py --pilot rawr-gecko-grip
+```
+
+Review the narrated result at:
+
+```text
+p68-artifacts/gold/rawr-gecko-grip/renders/narrated-visual-v1/final_review.mp4
+```
+
+The narration evidence records the model, voice, runtime and model licenses, file hashes,
+duration, and estimated word alignment. The narrated render is eligible for human approval
+of the concept, story, motion, and pacing only. It remains non-publishable, and shots S01
+and S06 remain explicitly flagged for natural or premium replacement before production.
+
+To hand off an editorially matching content item, first dry-run the bridge and then repeat
+with `--confirm-editorial-match` and the real portfolio UUID as described above. The bridge
+prefers this narrated review over the silent visual review. Neither command deploys Vercel,
+spends paid-provider credits, approves a gate, or publishes content.
+
 ## Promotion gate
 
 Do not create a Vercel preview until migrations, readiness, authentication, brand counts,
