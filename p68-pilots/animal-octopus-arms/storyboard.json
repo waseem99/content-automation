@@ -1,0 +1,38 @@
+[
+  {
+    "shot_id": "S01",
+    "story_stage": "hook",
+    "visual": "One arm of the scar-marked octopus enters a crevice while the mantle remains still",
+    "caption": "AN ARM EXPLORES FIRST"
+  },
+  {
+    "shot_id": "S02",
+    "story_stage": "sensing",
+    "visual": "Macro follows the same suckers rolling sequentially across textured limestone",
+    "caption": "SUCKERS TOUCH AND TASTE"
+  },
+  {
+    "shot_id": "S03",
+    "story_stage": "network",
+    "visual": "Restrained violet paths reveal local neural networks inside the moving arm without changing anatomy",
+    "caption": "A NERVOUS SYSTEM IN THE ARMS"
+  },
+  {
+    "shot_id": "S04",
+    "story_stage": "control",
+    "visual": "The explored arm adjusts grip as two neighboring arms brace the same octopus",
+    "caption": "LOCAL CONTROL, SHARED GOAL"
+  },
+  {
+    "shot_id": "S05",
+    "story_stage": "movement",
+    "visual": "The same octopus flows through the narrow crevice with coordinated arm waves",
+    "caption": "COORDINATING A SOFT BODY"
+  },
+  {
+    "shot_id": "S06",
+    "story_stage": "payoff",
+    "visual": "The octopus settles beyond the crevice and resumes natural exploration",
+    "caption": "ONE BODY, DISTRIBUTED CONTROL"
+  }
+]

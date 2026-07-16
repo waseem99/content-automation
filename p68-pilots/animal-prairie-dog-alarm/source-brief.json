@@ -1,0 +1,109 @@
+{
+  "pilot_id": "animal-prairie-dog-alarm",
+  "brand_profile": "animal_x",
+  "topic": "how prairie dog alarm calls carry information about threats",
+  "selected_concept_id": "animal_x-concept-1",
+  "reusable_mechanics": [
+    "first-second visual contradiction",
+    "one continuous subject or mechanism",
+    "cause revealed after visible evidence",
+    "short memorable payoff"
+  ],
+  "continuity_bible": {
+    "subject_identity": "the same adult black-tailed prairie dog with a small notch in the right ear and natural proportions",
+    "environment": "one shortgrass colony beside the same burrow mound under clear late-afternoon sky",
+    "lighting": "warm sun from camera left with stable long shadows and a soft blue sky fill",
+    "color_treatment": "natural tawny fur, ochre soil, sage grass, restrained rust-red threat accents",
+    "screen_direction": "the prairie dog faces frame right and colony response moves right-to-left toward burrows",
+    "camera_language": "patient low wildlife telephoto with behavior-led cuts and no anthropomorphic staging"
+  },
+  "factual_notes": [
+    {
+      "claim": "Prairie dog alarm calls vary with predator category and can encode descriptive information.",
+      "source_url": "https://doi.org/10.1016/S0003-3472(05)80948-1",
+      "source_title": "Semantic information in prairie dog alarm calls",
+      "review_status": "pending_human_fact_review"
+    },
+    {
+      "claim": "Black-tailed prairie dogs use alarm calling and vigilance as anti-predator behavior.",
+      "source_url": "https://www.nps.gov/articles/000/black-tailed-prairie-dogs.htm",
+      "source_title": "National Park Service \u2014 Black-tailed prairie dogs",
+      "review_status": "pending_human_fact_review"
+    }
+  ],
+  "source_phrases_for_originality_check": [],
+  "script_segments": [
+    {
+      "story_stage": "hook",
+      "duration_seconds": 4.5,
+      "narration": "One prairie dog's call can change how an entire colony reacts to danger.",
+      "caption": "ONE CALL CHANGES THE COLONY",
+      "visual_action": "The notched-ear prairie dog rises on the mound as distant heads turn",
+      "entry_action": "Open at grass height with calm foraging",
+      "exit_action": "End on the caller inhaling",
+      "camera": "Low 300mm push",
+      "ambience": "One continuous location ambience and restrained cinematic music bed",
+      "sfx": "Natural wind and one breath"
+    },
+    {
+      "story_stage": "threat",
+      "duration_seconds": 5.0,
+      "narration": "The call is not simply noise. Its pattern can vary with the kind of threat detected.",
+      "caption": "THE PATTERN CHANGES",
+      "visual_action": "A distant coyote crosses frame right while the caller gives a natural alarm posture",
+      "entry_action": "Continue from the inhale",
+      "exit_action": "Hold on one completed call",
+      "camera": "Telephoto rack focus from caller to coyote",
+      "ambience": "One continuous location ambience and restrained cinematic music bed",
+      "sfx": "One naturalistic call accent"
+    },
+    {
+      "story_stage": "signal",
+      "duration_seconds": 5.0,
+      "narration": "Changes in pitch and timing carry information through the colony.",
+      "caption": "PITCH + TIMING",
+      "visual_action": "Restrained waveform traces the real call while neighboring animals listen",
+      "entry_action": "Match the completed call",
+      "exit_action": "Waveform fades before behavior changes",
+      "camera": "Locked respectful medium shot",
+      "ambience": "One continuous location ambience and restrained cinematic music bed",
+      "sfx": "Call tail bridges the cut"
+    },
+    {
+      "story_stage": "response",
+      "duration_seconds": 5.0,
+      "narration": "Nearby animals become vigilant and choose cover according to what they detect.",
+      "caption": "THE COLONY RESPONDS",
+      "visual_action": "Three prairie dogs turn toward frame right then move toward separate burrows",
+      "entry_action": "Begin as the waveform fades",
+      "exit_action": "Follow the last animal to the mound edge",
+      "camera": "Ground-level lateral track",
+      "ambience": "One continuous location ambience and restrained cinematic music bed",
+      "sfx": "Grass movement and footfalls"
+    },
+    {
+      "story_stage": "network",
+      "duration_seconds": 5.0,
+      "narration": "Because many animals can hear and answer, warning spreads beyond the first lookout.",
+      "caption": "A LIVING WARNING NETWORK",
+      "visual_action": "A wide shot reveals calls and movement passing across the connected colony",
+      "entry_action": "Rise from the mound edge",
+      "exit_action": "Settle on the original caller still scanning",
+      "camera": "Slow crane to wide geography",
+      "ambience": "One continuous location ambience and restrained cinematic music bed",
+      "sfx": "Distant call-and-response bed"
+    },
+    {
+      "story_stage": "payoff",
+      "duration_seconds": 5.5,
+      "narration": "The result is a warning system built from attention, sound, and coordinated behavior.",
+      "caption": "ATTENTION BECOMES SAFETY",
+      "visual_action": "The coyote exits far away and the same caller lowers naturally as calm returns",
+      "entry_action": "Return to the original mound",
+      "exit_action": "End on resumed foraging with no staged celebration",
+      "camera": "Patient telephoto pullback",
+      "ambience": "One continuous location ambience and restrained cinematic music bed",
+      "sfx": "Wind resolves without a sting"
+    }
+  ]
+}

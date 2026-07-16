@@ -1,0 +1,38 @@
+[
+  {
+    "shot_id": "S01",
+    "story_stage": "hook",
+    "visual": "A split-level view holds fish below and insect above while one apparent ray bends",
+    "caption": "THE TARGET IS NOT WHERE IT LOOKS"
+  },
+  {
+    "shot_id": "S02",
+    "story_stage": "setup",
+    "visual": "Clean rays from the insect bend at the same waterline toward the same fish",
+    "caption": "THE SURFACE BENDS LIGHT"
+  },
+  {
+    "shot_id": "S03",
+    "story_stage": "aim",
+    "visual": "The fish holds position while a restrained true-position marker separates from the apparent position",
+    "caption": "VISION BECOMES A MAP"
+  },
+  {
+    "shot_id": "S04",
+    "story_stage": "jet",
+    "visual": "One continuous high-speed shot shows the mouth jet crossing the waterline",
+    "caption": "A WATER JET FIRES"
+  },
+  {
+    "shot_id": "S05",
+    "story_stage": "impact",
+    "visual": "Macro slow motion follows later water catching the leading jet just before impact",
+    "caption": "THE IMPACT CONCENTRATES"
+  },
+  {
+    "shot_id": "S06",
+    "story_stage": "payoff",
+    "visual": "The insect lands on the surface and the same fish turns toward it in one natural motion",
+    "caption": "OPTICS + CONTROL"
+  }
+]

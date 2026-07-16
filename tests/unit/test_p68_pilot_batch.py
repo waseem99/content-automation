@@ -3,7 +3,13 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from src.p68_pilot_batch import evaluate_batch, evaluate_pilot, load_benchmark
+from src.p68_pilot_batch import (
+    EXPECTED_PILOT_IDS,
+    evaluate_batch,
+    evaluate_pilot,
+    evaluate_spec_batch,
+    load_benchmark,
+)
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -66,4 +72,20 @@ def test_exactly_three_per_brand_with_complete_reviews_can_reach_closeout(tmp_pa
     assert result["production_candidate_count"] == 6
     assert result["p68_closeout_ready"] is True
     assert result["historiq_and_ani_films_adaptation_allowed"] is True
+    assert result["publish_allowed"] is False
+
+
+def test_repository_six_pilot_specs_are_ready_without_claiming_media_completion() -> None:
+    result = evaluate_spec_batch(ROOT / "p68-pilots")
+
+    assert {row["pilot_id"] for row in result["pilots"]} == EXPECTED_PILOT_IDS
+    assert result["brand_counts"] == {"rawr_nation": 3, "animal_x": 3}
+    assert result["all_specs_ready"] is True
+    assert result["next_gate"] == "generate_or_source_natural_motion_clips"
+    assert result["production_candidate_count"] == 0
+    assert all(row["spec_ready"] for row in result["pilots"])
+    assert all(not row["natural_motion_ready"] for row in result["pilots"])
+    assert all(not row["production_candidate"] for row in result["pilots"])
+    assert result["paid_provider_calls_made"] == 0
+    assert result["vercel_deployment_required"] is False
     assert result["publish_allowed"] is False

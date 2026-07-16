@@ -1,0 +1,44 @@
+[
+  {
+    "shot_id": "S01",
+    "prompt": "Original vertical cinematic clip. One arm of the scar-marked octopus enters a crevice while the mantle remains still. Subject lock: the same common octopus with a pale crescent scar above the left eye, seven visible intact arms, and consistent mantle pattern. Environment lock: one rocky Mediterranean reef ledge with the same red sponge and narrow crevice. Lighting: soft underwater daylight from upper left with stable particulate and no artificial spotlight. Color: natural rust-brown octopus, blue-green water, pale limestone, restrained violet neural accents. Camera: Underwater 90mm macro. Entry: Open on the same crevice and approaching arm tip. Exit: End as two suckers contact stone. Screen direction: the octopus travels left-to-right and the explored crevice remains frame right. Leave clean motion handles at both ends; no embedded text.",
+    "negative_prompt": "identity drift, anatomy change, wardrobe change, background jump, lighting flip, reversed screen direction, duplicate subject, watermark, logo, embedded captions",
+    "entry_action": "Open on the same crevice and approaching arm tip",
+    "exit_action": "End as two suckers contact stone"
+  },
+  {
+    "shot_id": "S02",
+    "prompt": "Original vertical cinematic clip. Macro follows the same suckers rolling sequentially across textured limestone. Subject lock: the same common octopus with a pale crescent scar above the left eye, seven visible intact arms, and consistent mantle pattern. Environment lock: one rocky Mediterranean reef ledge with the same red sponge and narrow crevice. Lighting: soft underwater daylight from upper left with stable particulate and no artificial spotlight. Color: natural rust-brown octopus, blue-green water, pale limestone, restrained violet neural accents. Camera: Arm-level tracking macro. Entry: Continue from the first two contacts. Exit: Arm tip curls around the corner. Screen direction: the octopus travels left-to-right and the explored crevice remains frame right. Leave clean motion handles at both ends; no embedded text.",
+    "negative_prompt": "identity drift, anatomy change, wardrobe change, background jump, lighting flip, reversed screen direction, duplicate subject, watermark, logo, embedded captions",
+    "entry_action": "Continue from the first two contacts",
+    "exit_action": "Arm tip curls around the corner"
+  },
+  {
+    "shot_id": "S03",
+    "prompt": "Original vertical cinematic clip. Restrained violet paths reveal local neural networks inside the moving arm without changing anatomy. Subject lock: the same common octopus with a pale crescent scar above the left eye, seven visible intact arms, and consistent mantle pattern. Environment lock: one rocky Mediterranean reef ledge with the same red sponge and narrow crevice. Lighting: soft underwater daylight from upper left with stable particulate and no artificial spotlight. Color: natural rust-brown octopus, blue-green water, pale limestone, restrained violet neural accents. Camera: Transparent anatomical match move. Entry: Follow the curl around the corner. Exit: Neural activity travels back toward the arm base. Screen direction: the octopus travels left-to-right and the explored crevice remains frame right. Leave clean motion handles at both ends; no embedded text.",
+    "negative_prompt": "identity drift, anatomy change, wardrobe change, background jump, lighting flip, reversed screen direction, duplicate subject, watermark, logo, embedded captions",
+    "entry_action": "Follow the curl around the corner",
+    "exit_action": "Neural activity travels back toward the arm base"
+  },
+  {
+    "shot_id": "S04",
+    "prompt": "Original vertical cinematic clip. The explored arm adjusts grip as two neighboring arms brace the same octopus. Subject lock: the same common octopus with a pale crescent scar above the left eye, seven visible intact arms, and consistent mantle pattern. Environment lock: one rocky Mediterranean reef ledge with the same red sponge and narrow crevice. Lighting: soft underwater daylight from upper left with stable particulate and no artificial spotlight. Color: natural rust-brown octopus, blue-green water, pale limestone, restrained violet neural accents. Camera: Medium observational profile. Entry: Continue activity toward the body. Exit: Body begins a measured turn frame right. Screen direction: the octopus travels left-to-right and the explored crevice remains frame right. Leave clean motion handles at both ends; no embedded text.",
+    "negative_prompt": "identity drift, anatomy change, wardrobe change, background jump, lighting flip, reversed screen direction, duplicate subject, watermark, logo, embedded captions",
+    "entry_action": "Continue activity toward the body",
+    "exit_action": "Body begins a measured turn frame right"
+  },
+  {
+    "shot_id": "S05",
+    "prompt": "Original vertical cinematic clip. The same octopus flows through the narrow crevice with coordinated arm waves. Subject lock: the same common octopus with a pale crescent scar above the left eye, seven visible intact arms, and consistent mantle pattern. Environment lock: one rocky Mediterranean reef ledge with the same red sponge and narrow crevice. Lighting: soft underwater daylight from upper left with stable particulate and no artificial spotlight. Color: natural rust-brown octopus, blue-green water, pale limestone, restrained violet neural accents. Camera: Stable lateral underwater track. Entry: Match the measured turn. Exit: Mantle clears the crevice. Screen direction: the octopus travels left-to-right and the explored crevice remains frame right. Leave clean motion handles at both ends; no embedded text.",
+    "negative_prompt": "identity drift, anatomy change, wardrobe change, background jump, lighting flip, reversed screen direction, duplicate subject, watermark, logo, embedded captions",
+    "entry_action": "Match the measured turn",
+    "exit_action": "Mantle clears the crevice"
+  },
+  {
+    "shot_id": "S06",
+    "prompt": "Original vertical cinematic clip. The octopus settles beyond the crevice and resumes natural exploration. Subject lock: the same common octopus with a pale crescent scar above the left eye, seven visible intact arms, and consistent mantle pattern. Environment lock: one rocky Mediterranean reef ledge with the same red sponge and narrow crevice. Lighting: soft underwater daylight from upper left with stable particulate and no artificial spotlight. Color: natural rust-brown octopus, blue-green water, pale limestone, restrained violet neural accents. Camera: Slow respectful pullback. Entry: Continue after the mantle clears. Exit: Hold on calm arm-by-arm exploration. Screen direction: the octopus travels left-to-right and the explored crevice remains frame right. Leave clean motion handles at both ends; no embedded text.",
+    "negative_prompt": "identity drift, anatomy change, wardrobe change, background jump, lighting flip, reversed screen direction, duplicate subject, watermark, logo, embedded captions",
+    "entry_action": "Continue after the mantle clears",
+    "exit_action": "Hold on calm arm-by-arm exploration"
+  }
+]
