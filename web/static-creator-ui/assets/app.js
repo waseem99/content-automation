@@ -37,6 +37,7 @@
   let portfolioReferences = [];
   let activeContentReview = null;
   let reviewMediaUrls = [];
+  let monthStudioItems = new Map();
 
   const stageLabels = { idea: "Idea review", script: "Script review", preview_build: "Preview build", preview: "Preview review", premium: "Premium render", package: "Package review", ready: "Ready", published: "Published record", blocked: "Blocked", archived: "Archived" };
 
@@ -170,6 +171,32 @@
     return value ? JSON.parse(value) : null;
   }
 
+  function openStaticContentReview(item) {
+    const dialog = $("content-review");
+    const pkg = item.studioPackage;
+    const decisions = JSON.parse(localStorage.getItem("rawr-month-review-decisions") || "{}");
+    const saved = decisions[item.id] || { decision: "pending", rationale: "" };
+    const scenes = pkg.scene_plan.map((scene) => `<article class="artifact-card"><strong>${scene.start_seconds}–${scene.end_seconds}s · ${escapeHtml(scene.purpose)}</strong><p>${escapeHtml(scene.narration)}</p><small>${escapeHtml(scene.visual_direction)} · Preview: ${escapeHtml(scene.preview_route)} · Final: ${escapeHtml(scene.final_route)}</small></article>`).join("");
+    const platforms = pkg.platform_packages.map((entry) => `<article class="artifact-card"><strong>${escapeHtml(entry.platform.replaceAll("_", " "))}</strong><p>${escapeHtml(entry.title)}</p><p>${escapeHtml(entry.caption)}</p><small>#${entry.hashtags.map(escapeHtml).join(" #")} · ${escapeHtml(entry.cta)}</small></article>`).join("");
+    $("content-review-body").innerHTML = `
+      <div class="review-header"><div><p class="eyebrow dark-eyebrow">Rawr Nation · Batch ${pkg.batch}</p><h2>${escapeHtml(pkg.title)}</h2><p>${escapeHtml(pkg.concept)}</p></div><span class="stage-pill script">Script review</span></div>
+      <div class="review-grid">
+        <section><h3>Narration</h3><p class="review-script-copy">${escapeHtml(pkg.script.narration)}</p><dl><div><dt>Duration</dt><dd>${pkg.duration_seconds}s</dd></div><div><dt>Words</dt><dd>${pkg.script.word_count}</dd></div><div><dt>Pillar</dt><dd>${escapeHtml(pkg.pillar)}</dd></div><div><dt>Preview</dt><dd>${escapeHtml(pkg.production.free_preview.replaceAll("_", " "))}</dd></div></dl><h3>Scene plan</h3><div class="artifact-grid">${scenes}</div></section>
+        <section><h3>Thumbnail</h3><article class="artifact-card"><strong>${escapeHtml(pkg.thumbnail.primary_text)}</strong><p>${escapeHtml(pkg.thumbnail.composition)}</p><small>Alternates: ${pkg.thumbnail.alternates.map(escapeHtml).join(" · ")}</small></article><h3>Platform packages</h3><div class="artifact-grid">${platforms}</div><h3>Voice direction</h3><p>${escapeHtml(pkg.voice.style)} · ${escapeHtml(pkg.voice.pace)} · development: ${escapeHtml(pkg.voice.development_provider)}</p></section>
+      </div>
+      <section class="review-decision"><div><h3>Human decision</h3><p>Current local decision: <strong id="static-review-state">${escapeHtml(saved.decision.replaceAll("_", " "))}</strong>. Paid rendering and publishing remain blocked.</p></div><label>Rationale<textarea id="static-review-rationale" rows="3" placeholder="What should stay or change?">${escapeHtml(saved.rationale)}</textarea></label><div class="decision-actions"><button type="button" data-static-decision="approved">Approve script</button><button type="button" class="secondary" data-static-decision="changes_requested">Request changes</button><button type="button" class="danger" data-static-decision="rejected">Reject</button><button type="button" class="secondary" id="download-static-package">Download package</button></div><span id="static-review-status" class="review-status"></span></section>`;
+    dialog.showModal();
+    $("download-static-package").addEventListener("click", () => download(`${item.id}-production-package.json`, JSON.stringify(pkg, null, 2), "application/json"));
+    $("content-review-body").querySelectorAll("[data-static-decision]").forEach((button) => button.addEventListener("click", () => {
+      const rationale = $("static-review-rationale").value.trim();
+      if (rationale.length < 10) { $("static-review-status").textContent = "Add a specific rationale of at least 10 characters."; return; }
+      decisions[item.id] = { decision: button.dataset.staticDecision, rationale, reviewed_at: new Date().toISOString(), content_fingerprint: pkg.content_fingerprint };
+      localStorage.setItem("rawr-month-review-decisions", JSON.stringify(decisions));
+      $("static-review-state").textContent = button.dataset.staticDecision.replaceAll("_", " ");
+      $("static-review-status").textContent = "Decision saved in this browser. Database sync will preserve it when connected.";
+    }));
+  }
+
   async function openContentReview(contentId) {
     const dialog = $("content-review");
     $("content-review-body").innerHTML = '<p class="review-loading">Loading content workspace…</p>';
@@ -225,11 +252,17 @@
 
   async function loadMonthFactory() {
     try {
-      const response = await fetch("data/month-factory.json", { cache: "no-store" });
+      const [response, studioResponse] = await Promise.all([
+        fetch("data/month-factory.json", { cache: "no-store" }),
+        fetch("data/rawr-nation-month-studio.json", { cache: "no-store" })
+      ]);
       if (!response.ok) throw new Error("month factory unavailable");
+      if (!studioResponse.ok) throw new Error("Rawr Nation month studio unavailable");
       const factory = await response.json();
+      const studio = await studioResponse.json();
+      monthStudioItems = new Map(studio.items.map((item) => [item.id, item]));
       portfolioBrands = factory.brands;
-      portfolioItems = factory.items;
+      portfolioItems = factory.items.map((item) => ({ ...item, studioPackage: monthStudioItems.get(item.id) || null }));
       portfolioReadiness = {
         brand_count: factory.priority_brand_count,
         planned_count: factory.summary.concepts_ready,
@@ -238,7 +271,7 @@
       };
       state.brandFilter = "all";
       $("brand-filter").innerHTML = '<option value="all">All brands</option>' + portfolioBrands.map((brand) => `<option value="${brand.id}">${escapeHtml(brand.name)}</option>`).join("");
-      updateDataMode(`${factory.summary.concepts_ready} real concepts · ${factory.summary.brands_blocked_for_brief} briefs needed`, false);
+      updateDataMode(`${studio.summary.scripts_ready} Rawr Nation scripts ready · ${studio.summary.batch_one_preview_queue} previews queued`, false);
       renderPortfolio();
     } catch (_error) {
       restoreDemoPortfolio();
@@ -270,8 +303,12 @@
     $("content-queue").addEventListener("click", async (event) => {
       if (!event.target.matches(".table-action")) return;
       const item = portfolioItems.find((candidate) => candidate.id === event.target.dataset.itemId);
+      if (item?.studioPackage && !window.PortfolioApi?.configured()) {
+        openStaticContentReview(item);
+        return;
+      }
       if (!item?.id || !window.PortfolioApi?.configured()) {
-        alert(`${event.target.dataset.itemTitle}\n\nConnect the operator API to open the database-backed review workspace.`);
+        alert(`${event.target.dataset.itemTitle}\n\nThis brand still needs a generated review package or a connected operator API.`);
         return;
       }
       await openContentReview(item.id);
