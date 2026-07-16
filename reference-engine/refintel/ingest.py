@@ -5,7 +5,12 @@ import shutil
 import uuid
 from pathlib import Path
 
-from .acquisition import AcquisitionService, sanitize_diagnostic
+from .acquisition import (
+    AcquisitionManifest,
+    AcquisitionService,
+    AcquisitionStatus,
+    sanitize_diagnostic,
+)
 from .adapters import (
     ReferenceInputType,
     canonicalize_url,
@@ -82,6 +87,35 @@ def reference_id_from_key(canonical_key: str) -> str:
     return f"ref-{hashlib.sha256(canonical_key.encode('utf-8')).hexdigest()[:12]}"
 
 
+def has_valid_cached_acquisition(project: ReferenceProject) -> bool:
+    """Only reuse a URL acquisition whose manifest and primary bytes both verify."""
+    workspace = Path(project.workspace_path)
+    manifest_path = workspace / "source" / "acquisition-manifest.json"
+    if not manifest_path.is_file():
+        return False
+    try:
+        manifest = AcquisitionManifest.model_validate_json(
+            manifest_path.read_text(encoding="utf-8")
+        )
+    except ValueError:
+        return False
+    if manifest.status not in {AcquisitionStatus.SUCCEEDED, AcquisitionStatus.REUSED}:
+        return False
+    if not manifest.primary_asset:
+        return False
+    primary = workspace / manifest.primary_asset
+    record = next(
+        (asset for asset in manifest.assets if asset.relative_path == manifest.primary_asset),
+        None,
+    )
+    return bool(
+        primary.is_file()
+        and primary.stat().st_size > 0
+        and record is not None
+        and record.sha256 == sha256_file(primary)
+    )
+
+
 class IngestionService:
     def __init__(self, store: WorkspaceStore) -> None:
         self.store = store
@@ -156,26 +190,36 @@ class IngestionService:
         canonical_key = canonical_url_key(url)
         existing_id = self.store.find_by_canonical_key(canonical_key)
         if existing_id and not force_new:
-            return self.store.load_project(existing_id)
-        reference_id = (
-            reference_id_from_key(canonical_key)
-            if not force_new
-            else f"{reference_id_from_key(canonical_key)}-{uuid.uuid4().hex[:6]}"
-        )
-        workspace = self.store.create_workspace(reference_id)
-        project = ReferenceProject(
-            reference_id=reference_id,
-            status=ProjectStatus.INGESTING,
-            source=SourceDescriptor(
-                kind="url",
-                platform=platform,
-                original_url=canonicalize_url(url),
-                title=title or f"{platform.value} reference",
-                canonical_key=canonical_key,
-            ),
-            access=SourceAccess(declaration=rights, operator_note=operator_note),
-            workspace_path=str(workspace),
-        )
+            project = self.store.load_project(existing_id)
+            if has_valid_cached_acquisition(project):
+                return project
+            reference_id = project.reference_id
+            workspace = Path(project.workspace_path)
+            project.status = ProjectStatus.INGESTING
+            project.errors = []
+            project.access = SourceAccess(declaration=rights, operator_note=operator_note)
+            if title:
+                project.source.title = title
+        else:
+            reference_id = (
+                reference_id_from_key(canonical_key)
+                if not force_new
+                else f"{reference_id_from_key(canonical_key)}-{uuid.uuid4().hex[:6]}"
+            )
+            workspace = self.store.create_workspace(reference_id)
+            project = ReferenceProject(
+                reference_id=reference_id,
+                status=ProjectStatus.INGESTING,
+                source=SourceDescriptor(
+                    kind="url",
+                    platform=platform,
+                    original_url=canonicalize_url(url),
+                    title=title or f"{platform.value} reference",
+                    canonical_key=canonical_key,
+                ),
+                access=SourceAccess(declaration=rights, operator_note=operator_note),
+                workspace_path=str(workspace),
+            )
         self.store.save_project(project)
         try:
             outcome = AcquisitionService().acquire(
