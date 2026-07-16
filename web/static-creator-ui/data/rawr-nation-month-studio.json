@@ -33,9 +33,9 @@
       "workflow_stage": "preview_queue",
       "script": {
         "hook": "A prey animal can look alert and still never see the predator coming.",
-        "narration": "A prey animal can look alert and still never see the predator coming. Watch the visible clue first. Show where common prey animals cannot see and how stalking predators approach through that narrow visual gap. Eye placement creates broad awareness, but the remaining visual gap can become an approach lane. Survival can turn on the few degrees an animal cannot monitor.",
+        "narration": "A prey animal can look alert and still never see the predator coming. Watch the prey scan left and right while one narrow approach corridor remains uncovered. Show where common prey animals cannot see and how stalking predators approach through that narrow visual gap. Eye placement creates broad awareness, but the remaining visual gap can become an approach lane. Survival can turn on the few degrees an animal cannot monitor.",
         "payoff": "Survival can turn on the few degrees an animal cannot monitor.",
-        "word_count": 61,
+        "word_count": 70,
         "fact_review_required": true
       },
       "scene_plan": [
@@ -55,7 +55,7 @@
           "start_seconds": 4,
           "end_seconds": 11,
           "purpose": "observable_evidence",
-          "narration": "Watch the visible clue first.",
+          "narration": "Watch the prey scan left and right while one narrow approach corridor remains uncovered.",
           "visual_direction": "One continuous wildlife action with a restrained tracking move.",
           "preview_route": "open_source_motion",
           "final_route": "premium_video",
@@ -158,7 +158,7 @@
         "visual": "pending_preview",
         "premium_spend": "blocked"
       },
-      "content_fingerprint": "6506e0511a58d2074771ccb770b1733ca8a3ef4b2eaabc4e42ff03d0baac84fe"
+      "content_fingerprint": "2e69f19e1bb46cabcdd4ee07acd2bec0c6fb7b357d9ba1ea3a193d0bf3cc9d11"
     },
     {
       "id": "rawr-nation-2026-08-01-02",
@@ -172,9 +172,9 @@
       "workflow_stage": "preview_queue",
       "script": {
         "hook": "An owl does not merely fly quietly. Its wings dismantle the sound before prey can react.",
-        "narration": "An owl does not merely fly quietly. Its wings dismantle the sound before prey can react. Watch the visible clue first. Explain how fringed feather edges break up airflow and reduce the sound made by a hunting owl in flight. Comb-like leading edges and soft fringes break turbulent airflow into smaller, quieter patterns. The silence is not magic; it is feather structure controlling air.",
+        "narration": "An owl does not merely fly quietly. Its wings dismantle the sound before prey can react. Compare an ordinary wing beat with the owl's feather edge as air passes across it. Explain how fringed feather edges break up airflow and reduce the sound made by a hunting owl in flight. Comb-like leading edges and soft fringes break turbulent airflow into smaller, quieter patterns. The silence is not magic; it is feather structure controlling air.",
         "payoff": "The silence is not magic; it is feather structure controlling air.",
-        "word_count": 64,
+        "word_count": 74,
         "fact_review_required": true
       },
       "scene_plan": [
@@ -194,7 +194,7 @@
           "start_seconds": 3,
           "end_seconds": 9,
           "purpose": "observable_evidence",
-          "narration": "Watch the visible clue first.",
+          "narration": "Compare an ordinary wing beat with the owl's feather edge as air passes across it.",
           "visual_direction": "One continuous wildlife action with a restrained tracking move.",
           "preview_route": "open_source_motion",
           "final_route": "premium_video",
@@ -297,7 +297,7 @@
         "visual": "pending_preview",
         "premium_spend": "blocked"
       },
-      "content_fingerprint": "0566ce4d0bdd6df07c9f36c69003a4b6cd16be19635745ba5abdffc5c8f8b8a9"
+      "content_fingerprint": "3366586e0eb0dca5bf94af7fbba8a1f84b6f42af1dc1a20872d5b48fd911ee9d"
     },
     {
       "id": "rawr-nation-2026-08-01-03",
@@ -311,9 +311,9 @@
       "workflow_stage": "preview_queue",
       "script": {
         "hook": "This strike is so fast that the water delivers a second hit.",
-        "narration": "This strike is so fast that the water delivers a second hit. Watch the visible clue first. Visualize how a mantis shrimp strike creates a collapsing cavitation bubble and a brief flash, separate from the direct impact. The club accelerates water into a low-pressure cavitation bubble that collapses with shock, heat, and a tiny flash. The prey faces the punch\u2014and then the bubble's collapse.",
+        "narration": "This strike is so fast that the water delivers a second hit. Follow the club through the water before the first impact reaches the target. Visualize how a mantis shrimp strike creates a collapsing cavitation bubble and a brief flash, separate from the direct impact. The club accelerates water into a low-pressure cavitation bubble that collapses with shock, heat, and a tiny flash. The prey faces the punch\u2014and then the bubble's collapse.",
         "payoff": "The prey faces the punch\u2014and then the bubble's collapse.",
-        "word_count": 64,
+        "word_count": 72,
         "fact_review_required": true
       },
       "scene_plan": [
@@ -333,7 +333,7 @@
           "start_seconds": 3,
           "end_seconds": 9,
           "purpose": "observable_evidence",
-          "narration": "Watch the visible clue first.",
+          "narration": "Follow the club through the water before the first impact reaches the target.",
           "visual_direction": "One continuous wildlife action with a restrained tracking move.",
           "preview_route": "open_source_motion",
           "final_route": "premium_video",
@@ -436,7 +436,7 @@
         "visual": "pending_preview",
         "premium_spend": "blocked"
       },
-      "content_fingerprint": "4fa234633d415a02cc5a3b7115439ea3cfcf853b96c0eac559f23bf9bbdca99b"
+      "content_fingerprint": "f89e81c4ba23ae5bab3b654b4518a40f80c8d0c6a2606cd0574dcc347b160314"
     },
     {
       "id": "rawr-nation-2026-08-01-04",
@@ -450,9 +450,9 @@
       "workflow_stage": "preview_queue",
       "script": {
         "hook": "Even buried prey cannot hide its heartbeat from this shark.",
-        "narration": "Even buried prey cannot hide its heartbeat from this shark. Watch the visible clue first. Reveal how ampullae around a shark's snout detect weak electrical fields produced by nearby living animals. Gel-filled pores around the snout conduct weak electrical changes toward sensory cells. In dark or cloudy water, electricity becomes another map of life.",
+        "narration": "Even buried prey cannot hide its heartbeat from this shark. A hidden animal still produces tiny electrical changes with every muscle and heartbeat. Reveal how ampullae around a shark's snout detect weak electrical fields produced by nearby living animals. Gel-filled pores around the snout conduct weak electrical changes toward sensory cells. In dark or cloudy water, electricity becomes another map of life.",
         "payoff": "In dark or cloudy water, electricity becomes another map of life.",
-        "word_count": 54,
+        "word_count": 62,
         "fact_review_required": true
       },
       "scene_plan": [
@@ -472,7 +472,7 @@
           "start_seconds": 3,
           "end_seconds": 9,
           "purpose": "observable_evidence",
-          "narration": "Watch the visible clue first.",
+          "narration": "A hidden animal still produces tiny electrical changes with every muscle and heartbeat.",
           "visual_direction": "One continuous wildlife action with a restrained tracking move.",
           "preview_route": "open_source_motion",
           "final_route": "premium_video",
@@ -575,7 +575,7 @@
         "visual": "pending_preview",
         "premium_spend": "blocked"
       },
-      "content_fingerprint": "4c10cf676bb7f085ead8b4dd702fa2983cdee78a1c5c0757b34c7c7664b1ee6c"
+      "content_fingerprint": "810c606962d6fe4851b21b5302602765049b30c03ac9b65affc1774b14ccb7a7"
     },
     {
       "id": "rawr-nation-2026-08-01-05",
@@ -589,9 +589,9 @@
       "workflow_stage": "preview_queue",
       "script": {
         "hook": "Corner this lizard and the defence may come from its eyes.",
-        "narration": "Corner this lizard and the defence may come from its eyes. Watch the visible clue first. Explain the horned lizard's eye-sinus defence and why the surprising blood spray can deter particular predators. Pressure around the eye sinuses can rupture tiny vessels and direct a blood stream toward a threat. Against some predators, the surprise\u2014and the chemistry\u2014can end the attack.",
+        "narration": "Corner this lizard and the defence may come from its eyes. The defence begins only after escape, camouflage, and inflation have failed. Explain the horned lizard's eye-sinus defence and why the surprising blood spray can deter particular predators. Pressure around the eye sinuses can rupture tiny vessels and direct a blood stream toward a threat. Against some predators, the surprise\u2014and the chemistry\u2014can end the attack.",
         "payoff": "Against some predators, the surprise\u2014and the chemistry\u2014can end the attack.",
-        "word_count": 59,
+        "word_count": 65,
         "fact_review_required": true
       },
       "scene_plan": [
@@ -611,7 +611,7 @@
           "start_seconds": 3,
           "end_seconds": 9,
           "purpose": "observable_evidence",
-          "narration": "Watch the visible clue first.",
+          "narration": "The defence begins only after escape, camouflage, and inflation have failed.",
           "visual_direction": "One continuous wildlife action with a restrained tracking move.",
           "preview_route": "open_source_motion",
           "final_route": "premium_video",
@@ -714,7 +714,7 @@
         "visual": "pending_preview",
         "premium_spend": "blocked"
       },
-      "content_fingerprint": "c7dc215201324a34653c08ec38286d705a0355d19f3646ee94c7757c4a17b186"
+      "content_fingerprint": "3ebe9276851543d3e2af6fb3de34cf8740a304353fb4fc2238adc96e082751a9"
     },
     {
       "id": "rawr-nation-2026-08-01-06",
@@ -728,9 +728,9 @@
       "workflow_stage": "preview_queue",
       "script": {
         "hook": "A camel's hump is not a water tank.",
-        "narration": "A camel's hump is not a water tank. Watch the visible clue first. Correct the hump myth by showing fat storage, water conservation, and the body systems that help camels endure arid conditions. It stores fat, while the rest of the body limits water loss and tolerates dehydration unusually well. The hump stores fuel; the camel's whole physiology saves water.",
+        "narration": "A camel's hump is not a water tank. Open the hump and the supposed water reservoir is nowhere to be found. Correct the hump myth by showing fat storage, water conservation, and the body systems that help camels endure arid conditions. It stores fat, while the rest of the body limits water loss and tolerates dehydration unusually well. The hump stores fuel; the camel's whole physiology saves water.",
         "payoff": "The hump stores fuel; the camel's whole physiology saves water.",
-        "word_count": 60,
+        "word_count": 68,
         "fact_review_required": true
       },
       "scene_plan": [
@@ -750,7 +750,7 @@
           "start_seconds": 4,
           "end_seconds": 11,
           "purpose": "observable_evidence",
-          "narration": "Watch the visible clue first.",
+          "narration": "Open the hump and the supposed water reservoir is nowhere to be found.",
           "visual_direction": "One continuous wildlife action with a restrained tracking move.",
           "preview_route": "open_source_motion",
           "final_route": "premium_video",
@@ -853,7 +853,7 @@
         "visual": "pending_preview",
         "premium_spend": "blocked"
       },
-      "content_fingerprint": "bdf3a2ed678152fde7f203334b59fa6c77d9eeadb766f893b2e99b33547fb1aa"
+      "content_fingerprint": "5aff18f6e65f7a50eb0f263e7024122e85cb8025be674f59c32a219c2ada50a9"
     },
     {
       "id": "rawr-nation-2026-08-01-07",
@@ -867,9 +867,9 @@
       "workflow_stage": "script_review",
       "script": {
         "hook": "A gecko climbs glass without glue, suction, or sticky liquid.",
-        "narration": "A gecko climbs glass without glue, suction, or sticky liquid. Watch the visible clue first. Zoom from a gecko foot to microscopic setae and explain how enormous contact area enables dry adhesion. Microscopic setae branch into vast numbers of close contacts that add weak molecular attractions together. By changing toe angle, the same powerful grip releases in an instant.",
+        "narration": "A gecko climbs glass without glue, suction, or sticky liquid. One planted toe holds while the next foot peels and resets higher on the glass. Zoom from a gecko foot to microscopic setae and explain how enormous contact area enables dry adhesion. Microscopic setae branch into vast numbers of close contacts that add weak molecular attractions together. By changing toe angle, the same powerful grip releases in an instant.",
         "payoff": "By changing toe angle, the same powerful grip releases in an instant.",
-        "word_count": 59,
+        "word_count": 69,
         "fact_review_required": true
       },
       "scene_plan": [
@@ -889,7 +889,7 @@
           "start_seconds": 3,
           "end_seconds": 9,
           "purpose": "observable_evidence",
-          "narration": "Watch the visible clue first.",
+          "narration": "One planted toe holds while the next foot peels and resets higher on the glass.",
           "visual_direction": "One continuous wildlife action with a restrained tracking move.",
           "preview_route": "open_source_motion",
           "final_route": "premium_video",
@@ -992,7 +992,7 @@
         "visual": "pending_preview",
         "premium_spend": "blocked"
       },
-      "content_fingerprint": "d1963ab344e70af947dfb2998f6735677b1832cc65bcf16025e7cb8b0a78be52"
+      "content_fingerprint": "03f9d807f7c8ecb9fd76ee995780472f24c0e79e0ad20e073287df3ff7914107"
     },
     {
       "id": "rawr-nation-2026-08-01-08",
@@ -1006,9 +1006,9 @@
       "workflow_stage": "script_review",
       "script": {
         "hook": "In darkness, this snake can detect the warm outline of prey.",
-        "narration": "In darkness, this snake can detect the warm outline of prey. Watch the visible clue first. Map how pit vipers combine infrared-sensitive pit organs with vision to locate warm prey in darkness. Pit membranes respond to infrared energy and the brain combines that signal with ordinary vision. The result is not a photograph, but a second channel for locating heat.",
+        "narration": "In darkness, this snake can detect the warm outline of prey. A warm body stands out even when visible detail disappears into darkness. Map how pit vipers combine infrared-sensitive pit organs with vision to locate warm prey in darkness. Pit membranes respond to infrared energy and the brain combines that signal with ordinary vision. The result is not a photograph, but a second channel for locating heat.",
         "payoff": "The result is not a photograph, but a second channel for locating heat.",
-        "word_count": 60,
+        "word_count": 67,
         "fact_review_required": true
       },
       "scene_plan": [
@@ -1028,7 +1028,7 @@
           "start_seconds": 3,
           "end_seconds": 9,
           "purpose": "observable_evidence",
-          "narration": "Watch the visible clue first.",
+          "narration": "A warm body stands out even when visible detail disappears into darkness.",
           "visual_direction": "One continuous wildlife action with a restrained tracking move.",
           "preview_route": "open_source_motion",
           "final_route": "premium_video",
@@ -1131,7 +1131,7 @@
         "visual": "pending_preview",
         "premium_spend": "blocked"
       },
-      "content_fingerprint": "546528a9ae11f1537e195accd281bbaa47921697f2df05d816b17055c4415d54"
+      "content_fingerprint": "50292f2228c9fc7152c62268403c5bd88e5df33d9973892b5ccb17be640804cc"
     },
     {
       "id": "rawr-nation-2026-08-01-09",
@@ -1145,9 +1145,9 @@
       "workflow_stage": "script_review",
       "script": {
         "hook": "This frog can stop moving, partly freeze, and wake when winter releases it.",
-        "narration": "This frog can stop moving, partly freeze, and wake when winter releases it. Watch the visible clue first. Follow a wood frog through winter as ice forms outside its cells while glucose helps protect vulnerable tissues. Ice forms mainly outside cells while glucose rises through vulnerable tissues and limits damaging dehydration. Its winter survival is controlled freezing\u2014not invulnerability to ice.",
+        "narration": "This frog can stop moving, partly freeze, and wake when winter releases it. As temperature falls, the frog becomes rigid and its heartbeat can become undetectable. Follow a wood frog through winter as ice forms outside its cells while glucose helps protect vulnerable tissues. Ice forms mainly outside cells while glucose rises through vulnerable tissues and limits damaging dehydration. Its winter survival is controlled freezing\u2014not invulnerability to ice.",
         "payoff": "Its winter survival is controlled freezing\u2014not invulnerability to ice.",
-        "word_count": 60,
+        "word_count": 68,
         "fact_review_required": true
       },
       "scene_plan": [
@@ -1167,7 +1167,7 @@
           "start_seconds": 3,
           "end_seconds": 9,
           "purpose": "observable_evidence",
-          "narration": "Watch the visible clue first.",
+          "narration": "As temperature falls, the frog becomes rigid and its heartbeat can become undetectable.",
           "visual_direction": "One continuous wildlife action with a restrained tracking move.",
           "preview_route": "open_source_motion",
           "final_route": "premium_video",
@@ -1270,7 +1270,7 @@
         "visual": "pending_preview",
         "premium_spend": "blocked"
       },
-      "content_fingerprint": "889c90f7638c65712093ae6f81d154d6e362e0964fafdbf4a49de59516421fe0"
+      "content_fingerprint": "fe90d01ef46d102dff2f958dc712696c3a8b6fcf2ff761d10a07ae9540d58e1c"
     },
     {
       "id": "rawr-nation-2026-08-01-10",
@@ -1284,9 +1284,9 @@
       "workflow_stage": "script_review",
       "script": {
         "hook": "Zebra stripes may confuse something much smaller than a lion.",
-        "narration": "Zebra stripes may confuse something much smaller than a lion. Watch the visible clue first. Test the evidence that zebra stripes disrupt the final landing approach of biting flies rather than simply hiding zebras from lions. Experiments show biting flies struggle with their final approach and landing on striped surfaces. The strongest evidence points to disrupted landings, not camouflage from big predators.",
+        "narration": "Zebra stripes may confuse something much smaller than a lion. Watch a fly approach normally, then lose control during the final centimetres above stripes. Test the evidence that zebra stripes disrupt the final landing approach of biting flies rather than simply hiding zebras from lions. Experiments show biting flies struggle with their final approach and landing on striped surfaces. The strongest evidence points to disrupted landings, not camouflage from big predators.",
         "payoff": "The strongest evidence points to disrupted landings, not camouflage from big predators.",
-        "word_count": 62,
+        "word_count": 71,
         "fact_review_required": true
       },
       "scene_plan": [
@@ -1306,7 +1306,7 @@
           "start_seconds": 3,
           "end_seconds": 9,
           "purpose": "observable_evidence",
-          "narration": "Watch the visible clue first.",
+          "narration": "Watch a fly approach normally, then lose control during the final centimetres above stripes.",
           "visual_direction": "One continuous wildlife action with a restrained tracking move.",
           "preview_route": "open_source_motion",
           "final_route": "premium_video",
@@ -1409,7 +1409,7 @@
         "visual": "pending_preview",
         "premium_spend": "blocked"
       },
-      "content_fingerprint": "736808f5fe1b1731acaf7e35b24ea8596e7e689189f271138820eabdd476eea8"
+      "content_fingerprint": "6c91a6e8592220008ff79f2dc8f93cefeb99c41eb9d0c1e9c545c811f666a590"
     },
     {
       "id": "rawr-nation-2026-08-01-11",
@@ -1423,9 +1423,9 @@
       "workflow_stage": "script_review",
       "script": {
         "hook": "In a desert with almost no rain, this beetle waits for water in the air.",
-        "narration": "In a desert with almost no rain, this beetle waits for water in the air. Watch the visible clue first. Show how a desert beetle positions its body to collect fog droplets and channel usable water toward its mouth. It raises its body into fog so droplets collect, merge, and travel down its surface toward the mouth. A change in posture turns moving mist into a drink.",
+        "narration": "In a desert with almost no rain, this beetle waits for water in the air. At the right angle, droplets grow on the raised body instead of vanishing into sand. Show how a desert beetle positions its body to collect fog droplets and channel usable water toward its mouth. It raises its body into fog so droplets collect, merge, and travel down its surface toward the mouth. A change in posture turns moving mist into a drink.",
         "payoff": "A change in posture turns moving mist into a drink.",
-        "word_count": 67,
+        "word_count": 77,
         "fact_review_required": true
       },
       "scene_plan": [
@@ -1445,7 +1445,7 @@
           "start_seconds": 4,
           "end_seconds": 11,
           "purpose": "observable_evidence",
-          "narration": "Watch the visible clue first.",
+          "narration": "At the right angle, droplets grow on the raised body instead of vanishing into sand.",
           "visual_direction": "One continuous wildlife action with a restrained tracking move.",
           "preview_route": "open_source_motion",
           "final_route": "premium_video",
@@ -1548,7 +1548,7 @@
         "visual": "pending_preview",
         "premium_spend": "blocked"
       },
-      "content_fingerprint": "d719e90bf2ede921b582803e10c43a9e5cc73eba258c9fa18c946ed9d35f64a5"
+      "content_fingerprint": "c745f2987270ad6f95f4bbb35f594fb92672edf97047066ceea5476f4f2461ae"
     },
     {
       "id": "rawr-nation-2026-08-01-12",
@@ -1562,9 +1562,9 @@
       "workflow_stage": "script_review",
       "script": {
         "hook": "A crocodile can detect a disturbance too small for us to notice.",
-        "narration": "A crocodile can detect a disturbance too small for us to notice. Watch the visible clue first. Explain the pressure-sensitive dome organs around crocodilian jaws that detect tiny disturbances at the water surface. Dome pressure receptors around the jaws respond when surface ripples bend the skin by tiny amounts. At the waterline, its face works like a field of motion sensors.",
+        "narration": "A crocodile can detect a disturbance too small for us to notice. A single drop spreads across the surface before the animal turns toward its source. Explain the pressure-sensitive dome organs around crocodilian jaws that detect tiny disturbances at the water surface. Dome pressure receptors around the jaws respond when surface ripples bend the skin by tiny amounts. At the waterline, its face works like a field of motion sensors.",
         "payoff": "At the waterline, its face works like a field of motion sensors.",
-        "word_count": 61,
+        "word_count": 70,
         "fact_review_required": true
       },
       "scene_plan": [
@@ -1584,7 +1584,7 @@
           "start_seconds": 3,
           "end_seconds": 9,
           "purpose": "observable_evidence",
-          "narration": "Watch the visible clue first.",
+          "narration": "A single drop spreads across the surface before the animal turns toward its source.",
           "visual_direction": "One continuous wildlife action with a restrained tracking move.",
           "preview_route": "open_source_motion",
           "final_route": "premium_video",
@@ -1687,7 +1687,7 @@
         "visual": "pending_preview",
         "premium_spend": "blocked"
       },
-      "content_fingerprint": "236c5b5ad43e910cc0dc37914373081427892f546ffcc4486559d59b59b1b30e"
+      "content_fingerprint": "467a325c59691f48f636c5c376a39f5de1fc45df90e5a027d68ff9cda03bac46"
     },
     {
       "id": "rawr-nation-2026-08-01-13",
@@ -1701,9 +1701,9 @@
       "workflow_stage": "script_review",
       "script": {
         "hook": "A goat's rectangular pupil is a panoramic survival tool.",
-        "narration": "A goat's rectangular pupil is a panoramic survival tool. Watch the visible clue first. Compare horizontal pupils with round and vertical pupils to show how grazing animals monitor a broad horizon. Horizontal pupils admit a broad strip of the horizon, and the eyes rotate as the head lowers to graze. The landscape stays level even while the animal's head points down.",
+        "narration": "A goat's rectangular pupil is a panoramic survival tool. Lower the goat's head and notice that the long pupil remains aligned with the horizon. Compare horizontal pupils with round and vertical pupils to show how grazing animals monitor a broad horizon. Horizontal pupils admit a broad strip of the horizon, and the eyes rotate as the head lowers to graze. The landscape stays level even while the animal's head points down.",
         "payoff": "The landscape stays level even while the animal's head points down.",
-        "word_count": 61,
+        "word_count": 71,
         "fact_review_required": true
       },
       "scene_plan": [
@@ -1723,7 +1723,7 @@
           "start_seconds": 3,
           "end_seconds": 9,
           "purpose": "observable_evidence",
-          "narration": "Watch the visible clue first.",
+          "narration": "Lower the goat's head and notice that the long pupil remains aligned with the horizon.",
           "visual_direction": "One continuous wildlife action with a restrained tracking move.",
           "preview_route": "open_source_motion",
           "final_route": "premium_video",
@@ -1826,7 +1826,7 @@
         "visual": "pending_preview",
         "premium_spend": "blocked"
       },
-      "content_fingerprint": "9e0bb42aa09aa8938ecd704ba351611081cca5e6beefc77ccf557eb6d8c2c799"
+      "content_fingerprint": "297500a38befa09ac6d69533203c8781ca660fcc9e5d01540fc21013f3528c17"
     },
     {
       "id": "rawr-nation-2026-08-01-14",
@@ -1840,9 +1840,9 @@
       "workflow_stage": "script_review",
       "script": {
         "hook": "This fish carries living lights beneath its eyes.",
-        "narration": "This fish carries living lights beneath its eyes. Watch the visible clue first. Explore how flashlight fish use light-producing bacteria beneath their eyes and control the visible glow. Symbiotic bacteria produce the glow, while the fish can cover or rotate the light organs to control flashes. The light can help with orientation, signalling, and feeding in darkness.",
+        "narration": "This fish carries living lights beneath its eyes. Two luminous patches blink beneath the eyes as the fish moves through darkness. Explore how flashlight fish use light-producing bacteria beneath their eyes and control the visible glow. Symbiotic bacteria produce the glow, while the fish can cover or rotate the light organs to control flashes. The light can help with orientation, signalling, and feeding in darkness.",
         "payoff": "The light can help with orientation, signalling, and feeding in darkness.",
-        "word_count": 57,
+        "word_count": 65,
         "fact_review_required": true
       },
       "scene_plan": [
@@ -1862,7 +1862,7 @@
           "start_seconds": 3,
           "end_seconds": 9,
           "purpose": "observable_evidence",
-          "narration": "Watch the visible clue first.",
+          "narration": "Two luminous patches blink beneath the eyes as the fish moves through darkness.",
           "visual_direction": "One continuous wildlife action with a restrained tracking move.",
           "preview_route": "open_source_motion",
           "final_route": "premium_video",
@@ -1965,7 +1965,7 @@
         "visual": "pending_preview",
         "premium_spend": "blocked"
       },
-      "content_fingerprint": "133bb586ca752f7817db3f150dfc2bf82a79cbbfefd7ccb97a91f024d27ad0a0"
+      "content_fingerprint": "d89444248705617db4483a66de2bda0d88e616e664de38acce210505fb5f6d44"
     },
     {
       "id": "rawr-nation-2026-08-01-15",
@@ -1979,9 +1979,9 @@
       "workflow_stage": "script_review",
       "script": {
         "hook": "Porcupines cannot fire their quills across a room.",
-        "narration": "Porcupines cannot fire their quills across a room. Watch the visible clue first. Debunk the projectile-quill myth and demonstrate how loose, barbed quills transfer through direct contact. The quills detach during direct contact, and microscopic barbs can make some of them difficult to remove. The danger is real\u2014but the projectile story is a myth.",
+        "narration": "Porcupines cannot fire their quills across a room. Create distance and no quills fly; contact the coat and the real transfer mechanism appears. Debunk the projectile-quill myth and demonstrate how loose, barbed quills transfer through direct contact. The quills detach during direct contact, and microscopic barbs can make some of them difficult to remove. The danger is real\u2014but the projectile story is a myth.",
         "payoff": "The danger is real\u2014but the projectile story is a myth.",
-        "word_count": 54,
+        "word_count": 64,
         "fact_review_required": true
       },
       "scene_plan": [
@@ -2001,7 +2001,7 @@
           "start_seconds": 3,
           "end_seconds": 9,
           "purpose": "observable_evidence",
-          "narration": "Watch the visible clue first.",
+          "narration": "Create distance and no quills fly; contact the coat and the real transfer mechanism appears.",
           "visual_direction": "One continuous wildlife action with a restrained tracking move.",
           "preview_route": "open_source_motion",
           "final_route": "premium_video",
@@ -2104,7 +2104,7 @@
         "visual": "pending_preview",
         "premium_spend": "blocked"
       },
-      "content_fingerprint": "5565f991028cda6e494885b884a9bfabc0d947f3217f824617eaa2a8f34a5d38"
+      "content_fingerprint": "5494a40a26ad5299baf4090ecf021fcea294714d113ab67902401f4f67db6b9b"
     },
     {
       "id": "rawr-nation-2026-08-01-16",
@@ -2118,9 +2118,9 @@
       "workflow_stage": "script_review",
       "script": {
         "hook": "This bird appears to break a wing exactly when a predator gets close.",
-        "narration": "This bird appears to break a wing exactly when a predator gets close. Watch the visible clue first. Reconstruct a killdeer's broken-wing display that draws a threat away from a vulnerable ground nest. A killdeer moves away from its ground nest while exaggerating a vulnerable, dragging-wing display. Once the threat follows far enough, the injured bird suddenly flies normally.",
+        "narration": "This bird appears to break a wing exactly when a predator gets close. A threat approaches the nest and the parent suddenly becomes the easiest target in view. Reconstruct a killdeer's broken-wing display that draws a threat away from a vulnerable ground nest. A killdeer moves away from its ground nest while exaggerating a vulnerable, dragging-wing display. Once the threat follows far enough, the injured bird suddenly flies normally.",
         "payoff": "Once the threat follows far enough, the injured bird suddenly flies normally.",
-        "word_count": 59,
+        "word_count": 69,
         "fact_review_required": true
       },
       "scene_plan": [
@@ -2140,7 +2140,7 @@
           "start_seconds": 4,
           "end_seconds": 11,
           "purpose": "observable_evidence",
-          "narration": "Watch the visible clue first.",
+          "narration": "A threat approaches the nest and the parent suddenly becomes the easiest target in view.",
           "visual_direction": "One continuous wildlife action with a restrained tracking move.",
           "preview_route": "open_source_motion",
           "final_route": "premium_video",
@@ -2243,7 +2243,7 @@
         "visual": "pending_preview",
         "premium_spend": "blocked"
       },
-      "content_fingerprint": "ff29d9a453d135ea82123c42031a54f858a75bfef40d2be7d1f2577269c0a193"
+      "content_fingerprint": "af2ac19a6c51f96ddc70a761403ab5fe6b1e543159153093f817b383d012145b"
     },
     {
       "id": "rawr-nation-2026-08-01-17",
@@ -2257,9 +2257,9 @@
       "workflow_stage": "script_review",
       "script": {
         "hook": "Sleeping at sea requires remembering every breath.",
-        "narration": "Sleeping at sea requires remembering every breath. Watch the visible clue first. Explain unihemispheric sleep and surface-resting strategies that let some seals balance breathing with vigilance. Some seals rest at the surface or sleep with one brain hemisphere more alert while breathing remains deliberate. Their sleep strategy changes with species, location, and danger.",
+        "narration": "Sleeping at sea requires remembering every breath. Breathing stays tied to access to air even when the animal enters a resting state. Explain unihemispheric sleep and surface-resting strategies that let some seals balance breathing with vigilance. Some seals rest at the surface or sleep with one brain hemisphere more alert while breathing remains deliberate. Their sleep strategy changes with species, location, and danger.",
         "payoff": "Their sleep strategy changes with species, location, and danger.",
-        "word_count": 53,
+        "word_count": 63,
         "fact_review_required": true
       },
       "scene_plan": [
@@ -2279,7 +2279,7 @@
           "start_seconds": 3,
           "end_seconds": 9,
           "purpose": "observable_evidence",
-          "narration": "Watch the visible clue first.",
+          "narration": "Breathing stays tied to access to air even when the animal enters a resting state.",
           "visual_direction": "One continuous wildlife action with a restrained tracking move.",
           "preview_route": "open_source_motion",
           "final_route": "premium_video",
@@ -2382,7 +2382,7 @@
         "visual": "pending_preview",
         "premium_spend": "blocked"
       },
-      "content_fingerprint": "1292b8cedd1cf97f0d3b38d57b088077485631fcd0ea5fffaae3cb4a4a1ec3ff"
+      "content_fingerprint": "e578f97e93abee75ea61765e427a9fccf0e12e88549a9ff95b3daadf98e266f0"
     },
     {
       "id": "rawr-nation-2026-08-01-18",
@@ -2396,9 +2396,9 @@
       "workflow_stage": "script_review",
       "script": {
         "hook": "A cricket's ears are not on its head.",
-        "narration": "A cricket's ears are not on its head. Watch the visible clue first. Locate tympanal hearing organs on a cricket's forelegs and trace how vibrations reach its nervous system. Thin tympanal membranes on the forelegs vibrate with sound and transmit the pattern into sensory pathways. Its knees place hearing close to the ground\u2014and close to danger.",
+        "narration": "A cricket's ears are not on its head. Trace sound toward two small membranes just below the cricket's front-leg joints. Locate tympanal hearing organs on a cricket's forelegs and trace how vibrations reach its nervous system. Thin tympanal membranes on the forelegs vibrate with sound and transmit the pattern into sensory pathways. Its knees place hearing close to the ground\u2014and close to danger.",
         "payoff": "Its knees place hearing close to the ground\u2014and close to danger.",
-        "word_count": 56,
+        "word_count": 63,
         "fact_review_required": true
       },
       "scene_plan": [
@@ -2418,7 +2418,7 @@
           "start_seconds": 3,
           "end_seconds": 9,
           "purpose": "observable_evidence",
-          "narration": "Watch the visible clue first.",
+          "narration": "Trace sound toward two small membranes just below the cricket's front-leg joints.",
           "visual_direction": "One continuous wildlife action with a restrained tracking move.",
           "preview_route": "open_source_motion",
           "final_route": "premium_video",
@@ -2521,7 +2521,7 @@
         "visual": "pending_preview",
         "premium_spend": "blocked"
       },
-      "content_fingerprint": "452427e84a02054758a7266bd780cf0bf9322ad05a8c3cc4146b6f88e42d1ae0"
+      "content_fingerprint": "817beeefde58c9dd11d7fe0d71213a84b56b4e3d0d86fbf4b790662939f3de98"
     },
     {
       "id": "rawr-nation-2026-08-01-19",
@@ -2535,9 +2535,9 @@
       "workflow_stage": "script_review",
       "script": {
         "hook": "A meal full of dangerous microbes enters this bird\u2014and most do not survive the journey.",
-        "narration": "A meal full of dangerous microbes enters this bird\u2014and most do not survive the journey. Watch the visible clue first. Follow a scavenged meal through highly acidic digestion and explain the limits of a vulture's pathogen defences. Highly acidic digestion destroys many pathogens, while immune and microbial defences add protection. Vultures are resilient, not disease-proof; the defence has limits.",
+        "narration": "A meal full of dangerous microbes enters this bird\u2014and most do not survive the journey. The meal may contain microbes that would be dangerous to many other animals. Follow a scavenged meal through highly acidic digestion and explain the limits of a vulture's pathogen defences. Highly acidic digestion destroys many pathogens, while immune and microbial defences add protection. Vultures are resilient, not disease-proof; the defence has limits.",
         "payoff": "Vultures are resilient, not disease-proof; the defence has limits.",
-        "word_count": 59,
+        "word_count": 67,
         "fact_review_required": true
       },
       "scene_plan": [
@@ -2557,7 +2557,7 @@
           "start_seconds": 3,
           "end_seconds": 9,
           "purpose": "observable_evidence",
-          "narration": "Watch the visible clue first.",
+          "narration": "The meal may contain microbes that would be dangerous to many other animals.",
           "visual_direction": "One continuous wildlife action with a restrained tracking move.",
           "preview_route": "open_source_motion",
           "final_route": "premium_video",
@@ -2660,7 +2660,7 @@
         "visual": "pending_preview",
         "premium_spend": "blocked"
       },
-      "content_fingerprint": "ce428e5b72334c4e9b7b213cbd6021c4a7c188a4417d22595f65ff5acb3c7fa5"
+      "content_fingerprint": "60e954dd84089c9085544011efe764c4e49ffaa8235c93606e34c137ff4cd487"
     },
     {
       "id": "rawr-nation-2026-08-01-20",
@@ -2674,9 +2674,9 @@
       "workflow_stage": "script_review",
       "script": {
         "hook": "This spider walks like an ant because being mistaken can keep it alive.",
-        "narration": "This spider walks like an ant because being mistaken can keep it alive. Watch the visible clue first. Show how ant-mimicking spiders copy body shape and movement to avoid predators or approach prey. Body shape, raised front legs, stop-start movement, and association with ants strengthen the disguise. For some species, the mimicry also helps them approach prey.",
+        "narration": "This spider walks like an ant because being mistaken can keep it alive. Count the legs, then watch the front pair rise and move like ant antennae. Show how ant-mimicking spiders copy body shape and movement to avoid predators or approach prey. Body shape, raised front legs, stop-start movement, and association with ants strengthen the disguise. For some species, the mimicry also helps them approach prey.",
         "payoff": "For some species, the mimicry also helps them approach prey.",
-        "word_count": 57,
+        "word_count": 66,
         "fact_review_required": true
       },
       "scene_plan": [
@@ -2696,7 +2696,7 @@
           "start_seconds": 3,
           "end_seconds": 9,
           "purpose": "observable_evidence",
-          "narration": "Watch the visible clue first.",
+          "narration": "Count the legs, then watch the front pair rise and move like ant antennae.",
           "visual_direction": "One continuous wildlife action with a restrained tracking move.",
           "preview_route": "open_source_motion",
           "final_route": "premium_video",
@@ -2799,7 +2799,7 @@
         "visual": "pending_preview",
         "premium_spend": "blocked"
       },
-      "content_fingerprint": "1cfa477e5f47886f82abe578286e654c93cc4b8fb0591b23690663fca3e2556f"
+      "content_fingerprint": "4b8f0d24180f8bf14f726444423fe71e6c9e09e17e634763b8839649a2358ae3"
     },
     {
       "id": "rawr-nation-2026-08-01-21",
@@ -2813,9 +2813,9 @@
       "workflow_stage": "script_review",
       "script": {
         "hook": "A toothed whale receives much of its underwater sound through the lower jaw.",
-        "narration": "A toothed whale receives much of its underwater sound through the lower jaw. Watch the visible clue first. Trace underwater sound through specialized tissues in a toothed whale's lower jaw toward the middle and inner ear. Specialized fatty tissues guide vibration toward the middle and inner ear complexes. Underwater hearing reshapes the pathway, not the need for an ear.",
+        "narration": "A toothed whale receives much of its underwater sound through the lower jaw. Sound reaches the head from water without relying on an external ear flap. Trace underwater sound through specialized tissues in a toothed whale's lower jaw toward the middle and inner ear. Specialized fatty tissues guide vibration toward the middle and inner ear complexes. Underwater hearing reshapes the pathway, not the need for an ear.",
         "payoff": "Underwater hearing reshapes the pathway, not the need for an ear.",
-        "word_count": 59,
+        "word_count": 67,
         "fact_review_required": true
       },
       "scene_plan": [
@@ -2835,7 +2835,7 @@
           "start_seconds": 3,
           "end_seconds": 9,
           "purpose": "observable_evidence",
-          "narration": "Watch the visible clue first.",
+          "narration": "Sound reaches the head from water without relying on an external ear flap.",
           "visual_direction": "One continuous wildlife action with a restrained tracking move.",
           "preview_route": "open_source_motion",
           "final_route": "premium_video",
@@ -2938,7 +2938,7 @@
         "visual": "pending_preview",
         "premium_spend": "blocked"
       },
-      "content_fingerprint": "cc841f09b7732ef9d72e955dd18422491b0cd6b2cb7be2200299bb9b13edbc13"
+      "content_fingerprint": "5d9d61fbf43b5da87b881ff9c67c7cb54ca46c023707f790fb95508584670307"
     },
     {
       "id": "rawr-nation-2026-08-01-22",
@@ -2952,9 +2952,9 @@
       "workflow_stage": "script_review",
       "script": {
         "hook": "An octopus does not change only its colour\u2014it rebuilds the visible surface of its body.",
-        "narration": "An octopus does not change only its colour\u2014it rebuilds the visible surface of its body. Watch the visible clue first. Break down how chromatophores, reflective cells, papillae, and posture combine to change an octopus's appearance. Chromatophores, reflective cells, skin papillae, and posture combine in a coordinated display. The disguise works because colour, texture, shape, and movement change together.",
+        "narration": "An octopus does not change only its colour\u2014it rebuilds the visible surface of its body. Hold the background constant while the animal changes colour, texture, outline, and posture. Break down how chromatophores, reflective cells, papillae, and posture combine to change an octopus's appearance. Chromatophores, reflective cells, skin papillae, and posture combine in a coordinated display. The disguise works because colour, texture, shape, and movement change together.",
         "payoff": "The disguise works because colour, texture, shape, and movement change together.",
-        "word_count": 58,
+        "word_count": 66,
         "fact_review_required": true
       },
       "scene_plan": [
@@ -2974,7 +2974,7 @@
           "start_seconds": 4,
           "end_seconds": 11,
           "purpose": "observable_evidence",
-          "narration": "Watch the visible clue first.",
+          "narration": "Hold the background constant while the animal changes colour, texture, outline, and posture.",
           "visual_direction": "One continuous wildlife action with a restrained tracking move.",
           "preview_route": "open_source_motion",
           "final_route": "premium_video",
@@ -3077,7 +3077,7 @@
         "visual": "pending_preview",
         "premium_spend": "blocked"
       },
-      "content_fingerprint": "bb9f27ac632f28f862c6f46f617b188626e97bd8f2af9ce7ec8e2b1310cee7b8"
+      "content_fingerprint": "0937747840ef8f8e1b996c038819fadf8c310367c4083e90b085ff7bae45398c"
     },
     {
       "id": "rawr-nation-2026-08-01-23",
@@ -3091,9 +3091,9 @@
       "workflow_stage": "script_review",
       "script": {
         "hook": "Bats are not blind.",
-        "narration": "Bats are not blind. Watch the visible clue first. Replace the blind-bat myth with a comparison of bat vision and echolocation across different species and tasks. Many species use useful vision alongside echolocation, shifting between channels as light, distance, and task change. Echolocation is an extra sense\u2014not proof that the eyes do not work.",
+        "narration": "Bats are not blind. A bat can use visible landmarks before echolocation resolves a nearby obstacle or insect. Replace the blind-bat myth with a comparison of bat vision and echolocation across different species and tasks. Many species use useful vision alongside echolocation, shifting between channels as light, distance, and task change. Echolocation is an extra sense\u2014not proof that the eyes do not work.",
         "payoff": "Echolocation is an extra sense\u2014not proof that the eyes do not work.",
-        "word_count": 54,
+        "word_count": 63,
         "fact_review_required": true
       },
       "scene_plan": [
@@ -3113,7 +3113,7 @@
           "start_seconds": 3,
           "end_seconds": 9,
           "purpose": "observable_evidence",
-          "narration": "Watch the visible clue first.",
+          "narration": "A bat can use visible landmarks before echolocation resolves a nearby obstacle or insect.",
           "visual_direction": "One continuous wildlife action with a restrained tracking move.",
           "preview_route": "open_source_motion",
           "final_route": "premium_video",
@@ -3216,7 +3216,7 @@
         "visual": "pending_preview",
         "premium_spend": "blocked"
       },
-      "content_fingerprint": "485158d10fe23839389d9dba46a97e1e67e8e49774f5a5f4a98e95dec3a59a25"
+      "content_fingerprint": "02994f7e550a7630aa841f513d42e9612a291d609014dc8b3ec127a69dd3c253"
     },
     {
       "id": "rawr-nation-2026-08-01-24",
@@ -3230,9 +3230,9 @@
       "workflow_stage": "script_review",
       "script": {
         "hook": "A fox can locate prey it cannot see beneath deep snow.",
-        "narration": "A fox can locate prey it cannot see beneath deep snow. Watch the visible clue first. Examine how a red fox listens for hidden prey and commits to a steep pounce through deep snow. It pauses, rotates its ears toward faint movement, estimates position, and commits to a steep head-first pounce. The spectacular dive begins with patient listening.",
+        "narration": "A fox can locate prey it cannot see beneath deep snow. Before the leap, the fox freezes and triangulates a sound moving beneath the surface. Examine how a red fox listens for hidden prey and commits to a steep pounce through deep snow. It pauses, rotates its ears toward faint movement, estimates position, and commits to a steep head-first pounce. The spectacular dive begins with patient listening.",
         "payoff": "The spectacular dive begins with patient listening.",
-        "word_count": 58,
+        "word_count": 67,
         "fact_review_required": true
       },
       "scene_plan": [
@@ -3252,7 +3252,7 @@
           "start_seconds": 3,
           "end_seconds": 9,
           "purpose": "observable_evidence",
-          "narration": "Watch the visible clue first.",
+          "narration": "Before the leap, the fox freezes and triangulates a sound moving beneath the surface.",
           "visual_direction": "One continuous wildlife action with a restrained tracking move.",
           "preview_route": "open_source_motion",
           "final_route": "premium_video",
@@ -3355,7 +3355,7 @@
         "visual": "pending_preview",
         "premium_spend": "blocked"
       },
-      "content_fingerprint": "507df65ce9c2ce305b46843a1bc299be1f5af12bb5e4d3d0c3b4b064f88ad2fc"
+      "content_fingerprint": "61f5cc187cafed9404ee39f2cfb97f5650b2a80d2b6362159df335fd2d862963"
     }
   ],
   "summary": {
