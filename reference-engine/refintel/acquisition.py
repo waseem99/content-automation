@@ -164,7 +164,14 @@ def safe_source_url(url: str) -> str:
             if key.lower() not in SENSITIVE_QUERY_KEYS
         ]
     )
-    return urlunsplit((parsed.scheme, parsed.netloc, parsed.path, query, ""))
+    hostname = parsed.hostname or ""
+    netloc = hostname
+    if parsed.port and not (
+        (parsed.scheme == "http" and parsed.port == 80)
+        or (parsed.scheme == "https" and parsed.port == 443)
+    ):
+        netloc = f"{hostname}:{parsed.port}"
+    return urlunsplit((parsed.scheme.lower(), netloc.lower(), parsed.path, query, ""))
 
 
 def sanitize_diagnostic(

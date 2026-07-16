@@ -1,0 +1,5 @@
+interface:
+  display_name: Analyze Social References
+  short_description: Analyze authorized social references safely.
+  default_prompt: Use $analyze-social-references to run an authorized local reference workflow and produce originality-safe research evidence.
+

@@ -22,6 +22,15 @@ from .fingerprint import compare_fingerprints, load_fingerprint
 from .images import ImageReferenceProcessor, OllamaImageObserver
 from .ingest import validate_local_cookie_browser
 from .models import RightsDeclaration
+from .orchestration import (
+    EXECUTION_PROFILES,
+    ExecutionProfileName,
+    PortfolioRunRequest,
+    ReferenceRunInput,
+    load_portfolio_request,
+    run_portfolio,
+    write_request_template,
+)
 from .pipeline import ReferencePipeline, tool_versions
 from .portfolio_sync import build_portfolio_sync_packet
 from .settings import RefIntelSettings
@@ -74,6 +83,29 @@ def capabilities(
             row.direct_video.value,
             row.image_or_carousel.value,
             row.profile_discovery.value,
+        )
+    console.print(table)
+
+
+@app.command("profiles")
+def profiles(
+    as_json: bool = typer.Option(False, "--json", help="Print typed execution profiles."),
+) -> None:
+    """Show honest CPU, GPU, and low-memory execution profiles."""
+    rows = [profile.model_dump(mode="json") for profile in EXECUTION_PROFILES.values()]
+    if as_json:
+        console.print_json(json.dumps({"profiles": rows}))
+        return
+    table = Table(title="Reference Intelligence Execution Profiles")
+    for column in ("profile", "speech", "device", "local vision", "every frame"):
+        table.add_column(column)
+    for profile in EXECUTION_PROFILES.values():
+        table.add_row(
+            profile.name.value,
+            profile.transcription_model,
+            profile.transcription_device,
+            "yes" if profile.local_vision else "no",
+            "yes" if profile.every_frame else "no",
         )
     console.print(table)
 
@@ -585,6 +617,76 @@ def portfolio_sync_packet(
         )
     )
     console.print(Path(project.workspace_path) / "exports" / "portfolio_sync_packet.json")
+
+
+@app.command("run-reference")
+def run_reference(
+    source: str = typer.Argument(..., help="Public direct media URL or authorized local file."),
+    rights: RightsDeclaration = typer.Option(..., help="Mandatory rights declaration."),
+    profile: ExecutionProfileName = typer.Option(ExecutionProfileName.CPU),
+    title: str | None = typer.Option(None),
+    brand: str | None = typer.Option(None, help="Optional brand slug for an original brief."),
+    topic: str | None = typer.Option(None, help="Separately researched original topic."),
+    cookies_from_browser: str | None = typer.Option(None),
+    cookie_file: Path | None = typer.Option(None, exists=True, file_okay=True, dir_okay=False),
+    force_new: bool = typer.Option(False),
+    workspace: Path = typer.Option(settings.workspace),
+) -> None:
+    """Run one authorized reference through the complete local pipeline."""
+    browser, local_cookie_file = local_auth(cookies_from_browser, cookie_file)
+    request = PortfolioRunRequest(
+        profile=profile,
+        references=[
+            ReferenceRunInput(
+                source=source,
+                rights=rights,
+                title=title,
+                brand_id=brand,
+                topic=topic,
+                force_new=force_new,
+            )
+        ],
+    )
+    manifest, target = run_portfolio(
+        request,
+        workspace,
+        cookies_from_browser=browser,
+        cookie_file=local_cookie_file,
+    )
+    console.print_json(manifest.model_dump_json())
+    console.print(target)
+    if manifest.failed:
+        raise typer.Exit(code=2)
+
+
+@app.command("run-portfolio")
+def run_portfolio_command(
+    request_file: Path = typer.Argument(..., exists=True, file_okay=True, dir_okay=False),
+    cookies_from_browser: str | None = typer.Option(None),
+    cookie_file: Path | None = typer.Option(None, exists=True, file_okay=True, dir_okay=False),
+    workspace: Path = typer.Option(settings.workspace),
+) -> None:
+    """Run a typed portfolio manifest while isolating failures per reference."""
+    browser, local_cookie_file = local_auth(cookies_from_browser, cookie_file)
+    request = load_portfolio_request(request_file)
+    manifest, target = run_portfolio(
+        request,
+        workspace,
+        cookies_from_browser=browser,
+        cookie_file=local_cookie_file,
+    )
+    console.print_json(manifest.model_dump_json())
+    console.print(target)
+    if manifest.failed and not manifest.succeeded:
+        raise typer.Exit(code=2)
+
+
+@app.command("init-portfolio-request")
+def init_portfolio_request(
+    output: Path = typer.Option(Path("reference-portfolio-request.json")),
+) -> None:
+    """Write a safe, non-secret portfolio request template."""
+    console.print(write_request_template(output.expanduser().resolve()))
 
 
 @app.command("compare")
