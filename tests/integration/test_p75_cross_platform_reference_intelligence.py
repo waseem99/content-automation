@@ -121,3 +121,29 @@ def test_p75_temporal_report_contract_combines_modalities_without_overclaiming()
         assert expected in temporal
     assert "build_temporal_report(" in pipeline
     assert "Temporal evidence report" in report
+
+
+def test_p75_comparison_contract_is_typed_resumable_and_originality_gated() -> None:
+    comparison = (ENGINE / "refintel" / "comparison.py").read_text(encoding="utf-8")
+    cli = (ENGINE / "refintel" / "cli.py").read_text(encoding="utf-8")
+    docs = (
+        ROOT / "docs" / "operations" / "p75-cross-platform-reference-intelligence.md"
+    ).read_text(encoding="utf-8")
+    for expected in (
+        'schema_version: str = "p75.reference_comparison.v1"',
+        'schema_version: str = "p75.pattern_brief.v1"',
+        'schema_version: str = "p75.originality_gate.v1"',
+        "source_specific_expression_compared: bool = False",
+        "source_excerpt_persisted: bool = False",
+        "source_media_must_not_enter_generated_content: bool = True",
+        "source_identities_watermarks_voices_music_excluded: bool = True",
+        "automatic_generation: bool = False",
+        "automatic_publication: bool = False",
+        "human_review_required: bool = True",
+        "transcript_sha256",
+        "project_sha256",
+    ):
+        assert expected in comparison
+    assert '@app.command("compare-library")' in cli
+    assert "controlled visual/audio/mechanics terms" in docs
+    assert "missing transcript never becomes an originality pass" in docs.lower()

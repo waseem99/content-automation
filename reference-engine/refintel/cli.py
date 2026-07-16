@@ -12,6 +12,7 @@ from rich.table import Table
 
 from .acquisition import AcquisitionService, sanitize_diagnostic
 from .adapters import capability_matrix, normalize_reference
+from .comparison import build_comparison_library, load_comparison_metadata
 from .facebook import (
     open_facebook_session,
     resolve_facebook_share_url,
@@ -575,6 +576,53 @@ def compare(
         console.print(output)
     else:
         console.print_json(rendered)
+
+
+@app.command("compare-library")
+def compare_library(
+    fingerprint_paths: list[Path] = typer.Argument(..., min=2),
+    output_dir: Path = typer.Option(Path("comparison-output")),
+    metadata_file: Path | None = typer.Option(
+        None,
+        exists=True,
+        file_okay=True,
+        dir_okay=False,
+        help="Optional JSON mapping reference IDs to brand_id and format_name.",
+    ),
+    brand: str = typer.Option("unassigned", help="Brand for the draft pattern brief."),
+    target_format: str = typer.Option("vertical_short"),
+    topic: str | None = typer.Option(None, help="A new topic; never source wording."),
+    cluster_threshold: float = typer.Option(0.62, min=0, max=1),
+    force: bool = typer.Option(False),
+) -> None:
+    """Build a resumable, originality-gated cross-reference pattern library."""
+    metadata = load_comparison_metadata(metadata_file)
+    report, report_path, html_path = build_comparison_library(
+        [path.expanduser().resolve() for path in fingerprint_paths],
+        output_dir.expanduser().resolve(),
+        metadata=metadata,
+        cluster_threshold=cluster_threshold,
+        brand_id=brand,
+        target_format=target_format,
+        topic=topic,
+        force=force,
+    )
+    console.print_json(
+        json.dumps(
+            {
+                "status": report.status.value,
+                "reference_count": report.reference_count,
+                "failure_count": len(report.failures),
+                "cluster_count": len(report.clusters),
+                "pattern_count": len(report.patterns),
+                "ready_for_human_review": report.ready_for_human_review,
+                "automatic_generation": report.automatic_generation,
+                "automatic_publication": report.automatic_publication,
+            }
+        )
+    )
+    console.print(report_path)
+    console.print(html_path)
 
 
 @app.command("serve")

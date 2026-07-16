@@ -223,6 +223,35 @@ inputs. Missing optional modalities produce a `partial` report with named limita
 of invented evidence. In particular, actual motion is never asserted without every-frame
 measurements, and still/slideshow-like sources are disclosed explicitly.
 
+## Cross-reference pattern and originality review
+
+Compare two or more processed fingerprints without sending source media to a hosted service:
+
+```bash
+refintel compare-library \
+  workspace/references/<reference-a>/exports/reference_fingerprint.json \
+  workspace/references/<reference-b>/exports/reference_fingerprint.json \
+  --output-dir workspace/comparisons/animal-x-july \
+  --brand animal-x \
+  --target-format facebook_reel \
+  --topic "A new editorial topic"
+```
+
+Use `--metadata-file comparison-metadata.json` to label each reference independently:
+
+```json
+{
+  "ref-a": {"brand_id": "animal-x", "format_name": "vertical_short"},
+  "ref-b": {"brand_id": "rawr", "format_name": "vertical_short"}
+}
+```
+
+The resumable run produces pairwise scores, deterministic clusters, brand/format/platform/hook
+facets, a recurring controlled-mechanics library, a draft multi-reference pattern brief, rights
+decisions, and transcript-overlap checks. Only abstract controlled terms enter reusable patterns;
+source excerpts are never persisted. Missing rights block readiness, missing transcripts remain
+explicit limitations, and source assets are never approved for production automatically.
+
 ## Local browser application
 
 ```bash
@@ -272,16 +301,25 @@ workspace/
     analysis/
       reference_analysis.json
       every_frame_metrics.json
+      temporal_report.json
     reports/
       index.html
-      temporal-report.json
       temporal.html
     exports/
       reference_fingerprint.json
       original_content_brief.json
     logs/
+  comparisons/<comparison-id>/
+    comparison_report.json
+    pattern_library.json
+    pattern_brief.json
+    originality_gate.json
+    index.html
 ```
 
 ## Deployment-credit policy
 
-P66 is intentionally isolated under `reference-engine/` and is excluded from the static Vercel bundle. GitHub CI uses offline fixtures. No Vercel preview is required for normal P66 development. A single optional UI integration deployment may be performed after the local engine is complete.
+The local reference engine is isolated under `reference-engine/` and excluded from the static
+Vercel bundle. GitHub CI uses offline fixtures. No Vercel preview is required for P75 analysis
+development. A single optional UI-integration deployment may be considered only after the local
+engine and operator surface are complete.
