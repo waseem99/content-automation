@@ -38,6 +38,7 @@ assertFile("index.html");
 assertFile(path.join("assets", "app.js"));
 assertFile(path.join("assets", "portfolio-api.js"));
 assertFile(path.join("assets", "styles.css"));
+assertFile(path.join("data", "month-factory.json"));
 assertFile("sample-brief.json");
 assertFile("wordpress-embed.html");
 

@@ -38,7 +38,7 @@
   let activeContentReview = null;
   let reviewMediaUrls = [];
 
-  const stageLabels = { idea: "Idea review", script: "Script review", preview: "Preview review", premium: "Premium render", package: "Package review", ready: "Ready", published: "Published record", blocked: "Blocked", archived: "Archived" };
+  const stageLabels = { idea: "Idea review", script: "Script review", preview_build: "Preview build", preview: "Preview review", premium: "Premium render", package: "Package review", ready: "Ready", published: "Published record", blocked: "Blocked", archived: "Archived" };
 
   function renderPortfolio() {
     const brands = state.brandFilter === "all" ? portfolioBrands : portfolioBrands.filter((brand) => brand.id === state.brandFilter);
@@ -58,11 +58,11 @@
     const selected = brands[0];
     $("brand-summary").innerHTML = state.brandFilter === "all"
       ? `<p class="eyebrow dark-eyebrow">Portfolio policy</p><h3>Facebook-first, platform-native delivery</h3><p>Create one strong original master, then export deliberately for Facebook, YouTube Shorts and TikTok. Do not publish identical metadata or visible watermarks across platforms.</p><dl><div><dt>Video brands</dt><dd>24 masters / month each</dd></div><div><dt>News brand</dt><dd>60 timely visual posts / month</dd></div><div><dt>Quality gate</dt><dd>Human approval before paid render and publishing</dd></div></dl>`
-      : `<p class="eyebrow dark-eyebrow">Selected brand</p><h3>${escapeHtml(selected.name)}</h3><p>${escapeHtml(selected.niche)}</p><dl><div><dt>Primary platform</dt><dd>${selected.primary}</dd></div><div><dt>Cadence</dt><dd>${escapeHtml(selected.cadence)}</dd></div><div><dt>Monthly target</dt><dd>${selected.monthlyTarget} original masters</dd></div></dl><h4>Content pillars</h4><ul>${selected.pillars.map((pillar) => `<li>${escapeHtml(pillar)}</li>`).join("")}</ul>`;
+      : `<p class="eyebrow dark-eyebrow">Selected brand</p><h3>${escapeHtml(selected.name)}</h3><p>${escapeHtml(selected.niche)}</p><dl><div><dt>Primary platform</dt><dd>${selected.primary}</dd></div><div><dt>Cadence</dt><dd>${escapeHtml(selected.cadence)}</dd></div><div><dt>Monthly target</dt><dd>${selected.monthlyTarget} original masters</dd></div>${selected.conceptCount !== undefined ? `<div><dt>Concept inventory</dt><dd>${selected.conceptCount}/${selected.monthlyTarget}</dd></div>` : ""}</dl>${selected.blocker ? `<p class="review-error"><strong>Blocked:</strong> ${escapeHtml(selected.blocker.replaceAll("_", " "))}</p>` : ""}<h4>Content pillars</h4><ul>${selected.pillars.map((pillar) => `<li>${escapeHtml(pillar)}</li>`).join("")}</ul>`;
 
     $("content-queue").innerHTML = items.length ? items.map((item) => {
       const brand = portfolioBrands.find((candidate) => candidate.id === item.brand);
-      const next = { idea: "Review idea", script: "Review script", preview: "Watch preview", premium: "Inspect render", package: "Review package", ready: "Open package" }[item.stage];
+      const next = { idea: "Review idea", script: "Review script", preview_build: "Build preview", preview: "Watch preview", premium: "Inspect render", package: "Review package", ready: "Open package" }[item.stage];
       return `<tr><td>${item.date}</td><td><strong>${escapeHtml(brand.name)}</strong><span>${escapeHtml(item.title)}</span></td><td>${escapeHtml(item.format)}</td><td><span class="stage-pill ${item.stage}">${stageLabels[item.stage]}</span></td><td>${item.assets.map((asset) => `<span class="asset-chip">${escapeHtml(asset)}</span>`).join("")}</td><td><button class="table-action" type="button" data-item-id="${escapeHtml(item.id || "")}" data-item-title="${escapeHtml(item.title)}">${next || "Review"}</button></td></tr>`;
     }).join("") : '<tr><td colspan="6" class="empty-row">No content matches these filters.</td></tr>';
   }
@@ -223,6 +223,28 @@
     renderReferenceQueue();
   }
 
+  async function loadMonthFactory() {
+    try {
+      const response = await fetch("data/month-factory.json", { cache: "no-store" });
+      if (!response.ok) throw new Error("month factory unavailable");
+      const factory = await response.json();
+      portfolioBrands = factory.brands;
+      portfolioItems = factory.items;
+      portfolioReadiness = {
+        brand_count: factory.priority_brand_count,
+        planned_count: factory.summary.concepts_ready,
+        target_count: factory.summary.monthly_target,
+        ready_brand_count: factory.summary.brands_with_complete_inventory
+      };
+      state.brandFilter = "all";
+      $("brand-filter").innerHTML = '<option value="all">All brands</option>' + portfolioBrands.map((brand) => `<option value="${brand.id}">${escapeHtml(brand.name)}</option>`).join("");
+      updateDataMode(`${factory.summary.concepts_ready} real concepts · ${factory.summary.brands_blocked_for_brief} briefs needed`, false);
+      renderPortfolio();
+    } catch (_error) {
+      restoreDemoPortfolio();
+    }
+  }
+
   function bindPortfolioControls() {
     $("brand-filter").innerHTML = '<option value="all">All brands</option>' + portfolioBrands.map((brand) => `<option value="${brand.id}">${escapeHtml(brand.name)}</option>`).join("");
     $("brand-filter").addEventListener("change", (event) => { state.brandFilter = event.target.value; renderPortfolio(); });
@@ -231,7 +253,7 @@
     $("connect-api").addEventListener("click", async () => {
       if (window.PortfolioApi?.configured()) {
         window.PortfolioApi.disconnect();
-        restoreDemoPortfolio();
+        loadMonthFactory();
         return;
       }
       const base = prompt("Operator API URL (HTTPS in staging/production):", "http://127.0.0.1:8000");
@@ -975,6 +997,7 @@
   }
 
   bindPortfolioControls();
+  loadMonthFactory();
   bindEngineControls();
   renderEnginePipeline();
   bindStudioControls();
