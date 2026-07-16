@@ -134,7 +134,7 @@ enter generated content, and human review is required before any brief or produc
 ## Temporal and multimodal report checkpoint
 
 P75-04 adds a deterministic, hash-resumable timeline for processed video references. A normal
-`refintel process` run writes `reports/temporal-report.json` using schema
+`refintel process` run writes `analysis/temporal_report.json` using schema
 `p75.temporal_report.v1` and an offline `reports/temporal.html` review surface. Rebuild or open
 that report without reprocessing the source:
 
@@ -164,6 +164,48 @@ This checkpoint creates no production media and performs no publication or deplo
 media and source wording remain blocked from generated content, transferable mechanics are
 abstracted for original work only, and human review remains mandatory.
 
+## Cross-reference, clustering, originality, and rights checkpoint
+
+P75-05 compares at least two processed `reference_fingerprint.json` files locally. It does not
+compare or export source frames. The deterministic similarity model uses hook family, structural
+story stages, pacing measurements, controlled visual/audio/mechanics terms, brand, format, and
+platform. Source-specific free text is excluded from cluster features.
+
+```bash
+refintel compare-library \
+  /absolute/path/ref-a/exports/reference_fingerprint.json \
+  /absolute/path/ref-b/exports/reference_fingerprint.json \
+  --output-dir /absolute/path/comparisons/portfolio-july \
+  --metadata-file /absolute/path/comparison-metadata.json \
+  --brand animal-x \
+  --target-format facebook_reel \
+  --topic "A separately researched original topic"
+```
+
+The optional metadata object is keyed by reference ID and may contain `brand_id` and
+`format_name`. Without it, brand remains `unassigned` and format is inferred from orientation and
+duration. The input digest includes fingerprints, project rights declarations, transcripts,
+metadata, and clustering parameters, so any relevant change invalidates reuse.
+
+Outputs are local and typed:
+
+- `comparison_report.json` — profiles, pairwise evidence, clusters, facets, failures, and gates;
+- `pattern_library.json` — mechanics supported by at least two references;
+- `pattern_brief.json` — an original, multi-reference draft when rights and evidence permit;
+- `originality_gate.json` — transcript/title overlap checks without persisted source excerpts;
+- `index.html` — offline human-review surface.
+
+Every valid declaration permits internal comparison only. Source-asset and production use remain
+false until separate asset-level clearance and human approval. A missing declaration blocks the
+run from readiness. A missing transcript never becomes an originality pass; it is reported as an
+unmeasured limitation. Any invalid fingerprint is isolated with the supported authorized
+`ingest-file` fallback.
+
+Pattern briefs prohibit source footage, scripts, identities, likenesses, logos, watermarks,
+voices, music, sound recordings, characters, shot order, composition, and branding. The gate
+requires a new concept, wording, assets, setting, sequence, voice, and music treatment. It does
+not generate, render, approve, publish, or deploy content automatically.
+
 ### Environment-based local authorization
 
 The CLI accepts safe environment defaults for `REFINTEL_WORKSPACE`,
@@ -182,10 +224,9 @@ take precedence. Conflicting cookie-file/browser routes fail closed.
   operator-owned local browser session or authorized local export.
 - Snapchat Spotlight/Story acquisition is experimental. Snapchat profile discovery is not
   claimed; an authorized local export is the dependable fallback.
-- Acquisition does not publish, deploy, analyze similarity, or send media to paid providers.
+- Acquisition alone does not publish, deploy, analyze similarity, or send media to paid providers.
 
 ## Next implementation slices
 
-The completed adapter, acquisition, image/carousel, and temporal-report contracts now unblock
-cross-reference clustering and originality gates, operator UI/API integration, and the full
-offline acceptance pack.
+The completed adapter, acquisition, image/carousel, temporal-report, and comparison/gate contracts
+now unblock operator UI/API integration and the full offline acceptance pack.
