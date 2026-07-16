@@ -97,6 +97,48 @@ python scripts/p74_run_facebook_portfolio.py \
 Run the same command without `--acquire-only` only after reviewing acquisition manifests;
 that proceeds into every-frame, transcript, sequence, report, and fingerprint processing.
 
+## Image and carousel checkpoint
+
+P75-03 adds typed, local-first processing for one image, a thumbnail, or an ordered image
+folder. It deliberately separates:
+
+- deterministic measurements such as dimensions, palette, luminance, contrast, saturation,
+  entropy, edge density, and visual center;
+- extracted OCR text, boxes, confidence, coverage, hierarchy zones, and generic CTA terms;
+- optional local-model observations about generic subjects, layout, hierarchy, and likely
+  narrative role;
+- unavailable evidence and per-item failures.
+
+```bash
+cd reference-engine
+refintel process-images /absolute/path/authorized-carousel \
+  --rights public-internal-research
+```
+
+Use `--local-vision` only when the configured Ollama model is running locally. A model failure
+is isolated to that slide and cannot convert an observation into a measured fact. A corrupt
+slide is recorded with a local-export fallback while readable slides continue. Re-running an
+unchanged folder reuses the SHA-256-matched manifest; `--force` rebuilds it.
+
+Outputs remain under `workspace/image-references/<reference-id>/` and include:
+
+- normalized source copies retained only in the reference workspace;
+- `image-reference.json` using `p75.image_reference.v1`;
+- `analysis-summary.json`;
+- `contact-sheet.jpg` when at least one slide succeeds.
+
+Opening, setup, development, payoff/close, and CTA labels are sequence candidates rather than
+claims about creator intent. Source text must not be reused verbatim, source imagery must not
+enter generated content, and human review is required before any brief or production action.
+
+### Environment-based local authorization
+
+The CLI accepts safe environment defaults for `REFINTEL_WORKSPACE`,
+`REFINTEL_FACEBOOK_PROFILE`, `REFINTEL_FACEBOOK_COOKIE_FILE`, and
+`REFINTEL_COOKIES_FROM_BROWSER`. Cookie variables contain a local path or supported browser
+name only—never raw cookies, passwords, MFA values, or session tokens. Explicit CLI auth flags
+take precedence. Conflicting cookie-file/browser routes fail closed.
+
 ### Current acquisition limits
 
 - YouTube/Shorts direct URLs are the strongest public extractor route; channel discovery
@@ -111,6 +153,6 @@ that proceeds into every-frame, transcript, sequence, report, and fingerprint pr
 
 ## Next implementation slices
 
-The acquisition contract unblocks image/carousel processing, multimodal reports,
-cross-reference clustering and originality gates, operator UI/API integration, and the
-full offline acceptance pack.
+The completed adapter, acquisition, and image/carousel contracts now unblock temporal and
+multimodal reports, cross-reference clustering and originality gates, operator UI/API
+integration, and the full offline acceptance pack.

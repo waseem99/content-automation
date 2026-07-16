@@ -32,6 +32,7 @@ class AcquisitionStatus(StrEnum):
 class AssetRole(StrEnum):
     PRIMARY_VIDEO = "primary_video"
     PRIMARY_IMAGE = "primary_image"
+    CAROUSEL_IMAGE = "carousel_image"
     THUMBNAIL = "thumbnail"
     SUBTITLE = "subtitle"
     METADATA = "metadata"
@@ -143,9 +144,7 @@ SENSITIVE_QUERY_KEYS = {
     "signature",
     "token",
 }
-SECRET_PATTERN = re.compile(
-    r"(?i)(authorization|cookie|password|secret|token)\s*[:=]\s*[^\s,;]+"
-)
+SECRET_PATTERN = re.compile(r"(?i)(authorization|cookie|password|secret|token)\s*[:=]\s*[^\s,;]+")
 
 
 def sha256_path(path: Path, chunk_size: int = 1024 * 1024) -> str:
@@ -190,6 +189,10 @@ def _asset_role(path: Path, primary: Path | None) -> AssetRole:
             else AssetRole.PRIMARY_IMAGE
         )
     if path.suffix.lower() in IMAGE_EXTENSIONS:
+        if primary and primary.suffix.lower() in VIDEO_EXTENSIONS:
+            return AssetRole.THUMBNAIL
+        if path.stem.startswith("original"):
+            return AssetRole.CAROUSEL_IMAGE
         return AssetRole.THUMBNAIL
     if path.suffix.lower() in SUBTITLE_EXTENSIONS:
         return AssetRole.SUBTITLE
@@ -338,9 +341,7 @@ class AcquisitionService:
             attempt_count=(previous.attempt_count if previous else 0) + 1,
             started_at=datetime.now(UTC),
             authentication=(
-                "authorized_local_browser"
-                if cookies_from_browser or cookie_file
-                else "public"
+                "authorized_local_browser" if cookies_from_browser or cookie_file else "public"
             ),
         )
         self._write_manifest(manifest, manifest_path)
@@ -372,9 +373,7 @@ class AcquisitionService:
         except Exception as exc:
             manifest.status = AcquisitionStatus.FAILED
             manifest.completed_at = datetime.now(UTC)
-            manifest.diagnostics.append(
-                sanitize_diagnostic(exc, private_paths=private_paths)
-            )
+            manifest.diagnostics.append(sanitize_diagnostic(exc, private_paths=private_paths))
             if reference.platform == Platform.SNAPCHAT:
                 manifest.fallback_action = (
                     "Snapchat extraction is experimental. Export the authorized public "
@@ -548,8 +547,10 @@ class AcquisitionService:
                 continue
             media_id = str(raw.get("id")) if raw.get("id") is not None else None
             candidate = raw.get("webpage_url") or raw.get("url")
-            if platform == Platform.YOUTUBE and candidate and not str(candidate).startswith(
-                ("http://", "https://")
+            if (
+                platform == Platform.YOUTUBE
+                and candidate
+                and not str(candidate).startswith(("http://", "https://"))
             ):
                 candidate = f"https://www.youtube.com/watch?v={candidate}"
             if not candidate or not str(candidate).startswith(("http://", "https://")):
