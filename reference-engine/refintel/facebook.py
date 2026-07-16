@@ -132,7 +132,9 @@ def export_netscape_cookies(context: Any, target: Path) -> Path:
         include_subdomains = "TRUE" if domain.startswith(".") else "FALSE"
         path = str(cookie.get("path") or "/")
         secure = "TRUE" if cookie.get("secure") else "FALSE"
-        expires = int(float(cookie.get("expires") or 0))
+        # Netscape cookie jars use 0 for session cookies. Playwright may expose
+        # -1, which yt-dlp rejects as an invalid expiry.
+        expires = max(int(float(cookie.get("expires") or 0)), 0)
         name = str(cookie.get("name") or "").replace("\t", "")
         value = str(cookie.get("value") or "").replace("\t", "")
         if name:
@@ -257,6 +259,7 @@ def run_facebook_page_batch(
     transcription_model: str = "small",
 ) -> dict[str, Any]:
     """Discover, download, and analyze authorized videos from one Facebook page."""
+    from .ingest import has_valid_cached_acquisition
     from .pipeline import ReferencePipeline
 
     discovery = discover_facebook_videos(
@@ -286,12 +289,21 @@ def run_facebook_page_batch(
                     ),
                     cookie_file=discovery["cookie_file"],
                 )
+                if not has_valid_cached_acquisition(project):
+                    raise RuntimeError(
+                        "Facebook acquisition did not produce verified primary media bytes."
+                    )
+                result["verified_acquisition"] = True
                 if acquire_only:
                     acquisition_manifest = (
                         Path(project.workspace_path)
                         / "source"
                         / "acquisition-manifest.json"
                     )
+                    if project.status.value != "ingested" or not acquisition_manifest.is_file():
+                        raise RuntimeError(
+                            "Acquisition did not produce a verified ingested video project."
+                        )
                     result.update(
                         {
                             "status": "acquired",
@@ -312,6 +324,11 @@ def run_facebook_page_batch(
                     every_frame=True,
                 )
                 reference_workspace = Path(processed.workspace_path)
+                if processed.media is None:
+                    raise RuntimeError(
+                        "Video analysis produced no media evidence. The cached acquisition is "
+                        "failed or incomplete; rerun acquisition in a clean workspace."
+                    )
                 artifact_dir = run_dir / "analysis" / project.reference_id
                 artifact_dir.mkdir(parents=True, exist_ok=True)
                 copied: list[str] = []
@@ -330,6 +347,16 @@ def run_facebook_page_batch(
                         target = artifact_dir / Path(relative).name
                         shutil.copy2(source, target)
                         copied.append(str(target.relative_to(run_dir)))
+                required_evidence = {
+                    "reference_analysis.json", "every_frame_metrics.json",
+                    "frame_manifest.json", "reference_fingerprint.json", "index.html",
+                }
+                copied_names = {Path(item).name for item in copied}
+                if not required_evidence.issubset(copied_names):
+                    missing = sorted(required_evidence - copied_names)
+                    raise RuntimeError(
+                        "Video analysis evidence is incomplete; missing: " + ", ".join(missing)
+                    )
                 result.update(
                     {
                         "status": "analyzed",
@@ -367,6 +394,9 @@ def run_facebook_page_batch(
         "entry_count": discovery["entry_count"],
         "summary": {
             "attempted": len(results),
+            "verified_media": sum(
+                bool(item.get("verified_acquisition")) for item in results
+            ),
             "acquired": sum(item["status"] == "acquired" for item in results),
             "analyzed": sum(item["status"] == "analyzed" for item in results),
             "failed": sum(item["status"] == "failed" for item in results),
