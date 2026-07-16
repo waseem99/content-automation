@@ -1,0 +1,38 @@
+[
+  {
+    "shot_id": "S01",
+    "story_stage": "hook",
+    "visual": "The notched-ear prairie dog rises on the mound as distant heads turn",
+    "caption": "ONE CALL CHANGES THE COLONY"
+  },
+  {
+    "shot_id": "S02",
+    "story_stage": "threat",
+    "visual": "A distant coyote crosses frame right while the caller gives a natural alarm posture",
+    "caption": "THE PATTERN CHANGES"
+  },
+  {
+    "shot_id": "S03",
+    "story_stage": "signal",
+    "visual": "Restrained waveform traces the real call while neighboring animals listen",
+    "caption": "PITCH + TIMING"
+  },
+  {
+    "shot_id": "S04",
+    "story_stage": "response",
+    "visual": "Three prairie dogs turn toward frame right then move toward separate burrows",
+    "caption": "THE COLONY RESPONDS"
+  },
+  {
+    "shot_id": "S05",
+    "story_stage": "network",
+    "visual": "A wide shot reveals calls and movement passing across the connected colony",
+    "caption": "A LIVING WARNING NETWORK"
+  },
+  {
+    "shot_id": "S06",
+    "story_stage": "payoff",
+    "visual": "The coyote exits far away and the same caller lowers naturally as calm returns",
+    "caption": "ATTENTION BECOMES SAFETY"
+  }
+]

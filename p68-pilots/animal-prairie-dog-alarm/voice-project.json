@@ -1,0 +1,156 @@
+{
+  "id": "animal-prairie-dog-alarm",
+  "brand": {
+    "id": "animal_x",
+    "name": "Animal X",
+    "tagline": "Wild behavior. Clearly explained.",
+    "primaryColor": "#D6B56D",
+    "secondaryColor": "#87B8A2",
+    "backgroundColor": "#101814",
+    "captionColor": "#FFFFFF",
+    "watermark": "ANIMAL X",
+    "tone": "cinematic, respectful, factual",
+    "voiceStyle": "warm restrained wildlife-documentary narrator"
+  },
+  "narration": "One prairie dog's call can change how an entire colony reacts to danger. The call is not simply noise. Its pattern can vary with the kind of threat detected. Changes in pitch and timing carry information through the colony. Nearby animals become vigilant and choose cover according to what they detect. Because many animals can hear and answer, warning spreads beyond the first lookout. The result is a warning system built from attention, sound, and coordinated behavior.",
+  "render": {
+    "width": 1080,
+    "height": 1920,
+    "fps": 30,
+    "codec": "h264",
+    "durationSeconds": 30.0
+  },
+  "scenes": [
+    {
+      "id": "S01",
+      "startSec": 0.0,
+      "endSec": 4.5,
+      "headline": "ONE CALL CHANGES THE COLONY",
+      "body": "One prairie dog's call can change how an entire colony reacts to danger.",
+      "visual": "generated_clip",
+      "accent": "#D6B56D",
+      "safetyLevel": "pending_human_review",
+      "objectives": [
+        "engagement",
+        "compliance"
+      ]
+    },
+    {
+      "id": "S02",
+      "startSec": 4.5,
+      "endSec": 9.5,
+      "headline": "THE PATTERN CHANGES",
+      "body": "The call is not simply noise. Its pattern can vary with the kind of threat detected.",
+      "visual": "generated_clip",
+      "accent": "#D6B56D",
+      "safetyLevel": "pending_human_review",
+      "objectives": [
+        "engagement",
+        "compliance"
+      ]
+    },
+    {
+      "id": "S03",
+      "startSec": 9.5,
+      "endSec": 14.5,
+      "headline": "PITCH + TIMING",
+      "body": "Changes in pitch and timing carry information through the colony.",
+      "visual": "generated_clip",
+      "accent": "#D6B56D",
+      "safetyLevel": "pending_human_review",
+      "objectives": [
+        "engagement",
+        "compliance"
+      ]
+    },
+    {
+      "id": "S04",
+      "startSec": 14.5,
+      "endSec": 19.5,
+      "headline": "THE COLONY RESPONDS",
+      "body": "Nearby animals become vigilant and choose cover according to what they detect.",
+      "visual": "generated_clip",
+      "accent": "#D6B56D",
+      "safetyLevel": "pending_human_review",
+      "objectives": [
+        "engagement",
+        "compliance"
+      ]
+    },
+    {
+      "id": "S05",
+      "startSec": 19.5,
+      "endSec": 24.5,
+      "headline": "A LIVING WARNING NETWORK",
+      "body": "Because many animals can hear and answer, warning spreads beyond the first lookout.",
+      "visual": "generated_clip",
+      "accent": "#D6B56D",
+      "safetyLevel": "pending_human_review",
+      "objectives": [
+        "engagement",
+        "compliance"
+      ]
+    },
+    {
+      "id": "S06",
+      "startSec": 24.5,
+      "endSec": 30.0,
+      "headline": "ATTENTION BECOMES SAFETY",
+      "body": "The result is a warning system built from attention, sound, and coordinated behavior.",
+      "visual": "generated_clip",
+      "accent": "#D6B56D",
+      "safetyLevel": "pending_human_review",
+      "objectives": [
+        "engagement",
+        "compliance"
+      ]
+    }
+  ],
+  "captions": [
+    {
+      "startSec": 0.0,
+      "endSec": 4.5,
+      "text": "ONE CALL CHANGES THE COLONY",
+      "highlight": "COLONY",
+      "emphasis": "fact"
+    },
+    {
+      "startSec": 4.5,
+      "endSec": 9.5,
+      "text": "THE PATTERN CHANGES",
+      "highlight": "CHANGES",
+      "emphasis": "fact"
+    },
+    {
+      "startSec": 9.5,
+      "endSec": 14.5,
+      "text": "PITCH + TIMING",
+      "highlight": "TIMING",
+      "emphasis": "fact"
+    },
+    {
+      "startSec": 14.5,
+      "endSec": 19.5,
+      "text": "THE COLONY RESPONDS",
+      "highlight": "RESPONDS",
+      "emphasis": "fact"
+    },
+    {
+      "startSec": 19.5,
+      "endSec": 24.5,
+      "text": "A LIVING WARNING NETWORK",
+      "highlight": "NETWORK",
+      "emphasis": "fact"
+    },
+    {
+      "startSec": 24.5,
+      "endSec": 30.0,
+      "text": "ATTENTION BECOMES SAFETY",
+      "highlight": "SAFETY",
+      "emphasis": "fact"
+    }
+  ],
+  "editorialStatus": "draft_for_human_review",
+  "humanReviewRequired": true,
+  "publishAllowed": false
+}

@@ -1,0 +1,319 @@
+{
+  "schema_version": "p68.original_continuity_plan.v1",
+  "topic": "how octopus arms use distributed neural control and local sensing",
+  "brand_profile": "animal_x",
+  "concept_options": [
+    {
+      "concept_id": "animal_x-concept-1",
+      "topic": "how octopus arms use distributed neural control and local sensing",
+      "angle": "behavior mystery",
+      "format": "respectful wildlife micro-documentary",
+      "premise": "Explain how octopus arms use distributed neural control and local sensing through an original behavior mystery visual story.",
+      "hook_direction": "Open on a visible consequence of how octopus arms use distributed neural control and local sensing, then withhold the cause.",
+      "payoff_direction": "Reveal the mechanism behind how octopus arms use distributed neural control and local sensing with a new visual demonstration.",
+      "tone": "observational, respectful, evidence-led, quietly cinematic",
+      "reusable_mechanics": [
+        "first-second visual contradiction",
+        "one continuous subject or mechanism",
+        "cause revealed after visible evidence",
+        "short memorable payoff"
+      ],
+      "source_expression_allowed": false,
+      "status": "option_pending_human_selection"
+    },
+    {
+      "concept_id": "animal_x-concept-2",
+      "topic": "how octopus arms use distributed neural control and local sensing",
+      "angle": "sensory adaptation",
+      "format": "respectful wildlife micro-documentary",
+      "premise": "Explain how octopus arms use distributed neural control and local sensing through an original sensory adaptation visual story.",
+      "hook_direction": "Open on a visible consequence of how octopus arms use distributed neural control and local sensing, then withhold the cause.",
+      "payoff_direction": "Reveal the mechanism behind how octopus arms use distributed neural control and local sensing with a new visual demonstration.",
+      "tone": "observational, respectful, evidence-led, quietly cinematic",
+      "reusable_mechanics": [
+        "first-second visual contradiction",
+        "one continuous subject or mechanism",
+        "cause revealed after visible evidence",
+        "short memorable payoff"
+      ],
+      "source_expression_allowed": false,
+      "status": "option_pending_human_selection"
+    },
+    {
+      "concept_id": "animal_x-concept-3",
+      "topic": "how octopus arms use distributed neural control and local sensing",
+      "angle": "survival trade-off",
+      "format": "respectful wildlife micro-documentary",
+      "premise": "Explain how octopus arms use distributed neural control and local sensing through an original survival trade-off visual story.",
+      "hook_direction": "Open on a visible consequence of how octopus arms use distributed neural control and local sensing, then withhold the cause.",
+      "payoff_direction": "Reveal the mechanism behind how octopus arms use distributed neural control and local sensing with a new visual demonstration.",
+      "tone": "observational, respectful, evidence-led, quietly cinematic",
+      "reusable_mechanics": [
+        "first-second visual contradiction",
+        "one continuous subject or mechanism",
+        "cause revealed after visible evidence",
+        "short memorable payoff"
+      ],
+      "source_expression_allowed": false,
+      "status": "option_pending_human_selection"
+    }
+  ],
+  "selected_concept": {
+    "concept_id": "animal_x-concept-2",
+    "topic": "how octopus arms use distributed neural control and local sensing",
+    "angle": "sensory adaptation",
+    "format": "respectful wildlife micro-documentary",
+    "premise": "Explain how octopus arms use distributed neural control and local sensing through an original sensory adaptation visual story.",
+    "hook_direction": "Open on a visible consequence of how octopus arms use distributed neural control and local sensing, then withhold the cause.",
+    "payoff_direction": "Reveal the mechanism behind how octopus arms use distributed neural control and local sensing with a new visual demonstration.",
+    "tone": "observational, respectful, evidence-led, quietly cinematic",
+    "reusable_mechanics": [
+      "first-second visual contradiction",
+      "one continuous subject or mechanism",
+      "cause revealed after visible evidence",
+      "short memorable payoff"
+    ],
+    "source_expression_allowed": false,
+    "status": "selected_pending_human_review"
+  },
+  "original_script": "An octopus arm can explore, taste, and adjust before the whole animal changes course. Its suckers are packed with sensors that sample touch and chemicals on the surface. Much of the octopus nervous system lies outside the central brain, including dense networks in the arms. Those networks handle local details while still coordinating with signals from the brain. That division of work helps a soft body control many flexible joints at once. It is one animal, but movement emerges from a conversation between brain, arms, and environment.",
+  "storyboard": [
+    {
+      "shot_id": "S01",
+      "story_stage": "hook",
+      "visual": "One arm of the scar-marked octopus enters a crevice while the mantle remains still",
+      "caption": "AN ARM EXPLORES FIRST"
+    },
+    {
+      "shot_id": "S02",
+      "story_stage": "sensing",
+      "visual": "Macro follows the same suckers rolling sequentially across textured limestone",
+      "caption": "SUCKERS TOUCH AND TASTE"
+    },
+    {
+      "shot_id": "S03",
+      "story_stage": "network",
+      "visual": "Restrained violet paths reveal local neural networks inside the moving arm without changing anatomy",
+      "caption": "A NERVOUS SYSTEM IN THE ARMS"
+    },
+    {
+      "shot_id": "S04",
+      "story_stage": "control",
+      "visual": "The explored arm adjusts grip as two neighboring arms brace the same octopus",
+      "caption": "LOCAL CONTROL, SHARED GOAL"
+    },
+    {
+      "shot_id": "S05",
+      "story_stage": "movement",
+      "visual": "The same octopus flows through the narrow crevice with coordinated arm waves",
+      "caption": "COORDINATING A SOFT BODY"
+    },
+    {
+      "shot_id": "S06",
+      "story_stage": "payoff",
+      "visual": "The octopus settles beyond the crevice and resumes natural exploration",
+      "caption": "ONE BODY, DISTRIBUTED CONTROL"
+    }
+  ],
+  "continuity_bible": {
+    "subject_identity": "the same common octopus with a pale crescent scar above the left eye, seven visible intact arms, and consistent mantle pattern",
+    "environment": "one rocky Mediterranean reef ledge with the same red sponge and narrow crevice",
+    "lighting": "soft underwater daylight from upper left with stable particulate and no artificial spotlight",
+    "color_treatment": "natural rust-brown octopus, blue-green water, pale limestone, restrained violet neural accents",
+    "screen_direction": "the octopus travels left-to-right and the explored crevice remains frame right",
+    "camera_language": "observational underwater macro connected by motivated arm-led moves",
+    "identity_lock": "Preserve defining features, anatomy, wardrobe, proportions, and scale.",
+    "environment_lock": "Preserve geography, background landmarks, weather, and time of day.",
+    "audio_ambience_lock": "Use one continuous ambience bed unless the story motivates a change.",
+    "human_review_required": true
+  },
+  "shots": [
+    {
+      "shot_id": "S01",
+      "story_stage": "hook",
+      "start_seconds": 0.0,
+      "end_seconds": 4.5,
+      "duration_seconds": 4.5,
+      "narration": "An octopus arm can explore, taste, and adjust before the whole animal changes course.",
+      "caption": "AN ARM EXPLORES FIRST",
+      "visual_action": "One arm of the scar-marked octopus enters a crevice while the mantle remains still",
+      "camera": "Underwater 90mm macro",
+      "entry_action": "Open on the same crevice and approaching arm tip",
+      "exit_action": "End as two suckers contact stone",
+      "screen_direction": "the octopus travels left-to-right and the explored crevice remains frame right",
+      "transition_in": {
+        "strategy": "cold_open",
+        "audio_bridge": "narration starts on first visible action"
+      },
+      "transition_handle_seconds": 0.5,
+      "ambience": "One continuous location ambience and restrained cinematic music bed",
+      "sfx": "Natural water and soft sucker contacts",
+      "clip_prompt": "Original vertical cinematic clip. One arm of the scar-marked octopus enters a crevice while the mantle remains still. Subject lock: the same common octopus with a pale crescent scar above the left eye, seven visible intact arms, and consistent mantle pattern. Environment lock: one rocky Mediterranean reef ledge with the same red sponge and narrow crevice. Lighting: soft underwater daylight from upper left with stable particulate and no artificial spotlight. Color: natural rust-brown octopus, blue-green water, pale limestone, restrained violet neural accents. Camera: Underwater 90mm macro. Entry: Open on the same crevice and approaching arm tip. Exit: End as two suckers contact stone. Screen direction: the octopus travels left-to-right and the explored crevice remains frame right. Leave clean motion handles at both ends; no embedded text.",
+      "negative_prompt": "identity drift, anatomy change, wardrobe change, background jump, lighting flip, reversed screen direction, duplicate subject, watermark, logo, embedded captions",
+      "clip_status": "awaiting_generated_or_approved_clip",
+      "human_review_required": true
+    },
+    {
+      "shot_id": "S02",
+      "story_stage": "sensing",
+      "start_seconds": 4.5,
+      "end_seconds": 9.5,
+      "duration_seconds": 5.0,
+      "narration": "Its suckers are packed with sensors that sample touch and chemicals on the surface.",
+      "caption": "SUCKERS TOUCH AND TASTE",
+      "visual_action": "Macro follows the same suckers rolling sequentially across textured limestone",
+      "camera": "Arm-level tracking macro",
+      "entry_action": "Continue from the first two contacts",
+      "exit_action": "Arm tip curls around the corner",
+      "screen_direction": "the octopus travels left-to-right and the explored crevice remains frame right",
+      "transition_in": {
+        "strategy": "action_cut",
+        "audio_bridge": "carry narration, ambience, or motivated SFX across the cut"
+      },
+      "transition_handle_seconds": 0.5,
+      "ambience": "One continuous location ambience and restrained cinematic music bed",
+      "sfx": "Fine tactile clicks",
+      "clip_prompt": "Original vertical cinematic clip. Macro follows the same suckers rolling sequentially across textured limestone. Subject lock: the same common octopus with a pale crescent scar above the left eye, seven visible intact arms, and consistent mantle pattern. Environment lock: one rocky Mediterranean reef ledge with the same red sponge and narrow crevice. Lighting: soft underwater daylight from upper left with stable particulate and no artificial spotlight. Color: natural rust-brown octopus, blue-green water, pale limestone, restrained violet neural accents. Camera: Arm-level tracking macro. Entry: Continue from the first two contacts. Exit: Arm tip curls around the corner. Screen direction: the octopus travels left-to-right and the explored crevice remains frame right. Leave clean motion handles at both ends; no embedded text.",
+      "negative_prompt": "identity drift, anatomy change, wardrobe change, background jump, lighting flip, reversed screen direction, duplicate subject, watermark, logo, embedded captions",
+      "clip_status": "awaiting_generated_or_approved_clip",
+      "human_review_required": true
+    },
+    {
+      "shot_id": "S03",
+      "story_stage": "network",
+      "start_seconds": 9.5,
+      "end_seconds": 14.5,
+      "duration_seconds": 5.0,
+      "narration": "Much of the octopus nervous system lies outside the central brain, including dense networks in the arms.",
+      "caption": "A NERVOUS SYSTEM IN THE ARMS",
+      "visual_action": "Restrained violet paths reveal local neural networks inside the moving arm without changing anatomy",
+      "camera": "Transparent anatomical match move",
+      "entry_action": "Follow the curl around the corner",
+      "exit_action": "Neural activity travels back toward the arm base",
+      "screen_direction": "the octopus travels left-to-right and the explored crevice remains frame right",
+      "transition_in": {
+        "strategy": "match_cut",
+        "audio_bridge": "carry narration, ambience, or motivated SFX across the cut"
+      },
+      "transition_handle_seconds": 0.5,
+      "ambience": "One continuous location ambience and restrained cinematic music bed",
+      "sfx": "Low neural pulse",
+      "clip_prompt": "Original vertical cinematic clip. Restrained violet paths reveal local neural networks inside the moving arm without changing anatomy. Subject lock: the same common octopus with a pale crescent scar above the left eye, seven visible intact arms, and consistent mantle pattern. Environment lock: one rocky Mediterranean reef ledge with the same red sponge and narrow crevice. Lighting: soft underwater daylight from upper left with stable particulate and no artificial spotlight. Color: natural rust-brown octopus, blue-green water, pale limestone, restrained violet neural accents. Camera: Transparent anatomical match move. Entry: Follow the curl around the corner. Exit: Neural activity travels back toward the arm base. Screen direction: the octopus travels left-to-right and the explored crevice remains frame right. Leave clean motion handles at both ends; no embedded text.",
+      "negative_prompt": "identity drift, anatomy change, wardrobe change, background jump, lighting flip, reversed screen direction, duplicate subject, watermark, logo, embedded captions",
+      "clip_status": "awaiting_generated_or_approved_clip",
+      "human_review_required": true
+    },
+    {
+      "shot_id": "S04",
+      "story_stage": "control",
+      "start_seconds": 14.5,
+      "end_seconds": 19.5,
+      "duration_seconds": 5.0,
+      "narration": "Those networks handle local details while still coordinating with signals from the brain.",
+      "caption": "LOCAL CONTROL, SHARED GOAL",
+      "visual_action": "The explored arm adjusts grip as two neighboring arms brace the same octopus",
+      "camera": "Medium observational profile",
+      "entry_action": "Continue activity toward the body",
+      "exit_action": "Body begins a measured turn frame right",
+      "screen_direction": "the octopus travels left-to-right and the explored crevice remains frame right",
+      "transition_in": {
+        "strategy": "direct_cut",
+        "audio_bridge": "carry narration, ambience, or motivated SFX across the cut"
+      },
+      "transition_handle_seconds": 0.5,
+      "ambience": "One continuous location ambience and restrained cinematic music bed",
+      "sfx": "Three soft grip accents",
+      "clip_prompt": "Original vertical cinematic clip. The explored arm adjusts grip as two neighboring arms brace the same octopus. Subject lock: the same common octopus with a pale crescent scar above the left eye, seven visible intact arms, and consistent mantle pattern. Environment lock: one rocky Mediterranean reef ledge with the same red sponge and narrow crevice. Lighting: soft underwater daylight from upper left with stable particulate and no artificial spotlight. Color: natural rust-brown octopus, blue-green water, pale limestone, restrained violet neural accents. Camera: Medium observational profile. Entry: Continue activity toward the body. Exit: Body begins a measured turn frame right. Screen direction: the octopus travels left-to-right and the explored crevice remains frame right. Leave clean motion handles at both ends; no embedded text.",
+      "negative_prompt": "identity drift, anatomy change, wardrobe change, background jump, lighting flip, reversed screen direction, duplicate subject, watermark, logo, embedded captions",
+      "clip_status": "awaiting_generated_or_approved_clip",
+      "human_review_required": true
+    },
+    {
+      "shot_id": "S05",
+      "story_stage": "movement",
+      "start_seconds": 19.5,
+      "end_seconds": 24.5,
+      "duration_seconds": 5.0,
+      "narration": "That division of work helps a soft body control many flexible joints at once.",
+      "caption": "COORDINATING A SOFT BODY",
+      "visual_action": "The same octopus flows through the narrow crevice with coordinated arm waves",
+      "camera": "Stable lateral underwater track",
+      "entry_action": "Match the measured turn",
+      "exit_action": "Mantle clears the crevice",
+      "screen_direction": "the octopus travels left-to-right and the explored crevice remains frame right",
+      "transition_in": {
+        "strategy": "j_cut",
+        "audio_bridge": "carry narration, ambience, or motivated SFX across the cut"
+      },
+      "transition_handle_seconds": 0.5,
+      "ambience": "One continuous location ambience and restrained cinematic music bed",
+      "sfx": "Water rush kept subtle",
+      "clip_prompt": "Original vertical cinematic clip. The same octopus flows through the narrow crevice with coordinated arm waves. Subject lock: the same common octopus with a pale crescent scar above the left eye, seven visible intact arms, and consistent mantle pattern. Environment lock: one rocky Mediterranean reef ledge with the same red sponge and narrow crevice. Lighting: soft underwater daylight from upper left with stable particulate and no artificial spotlight. Color: natural rust-brown octopus, blue-green water, pale limestone, restrained violet neural accents. Camera: Stable lateral underwater track. Entry: Match the measured turn. Exit: Mantle clears the crevice. Screen direction: the octopus travels left-to-right and the explored crevice remains frame right. Leave clean motion handles at both ends; no embedded text.",
+      "negative_prompt": "identity drift, anatomy change, wardrobe change, background jump, lighting flip, reversed screen direction, duplicate subject, watermark, logo, embedded captions",
+      "clip_status": "awaiting_generated_or_approved_clip",
+      "human_review_required": true
+    },
+    {
+      "shot_id": "S06",
+      "story_stage": "payoff",
+      "start_seconds": 24.5,
+      "end_seconds": 30.0,
+      "duration_seconds": 5.5,
+      "narration": "It is one animal, but movement emerges from a conversation between brain, arms, and environment.",
+      "caption": "ONE BODY, DISTRIBUTED CONTROL",
+      "visual_action": "The octopus settles beyond the crevice and resumes natural exploration",
+      "camera": "Slow respectful pullback",
+      "entry_action": "Continue after the mantle clears",
+      "exit_action": "Hold on calm arm-by-arm exploration",
+      "screen_direction": "the octopus travels left-to-right and the explored crevice remains frame right",
+      "transition_in": {
+        "strategy": "l_cut",
+        "audio_bridge": "carry narration, ambience, or motivated SFX across the cut"
+      },
+      "transition_handle_seconds": 0.5,
+      "ambience": "One continuous location ambience and restrained cinematic music bed",
+      "sfx": "Ambient reef resolve",
+      "clip_prompt": "Original vertical cinematic clip. The octopus settles beyond the crevice and resumes natural exploration. Subject lock: the same common octopus with a pale crescent scar above the left eye, seven visible intact arms, and consistent mantle pattern. Environment lock: one rocky Mediterranean reef ledge with the same red sponge and narrow crevice. Lighting: soft underwater daylight from upper left with stable particulate and no artificial spotlight. Color: natural rust-brown octopus, blue-green water, pale limestone, restrained violet neural accents. Camera: Slow respectful pullback. Entry: Continue after the mantle clears. Exit: Hold on calm arm-by-arm exploration. Screen direction: the octopus travels left-to-right and the explored crevice remains frame right. Leave clean motion handles at both ends; no embedded text.",
+      "negative_prompt": "identity drift, anatomy change, wardrobe change, background jump, lighting flip, reversed screen direction, duplicate subject, watermark, logo, embedded captions",
+      "clip_status": "awaiting_generated_or_approved_clip",
+      "human_review_required": true
+    }
+  ],
+  "factual_notes": [
+    {
+      "claim": "A large proportion of octopus neurons are located in the arms and peripheral nervous system.",
+      "source_url": "https://doi.org/10.1016/j.cub.2013.05.010",
+      "source_title": "How nervous systems evolve in relation to their embodiment",
+      "review_status": "pending_human_fact_review"
+    },
+    {
+      "claim": "Octopus arms combine local sensory processing with coordination from the central brain.",
+      "source_url": "https://doi.org/10.1016/j.cub.2020.08.001",
+      "source_title": "Octopus arm nervous-system organization and control",
+      "review_status": "pending_human_fact_review"
+    }
+  ],
+  "originality_distance": {
+    "max_similarity": 0.0,
+    "threshold": 0.35,
+    "copied_long_phrases": [],
+    "comparisons": [],
+    "automated_check": "pass",
+    "human_originality_review_required": true
+  },
+  "visual_identity": {
+    "format": "respectful wildlife micro-documentary",
+    "tone": "observational, respectful, evidence-led, quietly cinematic",
+    "continuity_before_style": true
+  },
+  "render_allowed": false,
+  "publish_allowed": false,
+  "human_review_required": true,
+  "status": "draft_for_fact_rights_originality_and_creative_review",
+  "validation": {
+    "passed": true,
+    "errors": []
+  },
+  "pilot_id": "animal-octopus-arms",
+  "source_brief_path": "p68-pilots/animal-octopus-arms/source-brief.json"
+}

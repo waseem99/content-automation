@@ -1,0 +1,156 @@
+{
+  "id": "rawr-gecko-grip",
+  "brand": {
+    "id": "rawr_nation",
+    "name": "Rawr Nation",
+    "tagline": "Real facts. Clear reveals.",
+    "primaryColor": "#FFD84D",
+    "secondaryColor": "#70D6FF",
+    "backgroundColor": "#0B1018",
+    "captionColor": "#FFFFFF",
+    "watermark": "RAWR NATION",
+    "tone": "energetic, curious, factual",
+    "voiceStyle": "clear, quick international English narrator"
+  },
+  "narration": "This gecko can sprint up glass without glue, suction, or sticky liquid. The secret begins under each wide toe, where ridges divide into dense microscopic hairs. Each hair branches again, creating enormous contact with the surface at tiny scales. At that distance, weak molecular attractions add up across the whole foot. To let go, the gecko changes the angle of its toes and peels them away. So the grip is powerful, reversible, and dry: geometry turns tiny forces into a climbing system.",
+  "render": {
+    "width": 1080,
+    "height": 1920,
+    "fps": 30,
+    "codec": "h264",
+    "durationSeconds": 30.0
+  },
+  "scenes": [
+    {
+      "id": "S01",
+      "startSec": 0.0,
+      "endSec": 4.5,
+      "headline": "NO GLUE. NO SUCTION.",
+      "body": "This gecko can sprint up glass without glue, suction, or sticky liquid.",
+      "visual": "generated_clip",
+      "accent": "#FFD84D",
+      "safetyLevel": "pending_human_review",
+      "objectives": [
+        "engagement",
+        "compliance"
+      ]
+    },
+    {
+      "id": "S02",
+      "startSec": 4.5,
+      "endSec": 9.5,
+      "headline": "MILLIONS OF TINY CONTACTS",
+      "body": "The secret begins under each wide toe, where ridges divide into dense microscopic hairs.",
+      "visual": "generated_clip",
+      "accent": "#FFD84D",
+      "safetyLevel": "pending_human_review",
+      "objectives": [
+        "engagement",
+        "compliance"
+      ]
+    },
+    {
+      "id": "S03",
+      "startSec": 9.5,
+      "endSec": 14.5,
+      "headline": "CONTACT AT TINY SCALES",
+      "body": "Each hair branches again, creating enormous contact with the surface at tiny scales.",
+      "visual": "generated_clip",
+      "accent": "#FFD84D",
+      "safetyLevel": "pending_human_review",
+      "objectives": [
+        "engagement",
+        "compliance"
+      ]
+    },
+    {
+      "id": "S04",
+      "startSec": 14.5,
+      "endSec": 19.5,
+      "headline": "WEAK FORCES ADD UP",
+      "body": "At that distance, weak molecular attractions add up across the whole foot.",
+      "visual": "generated_clip",
+      "accent": "#FFD84D",
+      "safetyLevel": "pending_human_review",
+      "objectives": [
+        "engagement",
+        "compliance"
+      ]
+    },
+    {
+      "id": "S05",
+      "startSec": 19.5,
+      "endSec": 24.5,
+      "headline": "ANGLE TO RELEASE",
+      "body": "To let go, the gecko changes the angle of its toes and peels them away.",
+      "visual": "generated_clip",
+      "accent": "#FFD84D",
+      "safetyLevel": "pending_human_review",
+      "objectives": [
+        "engagement",
+        "compliance"
+      ]
+    },
+    {
+      "id": "S06",
+      "startSec": 24.5,
+      "endSec": 30.0,
+      "headline": "GEOMETRY BECOMES GRIP",
+      "body": "So the grip is powerful, reversible, and dry: geometry turns tiny forces into a climbing system.",
+      "visual": "generated_clip",
+      "accent": "#FFD84D",
+      "safetyLevel": "pending_human_review",
+      "objectives": [
+        "engagement",
+        "compliance"
+      ]
+    }
+  ],
+  "captions": [
+    {
+      "startSec": 0.0,
+      "endSec": 4.5,
+      "text": "NO GLUE. NO SUCTION.",
+      "highlight": "SUCTION.",
+      "emphasis": "fact"
+    },
+    {
+      "startSec": 4.5,
+      "endSec": 9.5,
+      "text": "MILLIONS OF TINY CONTACTS",
+      "highlight": "CONTACTS",
+      "emphasis": "fact"
+    },
+    {
+      "startSec": 9.5,
+      "endSec": 14.5,
+      "text": "CONTACT AT TINY SCALES",
+      "highlight": "SCALES",
+      "emphasis": "fact"
+    },
+    {
+      "startSec": 14.5,
+      "endSec": 19.5,
+      "text": "WEAK FORCES ADD UP",
+      "highlight": "UP",
+      "emphasis": "fact"
+    },
+    {
+      "startSec": 19.5,
+      "endSec": 24.5,
+      "text": "ANGLE TO RELEASE",
+      "highlight": "RELEASE",
+      "emphasis": "fact"
+    },
+    {
+      "startSec": 24.5,
+      "endSec": 30.0,
+      "text": "GEOMETRY BECOMES GRIP",
+      "highlight": "GRIP",
+      "emphasis": "fact"
+    }
+  ],
+  "editorialStatus": "draft_for_human_review",
+  "humanReviewRequired": true,
+  "publishAllowed": false
+}

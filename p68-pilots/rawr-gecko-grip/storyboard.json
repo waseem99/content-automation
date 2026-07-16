@@ -1,0 +1,38 @@
+[
+  {
+    "shot_id": "S01",
+    "story_stage": "hook",
+    "visual": "The gecko takes three clearly visible steps straight up clean glass",
+    "caption": "NO GLUE. NO SUCTION."
+  },
+  {
+    "shot_id": "S02",
+    "story_stage": "evidence",
+    "visual": "A motivated match move enters the same front toe and reveals dense branching setae",
+    "caption": "MILLIONS OF TINY CONTACTS"
+  },
+  {
+    "shot_id": "S03",
+    "story_stage": "mechanism",
+    "visual": "One seta branches into spatula-shaped tips meeting the glass",
+    "caption": "CONTACT AT TINY SCALES"
+  },
+  {
+    "shot_id": "S04",
+    "story_stage": "cause",
+    "visual": "Restrained cyan force lines appear only at touching tips and spread across the planted foot",
+    "caption": "WEAK FORCES ADD UP"
+  },
+  {
+    "shot_id": "S05",
+    "story_stage": "release",
+    "visual": "The same toe hyperextends and peels cleanly from glass in one natural action",
+    "caption": "ANGLE TO RELEASE"
+  },
+  {
+    "shot_id": "S06",
+    "story_stage": "payoff",
+    "visual": "Return to the same gecko completing the climb and pausing above the glass edge",
+    "caption": "GEOMETRY BECOMES GRIP"
+  }
+]

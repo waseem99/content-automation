@@ -14,6 +14,14 @@ from typing import Any
 
 P68_BATCH_VERSION = "p68.pilot_batch_closeout.v1"
 EXPECTED_BRANDS = {"rawr_nation": 3, "animal_x": 3}
+EXPECTED_PILOT_IDS = {
+    "rawr-blind-spot",
+    "rawr-gecko-grip",
+    "rawr-archerfish-aim",
+    "animal-elephant-signals",
+    "animal-prairie-dog-alarm",
+    "animal-octopus-arms",
+}
 
 
 def sha256_file(path: Path) -> str:
@@ -29,6 +37,86 @@ def load_benchmark(path: str | Path) -> dict[str, Any]:
     if benchmark.get("schema_version") != "p68.quality_benchmark.v1":
         raise ValueError("Unsupported P68 quality benchmark")
     return benchmark
+
+
+def evaluate_spec_batch(pilots_root: str | Path) -> dict[str, Any]:
+    """Evaluate planning readiness without implying that media exists.
+
+    This is intentionally separate from ``evaluate_batch``: a complete plan is
+    useful for orchestration, but never constitutes production evidence.
+    """
+    root = Path(pilots_root)
+    rows: list[dict[str, Any]] = []
+    for path in sorted(root.glob("*/content-plan.json")):
+        plan = json.loads(path.read_text(encoding="utf-8"))
+        shots = plan.get("shots") or []
+        duration = round(sum(float(shot.get("duration_seconds") or 0) for shot in shots), 3)
+        files = {
+            name: (path.parent / name).is_file()
+            for name in (
+                "source-brief.json", "content-plan.json", "script.md", "storyboard.json",
+                "clip-prompts.json", "voice-project.json", "captions.srt",
+            )
+        }
+        errors = []
+        if not plan.get("validation", {}).get("passed"):
+            errors.append("continuity_plan_validation_failed")
+        if not 6 <= len(shots) <= 8:
+            errors.append("shot_count_must_be_6_to_8")
+        if not 25 <= duration <= 38:
+            errors.append("duration_must_be_25_to_38_seconds")
+        if not all(files.values()):
+            errors.append("production_pack_files_missing")
+        if any(float(shot.get("transition_handle_seconds") or 0) < 0.5 for shot in shots):
+            errors.append("transition_handle_missing")
+        rows.append(
+            {
+                "pilot_id": plan.get("pilot_id"),
+                "brand_profile": plan.get("brand_profile"),
+                "shot_count": len(shots),
+                "duration_seconds": duration,
+                "files": files,
+                "spec_ready": not errors,
+                "preview_ready": False,
+                "natural_motion_ready": False,
+                "human_review_ready": False,
+                "production_candidate": False,
+                "errors": sorted(set(errors)),
+                "publish_allowed": False,
+            }
+        )
+    ids = {row["pilot_id"] for row in rows}
+    counts = {
+        brand: sum(row["brand_profile"] == brand for row in rows)
+        for brand in EXPECTED_BRANDS
+    }
+    batch_errors = []
+    if ids != EXPECTED_PILOT_IDS:
+        batch_errors.append("exact_six_pilot_roster_required")
+    for brand, expected in EXPECTED_BRANDS.items():
+        if counts[brand] != expected:
+            batch_errors.append(f"{brand}:exactly_{expected}_pilots_required")
+    all_specs_ready = len(rows) == 6 and all(row["spec_ready"] for row in rows) and not batch_errors
+    return {
+        "schema_version": "p68.six_pilot_spec_readiness.v1",
+        "pilots": rows,
+        "brand_counts": counts,
+        "batch_errors": sorted(batch_errors),
+        "all_specs_ready": all_specs_ready,
+        "production_candidate_count": 0,
+        "next_gate": "generate_or_source_natural_motion_clips" if all_specs_ready else "repair_specs",
+        "paid_provider_calls_made": 0,
+        "vercel_deployment_required": False,
+        "publish_allowed": False,
+    }
+
+
+def write_spec_readiness(pilots_root: str | Path, output_path: str | Path) -> dict[str, Any]:
+    result = evaluate_spec_batch(pilots_root)
+    path = Path(output_path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
+    return result
 
 
 def evaluate_pilot(record: dict[str, Any], benchmark: dict[str, Any]) -> dict[str, Any]:

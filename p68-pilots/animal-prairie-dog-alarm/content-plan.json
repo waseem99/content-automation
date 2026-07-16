@@ -1,0 +1,319 @@
+{
+  "schema_version": "p68.original_continuity_plan.v1",
+  "topic": "how prairie dog alarm calls carry information about threats",
+  "brand_profile": "animal_x",
+  "concept_options": [
+    {
+      "concept_id": "animal_x-concept-1",
+      "topic": "how prairie dog alarm calls carry information about threats",
+      "angle": "behavior mystery",
+      "format": "respectful wildlife micro-documentary",
+      "premise": "Explain how prairie dog alarm calls carry information about threats through an original behavior mystery visual story.",
+      "hook_direction": "Open on a visible consequence of how prairie dog alarm calls carry information about threats, then withhold the cause.",
+      "payoff_direction": "Reveal the mechanism behind how prairie dog alarm calls carry information about threats with a new visual demonstration.",
+      "tone": "observational, respectful, evidence-led, quietly cinematic",
+      "reusable_mechanics": [
+        "first-second visual contradiction",
+        "one continuous subject or mechanism",
+        "cause revealed after visible evidence",
+        "short memorable payoff"
+      ],
+      "source_expression_allowed": false,
+      "status": "option_pending_human_selection"
+    },
+    {
+      "concept_id": "animal_x-concept-2",
+      "topic": "how prairie dog alarm calls carry information about threats",
+      "angle": "sensory adaptation",
+      "format": "respectful wildlife micro-documentary",
+      "premise": "Explain how prairie dog alarm calls carry information about threats through an original sensory adaptation visual story.",
+      "hook_direction": "Open on a visible consequence of how prairie dog alarm calls carry information about threats, then withhold the cause.",
+      "payoff_direction": "Reveal the mechanism behind how prairie dog alarm calls carry information about threats with a new visual demonstration.",
+      "tone": "observational, respectful, evidence-led, quietly cinematic",
+      "reusable_mechanics": [
+        "first-second visual contradiction",
+        "one continuous subject or mechanism",
+        "cause revealed after visible evidence",
+        "short memorable payoff"
+      ],
+      "source_expression_allowed": false,
+      "status": "option_pending_human_selection"
+    },
+    {
+      "concept_id": "animal_x-concept-3",
+      "topic": "how prairie dog alarm calls carry information about threats",
+      "angle": "survival trade-off",
+      "format": "respectful wildlife micro-documentary",
+      "premise": "Explain how prairie dog alarm calls carry information about threats through an original survival trade-off visual story.",
+      "hook_direction": "Open on a visible consequence of how prairie dog alarm calls carry information about threats, then withhold the cause.",
+      "payoff_direction": "Reveal the mechanism behind how prairie dog alarm calls carry information about threats with a new visual demonstration.",
+      "tone": "observational, respectful, evidence-led, quietly cinematic",
+      "reusable_mechanics": [
+        "first-second visual contradiction",
+        "one continuous subject or mechanism",
+        "cause revealed after visible evidence",
+        "short memorable payoff"
+      ],
+      "source_expression_allowed": false,
+      "status": "option_pending_human_selection"
+    }
+  ],
+  "selected_concept": {
+    "concept_id": "animal_x-concept-1",
+    "topic": "how prairie dog alarm calls carry information about threats",
+    "angle": "behavior mystery",
+    "format": "respectful wildlife micro-documentary",
+    "premise": "Explain how prairie dog alarm calls carry information about threats through an original behavior mystery visual story.",
+    "hook_direction": "Open on a visible consequence of how prairie dog alarm calls carry information about threats, then withhold the cause.",
+    "payoff_direction": "Reveal the mechanism behind how prairie dog alarm calls carry information about threats with a new visual demonstration.",
+    "tone": "observational, respectful, evidence-led, quietly cinematic",
+    "reusable_mechanics": [
+      "first-second visual contradiction",
+      "one continuous subject or mechanism",
+      "cause revealed after visible evidence",
+      "short memorable payoff"
+    ],
+    "source_expression_allowed": false,
+    "status": "selected_pending_human_review"
+  },
+  "original_script": "One prairie dog's call can change how an entire colony reacts to danger. The call is not simply noise. Its pattern can vary with the kind of threat detected. Changes in pitch and timing carry information through the colony. Nearby animals become vigilant and choose cover according to what they detect. Because many animals can hear and answer, warning spreads beyond the first lookout. The result is a warning system built from attention, sound, and coordinated behavior.",
+  "storyboard": [
+    {
+      "shot_id": "S01",
+      "story_stage": "hook",
+      "visual": "The notched-ear prairie dog rises on the mound as distant heads turn",
+      "caption": "ONE CALL CHANGES THE COLONY"
+    },
+    {
+      "shot_id": "S02",
+      "story_stage": "threat",
+      "visual": "A distant coyote crosses frame right while the caller gives a natural alarm posture",
+      "caption": "THE PATTERN CHANGES"
+    },
+    {
+      "shot_id": "S03",
+      "story_stage": "signal",
+      "visual": "Restrained waveform traces the real call while neighboring animals listen",
+      "caption": "PITCH + TIMING"
+    },
+    {
+      "shot_id": "S04",
+      "story_stage": "response",
+      "visual": "Three prairie dogs turn toward frame right then move toward separate burrows",
+      "caption": "THE COLONY RESPONDS"
+    },
+    {
+      "shot_id": "S05",
+      "story_stage": "network",
+      "visual": "A wide shot reveals calls and movement passing across the connected colony",
+      "caption": "A LIVING WARNING NETWORK"
+    },
+    {
+      "shot_id": "S06",
+      "story_stage": "payoff",
+      "visual": "The coyote exits far away and the same caller lowers naturally as calm returns",
+      "caption": "ATTENTION BECOMES SAFETY"
+    }
+  ],
+  "continuity_bible": {
+    "subject_identity": "the same adult black-tailed prairie dog with a small notch in the right ear and natural proportions",
+    "environment": "one shortgrass colony beside the same burrow mound under clear late-afternoon sky",
+    "lighting": "warm sun from camera left with stable long shadows and a soft blue sky fill",
+    "color_treatment": "natural tawny fur, ochre soil, sage grass, restrained rust-red threat accents",
+    "screen_direction": "the prairie dog faces frame right and colony response moves right-to-left toward burrows",
+    "camera_language": "patient low wildlife telephoto with behavior-led cuts and no anthropomorphic staging",
+    "identity_lock": "Preserve defining features, anatomy, wardrobe, proportions, and scale.",
+    "environment_lock": "Preserve geography, background landmarks, weather, and time of day.",
+    "audio_ambience_lock": "Use one continuous ambience bed unless the story motivates a change.",
+    "human_review_required": true
+  },
+  "shots": [
+    {
+      "shot_id": "S01",
+      "story_stage": "hook",
+      "start_seconds": 0.0,
+      "end_seconds": 4.5,
+      "duration_seconds": 4.5,
+      "narration": "One prairie dog's call can change how an entire colony reacts to danger.",
+      "caption": "ONE CALL CHANGES THE COLONY",
+      "visual_action": "The notched-ear prairie dog rises on the mound as distant heads turn",
+      "camera": "Low 300mm push",
+      "entry_action": "Open at grass height with calm foraging",
+      "exit_action": "End on the caller inhaling",
+      "screen_direction": "the prairie dog faces frame right and colony response moves right-to-left toward burrows",
+      "transition_in": {
+        "strategy": "cold_open",
+        "audio_bridge": "narration starts on first visible action"
+      },
+      "transition_handle_seconds": 0.5,
+      "ambience": "One continuous location ambience and restrained cinematic music bed",
+      "sfx": "Natural wind and one breath",
+      "clip_prompt": "Original vertical cinematic clip. The notched-ear prairie dog rises on the mound as distant heads turn. Subject lock: the same adult black-tailed prairie dog with a small notch in the right ear and natural proportions. Environment lock: one shortgrass colony beside the same burrow mound under clear late-afternoon sky. Lighting: warm sun from camera left with stable long shadows and a soft blue sky fill. Color: natural tawny fur, ochre soil, sage grass, restrained rust-red threat accents. Camera: Low 300mm push. Entry: Open at grass height with calm foraging. Exit: End on the caller inhaling. Screen direction: the prairie dog faces frame right and colony response moves right-to-left toward burrows. Leave clean motion handles at both ends; no embedded text.",
+      "negative_prompt": "identity drift, anatomy change, wardrobe change, background jump, lighting flip, reversed screen direction, duplicate subject, watermark, logo, embedded captions",
+      "clip_status": "awaiting_generated_or_approved_clip",
+      "human_review_required": true
+    },
+    {
+      "shot_id": "S02",
+      "story_stage": "threat",
+      "start_seconds": 4.5,
+      "end_seconds": 9.5,
+      "duration_seconds": 5.0,
+      "narration": "The call is not simply noise. Its pattern can vary with the kind of threat detected.",
+      "caption": "THE PATTERN CHANGES",
+      "visual_action": "A distant coyote crosses frame right while the caller gives a natural alarm posture",
+      "camera": "Telephoto rack focus from caller to coyote",
+      "entry_action": "Continue from the inhale",
+      "exit_action": "Hold on one completed call",
+      "screen_direction": "the prairie dog faces frame right and colony response moves right-to-left toward burrows",
+      "transition_in": {
+        "strategy": "action_cut",
+        "audio_bridge": "carry narration, ambience, or motivated SFX across the cut"
+      },
+      "transition_handle_seconds": 0.5,
+      "ambience": "One continuous location ambience and restrained cinematic music bed",
+      "sfx": "One naturalistic call accent",
+      "clip_prompt": "Original vertical cinematic clip. A distant coyote crosses frame right while the caller gives a natural alarm posture. Subject lock: the same adult black-tailed prairie dog with a small notch in the right ear and natural proportions. Environment lock: one shortgrass colony beside the same burrow mound under clear late-afternoon sky. Lighting: warm sun from camera left with stable long shadows and a soft blue sky fill. Color: natural tawny fur, ochre soil, sage grass, restrained rust-red threat accents. Camera: Telephoto rack focus from caller to coyote. Entry: Continue from the inhale. Exit: Hold on one completed call. Screen direction: the prairie dog faces frame right and colony response moves right-to-left toward burrows. Leave clean motion handles at both ends; no embedded text.",
+      "negative_prompt": "identity drift, anatomy change, wardrobe change, background jump, lighting flip, reversed screen direction, duplicate subject, watermark, logo, embedded captions",
+      "clip_status": "awaiting_generated_or_approved_clip",
+      "human_review_required": true
+    },
+    {
+      "shot_id": "S03",
+      "story_stage": "signal",
+      "start_seconds": 9.5,
+      "end_seconds": 14.5,
+      "duration_seconds": 5.0,
+      "narration": "Changes in pitch and timing carry information through the colony.",
+      "caption": "PITCH + TIMING",
+      "visual_action": "Restrained waveform traces the real call while neighboring animals listen",
+      "camera": "Locked respectful medium shot",
+      "entry_action": "Match the completed call",
+      "exit_action": "Waveform fades before behavior changes",
+      "screen_direction": "the prairie dog faces frame right and colony response moves right-to-left toward burrows",
+      "transition_in": {
+        "strategy": "match_cut",
+        "audio_bridge": "carry narration, ambience, or motivated SFX across the cut"
+      },
+      "transition_handle_seconds": 0.5,
+      "ambience": "One continuous location ambience and restrained cinematic music bed",
+      "sfx": "Call tail bridges the cut",
+      "clip_prompt": "Original vertical cinematic clip. Restrained waveform traces the real call while neighboring animals listen. Subject lock: the same adult black-tailed prairie dog with a small notch in the right ear and natural proportions. Environment lock: one shortgrass colony beside the same burrow mound under clear late-afternoon sky. Lighting: warm sun from camera left with stable long shadows and a soft blue sky fill. Color: natural tawny fur, ochre soil, sage grass, restrained rust-red threat accents. Camera: Locked respectful medium shot. Entry: Match the completed call. Exit: Waveform fades before behavior changes. Screen direction: the prairie dog faces frame right and colony response moves right-to-left toward burrows. Leave clean motion handles at both ends; no embedded text.",
+      "negative_prompt": "identity drift, anatomy change, wardrobe change, background jump, lighting flip, reversed screen direction, duplicate subject, watermark, logo, embedded captions",
+      "clip_status": "awaiting_generated_or_approved_clip",
+      "human_review_required": true
+    },
+    {
+      "shot_id": "S04",
+      "story_stage": "response",
+      "start_seconds": 14.5,
+      "end_seconds": 19.5,
+      "duration_seconds": 5.0,
+      "narration": "Nearby animals become vigilant and choose cover according to what they detect.",
+      "caption": "THE COLONY RESPONDS",
+      "visual_action": "Three prairie dogs turn toward frame right then move toward separate burrows",
+      "camera": "Ground-level lateral track",
+      "entry_action": "Begin as the waveform fades",
+      "exit_action": "Follow the last animal to the mound edge",
+      "screen_direction": "the prairie dog faces frame right and colony response moves right-to-left toward burrows",
+      "transition_in": {
+        "strategy": "direct_cut",
+        "audio_bridge": "carry narration, ambience, or motivated SFX across the cut"
+      },
+      "transition_handle_seconds": 0.5,
+      "ambience": "One continuous location ambience and restrained cinematic music bed",
+      "sfx": "Grass movement and footfalls",
+      "clip_prompt": "Original vertical cinematic clip. Three prairie dogs turn toward frame right then move toward separate burrows. Subject lock: the same adult black-tailed prairie dog with a small notch in the right ear and natural proportions. Environment lock: one shortgrass colony beside the same burrow mound under clear late-afternoon sky. Lighting: warm sun from camera left with stable long shadows and a soft blue sky fill. Color: natural tawny fur, ochre soil, sage grass, restrained rust-red threat accents. Camera: Ground-level lateral track. Entry: Begin as the waveform fades. Exit: Follow the last animal to the mound edge. Screen direction: the prairie dog faces frame right and colony response moves right-to-left toward burrows. Leave clean motion handles at both ends; no embedded text.",
+      "negative_prompt": "identity drift, anatomy change, wardrobe change, background jump, lighting flip, reversed screen direction, duplicate subject, watermark, logo, embedded captions",
+      "clip_status": "awaiting_generated_or_approved_clip",
+      "human_review_required": true
+    },
+    {
+      "shot_id": "S05",
+      "story_stage": "network",
+      "start_seconds": 19.5,
+      "end_seconds": 24.5,
+      "duration_seconds": 5.0,
+      "narration": "Because many animals can hear and answer, warning spreads beyond the first lookout.",
+      "caption": "A LIVING WARNING NETWORK",
+      "visual_action": "A wide shot reveals calls and movement passing across the connected colony",
+      "camera": "Slow crane to wide geography",
+      "entry_action": "Rise from the mound edge",
+      "exit_action": "Settle on the original caller still scanning",
+      "screen_direction": "the prairie dog faces frame right and colony response moves right-to-left toward burrows",
+      "transition_in": {
+        "strategy": "j_cut",
+        "audio_bridge": "carry narration, ambience, or motivated SFX across the cut"
+      },
+      "transition_handle_seconds": 0.5,
+      "ambience": "One continuous location ambience and restrained cinematic music bed",
+      "sfx": "Distant call-and-response bed",
+      "clip_prompt": "Original vertical cinematic clip. A wide shot reveals calls and movement passing across the connected colony. Subject lock: the same adult black-tailed prairie dog with a small notch in the right ear and natural proportions. Environment lock: one shortgrass colony beside the same burrow mound under clear late-afternoon sky. Lighting: warm sun from camera left with stable long shadows and a soft blue sky fill. Color: natural tawny fur, ochre soil, sage grass, restrained rust-red threat accents. Camera: Slow crane to wide geography. Entry: Rise from the mound edge. Exit: Settle on the original caller still scanning. Screen direction: the prairie dog faces frame right and colony response moves right-to-left toward burrows. Leave clean motion handles at both ends; no embedded text.",
+      "negative_prompt": "identity drift, anatomy change, wardrobe change, background jump, lighting flip, reversed screen direction, duplicate subject, watermark, logo, embedded captions",
+      "clip_status": "awaiting_generated_or_approved_clip",
+      "human_review_required": true
+    },
+    {
+      "shot_id": "S06",
+      "story_stage": "payoff",
+      "start_seconds": 24.5,
+      "end_seconds": 30.0,
+      "duration_seconds": 5.5,
+      "narration": "The result is a warning system built from attention, sound, and coordinated behavior.",
+      "caption": "ATTENTION BECOMES SAFETY",
+      "visual_action": "The coyote exits far away and the same caller lowers naturally as calm returns",
+      "camera": "Patient telephoto pullback",
+      "entry_action": "Return to the original mound",
+      "exit_action": "End on resumed foraging with no staged celebration",
+      "screen_direction": "the prairie dog faces frame right and colony response moves right-to-left toward burrows",
+      "transition_in": {
+        "strategy": "l_cut",
+        "audio_bridge": "carry narration, ambience, or motivated SFX across the cut"
+      },
+      "transition_handle_seconds": 0.5,
+      "ambience": "One continuous location ambience and restrained cinematic music bed",
+      "sfx": "Wind resolves without a sting",
+      "clip_prompt": "Original vertical cinematic clip. The coyote exits far away and the same caller lowers naturally as calm returns. Subject lock: the same adult black-tailed prairie dog with a small notch in the right ear and natural proportions. Environment lock: one shortgrass colony beside the same burrow mound under clear late-afternoon sky. Lighting: warm sun from camera left with stable long shadows and a soft blue sky fill. Color: natural tawny fur, ochre soil, sage grass, restrained rust-red threat accents. Camera: Patient telephoto pullback. Entry: Return to the original mound. Exit: End on resumed foraging with no staged celebration. Screen direction: the prairie dog faces frame right and colony response moves right-to-left toward burrows. Leave clean motion handles at both ends; no embedded text.",
+      "negative_prompt": "identity drift, anatomy change, wardrobe change, background jump, lighting flip, reversed screen direction, duplicate subject, watermark, logo, embedded captions",
+      "clip_status": "awaiting_generated_or_approved_clip",
+      "human_review_required": true
+    }
+  ],
+  "factual_notes": [
+    {
+      "claim": "Prairie dog alarm calls vary with predator category and can encode descriptive information.",
+      "source_url": "https://doi.org/10.1016/S0003-3472(05)80948-1",
+      "source_title": "Semantic information in prairie dog alarm calls",
+      "review_status": "pending_human_fact_review"
+    },
+    {
+      "claim": "Black-tailed prairie dogs use alarm calling and vigilance as anti-predator behavior.",
+      "source_url": "https://www.nps.gov/articles/000/black-tailed-prairie-dogs.htm",
+      "source_title": "National Park Service \u2014 Black-tailed prairie dogs",
+      "review_status": "pending_human_fact_review"
+    }
+  ],
+  "originality_distance": {
+    "max_similarity": 0.0,
+    "threshold": 0.35,
+    "copied_long_phrases": [],
+    "comparisons": [],
+    "automated_check": "pass",
+    "human_originality_review_required": true
+  },
+  "visual_identity": {
+    "format": "respectful wildlife micro-documentary",
+    "tone": "observational, respectful, evidence-led, quietly cinematic",
+    "continuity_before_style": true
+  },
+  "render_allowed": false,
+  "publish_allowed": false,
+  "human_review_required": true,
+  "status": "draft_for_fact_rights_originality_and_creative_review",
+  "validation": {
+    "passed": true,
+    "errors": []
+  },
+  "pilot_id": "animal-prairie-dog-alarm",
+  "source_brief_path": "p68-pilots/animal-prairie-dog-alarm/source-brief.json"
+}

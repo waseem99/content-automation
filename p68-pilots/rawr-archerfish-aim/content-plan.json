@@ -1,0 +1,319 @@
+{
+  "schema_version": "p68.original_continuity_plan.v1",
+  "topic": "how archerfish compensate for refraction while targeting prey",
+  "brand_profile": "rawr_nation",
+  "concept_options": [
+    {
+      "concept_id": "rawr_nation-concept-1",
+      "topic": "how archerfish compensate for refraction while targeting prey",
+      "angle": "hidden mechanism",
+      "format": "premium factual explainer",
+      "premise": "Explain how archerfish compensate for refraction while targeting prey through an original hidden mechanism visual story.",
+      "hook_direction": "Open on a visible consequence of how archerfish compensate for refraction while targeting prey, then withhold the cause.",
+      "payoff_direction": "Reveal the mechanism behind how archerfish compensate for refraction while targeting prey with a new visual demonstration.",
+      "tone": "credible, visual, concise, curious",
+      "reusable_mechanics": [
+        "first-second visual contradiction",
+        "one continuous subject or mechanism",
+        "cause revealed after visible evidence",
+        "short memorable payoff"
+      ],
+      "source_expression_allowed": false,
+      "status": "option_pending_human_selection"
+    },
+    {
+      "concept_id": "rawr_nation-concept-2",
+      "topic": "how archerfish compensate for refraction while targeting prey",
+      "angle": "counterintuitive cause",
+      "format": "premium factual explainer",
+      "premise": "Explain how archerfish compensate for refraction while targeting prey through an original counterintuitive cause visual story.",
+      "hook_direction": "Open on a visible consequence of how archerfish compensate for refraction while targeting prey, then withhold the cause.",
+      "payoff_direction": "Reveal the mechanism behind how archerfish compensate for refraction while targeting prey with a new visual demonstration.",
+      "tone": "credible, visual, concise, curious",
+      "reusable_mechanics": [
+        "first-second visual contradiction",
+        "one continuous subject or mechanism",
+        "cause revealed after visible evidence",
+        "short memorable payoff"
+      ],
+      "source_expression_allowed": false,
+      "status": "option_pending_human_selection"
+    },
+    {
+      "concept_id": "rawr_nation-concept-3",
+      "topic": "how archerfish compensate for refraction while targeting prey",
+      "angle": "scale-shift reveal",
+      "format": "premium factual explainer",
+      "premise": "Explain how archerfish compensate for refraction while targeting prey through an original scale-shift reveal visual story.",
+      "hook_direction": "Open on a visible consequence of how archerfish compensate for refraction while targeting prey, then withhold the cause.",
+      "payoff_direction": "Reveal the mechanism behind how archerfish compensate for refraction while targeting prey with a new visual demonstration.",
+      "tone": "credible, visual, concise, curious",
+      "reusable_mechanics": [
+        "first-second visual contradiction",
+        "one continuous subject or mechanism",
+        "cause revealed after visible evidence",
+        "short memorable payoff"
+      ],
+      "source_expression_allowed": false,
+      "status": "option_pending_human_selection"
+    }
+  ],
+  "selected_concept": {
+    "concept_id": "rawr_nation-concept-2",
+    "topic": "how archerfish compensate for refraction while targeting prey",
+    "angle": "counterintuitive cause",
+    "format": "premium factual explainer",
+    "premise": "Explain how archerfish compensate for refraction while targeting prey through an original counterintuitive cause visual story.",
+    "hook_direction": "Open on a visible consequence of how archerfish compensate for refraction while targeting prey, then withhold the cause.",
+    "payoff_direction": "Reveal the mechanism behind how archerfish compensate for refraction while targeting prey with a new visual demonstration.",
+    "tone": "credible, visual, concise, curious",
+    "reusable_mechanics": [
+      "first-second visual contradiction",
+      "one continuous subject or mechanism",
+      "cause revealed after visible evidence",
+      "short memorable payoff"
+    ],
+    "source_expression_allowed": false,
+    "status": "selected_pending_human_review"
+  },
+  "original_script": "This fish hits a target above water even though the surface makes it appear displaced. Light changes direction when it crosses from air into water, shifting the insect's apparent position. The archerfish learns the relationship between what it sees and where the target really is. Then its mouth shapes a fast water jet aimed through the surface. The jet strengthens toward the front, concentrating the impact near the target. It is not a lucky shot. The fish combines optics, learned calibration, and precise fluid control.",
+  "storyboard": [
+    {
+      "shot_id": "S01",
+      "story_stage": "hook",
+      "visual": "A split-level view holds fish below and insect above while one apparent ray bends",
+      "caption": "THE TARGET IS NOT WHERE IT LOOKS"
+    },
+    {
+      "shot_id": "S02",
+      "story_stage": "setup",
+      "visual": "Clean rays from the insect bend at the same waterline toward the same fish",
+      "caption": "THE SURFACE BENDS LIGHT"
+    },
+    {
+      "shot_id": "S03",
+      "story_stage": "aim",
+      "visual": "The fish holds position while a restrained true-position marker separates from the apparent position",
+      "caption": "VISION BECOMES A MAP"
+    },
+    {
+      "shot_id": "S04",
+      "story_stage": "jet",
+      "visual": "One continuous high-speed shot shows the mouth jet crossing the waterline",
+      "caption": "A WATER JET FIRES"
+    },
+    {
+      "shot_id": "S05",
+      "story_stage": "impact",
+      "visual": "Macro slow motion follows later water catching the leading jet just before impact",
+      "caption": "THE IMPACT CONCENTRATES"
+    },
+    {
+      "shot_id": "S06",
+      "story_stage": "payoff",
+      "visual": "The insect lands on the surface and the same fish turns toward it in one natural motion",
+      "caption": "OPTICS + CONTROL"
+    }
+  ],
+  "continuity_bible": {
+    "subject_identity": "the same banded archerfish with five dark bars, intact fins, and consistent scale pattern",
+    "environment": "one shallow mangrove tank with the same branch, waterline, and single insect above it",
+    "lighting": "dappled daylight from upper left with stable caustics below the surface",
+    "color_treatment": "natural olive water, silver fish, dark mangrove wood, restrained amber trajectory accents",
+    "screen_direction": "the fish approaches left-to-right and the water jet travels lower-left to upper-right",
+    "camera_language": "split-level wildlife cinematography with restrained explanatory overlays",
+    "identity_lock": "Preserve defining features, anatomy, wardrobe, proportions, and scale.",
+    "environment_lock": "Preserve geography, background landmarks, weather, and time of day.",
+    "audio_ambience_lock": "Use one continuous ambience bed unless the story motivates a change.",
+    "human_review_required": true
+  },
+  "shots": [
+    {
+      "shot_id": "S01",
+      "story_stage": "hook",
+      "start_seconds": 0.0,
+      "end_seconds": 4.5,
+      "duration_seconds": 4.5,
+      "narration": "This fish hits a target above water even though the surface makes it appear displaced.",
+      "caption": "THE TARGET IS NOT WHERE IT LOOKS",
+      "visual_action": "A split-level view holds fish below and insect above while one apparent ray bends",
+      "camera": "Locked split-level 70mm view",
+      "entry_action": "Open on the insect reflection rippling",
+      "exit_action": "End as the fish settles beneath the branch",
+      "screen_direction": "the fish approaches left-to-right and the water jet travels lower-left to upper-right",
+      "transition_in": {
+        "strategy": "cold_open",
+        "audio_bridge": "narration starts on first visible action"
+      },
+      "transition_handle_seconds": 0.5,
+      "ambience": "One continuous location ambience and restrained cinematic music bed",
+      "sfx": "Waterline shimmer",
+      "clip_prompt": "Original vertical cinematic clip. A split-level view holds fish below and insect above while one apparent ray bends. Subject lock: the same banded archerfish with five dark bars, intact fins, and consistent scale pattern. Environment lock: one shallow mangrove tank with the same branch, waterline, and single insect above it. Lighting: dappled daylight from upper left with stable caustics below the surface. Color: natural olive water, silver fish, dark mangrove wood, restrained amber trajectory accents. Camera: Locked split-level 70mm view. Entry: Open on the insect reflection rippling. Exit: End as the fish settles beneath the branch. Screen direction: the fish approaches left-to-right and the water jet travels lower-left to upper-right. Leave clean motion handles at both ends; no embedded text.",
+      "negative_prompt": "identity drift, anatomy change, wardrobe change, background jump, lighting flip, reversed screen direction, duplicate subject, watermark, logo, embedded captions",
+      "clip_status": "awaiting_generated_or_approved_clip",
+      "human_review_required": true
+    },
+    {
+      "shot_id": "S02",
+      "story_stage": "setup",
+      "start_seconds": 4.5,
+      "end_seconds": 9.5,
+      "duration_seconds": 5.0,
+      "narration": "Light changes direction when it crosses from air into water, shifting the insect's apparent position.",
+      "caption": "THE SURFACE BENDS LIGHT",
+      "visual_action": "Clean rays from the insect bend at the same waterline toward the same fish",
+      "camera": "Slow push along waterline",
+      "entry_action": "Continue from the rippling reflection",
+      "exit_action": "Converge rays at the fish's eye",
+      "screen_direction": "the fish approaches left-to-right and the water jet travels lower-left to upper-right",
+      "transition_in": {
+        "strategy": "action_cut",
+        "audio_bridge": "carry narration, ambience, or motivated SFX across the cut"
+      },
+      "transition_handle_seconds": 0.5,
+      "ambience": "One continuous location ambience and restrained cinematic music bed",
+      "sfx": "Quiet refractive chime",
+      "clip_prompt": "Original vertical cinematic clip. Clean rays from the insect bend at the same waterline toward the same fish. Subject lock: the same banded archerfish with five dark bars, intact fins, and consistent scale pattern. Environment lock: one shallow mangrove tank with the same branch, waterline, and single insect above it. Lighting: dappled daylight from upper left with stable caustics below the surface. Color: natural olive water, silver fish, dark mangrove wood, restrained amber trajectory accents. Camera: Slow push along waterline. Entry: Continue from the rippling reflection. Exit: Converge rays at the fish's eye. Screen direction: the fish approaches left-to-right and the water jet travels lower-left to upper-right. Leave clean motion handles at both ends; no embedded text.",
+      "negative_prompt": "identity drift, anatomy change, wardrobe change, background jump, lighting flip, reversed screen direction, duplicate subject, watermark, logo, embedded captions",
+      "clip_status": "awaiting_generated_or_approved_clip",
+      "human_review_required": true
+    },
+    {
+      "shot_id": "S03",
+      "story_stage": "aim",
+      "start_seconds": 9.5,
+      "end_seconds": 14.5,
+      "duration_seconds": 5.0,
+      "narration": "The archerfish learns the relationship between what it sees and where the target really is.",
+      "caption": "VISION BECOMES A MAP",
+      "visual_action": "The fish holds position while a restrained true-position marker separates from the apparent position",
+      "camera": "Underwater profile track",
+      "entry_action": "Begin at the same eye-line",
+      "exit_action": "Fish rotates its body into firing posture",
+      "screen_direction": "the fish approaches left-to-right and the water jet travels lower-left to upper-right",
+      "transition_in": {
+        "strategy": "match_cut",
+        "audio_bridge": "carry narration, ambience, or motivated SFX across the cut"
+      },
+      "transition_handle_seconds": 0.5,
+      "ambience": "One continuous location ambience and restrained cinematic music bed",
+      "sfx": "Subtle lock-on pulse",
+      "clip_prompt": "Original vertical cinematic clip. The fish holds position while a restrained true-position marker separates from the apparent position. Subject lock: the same banded archerfish with five dark bars, intact fins, and consistent scale pattern. Environment lock: one shallow mangrove tank with the same branch, waterline, and single insect above it. Lighting: dappled daylight from upper left with stable caustics below the surface. Color: natural olive water, silver fish, dark mangrove wood, restrained amber trajectory accents. Camera: Underwater profile track. Entry: Begin at the same eye-line. Exit: Fish rotates its body into firing posture. Screen direction: the fish approaches left-to-right and the water jet travels lower-left to upper-right. Leave clean motion handles at both ends; no embedded text.",
+      "negative_prompt": "identity drift, anatomy change, wardrobe change, background jump, lighting flip, reversed screen direction, duplicate subject, watermark, logo, embedded captions",
+      "clip_status": "awaiting_generated_or_approved_clip",
+      "human_review_required": true
+    },
+    {
+      "shot_id": "S04",
+      "story_stage": "jet",
+      "start_seconds": 14.5,
+      "end_seconds": 19.0,
+      "duration_seconds": 4.5,
+      "narration": "Then its mouth shapes a fast water jet aimed through the surface.",
+      "caption": "A WATER JET FIRES",
+      "visual_action": "One continuous high-speed shot shows the mouth jet crossing the waterline",
+      "camera": "High-speed action track",
+      "entry_action": "Start on firing posture",
+      "exit_action": "Follow the jet toward the insect",
+      "screen_direction": "the fish approaches left-to-right and the water jet travels lower-left to upper-right",
+      "transition_in": {
+        "strategy": "direct_cut",
+        "audio_bridge": "carry narration, ambience, or motivated SFX across the cut"
+      },
+      "transition_handle_seconds": 0.5,
+      "ambience": "One continuous location ambience and restrained cinematic music bed",
+      "sfx": "Sharp water launch",
+      "clip_prompt": "Original vertical cinematic clip. One continuous high-speed shot shows the mouth jet crossing the waterline. Subject lock: the same banded archerfish with five dark bars, intact fins, and consistent scale pattern. Environment lock: one shallow mangrove tank with the same branch, waterline, and single insect above it. Lighting: dappled daylight from upper left with stable caustics below the surface. Color: natural olive water, silver fish, dark mangrove wood, restrained amber trajectory accents. Camera: High-speed action track. Entry: Start on firing posture. Exit: Follow the jet toward the insect. Screen direction: the fish approaches left-to-right and the water jet travels lower-left to upper-right. Leave clean motion handles at both ends; no embedded text.",
+      "negative_prompt": "identity drift, anatomy change, wardrobe change, background jump, lighting flip, reversed screen direction, duplicate subject, watermark, logo, embedded captions",
+      "clip_status": "awaiting_generated_or_approved_clip",
+      "human_review_required": true
+    },
+    {
+      "shot_id": "S05",
+      "story_stage": "impact",
+      "start_seconds": 19.0,
+      "end_seconds": 24.0,
+      "duration_seconds": 5.0,
+      "narration": "The jet strengthens toward the front, concentrating the impact near the target.",
+      "caption": "THE IMPACT CONCENTRATES",
+      "visual_action": "Macro slow motion follows later water catching the leading jet just before impact",
+      "camera": "Telephoto high-speed macro",
+      "entry_action": "Continue along the same jet",
+      "exit_action": "Insect releases from branch without distress",
+      "screen_direction": "the fish approaches left-to-right and the water jet travels lower-left to upper-right",
+      "transition_in": {
+        "strategy": "j_cut",
+        "audio_bridge": "carry narration, ambience, or motivated SFX across the cut"
+      },
+      "transition_handle_seconds": 0.5,
+      "ambience": "One continuous location ambience and restrained cinematic music bed",
+      "sfx": "Clean droplet impact",
+      "clip_prompt": "Original vertical cinematic clip. Macro slow motion follows later water catching the leading jet just before impact. Subject lock: the same banded archerfish with five dark bars, intact fins, and consistent scale pattern. Environment lock: one shallow mangrove tank with the same branch, waterline, and single insect above it. Lighting: dappled daylight from upper left with stable caustics below the surface. Color: natural olive water, silver fish, dark mangrove wood, restrained amber trajectory accents. Camera: Telephoto high-speed macro. Entry: Continue along the same jet. Exit: Insect releases from branch without distress. Screen direction: the fish approaches left-to-right and the water jet travels lower-left to upper-right. Leave clean motion handles at both ends; no embedded text.",
+      "negative_prompt": "identity drift, anatomy change, wardrobe change, background jump, lighting flip, reversed screen direction, duplicate subject, watermark, logo, embedded captions",
+      "clip_status": "awaiting_generated_or_approved_clip",
+      "human_review_required": true
+    },
+    {
+      "shot_id": "S06",
+      "story_stage": "payoff",
+      "start_seconds": 24.0,
+      "end_seconds": 29.5,
+      "duration_seconds": 5.5,
+      "narration": "It is not a lucky shot. The fish combines optics, learned calibration, and precise fluid control.",
+      "caption": "OPTICS + CONTROL",
+      "visual_action": "The insect lands on the surface and the same fish turns toward it in one natural motion",
+      "camera": "Gentle overhead pullback",
+      "entry_action": "Match the falling insect",
+      "exit_action": "End before feeding on a clean water ripple",
+      "screen_direction": "the fish approaches left-to-right and the water jet travels lower-left to upper-right",
+      "transition_in": {
+        "strategy": "l_cut",
+        "audio_bridge": "carry narration, ambience, or motivated SFX across the cut"
+      },
+      "transition_handle_seconds": 0.5,
+      "ambience": "One continuous location ambience and restrained cinematic music bed",
+      "sfx": "Restrained payoff rise",
+      "clip_prompt": "Original vertical cinematic clip. The insect lands on the surface and the same fish turns toward it in one natural motion. Subject lock: the same banded archerfish with five dark bars, intact fins, and consistent scale pattern. Environment lock: one shallow mangrove tank with the same branch, waterline, and single insect above it. Lighting: dappled daylight from upper left with stable caustics below the surface. Color: natural olive water, silver fish, dark mangrove wood, restrained amber trajectory accents. Camera: Gentle overhead pullback. Entry: Match the falling insect. Exit: End before feeding on a clean water ripple. Screen direction: the fish approaches left-to-right and the water jet travels lower-left to upper-right. Leave clean motion handles at both ends; no embedded text.",
+      "negative_prompt": "identity drift, anatomy change, wardrobe change, background jump, lighting flip, reversed screen direction, duplicate subject, watermark, logo, embedded captions",
+      "clip_status": "awaiting_generated_or_approved_clip",
+      "human_review_required": true
+    }
+  ],
+  "factual_notes": [
+    {
+      "claim": "Archerfish shoot water jets to dislodge aerial prey.",
+      "source_url": "https://doi.org/10.1016/j.cub.2006.06.033",
+      "source_title": "Archerfish actively control the hydrodynamics of their jets",
+      "review_status": "pending_human_fact_review"
+    },
+    {
+      "claim": "They can account for the optical displacement caused by refraction at the water surface.",
+      "source_url": "https://doi.org/10.1242/jeb.02348",
+      "source_title": "Visual processing and target selection in archerfish",
+      "review_status": "pending_human_fact_review"
+    }
+  ],
+  "originality_distance": {
+    "max_similarity": 0.0,
+    "threshold": 0.35,
+    "copied_long_phrases": [],
+    "comparisons": [],
+    "automated_check": "pass",
+    "human_originality_review_required": true
+  },
+  "visual_identity": {
+    "format": "premium factual explainer",
+    "tone": "credible, visual, concise, curious",
+    "continuity_before_style": true
+  },
+  "render_allowed": false,
+  "publish_allowed": false,
+  "human_review_required": true,
+  "status": "draft_for_fact_rights_originality_and_creative_review",
+  "validation": {
+    "passed": true,
+    "errors": []
+  },
+  "pilot_id": "rawr-archerfish-aim",
+  "source_brief_path": "p68-pilots/rawr-archerfish-aim/source-brief.json"
+}

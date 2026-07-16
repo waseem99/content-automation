@@ -1,0 +1,44 @@
+[
+  {
+    "shot_id": "S01",
+    "prompt": "Original vertical cinematic clip. The notched-ear prairie dog rises on the mound as distant heads turn. Subject lock: the same adult black-tailed prairie dog with a small notch in the right ear and natural proportions. Environment lock: one shortgrass colony beside the same burrow mound under clear late-afternoon sky. Lighting: warm sun from camera left with stable long shadows and a soft blue sky fill. Color: natural tawny fur, ochre soil, sage grass, restrained rust-red threat accents. Camera: Low 300mm push. Entry: Open at grass height with calm foraging. Exit: End on the caller inhaling. Screen direction: the prairie dog faces frame right and colony response moves right-to-left toward burrows. Leave clean motion handles at both ends; no embedded text.",
+    "negative_prompt": "identity drift, anatomy change, wardrobe change, background jump, lighting flip, reversed screen direction, duplicate subject, watermark, logo, embedded captions",
+    "entry_action": "Open at grass height with calm foraging",
+    "exit_action": "End on the caller inhaling"
+  },
+  {
+    "shot_id": "S02",
+    "prompt": "Original vertical cinematic clip. A distant coyote crosses frame right while the caller gives a natural alarm posture. Subject lock: the same adult black-tailed prairie dog with a small notch in the right ear and natural proportions. Environment lock: one shortgrass colony beside the same burrow mound under clear late-afternoon sky. Lighting: warm sun from camera left with stable long shadows and a soft blue sky fill. Color: natural tawny fur, ochre soil, sage grass, restrained rust-red threat accents. Camera: Telephoto rack focus from caller to coyote. Entry: Continue from the inhale. Exit: Hold on one completed call. Screen direction: the prairie dog faces frame right and colony response moves right-to-left toward burrows. Leave clean motion handles at both ends; no embedded text.",
+    "negative_prompt": "identity drift, anatomy change, wardrobe change, background jump, lighting flip, reversed screen direction, duplicate subject, watermark, logo, embedded captions",
+    "entry_action": "Continue from the inhale",
+    "exit_action": "Hold on one completed call"
+  },
+  {
+    "shot_id": "S03",
+    "prompt": "Original vertical cinematic clip. Restrained waveform traces the real call while neighboring animals listen. Subject lock: the same adult black-tailed prairie dog with a small notch in the right ear and natural proportions. Environment lock: one shortgrass colony beside the same burrow mound under clear late-afternoon sky. Lighting: warm sun from camera left with stable long shadows and a soft blue sky fill. Color: natural tawny fur, ochre soil, sage grass, restrained rust-red threat accents. Camera: Locked respectful medium shot. Entry: Match the completed call. Exit: Waveform fades before behavior changes. Screen direction: the prairie dog faces frame right and colony response moves right-to-left toward burrows. Leave clean motion handles at both ends; no embedded text.",
+    "negative_prompt": "identity drift, anatomy change, wardrobe change, background jump, lighting flip, reversed screen direction, duplicate subject, watermark, logo, embedded captions",
+    "entry_action": "Match the completed call",
+    "exit_action": "Waveform fades before behavior changes"
+  },
+  {
+    "shot_id": "S04",
+    "prompt": "Original vertical cinematic clip. Three prairie dogs turn toward frame right then move toward separate burrows. Subject lock: the same adult black-tailed prairie dog with a small notch in the right ear and natural proportions. Environment lock: one shortgrass colony beside the same burrow mound under clear late-afternoon sky. Lighting: warm sun from camera left with stable long shadows and a soft blue sky fill. Color: natural tawny fur, ochre soil, sage grass, restrained rust-red threat accents. Camera: Ground-level lateral track. Entry: Begin as the waveform fades. Exit: Follow the last animal to the mound edge. Screen direction: the prairie dog faces frame right and colony response moves right-to-left toward burrows. Leave clean motion handles at both ends; no embedded text.",
+    "negative_prompt": "identity drift, anatomy change, wardrobe change, background jump, lighting flip, reversed screen direction, duplicate subject, watermark, logo, embedded captions",
+    "entry_action": "Begin as the waveform fades",
+    "exit_action": "Follow the last animal to the mound edge"
+  },
+  {
+    "shot_id": "S05",
+    "prompt": "Original vertical cinematic clip. A wide shot reveals calls and movement passing across the connected colony. Subject lock: the same adult black-tailed prairie dog with a small notch in the right ear and natural proportions. Environment lock: one shortgrass colony beside the same burrow mound under clear late-afternoon sky. Lighting: warm sun from camera left with stable long shadows and a soft blue sky fill. Color: natural tawny fur, ochre soil, sage grass, restrained rust-red threat accents. Camera: Slow crane to wide geography. Entry: Rise from the mound edge. Exit: Settle on the original caller still scanning. Screen direction: the prairie dog faces frame right and colony response moves right-to-left toward burrows. Leave clean motion handles at both ends; no embedded text.",
+    "negative_prompt": "identity drift, anatomy change, wardrobe change, background jump, lighting flip, reversed screen direction, duplicate subject, watermark, logo, embedded captions",
+    "entry_action": "Rise from the mound edge",
+    "exit_action": "Settle on the original caller still scanning"
+  },
+  {
+    "shot_id": "S06",
+    "prompt": "Original vertical cinematic clip. The coyote exits far away and the same caller lowers naturally as calm returns. Subject lock: the same adult black-tailed prairie dog with a small notch in the right ear and natural proportions. Environment lock: one shortgrass colony beside the same burrow mound under clear late-afternoon sky. Lighting: warm sun from camera left with stable long shadows and a soft blue sky fill. Color: natural tawny fur, ochre soil, sage grass, restrained rust-red threat accents. Camera: Patient telephoto pullback. Entry: Return to the original mound. Exit: End on resumed foraging with no staged celebration. Screen direction: the prairie dog faces frame right and colony response moves right-to-left toward burrows. Leave clean motion handles at both ends; no embedded text.",
+    "negative_prompt": "identity drift, anatomy change, wardrobe change, background jump, lighting flip, reversed screen direction, duplicate subject, watermark, logo, embedded captions",
+    "entry_action": "Return to the original mound",
+    "exit_action": "End on resumed foraging with no staged celebration"
+  }
+]

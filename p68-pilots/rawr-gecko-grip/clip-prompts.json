@@ -1,0 +1,44 @@
+[
+  {
+    "shot_id": "S01",
+    "prompt": "Original vertical cinematic clip. The gecko takes three clearly visible steps straight up clean glass. Subject lock: the same tokay gecko with blue-gray skin, orange spots, intact toes, and anatomically consistent feet. Environment lock: one charcoal macro-science set built around the same vertical glass panel. Lighting: soft cool key from upper left and narrow amber rim from camera right. Color: photoreal blue-gray gecko, charcoal glass, restrained cyan microscopy accents. Camera: 85mm wildlife macro tracking upward. Entry: Open on a planted rear foot as the front foot lifts. Exit: End when one front toe pad contacts the glass. Screen direction: the gecko and magnified contact sequence progress bottom-left to top-right. Leave clean motion handles at both ends; no embedded text.",
+    "negative_prompt": "identity drift, anatomy change, wardrobe change, background jump, lighting flip, reversed screen direction, duplicate subject, watermark, logo, embedded captions",
+    "entry_action": "Open on a planted rear foot as the front foot lifts",
+    "exit_action": "End when one front toe pad contacts the glass"
+  },
+  {
+    "shot_id": "S02",
+    "prompt": "Original vertical cinematic clip. A motivated match move enters the same front toe and reveals dense branching setae. Subject lock: the same tokay gecko with blue-gray skin, orange spots, intact toes, and anatomically consistent feet. Environment lock: one charcoal macro-science set built around the same vertical glass panel. Lighting: soft cool key from upper left and narrow amber rim from camera right. Color: photoreal blue-gray gecko, charcoal glass, restrained cyan microscopy accents. Camera: Controlled macro-to-micro push. Entry: Continue through the contacting toe pad. Exit: Settle beside one branching seta. Screen direction: the gecko and magnified contact sequence progress bottom-left to top-right. Leave clean motion handles at both ends; no embedded text.",
+    "negative_prompt": "identity drift, anatomy change, wardrobe change, background jump, lighting flip, reversed screen direction, duplicate subject, watermark, logo, embedded captions",
+    "entry_action": "Continue through the contacting toe pad",
+    "exit_action": "Settle beside one branching seta"
+  },
+  {
+    "shot_id": "S03",
+    "prompt": "Original vertical cinematic clip. One seta branches into spatula-shaped tips meeting the glass. Subject lock: the same tokay gecko with blue-gray skin, orange spots, intact toes, and anatomically consistent feet. Environment lock: one charcoal macro-science set built around the same vertical glass panel. Lighting: soft cool key from upper left and narrow amber rim from camera right. Color: photoreal blue-gray gecko, charcoal glass, restrained cyan microscopy accents. Camera: Lateral microscopy track. Entry: Begin on the same seta. Exit: Track the contact wave left-to-right. Screen direction: the gecko and magnified contact sequence progress bottom-left to top-right. Leave clean motion handles at both ends; no embedded text.",
+    "negative_prompt": "identity drift, anatomy change, wardrobe change, background jump, lighting flip, reversed screen direction, duplicate subject, watermark, logo, embedded captions",
+    "entry_action": "Begin on the same seta",
+    "exit_action": "Track the contact wave left-to-right"
+  },
+  {
+    "shot_id": "S04",
+    "prompt": "Original vertical cinematic clip. Restrained cyan force lines appear only at touching tips and spread across the planted foot. Subject lock: the same tokay gecko with blue-gray skin, orange spots, intact toes, and anatomically consistent feet. Environment lock: one charcoal macro-science set built around the same vertical glass panel. Lighting: soft cool key from upper left and narrow amber rim from camera right. Color: photoreal blue-gray gecko, charcoal glass, restrained cyan microscopy accents. Camera: Slow pullback through scale. Entry: Continue the contact wave. Exit: Force pattern resolves into the full toe silhouette. Screen direction: the gecko and magnified contact sequence progress bottom-left to top-right. Leave clean motion handles at both ends; no embedded text.",
+    "negative_prompt": "identity drift, anatomy change, wardrobe change, background jump, lighting flip, reversed screen direction, duplicate subject, watermark, logo, embedded captions",
+    "entry_action": "Continue the contact wave",
+    "exit_action": "Force pattern resolves into the full toe silhouette"
+  },
+  {
+    "shot_id": "S05",
+    "prompt": "Original vertical cinematic clip. The same toe hyperextends and peels cleanly from glass in one natural action. Subject lock: the same tokay gecko with blue-gray skin, orange spots, intact toes, and anatomically consistent feet. Environment lock: one charcoal macro-science set built around the same vertical glass panel. Lighting: soft cool key from upper left and narrow amber rim from camera right. Color: photoreal blue-gray gecko, charcoal glass, restrained cyan microscopy accents. Camera: High-speed side macro. Entry: Enter on the resolved toe silhouette. Exit: Finish as the foot swings upward. Screen direction: the gecko and magnified contact sequence progress bottom-left to top-right. Leave clean motion handles at both ends; no embedded text.",
+    "negative_prompt": "identity drift, anatomy change, wardrobe change, background jump, lighting flip, reversed screen direction, duplicate subject, watermark, logo, embedded captions",
+    "entry_action": "Enter on the resolved toe silhouette",
+    "exit_action": "Finish as the foot swings upward"
+  },
+  {
+    "shot_id": "S06",
+    "prompt": "Original vertical cinematic clip. Return to the same gecko completing the climb and pausing above the glass edge. Subject lock: the same tokay gecko with blue-gray skin, orange spots, intact toes, and anatomically consistent feet. Environment lock: one charcoal macro-science set built around the same vertical glass panel. Lighting: soft cool key from upper left and narrow amber rim from camera right. Color: photoreal blue-gray gecko, charcoal glass, restrained cyan microscopy accents. Camera: Measured pullback to hero frame. Entry: Match the upward foot swing. Exit: Hold the gecko safely perched for half a second. Screen direction: the gecko and magnified contact sequence progress bottom-left to top-right. Leave clean motion handles at both ends; no embedded text.",
+    "negative_prompt": "identity drift, anatomy change, wardrobe change, background jump, lighting flip, reversed screen direction, duplicate subject, watermark, logo, embedded captions",
+    "entry_action": "Match the upward foot swing",
+    "exit_action": "Hold the gecko safely perched for half a second"
+  }
+]

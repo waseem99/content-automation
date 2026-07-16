@@ -1,0 +1,109 @@
+{
+  "pilot_id": "rawr-archerfish-aim",
+  "brand_profile": "rawr_nation",
+  "topic": "how archerfish compensate for refraction while targeting prey",
+  "selected_concept_id": "rawr_nation-concept-2",
+  "reusable_mechanics": [
+    "first-second visual contradiction",
+    "one continuous subject or mechanism",
+    "cause revealed after visible evidence",
+    "short memorable payoff"
+  ],
+  "continuity_bible": {
+    "subject_identity": "the same banded archerfish with five dark bars, intact fins, and consistent scale pattern",
+    "environment": "one shallow mangrove tank with the same branch, waterline, and single insect above it",
+    "lighting": "dappled daylight from upper left with stable caustics below the surface",
+    "color_treatment": "natural olive water, silver fish, dark mangrove wood, restrained amber trajectory accents",
+    "screen_direction": "the fish approaches left-to-right and the water jet travels lower-left to upper-right",
+    "camera_language": "split-level wildlife cinematography with restrained explanatory overlays"
+  },
+  "factual_notes": [
+    {
+      "claim": "Archerfish shoot water jets to dislodge aerial prey.",
+      "source_url": "https://doi.org/10.1016/j.cub.2006.06.033",
+      "source_title": "Archerfish actively control the hydrodynamics of their jets",
+      "review_status": "pending_human_fact_review"
+    },
+    {
+      "claim": "They can account for the optical displacement caused by refraction at the water surface.",
+      "source_url": "https://doi.org/10.1242/jeb.02348",
+      "source_title": "Visual processing and target selection in archerfish",
+      "review_status": "pending_human_fact_review"
+    }
+  ],
+  "source_phrases_for_originality_check": [],
+  "script_segments": [
+    {
+      "story_stage": "hook",
+      "duration_seconds": 4.5,
+      "narration": "This fish hits a target above water even though the surface makes it appear displaced.",
+      "caption": "THE TARGET IS NOT WHERE IT LOOKS",
+      "visual_action": "A split-level view holds fish below and insect above while one apparent ray bends",
+      "entry_action": "Open on the insect reflection rippling",
+      "exit_action": "End as the fish settles beneath the branch",
+      "camera": "Locked split-level 70mm view",
+      "ambience": "One continuous location ambience and restrained cinematic music bed",
+      "sfx": "Waterline shimmer"
+    },
+    {
+      "story_stage": "setup",
+      "duration_seconds": 5.0,
+      "narration": "Light changes direction when it crosses from air into water, shifting the insect's apparent position.",
+      "caption": "THE SURFACE BENDS LIGHT",
+      "visual_action": "Clean rays from the insect bend at the same waterline toward the same fish",
+      "entry_action": "Continue from the rippling reflection",
+      "exit_action": "Converge rays at the fish's eye",
+      "camera": "Slow push along waterline",
+      "ambience": "One continuous location ambience and restrained cinematic music bed",
+      "sfx": "Quiet refractive chime"
+    },
+    {
+      "story_stage": "aim",
+      "duration_seconds": 5.0,
+      "narration": "The archerfish learns the relationship between what it sees and where the target really is.",
+      "caption": "VISION BECOMES A MAP",
+      "visual_action": "The fish holds position while a restrained true-position marker separates from the apparent position",
+      "entry_action": "Begin at the same eye-line",
+      "exit_action": "Fish rotates its body into firing posture",
+      "camera": "Underwater profile track",
+      "ambience": "One continuous location ambience and restrained cinematic music bed",
+      "sfx": "Subtle lock-on pulse"
+    },
+    {
+      "story_stage": "jet",
+      "duration_seconds": 4.5,
+      "narration": "Then its mouth shapes a fast water jet aimed through the surface.",
+      "caption": "A WATER JET FIRES",
+      "visual_action": "One continuous high-speed shot shows the mouth jet crossing the waterline",
+      "entry_action": "Start on firing posture",
+      "exit_action": "Follow the jet toward the insect",
+      "camera": "High-speed action track",
+      "ambience": "One continuous location ambience and restrained cinematic music bed",
+      "sfx": "Sharp water launch"
+    },
+    {
+      "story_stage": "impact",
+      "duration_seconds": 5.0,
+      "narration": "The jet strengthens toward the front, concentrating the impact near the target.",
+      "caption": "THE IMPACT CONCENTRATES",
+      "visual_action": "Macro slow motion follows later water catching the leading jet just before impact",
+      "entry_action": "Continue along the same jet",
+      "exit_action": "Insect releases from branch without distress",
+      "camera": "Telephoto high-speed macro",
+      "ambience": "One continuous location ambience and restrained cinematic music bed",
+      "sfx": "Clean droplet impact"
+    },
+    {
+      "story_stage": "payoff",
+      "duration_seconds": 5.5,
+      "narration": "It is not a lucky shot. The fish combines optics, learned calibration, and precise fluid control.",
+      "caption": "OPTICS + CONTROL",
+      "visual_action": "The insect lands on the surface and the same fish turns toward it in one natural motion",
+      "entry_action": "Match the falling insect",
+      "exit_action": "End before feeding on a clean water ripple",
+      "camera": "Gentle overhead pullback",
+      "ambience": "One continuous location ambience and restrained cinematic music bed",
+      "sfx": "Restrained payoff rise"
+    }
+  ]
+}
