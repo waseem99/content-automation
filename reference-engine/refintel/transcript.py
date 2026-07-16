@@ -121,10 +121,24 @@ def transcribe_audio(
     resolved_device = device
     if resolved_device == "auto":
         resolved_device = "cuda" if _cuda_available() else "cpu"
-    resolved_compute = compute_type
-    if resolved_compute == "default":
-        resolved_compute = "float16" if resolved_device == "cuda" else "int8"
-    model = WhisperModel(model_size, device=resolved_device, compute_type=resolved_compute)
+    resolved_compute = _resolve_compute_type(resolved_device, compute_type)
+    try:
+        model = WhisperModel(
+            model_size,
+            device=resolved_device,
+            compute_type=resolved_compute,
+        )
+    except ValueError as exc:
+        # Some Windows systems expose a CUDA device even though its backend cannot
+        # execute float16 efficiently. A default request must remain portable.
+        if compute_type != "default" or "float16" not in str(exc).lower():
+            raise
+        resolved_compute = "int8" if resolved_device == "cpu" else "float32"
+        model = WhisperModel(
+            model_size,
+            device=resolved_device,
+            compute_type=resolved_compute,
+        )
     raw_segments, info = model.transcribe(
         str(audio_path),
         language=language,
@@ -183,6 +197,23 @@ def _cuda_available() -> bool:
         return ctranslate2.get_cuda_device_count() > 0
     except Exception:
         return False
+
+
+def _resolve_compute_type(device: str, requested: str) -> str:
+    if requested != "default":
+        return requested
+    preferences = (
+        ("float16", "int8_float16", "int8_float32", "int8", "float32")
+        if device == "cuda"
+        else ("int8", "int8_float32", "float32")
+    )
+    try:
+        import ctranslate2  # type: ignore
+
+        supported = set(ctranslate2.get_supported_compute_types(device))
+        return next(item for item in preferences if item in supported)
+    except (ImportError, RuntimeError, StopIteration, TypeError, ValueError):
+        return "float16" if device == "cuda" else "int8"
 
 
 def analyze_transcript(
