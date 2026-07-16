@@ -75,6 +75,15 @@ def test_real_generation_requires_shot_specific_keyframe(tmp_path: Path) -> None
         build_requests(pilot, artifacts)
 
 
+def test_real_generation_rejects_unapproved_provenance_keyframe(tmp_path: Path) -> None:
+    pilot, artifacts = write_fixture(tmp_path, "derived_shot_asset")
+    manifest = json.loads((artifacts / "assets" / "asset-manifest.json").read_text())
+    manifest["assets"][0]["quality_status"] = "pending_keyframe_review"
+    (artifacts / "assets" / "asset-manifest.json").write_text(json.dumps(manifest))
+    with pytest.raises(ValueError, match="explicit human approval"):
+        build_requests(pilot, artifacts)
+
+
 def test_builds_two_deterministic_natural_motion_variants(tmp_path: Path) -> None:
     pilot, artifacts = write_fixture(tmp_path, "derived_shot_asset")
     requests = build_requests(pilot, artifacts, variants=2)
