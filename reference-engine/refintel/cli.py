@@ -23,6 +23,7 @@ from .ingest import validate_local_cookie_browser
 from .models import RightsDeclaration
 from .pipeline import ReferencePipeline, tool_versions
 from .settings import RefIntelSettings
+from .temporal import build_temporal_report
 
 app = typer.Typer(
     no_args_is_help=True,
@@ -488,6 +489,38 @@ def open_report(
     console.print(report_path)
     if open_browser:
         webbrowser.open(report_path.as_uri())
+
+
+@app.command("temporal-report")
+def temporal_report(
+    reference_id: str,
+    force: bool = typer.Option(False, help="Rebuild a hash-matched temporal report."),
+    open_browser: bool = typer.Option(False),
+    workspace: Path = typer.Option(settings.workspace),
+) -> None:
+    """Build or open the evidence-backed temporal report for a processed video."""
+    engine = pipeline(workspace)
+    project = engine.store.load_project(reference_id)
+    report, manifest_path, html_path = build_temporal_report(
+        project,
+        Path(project.workspace_path),
+        force=force,
+    )
+    console.print_json(
+        json.dumps(
+            {
+                "reference_id": report.reference_id,
+                "status": report.status.value,
+                "window_count": len(report.windows),
+                "motion_classification": report.motion_disclosure["classification"],
+                "human_review_required": report.human_review_required,
+            }
+        )
+    )
+    console.print(manifest_path)
+    console.print(html_path)
+    if open_browser:
+        webbrowser.open(html_path.as_uri())
 
 
 @app.command("export-brief")

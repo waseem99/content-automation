@@ -131,6 +131,39 @@ Opening, setup, development, payoff/close, and CTA labels are sequence candidate
 claims about creator intent. Source text must not be reused verbatim, source imagery must not
 enter generated content, and human review is required before any brief or production action.
 
+## Temporal and multimodal report checkpoint
+
+P75-04 adds a deterministic, hash-resumable timeline for processed video references. A normal
+`refintel process` run writes `reports/temporal-report.json` using schema
+`p75.temporal_report.v1` and an offline `reports/temporal.html` review surface. Rebuild or open
+that report without reprocessing the source:
+
+```bash
+refintel temporal-report <reference-id> --open-browser
+```
+
+The timeline keeps evidence types separate:
+
+- every-frame samples supply measured motion, brightness, static ratios, and cut candidates;
+- WAV windows supply measured RMS energy, silence candidates, and peak candidates;
+- transcript segments and word timestamps supply spoken pacing and caption timing;
+- OCR supplies extracted on-screen text cues with frame timestamps;
+- local vision supplies labeled model observations, never measured facts.
+
+Fixed-duration windows aggregate those signals into evidence-backed candidates for hook,
+setup, development, payoff, CTA, pacing, editing profile, engagement mechanics, and production
+difficulty. A corrupt OCR frame is isolated while the remaining timeline continues. A matching
+input digest reuses the prior report unless `--force` is supplied.
+
+The report must not claim that a still image or slideshow is moving video. `actual motion` is
+confirmed only from every-frame measurements; a static ratio of 90% or more is labeled
+`still_or_slideshow_like`. Missing every-frame data, audio, transcript, OCR, or model payoff is
+listed as a limitation and changes the report status to `partial` where appropriate.
+
+This checkpoint creates no production media and performs no publication or deployment. Source
+media and source wording remain blocked from generated content, transferable mechanics are
+abstracted for original work only, and human review remains mandatory.
+
 ### Environment-based local authorization
 
 The CLI accepts safe environment defaults for `REFINTEL_WORKSPACE`,
@@ -153,6 +186,6 @@ take precedence. Conflicting cookie-file/browser routes fail closed.
 
 ## Next implementation slices
 
-The completed adapter, acquisition, and image/carousel contracts now unblock temporal and
-multimodal reports, cross-reference clustering and originality gates, operator UI/API
-integration, and the full offline acceptance pack.
+The completed adapter, acquisition, image/carousel, and temporal-report contracts now unblock
+cross-reference clustering and originality gates, operator UI/API integration, and the full
+offline acceptance pack.
