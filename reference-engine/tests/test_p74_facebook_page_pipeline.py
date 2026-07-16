@@ -34,6 +34,14 @@ class FakeContext:
         ]
 
 
+class SessionCookieContext:
+    def cookies(self, _url: str):
+        return [{
+            "domain": ".facebook.com", "path": "/", "secure": True,
+            "expires": -1, "name": "presence", "value": "session-value",
+        }]
+
+
 def test_stable_page_urls_are_accepted_and_share_redirects_are_rejected():
     assert validate_facebook_page_url("https://www.facebook.com/RawrNationTV")
     assert validate_facebook_page_url(
@@ -122,6 +130,24 @@ def test_cookie_jar_is_private_and_never_saved_in_discovery_manifest(tmp_path: P
     saved = json.loads(manifest.read_text(encoding="utf-8"))
     assert "cookie_file" not in saved
     assert "sensitive-value" not in manifest.read_text(encoding="utf-8")
+
+
+def test_session_cookie_expiry_is_valid_for_yt_dlp(tmp_path: Path):
+    cookie_file = export_netscape_cookies(
+        SessionCookieContext(), tmp_path / "facebook-cookies.txt"
+    )
+
+    assert "\t0\tpresence\t" in cookie_file.read_text(encoding="utf-8")
+
+
+def test_page_batch_rejects_false_video_analysis_success():
+    root = Path(__file__).resolve().parents[1]
+    source = (root / "refintel" / "facebook.py").read_text(encoding="utf-8")
+
+    assert "if processed.media is None" in source
+    assert "required_evidence.issubset" in source
+    assert '"verified_media"' in source
+    assert "has_valid_cached_acquisition(project)" in source
 
 
 def test_pipeline_contract_enables_every_frame_and_sequence_analysis():
