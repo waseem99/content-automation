@@ -25,6 +25,7 @@ PYTHONPATH=. python scripts/p68_prepare_gold_pilots.py
 PYTHONPATH=. python scripts/p68_validate_six_pilots.py
 PYTHONPATH=. python scripts/p68_plan_motion_batch.py
 PYTHONPATH=. python scripts/p68_keyframes.py plan
+PYTHONPATH=. python scripts/p68_generate_keyframes.py plan
 ```
 
 `spec_ready` means only that the production pack is complete and internally
@@ -50,3 +51,10 @@ SHA-256 provenance, a portrait image near 9:16, and at least 704×1280 pixels.
 Intake never implies approval: a separate named human review must approve the
 keyframe before the Wan request builder can use it. Normalized keyframes and
 their provenance stay in ignored `p68-artifacts/`, not Git or Vercel.
+
+`p68_generate_keyframes.py` adds a bounded asynchronous ComfyUI route. `plan`
+is offline and makes zero calls. Provider commands require an explicit endpoint,
+checkpoint name, license type, and license URL. `submit` defaults to at most
+three new jobs; `refresh` downloads successful outputs and sends them through
+the same provenance intake as `pending_keyframe_review`. It never approves a
+keyframe automatically and never runs as a long-held Vercel request.

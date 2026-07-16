@@ -26,3 +26,22 @@ curl --fail http://127.0.0.1:${RN_COMFYUI_PORT}/system_stats
 The downloader writes `p68-wan22-model-checksums.sha256`. Copy those digests into `model-manifest.json`, capture and hash the applicable license/terms, and approve the manifest before any output can become a production candidate.
 
 The application uses `P68_RN_BASE_URL`, an optional proxy bearer token, and the API-format workflow in `workflows/wan22-ti2v-5b-api.json`. The official ComfyUI browser workflow was converted to API format and retains the native core nodes and model filenames.
+
+## Keyframe generation
+
+The same private ComfyUI service can optionally run the core-node SDXL workflow
+at `workflows/sdxl-keyframe-api.json`. Install a commercially suitable reviewed
+checkpoint yourself, then configure its exact filename and license evidence via
+the `P68_KEYFRAME_*` variables. The repository deliberately does not choose or
+download an unreviewed checkpoint.
+
+Preview the 29 deterministic requests without contacting the worker:
+
+```bash
+PYTHONPATH=. python scripts/p68_generate_keyframes.py plan
+```
+
+After configuration, use `health`, then submit a small bounded slice such as
+`submit --pilot animal-octopus-arms --shots S01,S02 --limit 2`. Run `refresh`
+separately; it downloads completed images and records them as pending human
+keyframe review. It never approves, renders video, publishes, or deploys Vercel.
