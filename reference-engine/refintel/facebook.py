@@ -257,6 +257,8 @@ def run_facebook_page_batch(
     acquire_only: bool = False,
     use_local_vision: bool = True,
     transcription_model: str = "small",
+    transcription_device: str = "auto",
+    progress: Callable[[str], None] | None = None,
 ) -> dict[str, Any]:
     """Discover, download, and analyze authorized videos from one Facebook page."""
     from .ingest import has_valid_cached_acquisition
@@ -274,11 +276,14 @@ def run_facebook_page_batch(
     run_dir.mkdir(parents=True, exist_ok=True)
     save_discovery(discovery, run_dir / "discovery.json")
     results: list[dict[str, Any]] = []
+    emit = progress or (lambda _message: None)
+    emit(f"Discovered {discovery['entry_count']} Facebook video references.")
     if not discover_only:
         pipeline = ReferencePipeline(workspace_root)
         for index, entry in enumerate(discovery["entries"], start=1):
             result: dict[str, Any] = {"index": index, "url": entry["url"]}
             try:
+                emit(f"[{index}/{discovery['entry_count']}] Verifying acquisition.")
                 project = pipeline.ingest_url(
                     entry["url"],
                     rights=rights,
@@ -294,6 +299,7 @@ def run_facebook_page_batch(
                         "Facebook acquisition did not produce verified primary media bytes."
                     )
                 result["verified_acquisition"] = True
+                emit(f"[{index}/{discovery['entry_count']}] Media bytes verified.")
                 if acquire_only:
                     acquisition_manifest = (
                         Path(project.workspace_path)
@@ -317,9 +323,14 @@ def run_facebook_page_batch(
                     )
                     results.append(result)
                     continue
+                emit(
+                    f"[{index}/{discovery['entry_count']}] Starting frame and "
+                    f"{transcription_model} transcription analysis on {transcription_device}."
+                )
                 processed = pipeline.process(
                     project.reference_id,
                     transcription_model=transcription_model,
+                    transcription_device=transcription_device,
                     use_local_vision=use_local_vision,
                     every_frame=True,
                 )
@@ -370,6 +381,7 @@ def run_facebook_page_batch(
                         "artifacts": copied,
                     }
                 )
+                emit(f"[{index}/{discovery['entry_count']}] Analysis evidence complete.")
             except Exception as exc:  # noqa: BLE001 - record per-video failure and continue
                 sanitized_error = str(exc).replace("\n", " ")[:1200]
                 sanitized_error = sanitized_error.replace(
@@ -381,6 +393,10 @@ def run_facebook_page_batch(
                         "error_type": type(exc).__name__,
                         "error": sanitized_error,
                     }
+                )
+                emit(
+                    f"[{index}/{discovery['entry_count']}] Failed: "
+                    f"{type(exc).__name__}: {sanitized_error}"
                 )
             results.append(result)
     payload = {
