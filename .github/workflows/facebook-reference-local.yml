@@ -32,12 +32,13 @@ jobs:
   analyze:
     name: Download and verify Facebook references locally
     runs-on: [self-hosted, Windows, X64, facebook-media]
-    timeout-minutes: 180
+    timeout-minutes: 75
     defaults:
       run:
         shell: powershell
     env:
-      ENGINE_RECOVERY_REVISION: "2"
+      ENGINE_RECOVERY_REVISION: "3"
+      PYTHONUNBUFFERED: "1"
     steps:
       - name: Check out verified development code
         uses: actions/checkout@v4
@@ -75,7 +76,8 @@ jobs:
             --limit ([int]$env:VIDEO_LIMIT) `
             --headed `
             --no-local-vision `
-            --transcription-model small
+            --transcription-model small `
+            --transcription-device cpu
 
           $latest = Get-ChildItem "$env:REFINTEL_WORKSPACE\page-runs" -Directory |
             Where-Object { $_.LastWriteTime -ge $started } |
