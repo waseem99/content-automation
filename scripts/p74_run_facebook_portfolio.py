@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -14,9 +15,12 @@ sys.path.insert(0, str(ENGINE))
 
 from refintel.facebook import run_facebook_page_batch  # noqa: E402
 from refintel.models import RightsDeclaration  # noqa: E402
+from refintel.settings import RefIntelSettings  # noqa: E402
 
 
-def configured_pages(config_path: Path, selected_brands: set[str]) -> list[dict[str, str]]:
+def configured_pages(
+    config_path: Path, selected_brands: set[str]
+) -> list[dict[str, str]]:
     config = json.loads(config_path.read_text(encoding="utf-8"))
     pages: list[dict[str, str]] = []
     for brand in config["brands"]:
@@ -24,7 +28,9 @@ def configured_pages(config_path: Path, selected_brands: set[str]) -> list[dict[
             continue
         status = brand.get("metadata", {}).get("onboarding_status")
         facebook_links = [
-            link for link in brand.get("source_links", []) if "facebook.com" in link.lower()
+            link
+            for link in brand.get("source_links", [])
+            if "facebook.com" in link.lower()
         ]
         if status in {"active", "active_research_pending"} and facebook_links:
             pages.append({"brand": brand["slug"], "page_url": facebook_links[0]})
@@ -32,17 +38,21 @@ def configured_pages(config_path: Path, selected_brands: set[str]) -> list[dict[
 
 
 def main() -> int:
+    settings = RefIntelSettings.from_env()
+    default_workspace = (
+        settings.workspace if os.getenv("REFINTEL_WORKSPACE") else ENGINE / "workspace"
+    )
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--config",
         type=Path,
         default=ROOT / "config" / "portfolio-brands.staging.json",
     )
-    parser.add_argument("--workspace", type=Path, default=ENGINE / "workspace")
+    parser.add_argument("--workspace", type=Path, default=default_workspace)
     parser.add_argument(
         "--browser-profile",
         type=Path,
-        default=Path.home() / ".local" / "share" / "refintel" / "facebook-browser",
+        default=settings.facebook_profile,
     )
     parser.add_argument(
         "--rights",

@@ -8,9 +8,11 @@ import subprocess
 from datetime import UTC, datetime
 from pathlib import Path
 
+from .acquisition import AcquisitionManifest, AssetRole
 from .analysis import OllamaVisionProvider, analyze_reference
 from .fingerprint import create_fingerprint, create_original_brief
 from .frame_stream import analyze_every_frame
+from .images import ImageReferenceProcessor, OllamaImageObserver, collect_images
 from .ingest import IngestionService
 from .media import (
     detect_scenes,
@@ -154,7 +156,64 @@ class ReferencePipeline:
         project.tool_versions = tool_versions()
         self._event(project, "pipeline", "started", "Reference processing started.")
         try:
-            source = find_source_media(workspace)
+            try:
+                source = find_source_media(workspace)
+            except FileNotFoundError as video_error:
+                image_paths = self._image_sources(workspace)
+                if not image_paths:
+                    raise video_error
+                image_vision_enabled = (
+                    os.getenv("REFINTEL_USE_OLLAMA", "0") == "1"
+                    if use_local_vision is None
+                    else use_local_vision
+                )
+                image_observer = (
+                    OllamaImageObserver(
+                        model=os.getenv("REFINTEL_OLLAMA_MODEL", "qwen2.5vl:7b"),
+                        endpoint=os.getenv(
+                            "REFINTEL_OLLAMA_ENDPOINT",
+                            "http://127.0.0.1:11434/api/chat",
+                        ),
+                    )
+                    if image_vision_enabled
+                    else None
+                )
+                self._event(
+                    project,
+                    "images",
+                    "started",
+                    "Processing image or carousel evidence.",
+                    asset_count=len(image_paths),
+                )
+                image_manifest, image_manifest_path = ImageReferenceProcessor(
+                    observer=image_observer
+                ).process(
+                    image_paths,
+                    workspace / "image-analysis",
+                    rights=project.access.declaration,
+                    title=project.source.title,
+                    force=force,
+                )
+                project.status = (
+                    ProjectStatus.COMPLETE if image_manifest.slide_count else ProjectStatus.FAILED
+                )
+                project.updated_at = datetime.now(UTC)
+                self._event(
+                    project,
+                    "images",
+                    "completed" if image_manifest.slide_count else "failed",
+                    "Image or carousel evidence processing completed.",
+                    manifest=str(image_manifest_path.relative_to(workspace)),
+                    slide_count=image_manifest.slide_count,
+                    failure_count=len(image_manifest.failures),
+                )
+                self._event(
+                    project,
+                    "pipeline",
+                    "completed" if image_manifest.slide_count else "failed",
+                    "Reference processing completed.",
+                )
+                return project
             proxy_path = workspace / "media" / "analysis.mp4"
             audio_path = workspace / "media" / "audio.wav"
             if force or not proxy_path.exists():
@@ -305,6 +364,29 @@ class ReferencePipeline:
                 error=str(exc),
             )
             raise
+
+    @staticmethod
+    def _image_sources(workspace: Path) -> list[Path]:
+        manifest_path = workspace / "source" / "acquisition-manifest.json"
+        if manifest_path.is_file():
+            try:
+                manifest = AcquisitionManifest.model_validate_json(
+                    manifest_path.read_text(encoding="utf-8")
+                )
+                roles = {AssetRole.PRIMARY_IMAGE, AssetRole.CAROUSEL_IMAGE}
+                selected = [
+                    workspace / asset.relative_path
+                    for asset in manifest.assets
+                    if asset.role in roles
+                ]
+                if selected:
+                    return collect_images(selected)
+            except (ValueError, FileNotFoundError):
+                pass
+        try:
+            return collect_images(workspace / "source")
+        except (FileNotFoundError, ValueError):
+            return []
 
     def export_brief(
         self,

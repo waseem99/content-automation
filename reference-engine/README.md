@@ -1,6 +1,8 @@
 # Local Reference Intelligence Engine
 
-This package ingests authorized social-video references or local files, decomposes them into measurable media artifacts, generates a synchronized local report, saves a reusable reference fingerprint, and exports an original production brief for the existing content workflow and P65 video renderer.
+This package ingests authorized social-video, image, thumbnail, and carousel references or
+local files, decomposes them into measurable evidence, and exports originality-safe inputs for
+the existing content workflow.
 
 ## Product boundaries
 
@@ -15,7 +17,7 @@ This package ingests authorized social-video references or local files, decompos
 ## Architecture
 
 ```text
-URL or local video
+URL, local video, image, or carousel folder
   -> rights declaration
   -> local ingestion / yt-dlp
   -> FFmpeg normalization + ffprobe metadata
@@ -71,6 +73,41 @@ refintel export-brief <reference-id> --brand rawr_nation
 
 The workspace is stored under `reference-engine/workspace/` by default.
 
+## Image, thumbnail, and carousel analysis
+
+Analyze one image or an ordered local folder. Filenames are naturally ordered, so `slide-2`
+precedes `slide-10`:
+
+```bash
+refintel process-images /absolute/path/carousel-folder \
+  --rights public-internal-research \
+  --title "Authorized carousel"
+```
+
+The local run produces a typed `p75.image_reference.v1` manifest, SHA-256 provenance,
+dimensions, orientation, palette, brightness, contrast, saturation, entropy, edge density,
+visual center, OCR regions and confidence when Tesseract is available, ordered sequence-role
+candidates, per-slide failures, and a contact sheet. Add `--local-vision` to obtain explicitly
+labeled local-model observations for generic subjects, layout, hierarchy, and narrative role.
+
+Sequence roles are candidates, not asserted story facts. Source text and source imagery are
+blocked from verbatim reuse, and human review remains mandatory.
+
+## Local environment configuration
+
+Copy `.env.example` values into your private shell or secret manager. Environment values are
+read directly; the CLI does not parse or upload `.env` files.
+
+```bash
+export REFINTEL_WORKSPACE="$PWD/workspace"
+export REFINTEL_FACEBOOK_PROFILE="$HOME/.local/share/refintel/facebook-browser"
+export REFINTEL_FACEBOOK_COOKIE_FILE="$REFINTEL_FACEBOOK_PROFILE/facebook-cookies.txt"
+```
+
+Store only paths in these variables, never Facebook email/password values or raw cookie
+contents. Explicit CLI authentication flags override environment defaults. Media processing
+remains on the local/private worker and is excluded from Vercel.
+
 ## Authorized URL ingestion
 
 Inspect cross-platform support or normalize inputs without downloading:
@@ -108,7 +145,8 @@ refintel ingest-url '<url>' \
   --cookies-from-browser chrome
 ```
 
-The engine never uploads cookies or includes them in logs. If a platform extractor cannot access a video, use `ingest-file` as the supported fallback.
+The engine never uploads cookies or includes them in logs. If a platform extractor cannot
+access a video, use `ingest-file` as the supported fallback.
 
 Every URL attempt writes a sanitized, resumable
 `source/acquisition-manifest.json` with asset hashes, allowlisted metadata, retry status,

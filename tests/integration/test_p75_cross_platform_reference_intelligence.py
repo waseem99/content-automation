@@ -9,6 +9,9 @@ def test_p75_adapter_contract_and_operator_docs_exist() -> None:
         assert (ENGINE / relative).is_file()
     assert (ENGINE / "refintel" / "acquisition.py").is_file()
     assert (ENGINE / "tests" / "test_p75_acquisition.py").is_file()
+    assert (ENGINE / "refintel" / "images.py").is_file()
+    assert (ENGINE / "refintel" / "settings.py").is_file()
+    assert (ENGINE / "tests" / "test_p75_images.py").is_file()
     assert (ROOT / "docs" / "operations" / "p75-cross-platform-reference-intelligence.md").is_file()
 
 
@@ -66,3 +69,30 @@ def test_p75_keeps_source_media_local_and_out_of_vercel() -> None:
     assert "source_media_must_not_enter_generated_content: bool = True" in acquisition
     assert "human_review_required: bool = True" in acquisition
     assert "reference-engine/" in vercel_ignore.splitlines()
+
+
+def test_p75_image_carousel_contract_is_typed_resumable_and_originality_safe() -> None:
+    images = (ENGINE / "refintel" / "images.py").read_text(encoding="utf-8")
+    cli = (ENGINE / "refintel" / "cli.py").read_text(encoding="utf-8")
+    docs = (
+        ROOT / "docs" / "operations" / "p75-cross-platform-reference-intelligence.md"
+    ).read_text(encoding="utf-8")
+    assert 'schema_version: str = "p75.image_reference.v1"' in images
+    assert "source_digest" in images
+    assert "ImageFailure" in images
+    assert "source_text_must_not_be_reused_verbatim: bool = True" in images
+    assert "source_media_must_not_enter_generated_content: bool = True" in images
+    assert "human_review_required: bool = True" in images
+    assert '@app.command("process-images")' in cli
+    assert "deterministic measurements" in docs
+    assert "local-first" in docs
+
+
+def test_p75_local_auth_env_contract_uses_paths_not_raw_credentials() -> None:
+    settings = (ENGINE / "refintel" / "settings.py").read_text(encoding="utf-8")
+    example = (ENGINE / ".env.example").read_text(encoding="utf-8")
+    assert "REFINTEL_FACEBOOK_PROFILE" in settings
+    assert "REFINTEL_FACEBOOK_COOKIE_FILE" in settings
+    assert "FACEBOOK_PASSWORD" not in settings
+    assert "FACEBOOK_EMAIL" not in settings
+    assert "Never paste cookie contents" in example
