@@ -34,6 +34,33 @@ EDITORIAL: dict[str, tuple[str, str, str, str]] = {
     "The fox that dives into snow": ("A fox can locate prey it cannot see beneath deep snow.", "It pauses, rotates its ears toward faint movement, estimates position, and commits to a steep head-first pounce.", "The spectacular dive begins with patient listening.", "THE FOX'S SNOW DIVE"),
 }
 
+SETUPS = {
+    "The blind spot predators exploit": "Watch the prey scan left and right while one narrow approach corridor remains uncovered.",
+    "Why owl flight sounds like nothing": "Compare an ordinary wing beat with the owl's feather edge as air passes across it.",
+    "The shrimp punch that flashes": "Follow the club through the water before the first impact reaches the target.",
+    "A shark's hidden electric map": "A hidden animal still produces tiny electrical changes with every muscle and heartbeat.",
+    "The lizard that shoots blood": "The defence begins only after escape, camouflage, and inflation have failed.",
+    "Do camels really store water?": "Open the hump and the supposed water reservoir is nowhere to be found.",
+    "How a gecko defeats gravity": "One planted toe holds while the next foot peels and resets higher on the glass.",
+    "The snake that sees body heat": "A warm body stands out even when visible detail disappears into darkness.",
+    "This frog freezes and wakes up": "As temperature falls, the frog becomes rigid and its heartbeat can become undetectable.",
+    "Why zebras are hard to bite": "Watch a fly approach normally, then lose control during the final centimetres above stripes.",
+    "The beetle that drinks fog": "At the right angle, droplets grow on the raised body instead of vanishing into sand.",
+    "A crocodile's face can feel ripples": "A single drop spreads across the surface before the animal turns toward its source.",
+    "Why goats have rectangle pupils": "Lower the goat's head and notice that the long pupil remains aligned with the horizon.",
+    "The fish wearing its own flashlight": "Two luminous patches blink beneath the eyes as the fish moves through darkness.",
+    "Can porcupines shoot their quills?": "Create distance and no quills fly; contact the coat and the real transfer mechanism appears.",
+    "The bird that fakes an injury": "A threat approaches the nest and the parent suddenly becomes the easiest target in view.",
+    "How seals sleep without drowning": "Breathing stays tied to access to air even when the animal enters a resting state.",
+    "The insect that hears with its knees": "Trace sound toward two small membranes just below the cricket's front-leg joints.",
+    "Why vultures rarely get sick": "The meal may contain microbes that would be dangerous to many other animals.",
+    "The spider that becomes an ant": "Count the legs, then watch the front pair rise and move like ant antennae.",
+    "A whale's ear is not where you think": "Sound reaches the head from water without relying on an external ear flap.",
+    "The octopus disappearing act": "Hold the background constant while the animal changes colour, texture, outline, and posture.",
+    "Do bats really have bad eyesight?": "A bat can use visible landmarks before echolocation resolves a nearby obstacle or insect.",
+    "The fox that dives into snow": "Before the leap, the fox freezes and triangulates a sound moving beneath the surface.",
+}
+
 
 def _fingerprint(payload: dict[str, Any]) -> str:
     return hashlib.sha256(json.dumps(payload, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
@@ -48,9 +75,9 @@ def _platform_packages(title: str, hook: str, payoff: str, pillar: str) -> list[
     ]
 
 
-def _scenes(*, hook: str, concept: str, truth: str, payoff: str, feature: bool) -> list[dict[str, Any]]:
+def _scenes(*, hook: str, setup: str, concept: str, truth: str, payoff: str, feature: bool) -> list[dict[str, Any]]:
     durations = [4, 7, 9, 8, 7] if feature else [3, 6, 8, 7, 6]
-    lines = [hook, "Watch the visible clue first.", concept, truth, payoff]
+    lines = [hook, setup, concept, truth, payoff]
     purposes = ["hook", "observable_evidence", "mechanism", "clarifier", "payoff"]
     visuals = [
         "Immediate behavior-led close-up; movement begins in frame one.",
@@ -82,7 +109,7 @@ def build_brand_month_studio(config: dict[str, Any], *, brand_slug: str) -> dict
     for index, idea in enumerate(ideas, 1):
         hook, truth, payoff, thumbnail = EDITORIAL[idea["title"]]
         feature = idea["format_name"] == "vertical_feature"
-        scenes = _scenes(hook=hook, concept=idea["concept"], truth=truth, payoff=payoff, feature=feature)
+        scenes = _scenes(hook=hook, setup=SETUPS[idea["title"]], concept=idea["concept"], truth=truth, payoff=payoff, feature=feature)
         narration = " ".join(scene["narration"] for scene in scenes)
         item = {
             "id": f"{brand_slug}-{config['month_start']}-{index:02d}",
