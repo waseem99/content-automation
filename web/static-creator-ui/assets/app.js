@@ -76,6 +76,14 @@
     $("reference-queue").innerHTML = portfolioReferences.length ? portfolioReferences.map((item) => `<tr><td><strong>${escapeHtml(item.title)}</strong><span>${escapeHtml(item.local_reference_id)}</span></td><td>${escapeHtml(item.platform)}</td><td><span class="stage-pill ${item.status === "ready_for_review" ? "ready" : item.status === "processing" ? "preview" : "idea"}">${escapeHtml(item.status.replaceAll("_", " "))}</span></td><td>${Number(item.progress_percent || 0)}%</td><td>${Number(item.artifact_count || 0)} artifacts · ${Number(item.approved_gate_count || 0)}/3 gates · ${Number(item.idea_link_count || 0)} ideas</td><td><button class="table-action reference-review" type="button" data-reference-id="${item.id}">Review</button></td></tr>`).join("") : '<tr><td colspan="6" class="empty-row">No database-backed references match these filters. Source media remains local.</td></tr>';
   }
 
+  function renderStaticReferenceDetail(item) {
+    const reference = item.staticEvidence;
+    const fingerprint = reference.creative_fingerprint || {};
+    const analysis = reference.analysis || {};
+    const transcript = reference.transcript || "No transcript available.";
+    $("reference-detail").innerHTML = `<p class="eyebrow dark-eyebrow">Verified local evidence</p><h4>${escapeHtml(item.title)}</h4><p><a href="${escapeHtml(reference.source_url)}" target="_blank" rel="noreferrer">Open public source</a> · ${Number(reference.duration_seconds || 0).toFixed(1)}s · ${Number(reference.decoded_frame_count || 0)} decoded frames</p><dl><div><dt>Scenes</dt><dd>${Number(reference.scene_count || 0)}</dd></div><div><dt>Transcript segments</dt><dd>${Number(reference.transcript_segment_count || 0)}</dd></div><div><dt>Use</dt><dd>Mechanics only; never source wording, assets, or shot sequence</dd></div></dl><details><summary>Creative fingerprint</summary><pre>${escapeHtml(JSON.stringify(fingerprint, null, 2))}</pre></details><details><summary>Measured analysis</summary><pre>${escapeHtml(JSON.stringify(analysis, null, 2))}</pre></details><details><summary>Transcript</summary><p>${escapeHtml(transcript)}</p></details><small>Source media, cookies, and the browser profile remain on the operator-controlled PC.</small>`;
+  }
+
   function renderReferenceDetail(payload) {
     const source = payload.source;
     const gates = Object.fromEntries((payload.gates || []).map((gate) => [gate.gate, gate.decision]));
@@ -252,9 +260,10 @@
 
   async function loadMonthFactory() {
     try {
-      const [response, studioResponse] = await Promise.all([
+      const [response, studioResponse, referenceResponse] = await Promise.all([
         fetch("data/month-factory.json", { cache: "no-store" }),
-        fetch("data/rawr-nation-month-studio.json", { cache: "no-store" })
+        fetch("data/rawr-nation-month-studio.json", { cache: "no-store" }),
+        fetch("data/rawr-nation-reference-evidence.json", { cache: "no-store" }).catch(() => null)
       ]);
       if (!response.ok) throw new Error("month factory unavailable");
       if (!studioResponse.ok) throw new Error("Rawr Nation month studio unavailable");
@@ -263,6 +272,21 @@
       monthStudioItems = new Map(studio.items.map((item) => [item.id, item]));
       portfolioBrands = factory.brands;
       portfolioItems = factory.items.map((item) => ({ ...item, studioPackage: monthStudioItems.get(item.id) || null }));
+      if (referenceResponse?.ok) {
+        const evidence = await referenceResponse.json();
+        portfolioReferences = evidence.references.map((reference) => ({
+          id: reference.id,
+          title: `Rawr Nation reference ${reference.index}`,
+          local_reference_id: reference.id,
+          platform: "facebook",
+          status: reference.status === "analyzed" ? "ready_for_review" : reference.status,
+          progress_percent: reference.status === "analyzed" ? 100 : 0,
+          artifact_count: [reference.analysis, reference.creative_fingerprint, reference.transcript].filter(Boolean).length,
+          approved_gate_count: 0,
+          idea_link_count: 24,
+          staticEvidence: reference
+        }));
+      }
       portfolioReadiness = {
         brand_count: factory.priority_brand_count,
         planned_count: factory.summary.concepts_ready,
@@ -343,6 +367,11 @@
     }));
     $("reference-queue").addEventListener("click", async (event) => {
       if (!event.target.matches(".reference-review")) return;
+      const local = portfolioReferences.find((item) => item.id === event.target.dataset.referenceId);
+      if (local?.staticEvidence && !window.PortfolioApi?.configured()) {
+        renderStaticReferenceDetail(local);
+        return;
+      }
       try { renderReferenceDetail(await window.PortfolioApi.reference(event.target.dataset.referenceId)); } catch (error) { alert(`Reference review failed: ${error.message}`); }
     });
     $("reference-detail").addEventListener("click", async (event) => {
