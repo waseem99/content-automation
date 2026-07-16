@@ -38,6 +38,7 @@ jobs:
         shell: powershell
     env:
       ENGINE_RECOVERY_REVISION: "4"
+      EVIDENCE_SYNC_REVISION: "5"
       PYTHONUNBUFFERED: "1"
     steps:
       - name: Check out verified development code
