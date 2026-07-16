@@ -35,7 +35,7 @@ jobs:
     timeout-minutes: 180
     defaults:
       run:
-        shell: pwsh
+        shell: powershell
     steps:
       - name: Check out verified development code
         uses: actions/checkout@v4
