@@ -448,6 +448,9 @@ def facebook_page(
         help="Use local Ollama vision for frame and sequence storytelling analysis.",
     ),
     transcription_model: str = typer.Option("small"),
+    transcription_device: str = typer.Option(
+        "auto", help="Transcription device: auto, cpu, or cuda."
+    ),
 ) -> None:
     """Discover and batch-analyze authorized videos from a Facebook brand page."""
     payload = run_facebook_page_batch(
@@ -462,6 +465,8 @@ def facebook_page(
         acquire_only=acquire_only,
         use_local_vision=local_vision,
         transcription_model=transcription_model,
+        transcription_device=transcription_device,
+        progress=lambda message: console.print(message),
     )
     console.print_json(json.dumps(payload["summary"]))
     console.print(payload["run_dir"])
