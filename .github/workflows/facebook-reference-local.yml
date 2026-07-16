@@ -36,6 +36,8 @@ jobs:
     defaults:
       run:
         shell: powershell
+    env:
+      ENGINE_RECOVERY_REVISION: "2"
     steps:
       - name: Check out verified development code
         uses: actions/checkout@v4
