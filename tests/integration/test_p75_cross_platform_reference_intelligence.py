@@ -157,3 +157,25 @@ def test_p75_portfolio_bridge_is_metadata_only_and_human_gated() -> None:
     assert "automatic_publication: bool = False" in sync
     assert "human_review_required: bool = True" in sync
     assert '@app.command("portfolio-sync-packet")' in cli
+
+
+def test_p75_reusable_cli_skill_and_acceptance_pack_are_complete() -> None:
+    cli = (ENGINE / "refintel" / "cli.py").read_text(encoding="utf-8")
+    orchestration = (ENGINE / "refintel" / "orchestration.py").read_text(encoding="utf-8")
+    skill = (ROOT / "skills" / "analyze-social-references" / "SKILL.md").read_text()
+    runbook = (
+        ROOT / "docs" / "operations" / "p75-reference-intelligence-runbook.md"
+    ).read_text()
+    for command in (
+        "profiles",
+        "run-reference",
+        "run-portfolio",
+        "init-portfolio-request",
+    ):
+        assert f'@app.command("{command}")' in cli
+    assert 'schema_version: str = "p75.portfolio_run.v1"' in orchestration
+    assert "continue_on_error" in orchestration
+    assert "Use ingest-file with an authorized local export" in orchestration
+    assert "name: analyze-social-references" in skill
+    assert "Never run FFmpeg" in runbook
+    assert "No Vercel media processing" in runbook

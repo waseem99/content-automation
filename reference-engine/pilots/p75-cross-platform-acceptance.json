@@ -1,0 +1,21 @@
+{
+  "schema_version": "p75.cross_platform_acceptance.v1",
+  "generated_from": "deterministic offline fixtures plus explicitly controlled public probes",
+  "rights_policy": "owned-permitted-or-public-internal-research-declaration-required",
+  "source_media_policy": "operator-controlled-local-workspace-only",
+  "platforms": [
+    {"platform":"youtube","video":"supported-public-direct-url","image_or_carousel":"conditional-public-post-or-local-file","profile_discovery":"conditional-public-page","authentication":"public-or-operator-owned-local-browser","offline_fixture":"test_p75_adapters.py","live_probe":"operator-reference-required","fallback":"ingest-file"},
+    {"platform":"instagram","video":"conditional-extractor-drift-or-login","image_or_carousel":"conditional-public-post-or-local-file","profile_discovery":"conditional-public-page","authentication":"operator-owned-local-browser-when-required","offline_fixture":"test_p75_adapters.py","live_probe":"operator-reference-required","fallback":"ingest-file"},
+    {"platform":"tiktok","video":"conditional-extractor-drift-or-region","image_or_carousel":"conditional-public-post-or-local-file","profile_discovery":"conditional-public-page","authentication":"operator-owned-local-browser-when-required","offline_fixture":"test_p75_adapters.py","live_probe":"operator-reference-required","fallback":"ingest-file"},
+    {"platform":"x","video":"conditional-public-status","image_or_carousel":"conditional-public-status-or-local-file","profile_discovery":"conditional-public-profile","authentication":"operator-owned-local-browser-when-required","offline_fixture":"test_p75_adapters.py","live_probe":"operator-reference-required","fallback":"ingest-file"},
+    {"platform":"facebook","video":"conditional-public-direct-url","image_or_carousel":"conditional-public-post-or-local-file","profile_discovery":"conditional-dedicated-local-playwright-profile","authentication":"operator-owned-local-browser-profile","offline_fixture":"test_p74_facebook_page_pipeline.py","live_probe":"controlled-public-probe-in-p67-workflow","fallback":"ingest-file"},
+    {"platform":"snapchat","video":"experimental-public-spotlight-or-story-link","image_or_carousel":"local-file-fallback","profile_discovery":"unsupported","authentication":"no-access-control-bypass","offline_fixture":"test_p75_adapters.py","live_probe":"operator-reference-required","fallback":"ingest-file"},
+    {"platform":"local","video":"supported-authorized-file","image_or_carousel":"supported-authorized-file","profile_discovery":"not-applicable","authentication":"not-applicable","offline_fixture":"test_p75_orchestration.py","live_probe":"not-applicable","fallback":"fix-local-file-or-rights-declaration"}
+  ],
+  "execution_profiles": ["cpu", "gpu", "low-memory"],
+  "prohibited": ["private-account-circumvention","drm-paywall-or-captcha-bypass","credential-or-cookie-persistence","source-media-in-api-database-or-vercel","source-specific-expression-reproduction","automatic-approval-or-publication"],
+  "per_item_failure_isolation": true,
+  "source_media_in_acceptance_artifacts": false,
+  "automatic_publication": false,
+  "human_review_required": true
+}

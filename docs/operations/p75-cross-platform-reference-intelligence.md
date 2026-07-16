@@ -226,11 +226,22 @@ take precedence. Conflicting cookie-file/browser routes fail closed.
   claimed; an authorized local export is the dependable fallback.
 - Acquisition alone does not publish, deploy, analyze similarity, or send media to paid providers.
 
-## Next implementation slices
+## Reusable CLI, skill, and acceptance checkpoint
 
-The completed adapter, acquisition, image/carousel, temporal-report, comparison/gate, and
-portfolio-integration contracts now unblock the reusable CLI skill and full offline acceptance
-pack.
+P75-07 completes the reusable operator surface. `refintel run-reference` executes one authorized
+input, while `refintel run-portfolio` validates a typed request and isolates every item failure.
+The `cpu`, `gpu`, and `low-memory` profiles disclose their speech, vision, and every-frame choices
+instead of silently changing evidence quality. Every successful item creates a sanitized portfolio
+sync packet; every failure names an authorized local-upload fallback.
+
+The repository packages `skills/analyze-social-references`, the deterministic seven-route matrix
+at `reference-engine/pilots/p75-cross-platform-acceptance.json`, offline fixtures, and the complete
+operator runbook at `docs/operations/p75-reference-intelligence-runbook.md`. The existing P67
+workflow remains the controlled Facebook public probe. Other platforms remain honestly conditional
+until an operator supplies a suitable authorized reference.
+
+This checkpoint introduces no Vercel media processing, automatic approval, generation, rendering,
+or publication.
 
 ## Portfolio API and operator UI checkpoint
 

@@ -288,6 +288,20 @@ whitelisted review artifacts only. Source media, absolute local paths, credentia
 approval, and publication instructions are excluded. Uploading or registering the packet remains
 an explicit operator action.
 
+## Complete operator commands
+
+```bash
+refintel profiles
+refintel run-reference SOURCE --rights permitted --profile cpu
+refintel init-portfolio-request --output reference-portfolio-request.json
+refintel run-portfolio reference-portfolio-request.json
+```
+
+These commands execute locally, reuse canonical references and completed artifacts, isolate
+failures per item, and emit sanitized portfolio sync packets. See
+`docs/operations/p75-reference-intelligence-runbook.md` from the repository root for CPU/GPU
+selection, authentication, recovery, and acceptance procedures.
+
 ## Output structure
 
 ```text
