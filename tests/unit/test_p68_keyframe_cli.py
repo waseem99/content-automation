@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -10,6 +11,8 @@ ROOT = Path(__file__).resolve().parents[2]
 
 
 def test_cli_writes_one_shot_low_vram_plan(tmp_path: Path) -> None:
+    env = dict(os.environ)
+    env["PYTHONPATH"] = str(ROOT)
     result = subprocess.run(
         [
             sys.executable,
@@ -27,6 +30,7 @@ def test_cli_writes_one_shot_low_vram_plan(tmp_path: Path) -> None:
             str(tmp_path),
         ],
         cwd=ROOT,
+        env=env,
         capture_output=True,
         text=True,
         check=False,
