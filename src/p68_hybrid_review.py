@@ -18,14 +18,29 @@ def _load(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+def _load_optional_clip_manifest(path: Path) -> dict[str, Any]:
+    if not path.is_file():
+        return {"clips": []}
+    payload = _load(path)
+    payload.setdefault("clips", [])
+    return payload
+
+
+def _latest_science_manifest(artifact_dir: Path) -> Path:
+    paths = sorted((artifact_dir / "clips").glob("scientific-v*/scientific-animation-manifest.json"))
+    if not paths:
+        raise FileNotFoundError(f"No scientific animation manifest exists under {artifact_dir / 'clips'}")
+    return paths[-1]
+
+
 def build_hybrid_manifest(
     plan: dict[str, Any],
     natural_manifest: dict[str, Any],
     science_manifest: dict[str, Any],
     selection_manifest: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
-    natural = {item["shot_id"]: item for item in natural_manifest["clips"]}
-    science = {item["shot_id"]: item for item in science_manifest["clips"]}
+    natural = {item["shot_id"]: item for item in natural_manifest.get("clips", [])}
+    science = {item["shot_id"]: item for item in science_manifest.get("clips", [])}
     selected = {
         item["shot_id"]: item
         for item in (selection_manifest or {}).get("selected_clips", [])
@@ -59,11 +74,8 @@ def build_hybrid_manifest(
 
 def assemble_hybrid_review(pilot_dir: Path, artifact_dir: Path) -> dict[str, Any]:
     plan = _load(pilot_dir / "content-plan.json")
-    natural = _load(artifact_dir / "clips" / "clip-manifest.json")
-    science_paths = sorted((artifact_dir / "clips").glob("scientific-v*/scientific-animation-manifest.json"))
-    if not science_paths:
-        raise FileNotFoundError(f"No scientific animation manifest exists under {artifact_dir / 'clips'}")
-    science = _load(science_paths[-1])
+    natural = _load_optional_clip_manifest(artifact_dir / "clips" / "clip-manifest.json")
+    science = _load(_latest_science_manifest(artifact_dir))
     selection_path = artifact_dir / "clips" / "generated" / "selection-manifest.json"
     selection = _load(selection_path) if selection_path.is_file() else None
     hybrid = build_hybrid_manifest(plan, natural, science, selection)
