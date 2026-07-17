@@ -243,7 +243,8 @@
       renderReferenceQueue();
       return true;
     } catch (error) {
-      updateDataMode(`Connection error: ${error.message}`, false);
+      window.PortfolioApi?.disconnect();
+      updateDataMode(`Local database unavailable: ${error.message}`, false);
       return false;
     }
   }
@@ -1065,7 +1066,7 @@
   }
 
   bindPortfolioControls();
-  loadMonthFactory();
+  loadMonthFactory().then(() => refreshPortfolioFromApi());
   bindEngineControls();
   renderEnginePipeline();
   bindStudioControls();
