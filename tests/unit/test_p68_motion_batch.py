@@ -15,10 +15,10 @@ def test_six_pilot_motion_inventory_is_complete_and_honest(tmp_path: Path) -> No
     assert result["pilot_count"] == 6
     assert result["roster_complete"] is True
     assert result["inventory"]["total_shots"] == 36
-    assert result["inventory"]["authored_science_shots"] == 7
-    assert result["inventory"]["natural_motion_shots"] == 29
-    assert result["inventory"]["natural_shots_blocked_on_keyframes"] == 29
-    assert result["inventory"]["planned_generation_variants"] == 40
+    assert result["inventory"]["authored_science_shots"] == 13
+    assert result["inventory"]["natural_motion_shots"] == 23
+    assert result["inventory"]["natural_shots_blocked_on_keyframes"] == 23
+    assert result["inventory"]["planned_generation_variants"] == 32
     assert result["next_gate"] == "create_shot_specific_keyframes"
     assert result["execution_allowed"] is False
     assert result["premium_provider_calls_allowed"] is False
@@ -42,7 +42,7 @@ def test_plan_records_presence_and_cost_without_serializing_secrets(tmp_path: Pa
         "P68_RN_GPU_HOURLY_USD": True,
     }
     assert result["rn_configuration_ready"] is True
-    assert result["estimated_rn_cost_usd"] == "7.5000"
+    assert result["estimated_rn_cost_usd"] == "6.0000"
     assert "secret-worker" not in rendered
     assert "do-not-leak" not in rendered
     assert result["execution_allowed"] is False  # no acceptable keyframes in tmp_path
