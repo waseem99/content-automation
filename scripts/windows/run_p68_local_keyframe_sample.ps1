@@ -111,10 +111,16 @@ while ((Get-Date) -lt $deadline) {
         if (-not $record) {
             throw "Generation completed but no provenance record exists for $Pilot/$Shot."
         }
+        if ($record.human_review_status -ne "pending_keyframe_review") {
+            throw "Unsafe local sample status: expected pending_keyframe_review, found $($record.human_review_status)."
+        }
+        if ($record.approved_for_generation -eq $true -or $record.publish_allowed -eq $true) {
+            throw "Unsafe local sample state: automatic approval or publication was detected."
+        }
         Write-Host "LOCAL KEYFRAME SAMPLE READY FOR HUMAN REVIEW" -ForegroundColor Green
         Write-Host "Pilot/shot: $Pilot/$Shot"
         Write-Host "Image: $($record.normalized_path)" -ForegroundColor Green
-        Write-Host "Status: $($record.human_review_status)"
+        Write-Host "Status: pending_keyframe_review"
         Write-Host "Approved for video generation: false"
         Write-Host "Publish allowed: false"
         exit 0
