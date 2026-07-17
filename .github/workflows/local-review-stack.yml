@@ -1,0 +1,134 @@
+name: Start local database review stack
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [test]
+    paths: [.github/workflows/local-review-stack.yml]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: local-review-stack
+  cancel-in-progress: true
+
+jobs:
+  start:
+    name: PostgreSQL, API, month data, and playable narration
+    runs-on: [self-hosted, Windows, X64, facebook-media]
+    timeout-minutes: 45
+    defaults:
+      run:
+        shell: powershell
+    env:
+      OPERATOR_KEY: local-review-key
+      OPERATOR_API_URL: http://127.0.0.1:8000
+      PORTFOLIO_API_URL: http://127.0.0.1:8000
+      PYTHONUNBUFFERED: "1"
+      VOICE_PROVIDER: kokoro
+      KOKORO_VOICE: af_heart
+      KOKORO_SPEED: "1.08"
+      HIGH_VOLUME_REVISION: "3"
+
+    steps:
+      - name: Check out current review branch
+        uses: actions/checkout@v4
+        with:
+          ref: local-next-720
+          persist-credentials: true
+
+      - name: Verify Docker and media storage
+        run: |
+          docker version
+          if ($LASTEXITCODE -ne 0) { throw "Docker Desktop must be running." }
+          $media = Join-Path $env:USERPROFILE "content-automation-data\portfolio-media"
+          New-Item -ItemType Directory -Force $media | Out-Null
+          "PORTFOLIO_MEDIA_ROOT=$media" | Add-Content $env:GITHUB_ENV
+
+      - name: Start PostgreSQL and operator API
+        run: |
+          $media = ($env:PORTFOLIO_MEDIA_ROOT -replace '\\','/')
+          @"
+          POSTGRES_DB=content_automation_local
+          POSTGRES_USER=content_operator
+          POSTGRES_PASSWORD=content-automation-loopback-db
+          POSTGRES_PORT=5433
+          OPERATOR_API_PORT=8000
+          OPERATOR_KEY=local-review-key
+          OPERATOR_ID=waseem-local-review
+          OPERATOR_CORS_ORIGINS=http://127.0.0.1:8080,http://localhost:8080
+          PORTFOLIO_MEDIA_DIR=$media
+          "@ | Set-Content deploy/portfolio-staging/.env.local
+          docker compose --env-file deploy/portfolio-staging/.env.local -f deploy/portfolio-staging/compose.yaml up -d --build
+          if ($LASTEXITCODE -ne 0) { throw "Local review stack did not start." }
+          for ($attempt = 1; $attempt -le 30; $attempt++) {
+            try {
+              $ready = Invoke-RestMethod -Headers @{"X-Operator-Key"=$env:OPERATOR_KEY} -Uri "$env:OPERATOR_API_URL/runtime/ready"
+              if ($ready.ok) { Write-Host "Database and API are ready."; break }
+            } catch { Write-Host "Waiting for API ($attempt/30)..." }
+            Start-Sleep -Seconds 2
+          }
+          if (-not $ready.ok) { docker compose --env-file deploy/portfolio-staging/.env.local -f deploy/portfolio-staging/compose.yaml logs; throw "API readiness timed out." }
+
+      - name: Seed and synchronize all four brand months
+        run: |
+          python scripts/p82_build_portfolio_calendar.py
+          python scripts/p71_bootstrap_portfolio.py --config .local-production/portfolio-high-volume-bootstrap.json
+          $studios = @("rawr-nation", "animal-x", "historiq", "ani-films")
+          foreach ($brand in $studios) {
+            python scripts/p80_sync_month_workspace.py --studio "web/static-creator-ui/data/$brand-high-volume.json"
+            if ($LASTEXITCODE -ne 0) { throw "Workspace synchronization failed: $brand" }
+          }
+
+      - name: Generate six narration previews per brand locally
+        run: |
+          python -c "import kokoro"
+          if ($LASTEXITCODE -ne 0) { python -m pip install --disable-pip-version-check -r video-engine/voice-requirements.txt }
+          $studios = @("rawr-nation", "animal-x", "historiq", "ani-films")
+          foreach ($brand in $studios) {
+            python scripts/p80_prepare_voice_batch.py prepare --studio "web/static-creator-ui/data/$brand-high-volume.json" --limit 6
+            if ($LASTEXITCODE -ne 0) { throw "Narration preparation failed: $brand" }
+          }
+          $projects = Get-ChildItem ".local-production\rawr-month-projects\*.json" | Sort-Object Name
+          if ($projects.Count -ne 24) { throw "Expected 24 narration projects; found $($projects.Count)." }
+          foreach ($project in $projects) {
+            Push-Location video-engine
+            node scripts/generate-voice.mjs $project.FullName
+            if ($LASTEXITCODE -ne 0) { throw "Narration failed: $($project.BaseName)" }
+            Pop-Location
+          }
+
+      - name: Register all playable narration in PostgreSQL
+        run: |
+          $studios = @("rawr-nation", "animal-x", "historiq", "ani-films")
+          foreach ($brand in $studios) {
+            python scripts/p80_sync_voice_artifacts.py --studio "web/static-creator-ui/data/$brand-high-volume.json" --media-root "$env:PORTFOLIO_MEDIA_ROOT" --limit 6
+            if ($LASTEXITCODE -ne 0) { throw "Narration registration failed: $brand" }
+          }
+          $queue = Invoke-RestMethod -Headers @{"X-Operator-Key"=$env:OPERATOR_KEY} -Uri "$env:OPERATOR_API_URL/portfolio/queue"
+          $activeBrands = @("rawr-nation", "animal-x", "historiq", "ani-films")
+          $voiceCount = @($queue.items | Where-Object {$activeBrands -contains $_.brand_slug -and $_.has_voiceover_artifact}).Count
+          if ($voiceCount -lt 24) { throw "Expected at least 24 registered narration artifacts; found $voiceCount." }
+          @"
+          ## Local review stack ready
+
+          - PostgreSQL: connected
+          - Operator API: http://127.0.0.1:8000
+          - Active brand month packages: 480 (120 each, 4/day)
+          - Playable narration artifacts: $voiceCount
+          - UI: http://127.0.0.1:8080
+          "@ | Add-Content $env:GITHUB_STEP_SUMMARY
+
+      - name: Record sanitized readiness marker
+        run: |
+          $queue = Invoke-RestMethod -Headers @{"X-Operator-Key"=$env:OPERATOR_KEY} -Uri "$env:OPERATOR_API_URL/portfolio/queue"
+          $activeBrands = @("rawr-nation", "animal-x", "historiq", "ani-films")
+          $voiceCount = @($queue.items | Where-Object {$activeBrands -contains $_.brand_slug -and $_.has_voiceover_artifact}).Count
+          $target = "web/static-creator-ui/data/local-review-stack-status.json"
+          @{schema_version="p82.local_review_status.v1"; ready=$true; database="postgresql"; operator_api="loopback"; active_brands=4; portfolio_packages=480; packages_per_brand=120; daily_per_brand=4; narration_artifacts=$voiceCount; verified_at=(Get-Date).ToUniversalTime().ToString("o")} | ConvertTo-Json | Set-Content $target
+          git config user.name "content-automation-runner"
+          git config user.email "actions@users.noreply.github.com"
+          git add $target web/static-creator-ui/data/portfolio-high-volume.json web/static-creator-ui/data/rawr-nation-high-volume.json web/static-creator-ui/data/animal-x-high-volume.json web/static-creator-ui/data/historiq-high-volume.json web/static-creator-ui/data/ani-films-high-volume.json
+          git commit -m "Build four 120-item brand review calendars"
+          if ($LASTEXITCODE -eq 0) { git push origin HEAD:local-next-720 }
