@@ -28,6 +28,11 @@ def workspace_payload(item: dict) -> dict:
             "p80_content_fingerprint": item["content_fingerprint"],
             "thumbnail": item["thumbnail"], "platform_packages": item["platform_packages"],
             "production": item["production"], "month_batch": item["batch"],
+            "scheduled_time_local": item.get("scheduled_time_local"),
+            "daily_slot": item.get("daily_slot"),
+            "editorial_angle": item.get("editorial_angle"),
+            "production_tier": item.get("production_tier"),
+            "source_title": item.get("source_title"),
         },
     }
 
