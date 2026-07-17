@@ -10,6 +10,11 @@ from pathlib import Path
 from src.p68_scientific_animation import ANIMATION_VERSION, render_pilot_science
 
 
+def science_output_directory(artifact_root: str | Path, pilot_id: str) -> Path:
+    version = ANIMATION_VERSION.rsplit(".", 1)[-1]
+    return Path(artifact_root) / "gold" / pilot_id / "clips" / f"scientific-{version}"
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--pilot", required=True)
@@ -19,7 +24,7 @@ def main() -> int:
     plan = json.loads((Path(args.pilots_root) / args.pilot / "content-plan.json").read_text(encoding="utf-8"))
     output = render_pilot_science(
         plan,
-        Path(args.artifact_root) / "gold" / args.pilot / "clips" / ANIMATION_VERSION.rsplit(".", 1)[-1],
+        science_output_directory(args.artifact_root, args.pilot),
     )
     print(json.dumps(output, indent=2))
     return 0
