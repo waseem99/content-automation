@@ -21,3 +21,4 @@ def test_renderer_produces_real_portrait_motion_clip(tmp_path: Path) -> None:
     assert result["height"] == 1920
     assert result["fps"] == 30
     assert result["duration_seconds"] >= 0.35
+    assert result["has_audio"] is False
