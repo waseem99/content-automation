@@ -19,6 +19,7 @@ services:
   migrate:
     build:
       context: ../..
+      dockerfile: deploy/portfolio-staging/Dockerfile.operator
     restart: "no"
     depends_on:
       database:
@@ -32,6 +33,7 @@ services:
   operator-api:
     build:
       context: ../..
+      dockerfile: deploy/portfolio-staging/Dockerfile.operator
     restart: unless-stopped
     depends_on:
       migrate:
