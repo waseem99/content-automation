@@ -17,12 +17,12 @@ def test_clean_clone_audit_names_every_unfinished_shot(tmp_path: Path) -> None:
     assert result["specs_ready"] is True
     assert result["totals"] == {
         "total_shots": 36,
-        "authored_science_shots": 7,
+        "authored_science_shots": 13,
         "authored_science_ready": 0,
-        "natural_motion_shots": 29,
+        "natural_motion_shots": 23,
         "keyframes_approved": 0,
         "keyframes_pending_review": 0,
-        "keyframes_missing": 29,
+        "keyframes_missing": 23,
         "candidate_shots_available": 0,
         "selected_natural_shots": 0,
         "hybrid_review_renders_ready": 0,
