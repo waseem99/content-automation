@@ -1,0 +1,106 @@
+name: Start local database review stack
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [test]
+    paths: [.github/workflows/local-review-stack.yml]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: local-review-stack
+  cancel-in-progress: true
+
+jobs:
+  start:
+    name: PostgreSQL, API, month data, and playable narration
+    runs-on: [self-hosted, Windows, X64, facebook-media]
+    timeout-minutes: 45
+    defaults:
+      run:
+        shell: powershell
+    env:
+      OPERATOR_KEY: local-review-key
+      OPERATOR_API_URL: http://127.0.0.1:8000
+      PORTFOLIO_API_URL: http://127.0.0.1:8000
+      PYTHONUNBUFFERED: "1"
+      VOICE_PROVIDER: kokoro
+      KOKORO_VOICE: af_heart
+      KOKORO_SPEED: "1.08"
+
+    steps:
+      - name: Check out current review branch
+        uses: actions/checkout@v4
+        with:
+          ref: local-next-720
+          persist-credentials: false
+
+      - name: Verify Docker and media storage
+        run: |
+          docker version
+          if ($LASTEXITCODE -ne 0) { throw "Docker Desktop must be running." }
+          $media = Join-Path $env:USERPROFILE "content-automation-data\portfolio-media"
+          New-Item -ItemType Directory -Force $media | Out-Null
+          "PORTFOLIO_MEDIA_ROOT=$media" | Add-Content $env:GITHUB_ENV
+
+      - name: Start PostgreSQL and operator API
+        run: |
+          $media = ($env:PORTFOLIO_MEDIA_ROOT -replace '\\','/')
+          @"
+          POSTGRES_DB=content_automation_local
+          POSTGRES_USER=content_operator
+          POSTGRES_PASSWORD=content-automation-loopback-db
+          POSTGRES_PORT=5433
+          OPERATOR_API_PORT=8000
+          OPERATOR_KEY=local-review-key
+          OPERATOR_ID=waseem-local-review
+          OPERATOR_CORS_ORIGINS=http://127.0.0.1:8080,http://localhost:8080
+          PORTFOLIO_MEDIA_DIR=$media
+          "@ | Set-Content deploy/portfolio-staging/.env.local
+          docker compose --env-file deploy/portfolio-staging/.env.local -f deploy/portfolio-staging/compose.yaml up -d --build
+          if ($LASTEXITCODE -ne 0) { throw "Local review stack did not start." }
+          for ($attempt = 1; $attempt -le 30; $attempt++) {
+            try {
+              $ready = Invoke-RestMethod -Headers @{"X-Operator-Key"=$env:OPERATOR_KEY} -Uri "$env:OPERATOR_API_URL/runtime/ready"
+              if ($ready.ok) { Write-Host "Database and API are ready."; break }
+            } catch { Write-Host "Waiting for API ($attempt/30)..." }
+            Start-Sleep -Seconds 2
+          }
+          if (-not $ready.ok) { docker compose --env-file deploy/portfolio-staging/.env.local -f deploy/portfolio-staging/compose.yaml logs; throw "API readiness timed out." }
+
+      - name: Seed and synchronize the full Rawr month
+        run: |
+          python scripts/p71_bootstrap_portfolio.py
+          python scripts/p80_sync_month_workspace.py
+
+      - name: Generate six narration previews locally
+        run: |
+          python -c "import kokoro"
+          if ($LASTEXITCODE -ne 0) { python -m pip install --disable-pip-version-check -r video-engine/voice-requirements.txt }
+          python scripts/p80_prepare_voice_batch.py prepare --limit 6
+          $projects = Get-ChildItem ".local-production\rawr-month-projects\*.json" | Sort-Object Name
+          if ($projects.Count -ne 6) { throw "Expected six narration projects." }
+          foreach ($project in $projects) {
+            Push-Location video-engine
+            node scripts/generate-voice.mjs $project.FullName
+            if ($LASTEXITCODE -ne 0) { throw "Narration failed: $($project.BaseName)" }
+            Pop-Location
+          }
+
+      - name: Register playable narration in PostgreSQL
+        run: |
+          python scripts/p80_sync_voice_artifacts.py --media-root "$env:PORTFOLIO_MEDIA_ROOT" --limit 6
+          $queue = Invoke-RestMethod -Headers @{"X-Operator-Key"=$env:OPERATOR_KEY} -Uri "$env:OPERATOR_API_URL/portfolio/queue"
+          $voiceCount = @($queue.items | Where-Object {$_.brand_slug -eq "rawr-nation" -and $_.has_voiceover_artifact}).Count
+          if ($voiceCount -lt 6) { throw "Expected at least six registered narration artifacts; found $voiceCount." }
+          @"
+          ## Local review stack ready
+
+          - PostgreSQL: connected
+          - Operator API: http://127.0.0.1:8000
+          - Rawr Nation month packages: 24
+          - Playable narration artifacts: $voiceCount
+          - UI: http://127.0.0.1:8080
+          "@ | Add-Content $env:GITHUB_STEP_SUMMARY
