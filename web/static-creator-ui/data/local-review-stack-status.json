@@ -1,10 +1,12 @@
 {
-    "rawr_packages":  120,
-    "narration_artifacts":  6,
+    "schema_version":  "p82.local_review_status.v1",
     "ready":  true,
-    "schema_version":  "p81.local_review_status.v1",
+    "narration_artifacts":  24,
+    "daily_per_brand":  4,
+    "portfolio_packages":  480,
+    "verified_at":  "2026-07-17T07:24:04.7114582Z",
+    "packages_per_brand":  120,
     "operator_api":  "loopback",
-    "database":  "postgresql",
-    "verified_at":  "2026-07-17T06:27:12.6373946Z",
-    "daily_baseline":  4
+    "active_brands":  4,
+    "database":  "postgresql"
 }
