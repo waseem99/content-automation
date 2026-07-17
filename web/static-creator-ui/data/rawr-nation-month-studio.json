@@ -112,10 +112,7 @@
         "development_provider": "kokoro_local",
         "style": "energetic, credible wildlife explainer",
         "pace": "fast but intelligible",
-        "production_provider": "human-approved premium or retained local voice",
-        "status": "ready_for_review",
-        "preview_url": "media/rawr-nation/voice/rawr-nation-2026-08-01-01-kokoro.wav",
-        "review_required": true
+        "production_provider": "human-approved premium or retained local voice"
       },
       "thumbnail": {
         "primary_text": "THE GAP IT CAN'T SEE",
@@ -170,7 +167,7 @@
       "review": {
         "idea": "ready",
         "script": "pending_human_review",
-        "voice": "ready_for_review",
+        "voice": "pending_preview",
         "visual": "pending_preview",
         "premium_spend": "blocked"
       },
@@ -267,10 +264,7 @@
         "development_provider": "kokoro_local",
         "style": "energetic, credible wildlife explainer",
         "pace": "fast but intelligible",
-        "production_provider": "human-approved premium or retained local voice",
-        "status": "ready_for_review",
-        "preview_url": "media/rawr-nation/voice/rawr-nation-2026-08-01-02-kokoro.wav",
-        "review_required": true
+        "production_provider": "human-approved premium or retained local voice"
       },
       "thumbnail": {
         "primary_text": "WHY OWLS FLY SILENT",
@@ -325,7 +319,7 @@
       "review": {
         "idea": "ready",
         "script": "pending_human_review",
-        "voice": "ready_for_review",
+        "voice": "pending_preview",
         "visual": "pending_preview",
         "premium_spend": "blocked"
       },
@@ -422,10 +416,7 @@
         "development_provider": "kokoro_local",
         "style": "energetic, credible wildlife explainer",
         "pace": "fast but intelligible",
-        "production_provider": "human-approved premium or retained local voice",
-        "status": "ready_for_review",
-        "preview_url": "media/rawr-nation/voice/rawr-nation-2026-08-01-03-kokoro.wav",
-        "review_required": true
+        "production_provider": "human-approved premium or retained local voice"
       },
       "thumbnail": {
         "primary_text": "A PUNCH THAT FLASHES",
@@ -480,7 +471,7 @@
       "review": {
         "idea": "ready",
         "script": "pending_human_review",
-        "voice": "ready_for_review",
+        "voice": "pending_preview",
         "visual": "pending_preview",
         "premium_spend": "blocked"
       },
@@ -577,10 +568,7 @@
         "development_provider": "kokoro_local",
         "style": "energetic, credible wildlife explainer",
         "pace": "fast but intelligible",
-        "production_provider": "human-approved premium or retained local voice",
-        "status": "ready_for_review",
-        "preview_url": "media/rawr-nation/voice/rawr-nation-2026-08-01-04-kokoro.wav",
-        "review_required": true
+        "production_provider": "human-approved premium or retained local voice"
       },
       "thumbnail": {
         "primary_text": "SHARKS SENSE ELECTRICITY",
@@ -635,7 +623,7 @@
       "review": {
         "idea": "ready",
         "script": "pending_human_review",
-        "voice": "ready_for_review",
+        "voice": "pending_preview",
         "visual": "pending_preview",
         "premium_spend": "blocked"
       },
@@ -732,10 +720,7 @@
         "development_provider": "kokoro_local",
         "style": "energetic, credible wildlife explainer",
         "pace": "fast but intelligible",
-        "production_provider": "human-approved premium or retained local voice",
-        "status": "ready_for_review",
-        "preview_url": "media/rawr-nation/voice/rawr-nation-2026-08-01-05-kokoro.wav",
-        "review_required": true
+        "production_provider": "human-approved premium or retained local voice"
       },
       "thumbnail": {
         "primary_text": "BLOOD FROM ITS EYES?",
@@ -790,7 +775,7 @@
       "review": {
         "idea": "ready",
         "script": "pending_human_review",
-        "voice": "ready_for_review",
+        "voice": "pending_preview",
         "visual": "pending_preview",
         "premium_spend": "blocked"
       },
@@ -882,10 +867,7 @@
         "development_provider": "kokoro_local",
         "style": "energetic, credible wildlife explainer",
         "pace": "fast but intelligible",
-        "production_provider": "human-approved premium or retained local voice",
-        "status": "ready_for_review",
-        "preview_url": "media/rawr-nation/voice/rawr-nation-2026-08-01-06-kokoro.wav",
-        "review_required": true
+        "production_provider": "human-approved premium or retained local voice"
       },
       "thumbnail": {
         "primary_text": "NO WATER IN THE HUMP",
@@ -940,7 +922,7 @@
       "review": {
         "idea": "ready",
         "script": "pending_human_review",
-        "voice": "ready_for_review",
+        "voice": "pending_preview",
         "visual": "pending_preview",
         "premium_spend": "blocked"
       },
@@ -3493,7 +3475,6 @@
     "scripts_ready": 24,
     "batch_one_preview_queue": 6,
     "paid_jobs_started": 0,
-    "publish_jobs_started": 0,
-    "voice_previews_ready": 6
+    "publish_jobs_started": 0
   }
 }
