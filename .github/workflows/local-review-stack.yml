@@ -29,7 +29,7 @@ jobs:
       VOICE_PROVIDER: kokoro
       KOKORO_VOICE: af_heart
       KOKORO_SPEED: "1.08"
-      HIGH_VOLUME_REVISION: "1"
+      HIGH_VOLUME_REVISION: "2"
 
     steps:
       - name: Check out current review branch
