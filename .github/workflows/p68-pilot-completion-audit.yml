@@ -19,6 +19,23 @@ on:
       - "tests/unit/test_p68_keyframe_generator.py"
       - "tests/unit/test_p68_scientific_animation.py"
       - "p68-pilots/**"
+  pull_request:
+    branches:
+      - test
+    paths:
+      - ".github/workflows/p68-pilot-completion-audit.yml"
+      - "src/p68_completion_audit.py"
+      - "src/p68_motion_batch.py"
+      - "src/p68_keyframe_batch.py"
+      - "src/p68_scientific_animation.py"
+      - "scripts/p68_audit_completion.py"
+      - "scripts/p68_render_science.py"
+      - "tests/unit/test_p68_completion_audit.py"
+      - "tests/unit/test_p68_motion_batch.py"
+      - "tests/unit/test_p68_keyframe_batch.py"
+      - "tests/unit/test_p68_keyframe_generator.py"
+      - "tests/unit/test_p68_scientific_animation.py"
+      - "p68-pilots/**"
 
 permissions:
   contents: read
