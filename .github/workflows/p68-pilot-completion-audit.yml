@@ -76,12 +76,24 @@ jobs:
 
       - name: Render every deterministic authored-science shot
         run: |
+          set +e
+          status=0
           pilots=$(PYTHONPATH=. python -c "from src.p68_scientific_animation import RENDERERS; print(' '.join(sorted({pilot for pilot, _ in RENDERERS})))")
           for pilot in $pilots; do
+            echo "=== Rendering $pilot ==="
             PYTHONPATH=. python scripts/p68_render_science.py \
               --pilot "$pilot" \
-              --artifact-root p68-ci/artifacts
+              --artifact-root p68-ci/artifacts \
+              2>&1 | tee "p68-ci/reports/render-${pilot}.log"
+            code=${PIPESTATUS[0]}
+            if [ "$code" -ne 0 ]; then
+              echo "FAILED: $pilot (exit $code)" | tee -a "p68-ci/reports/render-${pilot}.log"
+              status=$code
+            else
+              echo "PASSED: $pilot" | tee -a "p68-ci/reports/render-${pilot}.log"
+            fi
           done
+          exit "$status"
 
       - name: Verify authored-science completion and rewrite audit
         run: |
@@ -105,6 +117,7 @@ jobs:
           PY
 
       - name: Record audit summary
+        if: success()
         run: |
           PYTHONPATH=. python - <<'PY' >> "$GITHUB_STEP_SUMMARY"
           import json
@@ -125,10 +138,11 @@ jobs:
           print("- Publish allowed: no")
           PY
 
-      - name: Upload private review artifacts
+      - name: Upload private review artifacts and diagnostics
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: p68-pilot-completion-audit
+          name: p68-pilot-completion-audit-${{ github.run_attempt }}
           path: p68-ci
           if-no-files-found: error
           retention-days: 7
