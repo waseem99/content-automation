@@ -119,6 +119,48 @@
     };
   }
 
+  async function loadStaticHighVolumeCalendar() {
+    try {
+      const response = await fetch("data/rawr-nation-high-volume.json", { cache: "no-store" });
+      if (!response.ok) return false;
+      const studio = await response.json();
+      const brand = demoPortfolioBrands.find((item) => item.id === "rawr-nation");
+      portfolioBrands = [{ ...brand, cadence: "4 original videos daily", monthlyTarget: studio.summary.masters }];
+      portfolioItems = studio.items.map((item) => ({
+        id: item.id,
+        date: `${item.scheduled_for} · ${item.scheduled_time_local || ""}`,
+        brand: "rawr-nation",
+        title: item.title,
+        format: `${item.format} · ${item.production_tier || "review"}`,
+        stage: item.workflow_stage === "preview_queue" ? "preview" : "script",
+        assets: ["script", `${(item.scene_plan || []).length} scenes`, "3 platform packages"],
+        staticPackage: item
+      }));
+      portfolioReadiness = { brand_count: 1, planned_count: studio.summary.masters, target_count: studio.summary.masters, ready_brand_count: 1 };
+      portfolioReferences = [];
+      state.brandFilter = "all";
+      $("brand-filter").innerHTML = '<option value="all">All brands</option><option value="rawr-nation">Rawr Nation</option>';
+      updateDataMode(`${studio.summary.masters} read-only review packages`, false);
+      renderPortfolio();
+      renderReferenceQueue();
+      return true;
+    } catch (_error) {
+      return false;
+    }
+  }
+
+  function renderStaticPackageReview(item) {
+    const pack = item.staticPackage;
+    const sources = pack.script?.sources || [];
+    $("content-review-body").innerHTML = `
+      <header class="review-header"><div><p class="eyebrow dark-eyebrow">Rawr Nation · ${escapeHtml(item.date)}</p><h2>${escapeHtml(pack.title)}</h2><p>${escapeHtml(pack.concept)}</p></div><span class="stage-pill script">Read-only share</span></header>
+      <div class="review-grid">
+        <section class="review-editor"><h3>Script</h3><p><strong>Hook:</strong> ${escapeHtml(pack.script?.hook)}</p><p>${escapeHtml(pack.script?.narration)}</p><p><strong>Payoff:</strong> ${escapeHtml(pack.script?.payoff)}</p><p><strong>Fact status:</strong> ${escapeHtml(pack.script?.fact_status)}</p></section>
+        <section class="review-media"><h3>Production plan</h3><p>${escapeHtml(pack.daily_slot)} · ${escapeHtml(pack.production_tier)} · ${escapeHtml(pack.duration_seconds)} seconds</p><ol class="review-history">${(pack.scene_plan || []).map((scene) => `<li><strong>${escapeHtml(scene.start_seconds)}–${escapeHtml(scene.end_seconds)}s · ${escapeHtml(scene.purpose)}</strong><span>${escapeHtml(scene.visual_direction)}</span></li>`).join("")}</ol></section>
+      </div>
+      <section class="review-decision"><div><h3>Platform delivery</h3><p>${(pack.platform_packages || []).map((platform) => `<strong>${escapeHtml(platform.platform)}</strong>: ${escapeHtml(platform.caption)}`).join("<br>")}</p><p>${sources.length ? `${sources.length} source records attached for human fact review.` : "Research is required before production approval."}</p><small>This shared view cannot approve, spend, generate, or publish. Open the local database-connected UI for those actions.</small></div></section>`;
+  }
+
   function prettyJson(value) {
     return value ? JSON.stringify(value, null, 2) : "";
   }
@@ -206,6 +248,7 @@
       renderReferenceQueue();
       return true;
     } catch (error) {
+      if (await loadStaticHighVolumeCalendar()) return false;
       updateDataMode(`Connection error: ${error.message}`, false);
       return false;
     }
@@ -248,6 +291,11 @@
     $("content-queue").addEventListener("click", async (event) => {
       if (!event.target.matches(".table-action")) return;
       const item = portfolioItems.find((candidate) => candidate.id === event.target.dataset.itemId);
+      if (item?.staticPackage) {
+        $("content-review").showModal();
+        renderStaticPackageReview(item);
+        return;
+      }
       if (!item?.id || !window.PortfolioApi?.configured()) {
         alert(`${event.target.dataset.itemTitle}\n\nConnect the operator API to open the database-backed review workspace.`);
         return;
