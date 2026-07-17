@@ -3,8 +3,7 @@ name: P68 Local Preview Keyframes
 on:
   workflow_dispatch:
   push:
-    branches:
-      - p68-local-preview-keyframes
+    branches: [p68-local-preview-keyframes]
     paths:
       - ".github/workflows/p68-local-preview-keyframes.yml"
       - "deploy/p68-local-keyframe-worker/**"
@@ -17,8 +16,7 @@ on:
       - "tests/unit/test_p68_local_preview_scripts.py"
       - "tests/unit/test_p68_keyframe_cli.py"
   pull_request:
-    branches:
-      - test
+    branches: [test]
     paths:
       - ".github/workflows/p68-local-preview-keyframes.yml"
       - "deploy/p68-local-keyframe-worker/**"
@@ -39,7 +37,6 @@ jobs:
     name: Validate bounded local preview workflow
     runs-on: ubuntu-latest
     timeout-minutes: 15
-
     steps:
       - name: Check out local preview branch
         uses: actions/checkout@v4
@@ -52,14 +49,20 @@ jobs:
       - name: Install focused dependencies
         run: python -m pip install --disable-pip-version-check pillow httpx pytest
 
-      - name: Run focused contracts
-        run: |
-          python -m pytest -q \
-            tests/unit/test_p68_keyframe_generator.py \
-            tests/unit/test_p68_keyframe_provider.py \
-            tests/unit/test_p68_worker_configuration.py \
-            tests/unit/test_p68_local_preview_scripts.py \
-            tests/unit/test_p68_keyframe_cli.py
+      - name: Test keyframe generation controller
+        run: python -m pytest -q tests/unit/test_p68_keyframe_generator.py
+
+      - name: Test ComfyUI keyframe provider
+        run: python -m pytest -q tests/unit/test_p68_keyframe_provider.py
+
+      - name: Test worker configuration governance
+        run: python -m pytest -q tests/unit/test_p68_worker_configuration.py
+
+      - name: Test guarded local scripts
+        run: python -m pytest -q tests/unit/test_p68_local_preview_scripts.py
+
+      - name: Test low-VRAM command-line plan
+        run: python -m pytest -q tests/unit/test_p68_keyframe_cli.py
 
       - name: Verify one-shot low-VRAM plan
         run: |
@@ -73,7 +76,6 @@ jobs:
           python - <<'PY'
           import json
           from pathlib import Path
-
           result = json.loads(Path("/tmp/p68-local-preview-plan.json").read_text())
           assert result["request_count"] == 1, result
           assert result["canvas"] == {"width": 704, "height": 1280, "orientation": "portrait"}, result
@@ -96,11 +98,7 @@ jobs:
           foreach ($file in $files) {
             $tokens = $null
             $errors = $null
-            [System.Management.Automation.Language.Parser]::ParseFile(
-              (Resolve-Path $file),
-              [ref]$tokens,
-              [ref]$errors
-            ) | Out-Null
+            [System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path $file), [ref]$tokens, [ref]$errors) | Out-Null
             if ($errors.Count -gt 0) {
               $errors | ForEach-Object { Write-Error $_.Message }
               throw "PowerShell syntax validation failed for $file"
@@ -119,10 +117,7 @@ jobs:
           P68_KEYFRAME_CHECKPOINT=sd_xl_base_1.0.safetensors
           COMFYUI_EXTRA_ARGS=--lowvram
           EOF
-          docker compose \
-            --env-file /tmp/p68-kf.env \
-            -f deploy/p68-local-keyframe-worker/compose.yaml \
-            config > /tmp/p68-kf-compose.yaml
+          docker compose --env-file /tmp/p68-kf.env -f deploy/p68-local-keyframe-worker/compose.yaml config > /tmp/p68-kf-compose.yaml
           grep -q '127.0.0.1' /tmp/p68-kf-compose.yaml
 
       - name: Confirm no execution occurred
