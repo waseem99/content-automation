@@ -11,13 +11,16 @@ on:
       - "src/p68_motion_batch.py"
       - "src/p68_keyframe_batch.py"
       - "src/p68_scientific_animation.py"
+      - "src/p68_hybrid_review.py"
       - "scripts/p68_audit_completion.py"
       - "scripts/p68_render_science.py"
+      - "scripts/p68_build_hybrid_reviews.py"
       - "tests/unit/test_p68_completion_audit.py"
       - "tests/unit/test_p68_motion_batch.py"
       - "tests/unit/test_p68_keyframe_batch.py"
       - "tests/unit/test_p68_keyframe_generator.py"
       - "tests/unit/test_p68_scientific_animation.py"
+      - "tests/unit/test_p68_hybrid_review.py"
       - "p68-pilots/**"
   pull_request:
     branches:
@@ -28,13 +31,16 @@ on:
       - "src/p68_motion_batch.py"
       - "src/p68_keyframe_batch.py"
       - "src/p68_scientific_animation.py"
+      - "src/p68_hybrid_review.py"
       - "scripts/p68_audit_completion.py"
       - "scripts/p68_render_science.py"
+      - "scripts/p68_build_hybrid_reviews.py"
       - "tests/unit/test_p68_completion_audit.py"
       - "tests/unit/test_p68_motion_batch.py"
       - "tests/unit/test_p68_keyframe_batch.py"
       - "tests/unit/test_p68_keyframe_generator.py"
       - "tests/unit/test_p68_scientific_animation.py"
+      - "tests/unit/test_p68_hybrid_review.py"
       - "p68-pilots/**"
 
 permissions:
@@ -70,7 +76,8 @@ jobs:
             tests/unit/test_p68_motion_batch.py \
             tests/unit/test_p68_keyframe_batch.py \
             tests/unit/test_p68_keyframe_generator.py \
-            tests/unit/test_p68_scientific_animation.py
+            tests/unit/test_p68_scientific_animation.py \
+            tests/unit/test_p68_hybrid_review.py
 
       - name: Write clean-clone completion audit
         run: |
@@ -100,7 +107,14 @@ jobs:
           done
           exit "$status"
 
-      - name: Verify authored-science completion and rewrite audit
+      - name: Assemble Gecko visual review
+        run: |
+          PYTHONPATH=. python scripts/p68_build_hybrid_reviews.py \
+            --pilot rawr-gecko-grip \
+            --artifact-root p68-ci/artifacts \
+            2>&1 | tee p68-ci/reports/assemble-rawr-gecko-grip.log
+
+      - name: Verify completion checkpoint and rewrite audit
         run: |
           PYTHONPATH=. python scripts/p68_audit_completion.py \
             --artifact-root p68-ci/artifacts \
@@ -111,10 +125,14 @@ jobs:
 
           result = json.loads(Path("p68-ci/reports/post-science-audit.json").read_text())
           totals = result["totals"]
+          gecko = next(item for item in result["pilots"] if item["pilot_id"] == "rawr-gecko-grip")
           assert totals["authored_science_shots"] == 13, totals
           assert totals["authored_science_ready"] == 13, totals
           assert totals["natural_motion_shots"] == 23, totals
           assert totals["keyframes_missing"] == 23, totals
+          assert totals["hybrid_review_renders_ready"] == 1, totals
+          assert gecko["hybrid_review_render_ready"] is True, gecko
+          assert gecko["next_action"] == "complete_human_benchmark_review", gecko
           assert result["next_gate"] == "create_and_review_shot_specific_keyframes", result["next_gate"]
           assert result["provider_calls_made"] == 0
           assert result["paid_provider_calls_made"] == 0
@@ -135,6 +153,7 @@ jobs:
           print(f"- Pilots: {result['pilot_count']}")
           print(f"- Total shots: {totals['total_shots']}")
           print(f"- Authored-science shots ready: {totals['authored_science_ready']}/{totals['authored_science_shots']}")
+          print(f"- Visual review renders ready: {totals['hybrid_review_renders_ready']}/6")
           print(f"- Natural-motion shots: {totals['natural_motion_shots']}")
           print(f"- Shot-specific keyframes still required: {totals['keyframes_missing']}")
           print(f"- Next gate: `{result['next_gate']}`")
