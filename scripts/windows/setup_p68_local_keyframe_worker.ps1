@@ -54,6 +54,8 @@ P68_KEYFRAME_GPU_HOURLY_USD=0.00
 P68_KEYFRAME_SOFT_CAP_USD=0.00
 P68_KEYFRAME_HARD_CAP_USD=0.00
 P68_KEYFRAME_EXECUTION_MODE=local_preview
+P68_KEYFRAME_WIDTH=704
+P68_KEYFRAME_HEIGHT=1280
 "@
 $envContent | Set-Content -Path $envPath -Encoding ASCII
 
@@ -105,5 +107,6 @@ if (-not $healthy) {
 
 Write-Host "LOCAL KEYFRAME WORKER READY" -ForegroundColor Green
 Write-Host "Endpoint: http://127.0.0.1:8188" -ForegroundColor Green
+Write-Host "Preview canvas: 704x1280" -ForegroundColor Green
 Write-Host "Local configuration: $envPath"
 Write-Host "No generation, approval, upload, or publication was performed."
