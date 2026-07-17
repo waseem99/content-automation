@@ -15,6 +15,7 @@ on:
       - "tests/unit/test_p68_keyframe_generator.py"
       - "tests/unit/test_p68_worker_configuration.py"
       - "tests/unit/test_p68_local_preview_scripts.py"
+      - "tests/unit/test_p68_keyframe_cli.py"
   pull_request:
     branches:
       - test
@@ -28,6 +29,7 @@ on:
       - "tests/unit/test_p68_keyframe_generator.py"
       - "tests/unit/test_p68_worker_configuration.py"
       - "tests/unit/test_p68_local_preview_scripts.py"
+      - "tests/unit/test_p68_keyframe_cli.py"
 
 permissions:
   contents: read
@@ -56,7 +58,8 @@ jobs:
             tests/unit/test_p68_keyframe_generator.py \
             tests/unit/test_p68_keyframe_provider.py \
             tests/unit/test_p68_worker_configuration.py \
-            tests/unit/test_p68_local_preview_scripts.py
+            tests/unit/test_p68_local_preview_scripts.py \
+            tests/unit/test_p68_keyframe_cli.py
 
       - name: Verify one-shot low-VRAM plan
         run: |
