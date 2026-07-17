@@ -29,7 +29,7 @@ jobs:
       VOICE_PROVIDER: kokoro
       KOKORO_VOICE: af_heart
       KOKORO_SPEED: "1.08"
-      HIGH_VOLUME_REVISION: "2"
+      HIGH_VOLUME_REVISION: "3"
 
     steps:
       - name: Check out current review branch
@@ -71,19 +71,27 @@ jobs:
           }
           if (-not $ready.ok) { docker compose --env-file deploy/portfolio-staging/.env.local -f deploy/portfolio-staging/compose.yaml logs; throw "API readiness timed out." }
 
-      - name: Seed and synchronize the full Rawr month
+      - name: Seed and synchronize all four brand months
         run: |
-          python scripts/p81_build_high_volume_calendar.py
-          python scripts/p71_bootstrap_portfolio.py --config .local-production/rawr-high-volume-bootstrap.json
-          python scripts/p80_sync_month_workspace.py --studio web/static-creator-ui/data/rawr-nation-high-volume.json
+          python scripts/p82_build_portfolio_calendar.py
+          python scripts/p71_bootstrap_portfolio.py --config .local-production/portfolio-high-volume-bootstrap.json
+          $studios = @("rawr-nation", "animal-x", "historiq", "ani-films")
+          foreach ($brand in $studios) {
+            python scripts/p80_sync_month_workspace.py --studio "web/static-creator-ui/data/$brand-high-volume.json"
+            if ($LASTEXITCODE -ne 0) { throw "Workspace synchronization failed: $brand" }
+          }
 
-      - name: Generate six narration previews locally
+      - name: Generate six narration previews per brand locally
         run: |
           python -c "import kokoro"
           if ($LASTEXITCODE -ne 0) { python -m pip install --disable-pip-version-check -r video-engine/voice-requirements.txt }
-          python scripts/p80_prepare_voice_batch.py prepare --studio web/static-creator-ui/data/rawr-nation-high-volume.json --limit 6
+          $studios = @("rawr-nation", "animal-x", "historiq", "ani-films")
+          foreach ($brand in $studios) {
+            python scripts/p80_prepare_voice_batch.py prepare --studio "web/static-creator-ui/data/$brand-high-volume.json" --limit 6
+            if ($LASTEXITCODE -ne 0) { throw "Narration preparation failed: $brand" }
+          }
           $projects = Get-ChildItem ".local-production\rawr-month-projects\*.json" | Sort-Object Name
-          if ($projects.Count -ne 6) { throw "Expected six narration projects." }
+          if ($projects.Count -ne 24) { throw "Expected 24 narration projects; found $($projects.Count)." }
           foreach ($project in $projects) {
             Push-Location video-engine
             node scripts/generate-voice.mjs $project.FullName
@@ -91,18 +99,23 @@ jobs:
             Pop-Location
           }
 
-      - name: Register playable narration in PostgreSQL
+      - name: Register all playable narration in PostgreSQL
         run: |
-          python scripts/p80_sync_voice_artifacts.py --studio web/static-creator-ui/data/rawr-nation-high-volume.json --media-root "$env:PORTFOLIO_MEDIA_ROOT" --limit 6
+          $studios = @("rawr-nation", "animal-x", "historiq", "ani-films")
+          foreach ($brand in $studios) {
+            python scripts/p80_sync_voice_artifacts.py --studio "web/static-creator-ui/data/$brand-high-volume.json" --media-root "$env:PORTFOLIO_MEDIA_ROOT" --limit 6
+            if ($LASTEXITCODE -ne 0) { throw "Narration registration failed: $brand" }
+          }
           $queue = Invoke-RestMethod -Headers @{"X-Operator-Key"=$env:OPERATOR_KEY} -Uri "$env:OPERATOR_API_URL/portfolio/queue"
-          $voiceCount = @($queue.items | Where-Object {$_.brand_slug -eq "rawr-nation" -and $_.has_voiceover_artifact}).Count
-          if ($voiceCount -lt 6) { throw "Expected at least six registered narration artifacts; found $voiceCount." }
+          $activeBrands = @("rawr-nation", "animal-x", "historiq", "ani-films")
+          $voiceCount = @($queue.items | Where-Object {$activeBrands -contains $_.brand_slug -and $_.has_voiceover_artifact}).Count
+          if ($voiceCount -lt 24) { throw "Expected at least 24 registered narration artifacts; found $voiceCount." }
           @"
           ## Local review stack ready
 
           - PostgreSQL: connected
           - Operator API: http://127.0.0.1:8000
-          - Rawr Nation month packages: 120 (4/day)
+          - Active brand month packages: 480 (120 each, 4/day)
           - Playable narration artifacts: $voiceCount
           - UI: http://127.0.0.1:8080
           "@ | Add-Content $env:GITHUB_STEP_SUMMARY
@@ -110,11 +123,12 @@ jobs:
       - name: Record sanitized readiness marker
         run: |
           $queue = Invoke-RestMethod -Headers @{"X-Operator-Key"=$env:OPERATOR_KEY} -Uri "$env:OPERATOR_API_URL/portfolio/queue"
-          $voiceCount = @($queue.items | Where-Object {$_.brand_slug -eq "rawr-nation" -and $_.has_voiceover_artifact}).Count
+          $activeBrands = @("rawr-nation", "animal-x", "historiq", "ani-films")
+          $voiceCount = @($queue.items | Where-Object {$activeBrands -contains $_.brand_slug -and $_.has_voiceover_artifact}).Count
           $target = "web/static-creator-ui/data/local-review-stack-status.json"
-          @{schema_version="p81.local_review_status.v1"; ready=$true; database="postgresql"; operator_api="loopback"; rawr_packages=120; daily_baseline=4; narration_artifacts=$voiceCount; verified_at=(Get-Date).ToUniversalTime().ToString("o")} | ConvertTo-Json | Set-Content $target
+          @{schema_version="p82.local_review_status.v1"; ready=$true; database="postgresql"; operator_api="loopback"; active_brands=4; portfolio_packages=480; packages_per_brand=120; daily_per_brand=4; narration_artifacts=$voiceCount; verified_at=(Get-Date).ToUniversalTime().ToString("o")} | ConvertTo-Json | Set-Content $target
           git config user.name "content-automation-runner"
           git config user.email "actions@users.noreply.github.com"
-          git add $target web/static-creator-ui/data/rawr-nation-high-volume.json
-          git commit -m "Build 120-item Rawr Nation review calendar"
+          git add $target web/static-creator-ui/data/portfolio-high-volume.json web/static-creator-ui/data/rawr-nation-high-volume.json web/static-creator-ui/data/animal-x-high-volume.json web/static-creator-ui/data/historiq-high-volume.json web/static-creator-ui/data/ani-films-high-volume.json
+          git commit -m "Build four 120-item brand review calendars"
           if ($LASTEXITCODE -eq 0) { git push origin HEAD:local-next-720 }
