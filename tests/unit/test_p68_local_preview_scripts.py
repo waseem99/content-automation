@@ -30,3 +30,17 @@ def test_local_worker_is_loopback_only_and_does_not_include_wan_models() -> None
     assert "P68_KEYFRAME_CHECKPOINT" in entrypoint
     assert "wan2.2" not in compose.lower()
     assert "wan2.2" not in entrypoint.lower()
+
+
+def test_local_worker_pins_and_verifies_pascal_compatible_torch() -> None:
+    dockerfile = (ROOT / "deploy/p68-local-keyframe-worker/Dockerfile").read_text(encoding="utf-8")
+    entrypoint = (ROOT / "deploy/p68-local-keyframe-worker/entrypoint.sh").read_text(encoding="utf-8")
+
+    assert "torch==${P68_TORCH_VERSION}" in dockerfile
+    assert "P68_TORCH_VERSION=2.6.0" in dockerfile
+    assert "P68_TORCHVISION_VERSION=0.21.0" in dockerfile
+    assert "P68_TORCHAUDIO_VERSION=2.6.0" in dockerfile
+    assert '"sm_61" in torch.cuda.get_arch_list()' in dockerfile
+    assert "torch.cuda.is_available()" in entrypoint
+    assert "torch.cuda.get_device_capability(0)" in entrypoint
+    assert "required_arch not in compiled_arches" in entrypoint
