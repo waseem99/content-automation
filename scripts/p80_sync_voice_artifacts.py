@@ -48,7 +48,8 @@ def main() -> int:
 
     studio = json.loads(args.studio.read_text(encoding="utf-8"))
     queue = api(args.api, args.key, "GET", "/portfolio/queue")["items"]
-    by_title = {item["title"]: item for item in queue if item.get("brand_slug") == "rawr-nation"}
+    brand_slug = studio["brand"]["slug"]
+    by_title = {item["title"]: item for item in queue if item.get("brand_slug") == brand_slug}
     registered, skipped, missing = [], [], []
 
     for package in studio["items"][: args.limit]:
@@ -57,7 +58,7 @@ def main() -> int:
         if not target or not source.is_file() or source.stat().st_size < 1024:
             missing.append(package["title"])
             continue
-        relative = Path("rawr-nation") / str(target["id"]) / "voice" / source.name
+        relative = Path(brand_slug) / str(target["id"]) / "voice" / source.name
         destination = args.media_root / relative
         destination.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(source, destination)
@@ -79,7 +80,7 @@ def main() -> int:
                 "mime_type": "audio/wav",
                 "sha256": digest,
                 "size_bytes": destination.stat().st_size,
-                "metadata": {"provider": "kokoro_local", "review_required": True, "source": "p80_batch_one"},
+                "metadata": {"provider": "kokoro_local", "review_required": True, "source": "p82_portfolio_batch_one", "brand_slug": brand_slug},
             },
         )
         registered.append(str(result["artifact"]["id"]))
