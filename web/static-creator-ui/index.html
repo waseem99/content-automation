@@ -5,7 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Content Engine Studio</title>
   <meta name="description" content="Interactive architecture map and static creator studio for the content automation engine.">
-  <meta name="content-api-base" content="">
+  <meta name="content-api-base" content="http://127.0.0.1:8000">
+  <meta name="content-operator-key" content="local-review-key">
   <meta name="content-plan-month" content="2026-08-01">
   <link rel="stylesheet" href="assets/styles.css">
 </head>
@@ -386,7 +387,7 @@ Do not use celebrity likeness, copied music, third-party clips, or brand logos.<
         <ul>
           <li>Deployed Vercel interface is static and browser-only.</li>
           <li>Full P40–P61 processing is implemented as local Python modules and runners.</li>
-          <li>No database, automatic publishing, final approval, or external AI call is active in this static deployment.</li>
+          <li>Local PostgreSQL and the operator API persist review decisions and local media; automatic publishing and final approval remain disabled.</li>
           <li>Browser output is a first-pass planning pack, not a final video and not a monetization guarantee.</li>
           <li>Human review remains required before production.</li>
         </ul>
