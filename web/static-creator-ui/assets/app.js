@@ -14,7 +14,7 @@
   const $ = (id) => document.getElementById(id);
 
   const demoPortfolioBrands = [
-    { id: "rawr-nation", name: "Rawr Nation", niche: "Wildlife facts", kind: "video", cadence: "5 shorts + 1 feature weekly", monthlyTarget: 24, primary: "Facebook", pillars: ["Animal senses", "Survival mechanisms", "Myth vs fact", "Behaviour reveals"] },
+    { id: "rawr-nation", name: "Rawr Nation", niche: "Wildlife facts", kind: "video", cadence: "4 original videos daily; capacity 8 after analytics approval", monthlyTarget: 120, primary: "Facebook", pillars: ["Animal senses", "Survival mechanisms", "Myth vs fact", "Behaviour reveals"] },
     { id: "animal-x", name: "Animal X", niche: "Animal behaviour", kind: "video", cadence: "5 shorts + 1 feature weekly", monthlyTarget: 24, primary: "Facebook", pillars: ["Hidden signals", "Social intelligence", "Anatomy in action", "Field discoveries"] },
     { id: "historiq", name: "Historiq", niche: "AI-assisted history, philosophy, and ideas", kind: "video", cadence: "5 shorts + 1 feature weekly", monthlyTarget: 24, primary: "Facebook", pillars: ["Hidden history", "Ideas that changed society", "Historical turning points", "Myth versus record"] },
     { id: "ani-films", name: "Ani Films", niche: "Simple animation for complex ideas", kind: "video", cadence: "5 shorts + 1 feature weekly", monthlyTarget: 24, primary: "Facebook", pillars: ["Visual explainers", "How systems work", "Everyday science", "Big ideas made simple"] },
@@ -37,9 +37,8 @@
   let portfolioReferences = [];
   let activeContentReview = null;
   let reviewMediaUrls = [];
-  let monthStudioItems = new Map();
 
-  const stageLabels = { idea: "Idea review", script: "Script review", preview_build: "Preview build", preview: "Preview review", premium: "Premium render", package: "Package review", ready: "Ready", published: "Published record", blocked: "Blocked", archived: "Archived" };
+  const stageLabels = { idea: "Idea review", script: "Script review", preview: "Preview review", premium: "Premium render", package: "Package review", ready: "Ready", published: "Published record", blocked: "Blocked", archived: "Archived" };
 
   function renderPortfolio() {
     const brands = state.brandFilter === "all" ? portfolioBrands : portfolioBrands.filter((brand) => brand.id === state.brandFilter);
@@ -58,12 +57,12 @@
 
     const selected = brands[0];
     $("brand-summary").innerHTML = state.brandFilter === "all"
-      ? `<p class="eyebrow dark-eyebrow">Portfolio policy</p><h3>Facebook-first, platform-native delivery</h3><p>Create one strong original master, then export deliberately for Facebook, YouTube Shorts and TikTok. Do not publish identical metadata or visible watermarks across platforms.</p><dl><div><dt>Video brands</dt><dd>24 masters / month each</dd></div><div><dt>News brand</dt><dd>60 timely visual posts / month</dd></div><div><dt>Quality gate</dt><dd>Human approval before paid render and publishing</dd></div></dl>`
-      : `<p class="eyebrow dark-eyebrow">Selected brand</p><h3>${escapeHtml(selected.name)}</h3><p>${escapeHtml(selected.niche)}</p><dl><div><dt>Primary platform</dt><dd>${selected.primary}</dd></div><div><dt>Cadence</dt><dd>${escapeHtml(selected.cadence)}</dd></div><div><dt>Monthly target</dt><dd>${selected.monthlyTarget} original masters</dd></div>${selected.conceptCount !== undefined ? `<div><dt>Concept inventory</dt><dd>${selected.conceptCount}/${selected.monthlyTarget}</dd></div>` : ""}</dl>${selected.blocker ? `<p class="review-error"><strong>Blocked:</strong> ${escapeHtml(selected.blocker.replaceAll("_", " "))}</p>` : ""}<h4>Content pillars</h4><ul>${selected.pillars.map((pillar) => `<li>${escapeHtml(pillar)}</li>`).join("")}</ul>`;
+      ? `<p class="eyebrow dark-eyebrow">Portfolio policy</p><h3>Facebook-first, platform-native delivery</h3><p>Rawr Nation launches at four original masters daily, with deliberate Facebook, YouTube Shorts and TikTok packages. Capacity can rise to eight only after retention and revenue evidence supports it.</p><dl><div><dt>Rawr Nation</dt><dd>120 masters / 30 days</dd></div><div><dt>Daily mix</dt><dd>1 premium hero · 2 hybrid · 1 efficient</dd></div><div><dt>Quality gate</dt><dd>Human approval before paid render and publishing</dd></div></dl>`
+      : `<p class="eyebrow dark-eyebrow">Selected brand</p><h3>${escapeHtml(selected.name)}</h3><p>${escapeHtml(selected.niche)}</p><dl><div><dt>Primary platform</dt><dd>${selected.primary}</dd></div><div><dt>Cadence</dt><dd>${escapeHtml(selected.cadence)}</dd></div><div><dt>Monthly target</dt><dd>${selected.monthlyTarget} original masters</dd></div></dl><h4>Content pillars</h4><ul>${selected.pillars.map((pillar) => `<li>${escapeHtml(pillar)}</li>`).join("")}</ul>`;
 
     $("content-queue").innerHTML = items.length ? items.map((item) => {
       const brand = portfolioBrands.find((candidate) => candidate.id === item.brand);
-      const next = { idea: "Review idea", script: "Review script", preview_build: "Build preview", preview: "Watch preview", premium: "Inspect render", package: "Review package", ready: "Open package" }[item.stage];
+      const next = { idea: "Review idea", script: "Review script", preview: "Watch preview", premium: "Inspect render", package: "Review package", ready: "Open package" }[item.stage];
       return `<tr><td>${item.date}</td><td><strong>${escapeHtml(brand.name)}</strong><span>${escapeHtml(item.title)}</span></td><td>${escapeHtml(item.format)}</td><td><span class="stage-pill ${item.stage}">${stageLabels[item.stage]}</span></td><td>${item.assets.map((asset) => `<span class="asset-chip">${escapeHtml(asset)}</span>`).join("")}</td><td><button class="table-action" type="button" data-item-id="${escapeHtml(item.id || "")}" data-item-title="${escapeHtml(item.title)}">${next || "Review"}</button></td></tr>`;
     }).join("") : '<tr><td colspan="6" class="empty-row">No content matches these filters.</td></tr>';
   }
@@ -74,14 +73,6 @@
     const artifacts = portfolioReferences.reduce((total, item) => total + Number(item.artifact_count || 0), 0);
     $("reference-metrics").innerHTML = [[portfolioReferences.length, "references"], [ready, "ready for review"], [artifacts, "review artifacts"], [failed, "need attention"]].map(([value, label]) => `<article><strong>${value}</strong><span>${label}</span></article>`).join("");
     $("reference-queue").innerHTML = portfolioReferences.length ? portfolioReferences.map((item) => `<tr><td><strong>${escapeHtml(item.title)}</strong><span>${escapeHtml(item.local_reference_id)}</span></td><td>${escapeHtml(item.platform)}</td><td><span class="stage-pill ${item.status === "ready_for_review" ? "ready" : item.status === "processing" ? "preview" : "idea"}">${escapeHtml(item.status.replaceAll("_", " "))}</span></td><td>${Number(item.progress_percent || 0)}%</td><td>${Number(item.artifact_count || 0)} artifacts · ${Number(item.approved_gate_count || 0)}/3 gates · ${Number(item.idea_link_count || 0)} ideas</td><td><button class="table-action reference-review" type="button" data-reference-id="${item.id}">Review</button></td></tr>`).join("") : '<tr><td colspan="6" class="empty-row">No database-backed references match these filters. Source media remains local.</td></tr>';
-  }
-
-  function renderStaticReferenceDetail(item) {
-    const reference = item.staticEvidence;
-    const fingerprint = reference.creative_fingerprint || {};
-    const analysis = reference.analysis || {};
-    const transcript = reference.transcript || "No transcript available.";
-    $("reference-detail").innerHTML = `<p class="eyebrow dark-eyebrow">Verified local evidence</p><h4>${escapeHtml(item.title)}</h4><p><a href="${escapeHtml(reference.source_url)}" target="_blank" rel="noreferrer">Open public source</a> · ${Number(reference.duration_seconds || 0).toFixed(1)}s · ${Number(reference.decoded_frame_count || 0)} decoded frames</p><dl><div><dt>Scenes</dt><dd>${Number(reference.scene_count || 0)}</dd></div><div><dt>Transcript segments</dt><dd>${Number(reference.transcript_segment_count || 0)}</dd></div><div><dt>Use</dt><dd>Mechanics only; never source wording, assets, or shot sequence</dd></div></dl><details><summary>Creative fingerprint</summary><pre>${escapeHtml(JSON.stringify(fingerprint, null, 2))}</pre></details><details><summary>Measured analysis</summary><pre>${escapeHtml(JSON.stringify(analysis, null, 2))}</pre></details><details><summary>Transcript</summary><p>${escapeHtml(transcript)}</p></details><small>Source media, cookies, and the browser profile remain on the operator-controlled PC.</small>`;
   }
 
   function renderReferenceDetail(payload) {
@@ -179,34 +170,6 @@
     return value ? JSON.parse(value) : null;
   }
 
-  function openStaticContentReview(item) {
-    const dialog = $("content-review");
-    const pkg = item.studioPackage;
-    const decisions = JSON.parse(localStorage.getItem("rawr-month-review-decisions") || "{}");
-    const saved = decisions[item.id] || { decision: "pending", rationale: "" };
-    const scenes = pkg.scene_plan.map((scene) => `<article class="artifact-card"><strong>${scene.start_seconds}–${scene.end_seconds}s · ${escapeHtml(scene.purpose)}</strong><p>${escapeHtml(scene.narration)}</p><small>${escapeHtml(scene.visual_direction)} · Preview: ${escapeHtml(scene.preview_route)} · Final: ${escapeHtml(scene.final_route)}</small></article>`).join("");
-    const platforms = pkg.platform_packages.map((entry) => `<article class="artifact-card"><strong>${escapeHtml(entry.platform.replaceAll("_", " "))}</strong><p>${escapeHtml(entry.title)}</p><p>${escapeHtml(entry.caption)}</p><small>#${entry.hashtags.map(escapeHtml).join(" #")} · ${escapeHtml(entry.cta)}</small></article>`).join("");
-    const sources = (pkg.script.sources || []).map((source) => `<li><a href="${escapeHtml(source.url)}" target="_blank" rel="noreferrer">${escapeHtml(source.title)}</a><span>${escapeHtml(source.supports)}</span></li>`).join("");
-    const factReady = pkg.script.fact_status === "source_ready_pending_human";
-    $("content-review-body").innerHTML = `
-      <div class="review-header"><div><p class="eyebrow dark-eyebrow">Rawr Nation · Batch ${pkg.batch}</p><h2>${escapeHtml(pkg.title)}</h2><p>${escapeHtml(pkg.concept)}</p></div><span class="stage-pill script">Script review</span></div>
-      <div class="review-grid">
-        <section><h3>Narration</h3><p class="review-script-copy">${escapeHtml(pkg.script.narration)}</p><dl><div><dt>Duration</dt><dd>${pkg.duration_seconds}s</dd></div><div><dt>Words</dt><dd>${pkg.script.word_count}</dd></div><div><dt>Pillar</dt><dd>${escapeHtml(pkg.pillar)}</dd></div><div><dt>Fact gate</dt><dd>${escapeHtml((pkg.script.fact_status || "research_pending").replaceAll("_", " "))}</dd></div><div><dt>Preview</dt><dd>${escapeHtml(pkg.production.free_preview.replaceAll("_", " "))}</dd></div></dl><h3>Research sources</h3>${sources ? `<ul class="review-history">${sources}</ul>` : `<p class="review-error">Research sources must be attached before script approval.</p>`}<h3>Scene plan</h3><div class="artifact-grid">${scenes}</div></section>
-        <section><h3>Thumbnail</h3><article class="artifact-card"><strong>${escapeHtml(pkg.thumbnail.primary_text)}</strong><p>${escapeHtml(pkg.thumbnail.composition)}</p><small>Alternates: ${pkg.thumbnail.alternates.map(escapeHtml).join(" · ")}</small></article><h3>Platform packages</h3><div class="artifact-grid">${platforms}</div><h3>Voice direction</h3><p>${escapeHtml(pkg.voice.style)} · ${escapeHtml(pkg.voice.pace)} · development: ${escapeHtml(pkg.voice.development_provider)}</p>${pkg.voice.preview_url ? `<audio controls preload="metadata" src="${escapeHtml(pkg.voice.preview_url)}"></audio><small>Local Kokoro narration preview · human performance review required</small>` : `<p class="review-loading">Narration preview is queued for local generation.</p>`}</section>
-      </div>
-      <section class="review-decision"><div><h3>Human decision</h3><p>Current local decision: <strong id="static-review-state">${escapeHtml(saved.decision.replaceAll("_", " "))}</strong>. Paid rendering and publishing remain blocked.</p></div><label>Rationale<textarea id="static-review-rationale" rows="3" placeholder="What should stay or change?">${escapeHtml(saved.rationale)}</textarea></label><div class="decision-actions"><button type="button" data-static-decision="approved" ${factReady ? "" : "disabled"}>Approve script</button><button type="button" class="secondary" data-static-decision="changes_requested">Request changes</button><button type="button" class="danger" data-static-decision="rejected">Reject</button><button type="button" class="secondary" id="download-static-package">Download package</button></div><span id="static-review-status" class="review-status"></span></section>`;
-    dialog.showModal();
-    $("download-static-package").addEventListener("click", () => download(`${item.id}-production-package.json`, JSON.stringify(pkg, null, 2), "application/json"));
-    $("content-review-body").querySelectorAll("[data-static-decision]").forEach((button) => button.addEventListener("click", () => {
-      const rationale = $("static-review-rationale").value.trim();
-      if (rationale.length < 10) { $("static-review-status").textContent = "Add a specific rationale of at least 10 characters."; return; }
-      decisions[item.id] = { decision: button.dataset.staticDecision, rationale, reviewed_at: new Date().toISOString(), content_fingerprint: pkg.content_fingerprint };
-      localStorage.setItem("rawr-month-review-decisions", JSON.stringify(decisions));
-      $("static-review-state").textContent = button.dataset.staticDecision.replaceAll("_", " ");
-      $("static-review-status").textContent = "Decision saved in this browser. Database sync will preserve it when connected.";
-    }));
-  }
-
   async function openContentReview(contentId) {
     const dialog = $("content-review");
     $("content-review-body").innerHTML = '<p class="review-loading">Loading content workspace…</p>';
@@ -243,8 +206,7 @@
       renderReferenceQueue();
       return true;
     } catch (error) {
-      window.PortfolioApi?.disconnect();
-      updateDataMode(`Local database unavailable: ${error.message}`, false);
+      updateDataMode(`Connection error: ${error.message}`, false);
       return false;
     }
   }
@@ -261,50 +223,6 @@
     renderReferenceQueue();
   }
 
-  async function loadMonthFactory() {
-    try {
-      const [response, studioResponse, referenceResponse] = await Promise.all([
-        fetch("data/month-factory.json", { cache: "no-store" }),
-        fetch("data/rawr-nation-month-studio.json", { cache: "no-store" }),
-        fetch("data/rawr-nation-reference-evidence.json", { cache: "no-store" }).catch(() => null)
-      ]);
-      if (!response.ok) throw new Error("month factory unavailable");
-      if (!studioResponse.ok) throw new Error("Rawr Nation month studio unavailable");
-      const factory = await response.json();
-      const studio = await studioResponse.json();
-      monthStudioItems = new Map(studio.items.map((item) => [item.id, item]));
-      portfolioBrands = factory.brands;
-      portfolioItems = factory.items.map((item) => ({ ...item, studioPackage: monthStudioItems.get(item.id) || null }));
-      if (referenceResponse?.ok) {
-        const evidence = await referenceResponse.json();
-        portfolioReferences = evidence.references.map((reference) => ({
-          id: reference.id,
-          title: `Rawr Nation reference ${reference.index}`,
-          local_reference_id: reference.id,
-          platform: "facebook",
-          status: reference.status === "analyzed" ? "ready_for_review" : reference.status,
-          progress_percent: reference.status === "analyzed" ? 100 : 0,
-          artifact_count: [reference.analysis, reference.creative_fingerprint, reference.transcript].filter(Boolean).length,
-          approved_gate_count: 0,
-          idea_link_count: 24,
-          staticEvidence: reference
-        }));
-      }
-      portfolioReadiness = {
-        brand_count: factory.priority_brand_count,
-        planned_count: factory.summary.concepts_ready,
-        target_count: factory.summary.monthly_target,
-        ready_brand_count: factory.summary.brands_with_complete_inventory
-      };
-      state.brandFilter = "all";
-      $("brand-filter").innerHTML = '<option value="all">All brands</option>' + portfolioBrands.map((brand) => `<option value="${brand.id}">${escapeHtml(brand.name)}</option>`).join("");
-      updateDataMode(`${studio.summary.scripts_ready} Rawr Nation scripts ready · ${studio.summary.batch_one_preview_queue} previews queued`, false);
-      renderPortfolio();
-    } catch (_error) {
-      restoreDemoPortfolio();
-    }
-  }
-
   function bindPortfolioControls() {
     $("brand-filter").innerHTML = '<option value="all">All brands</option>' + portfolioBrands.map((brand) => `<option value="${brand.id}">${escapeHtml(brand.name)}</option>`).join("");
     $("brand-filter").addEventListener("change", (event) => { state.brandFilter = event.target.value; renderPortfolio(); });
@@ -313,7 +231,7 @@
     $("connect-api").addEventListener("click", async () => {
       if (window.PortfolioApi?.configured()) {
         window.PortfolioApi.disconnect();
-        loadMonthFactory();
+        restoreDemoPortfolio();
         return;
       }
       const base = prompt("Operator API URL (HTTPS in staging/production):", "http://127.0.0.1:8000");
@@ -330,12 +248,8 @@
     $("content-queue").addEventListener("click", async (event) => {
       if (!event.target.matches(".table-action")) return;
       const item = portfolioItems.find((candidate) => candidate.id === event.target.dataset.itemId);
-      if (item?.studioPackage && !window.PortfolioApi?.configured()) {
-        openStaticContentReview(item);
-        return;
-      }
       if (!item?.id || !window.PortfolioApi?.configured()) {
-        alert(`${event.target.dataset.itemTitle}\n\nThis brand still needs a generated review package or a connected operator API.`);
+        alert(`${event.target.dataset.itemTitle}\n\nConnect the operator API to open the database-backed review workspace.`);
         return;
       }
       await openContentReview(item.id);
@@ -370,11 +284,6 @@
     }));
     $("reference-queue").addEventListener("click", async (event) => {
       if (!event.target.matches(".reference-review")) return;
-      const local = portfolioReferences.find((item) => item.id === event.target.dataset.referenceId);
-      if (local?.staticEvidence && !window.PortfolioApi?.configured()) {
-        renderStaticReferenceDetail(local);
-        return;
-      }
       try { renderReferenceDetail(await window.PortfolioApi.reference(event.target.dataset.referenceId)); } catch (error) { alert(`Reference review failed: ${error.message}`); }
     });
     $("reference-detail").addEventListener("click", async (event) => {
@@ -1066,7 +975,6 @@
   }
 
   bindPortfolioControls();
-  loadMonthFactory().then(() => refreshPortfolioFromApi());
   bindEngineControls();
   renderEnginePipeline();
   bindStudioControls();
