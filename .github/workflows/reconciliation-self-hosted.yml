@@ -1,0 +1,137 @@
+name: Reconciliation Self-Hosted Validation
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - local-next-720
+    paths:
+      - ".github/workflows/reconciliation-self-hosted.yml"
+      - "src/**"
+      - "scripts/**"
+      - "reference-engine/**"
+      - "tests/**"
+      - "web/static-creator-ui/**"
+      - "package.json"
+  pull_request:
+    branches:
+      - test
+
+permissions:
+  contents: read
+
+concurrency:
+  group: reconciliation-self-hosted-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Validate on Waseem Windows runner
+    runs-on: [self-hosted, Windows, X64, facebook-media]
+    timeout-minutes: 60
+    defaults:
+      run:
+        shell: powershell
+
+    steps:
+      - name: Check out proposed production branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Verify local toolchain
+        run: |
+          python --version
+          node --version
+          npm --version
+          git --version
+
+      - name: Confirm sensitive local files are not tracked
+        run: |
+          $tracked = git ls-files
+          $blocked = $tracked | Where-Object {
+            $_ -match '(^|/)\.env\.local$' -or
+            $_ -match 'facebook-browser' -or
+            $_ -match 'content-automation-data' -or
+            $_ -match '\.(cookie|cookies)$'
+          }
+          if ($blocked) {
+            $blocked | ForEach-Object { Write-Error "Sensitive path is tracked: $_" }
+            throw "Sensitive local files must not be committed."
+          }
+          Write-Host "No blocked local credential or browser-profile paths are tracked."
+
+      - name: Build static Creator Studio
+        run: npm run build
+
+      - name: Check JavaScript syntax
+        run: |
+          $targets = @()
+          if (Test-Path scripts) {
+            $targets += Get-ChildItem scripts -Recurse -File | Where-Object { $_.Extension -in @('.js', '.mjs') }
+          }
+          if (Test-Path web\static-creator-ui\assets) {
+            $targets += Get-ChildItem web\static-creator-ui\assets -Recurse -File | Where-Object { $_.Extension -in @('.js', '.mjs') }
+          }
+          foreach ($target in $targets) {
+            node --check $target.FullName
+            if ($LASTEXITCODE -ne 0) { throw "JavaScript syntax failed: $($target.FullName)" }
+          }
+          Write-Host "JavaScript syntax passed for $($targets.Count) files."
+
+      - name: Compile current Python implementation
+        run: |
+          python -m compileall -q src scripts reference-engine\refintel
+          if ($LASTEXITCODE -ne 0) { throw "Python compilation failed." }
+
+      - name: Run portfolio and production contract tests
+        run: |
+          python -m pytest -q `
+            tests\unit\test_p68_batch_preflight.py `
+            tests\unit\test_p68_candidate_selection.py `
+            tests\unit\test_p68_clip_generator.py `
+            tests\unit\test_p68_clip_stitcher.py `
+            tests\unit\test_p68_generation_governance.py `
+            tests\unit\test_p68_hybrid_review.py `
+            tests\unit\test_p68_job_state.py `
+            tests\unit\test_p68_keyframe_batch.py `
+            tests\unit\test_p68_keyframe_generator.py `
+            tests\unit\test_p68_keyframe_provider.py `
+            tests\unit\test_p68_motion_batch.py `
+            tests\unit\test_p68_pilot_batch.py `
+            tests\unit\test_p68_production_pipeline.py `
+            tests\unit\test_p68_rn_worker_package.py `
+            tests\unit\test_p68_scientific_animation.py `
+            tests\unit\test_p68_video_provider.py `
+            tests\unit\test_p78_kokoro_narration.py `
+            tests\unit\test_p79_month_factory.py `
+            tests\unit\test_p81_high_volume_calendar.py `
+            tests\unit\test_p82_portfolio_calendar.py `
+            tests\integration\test_p69_portfolio_content_engine.py `
+            tests\integration\test_p71_portfolio_staging.py `
+            tests\integration\test_p72_month_inventory.py `
+            tests\integration\test_p74_facebook_reference_pipeline.py `
+            tests\integration\test_p75_cross_platform_reference_intelligence.py `
+            tests\integration\test_p75_portfolio_reference_ui.py `
+            tests\integration\test_p76_portfolio_generation_bridge.py `
+            tests\integration\test_p76_portfolio_review_workspace.py `
+            tests\integration\test_p77_gecko_visual_review.py `
+            tests\integration\test_p79_four_brand_month_factory.py `
+            tests\integration\test_p80_brand_month_studio.py
+          if ($LASTEXITCODE -ne 0) { throw "Focused reconciliation tests failed." }
+
+      - name: Record local validation result
+        run: |
+          @"
+          ## Self-hosted reconciliation validation
+
+          - Runner: Windows self-hosted (`facebook-media`)
+          - Static build: passed
+          - JavaScript syntax: passed
+          - Python compilation: passed
+          - Focused P68-P82 tests: passed
+          - Sensitive local-path check: passed
+          - GitHub-hosted compute: not used
+          - Build artifacts uploaded to GitHub: none
+          "@ | Add-Content $env:GITHUB_STEP_SUMMARY
