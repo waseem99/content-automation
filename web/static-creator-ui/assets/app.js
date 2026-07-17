@@ -121,25 +121,27 @@
 
   async function loadStaticHighVolumeCalendar() {
     try {
-      const response = await fetch("data/rawr-nation-high-volume.json", { cache: "no-store" });
+      const response = await fetch("data/portfolio-high-volume.json", { cache: "no-store" });
       if (!response.ok) return false;
       const studio = await response.json();
-      const brand = demoPortfolioBrands.find((item) => item.id === "rawr-nation");
-      portfolioBrands = [{ ...brand, cadence: "4 original videos daily", monthlyTarget: studio.summary.masters }];
-      portfolioItems = studio.items.map((item) => ({
+      portfolioBrands = studio.brands.map((brandStudio) => {
+        const base = demoPortfolioBrands.find((item) => item.id === brandStudio.brand.slug);
+        return { ...base, name: brandStudio.brand.name, cadence: "4 original videos daily", monthlyTarget: brandStudio.summary.masters, pillars: brandStudio.brand.pillars };
+      });
+      portfolioItems = studio.brands.flatMap((brandStudio) => brandStudio.items.map((item) => ({
         id: item.id,
         date: `${item.scheduled_for} · ${item.scheduled_time_local || ""}`,
-        brand: "rawr-nation",
+        brand: brandStudio.brand.slug,
         title: item.title,
         format: `${item.format} · ${item.production_tier || "review"}`,
         stage: item.workflow_stage === "preview_queue" ? "preview" : "script",
         assets: ["script", `${(item.scene_plan || []).length} scenes`, "3 platform packages"],
         staticPackage: item
-      }));
-      portfolioReadiness = { brand_count: 1, planned_count: studio.summary.masters, target_count: studio.summary.masters, ready_brand_count: 1 };
+      })));
+      portfolioReadiness = { brand_count: studio.brand_count, planned_count: studio.summary.masters, target_count: studio.summary.masters, ready_brand_count: studio.brand_count };
       portfolioReferences = [];
       state.brandFilter = "all";
-      $("brand-filter").innerHTML = '<option value="all">All brands</option><option value="rawr-nation">Rawr Nation</option>';
+      $("brand-filter").innerHTML = '<option value="all">All brands</option>' + portfolioBrands.map((brand) => `<option value="${brand.id}">${escapeHtml(brand.name)}</option>`).join("");
       updateDataMode(`${studio.summary.masters} read-only review packages`, false);
       renderPortfolio();
       renderReferenceQueue();
@@ -153,7 +155,7 @@
     const pack = item.staticPackage;
     const sources = pack.script?.sources || [];
     $("content-review-body").innerHTML = `
-      <header class="review-header"><div><p class="eyebrow dark-eyebrow">Rawr Nation · ${escapeHtml(item.date)}</p><h2>${escapeHtml(pack.title)}</h2><p>${escapeHtml(pack.concept)}</p></div><span class="stage-pill script">Read-only share</span></header>
+      <header class="review-header"><div><p class="eyebrow dark-eyebrow">${escapeHtml(portfolioBrands.find((brand) => brand.id === item.brand)?.name || item.brand)} · ${escapeHtml(item.date)}</p><h2>${escapeHtml(pack.title)}</h2><p>${escapeHtml(pack.concept)}</p></div><span class="stage-pill script">Read-only share</span></header>
       <div class="review-grid">
         <section class="review-editor"><h3>Script</h3><p><strong>Hook:</strong> ${escapeHtml(pack.script?.hook)}</p><p>${escapeHtml(pack.script?.narration)}</p><p><strong>Payoff:</strong> ${escapeHtml(pack.script?.payoff)}</p><p><strong>Fact status:</strong> ${escapeHtml(pack.script?.fact_status)}</p></section>
         <section class="review-media"><h3>Production plan</h3><p>${escapeHtml(pack.daily_slot)} · ${escapeHtml(pack.production_tier)} · ${escapeHtml(pack.duration_seconds)} seconds</p><ol class="review-history">${(pack.scene_plan || []).map((scene) => `<li><strong>${escapeHtml(scene.start_seconds)}–${escapeHtml(scene.end_seconds)}s · ${escapeHtml(scene.purpose)}</strong><span>${escapeHtml(scene.visual_direction)}</span></li>`).join("")}</ol></section>
