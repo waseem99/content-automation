@@ -5,8 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Content Engine Studio</title>
   <meta name="description" content="Interactive architecture map and static creator studio for the content automation engine.">
-  <meta name="content-api-base" content="http://127.0.0.1:8000">
-  <meta name="content-operator-key" content="local-review-key">
+  <meta name="content-api-base" content="">
   <meta name="content-plan-month" content="2026-08-01">
   <link rel="stylesheet" href="assets/styles.css">
 </head>
@@ -49,7 +48,6 @@
           <option value="all">All stages</option>
           <option value="idea">Idea review</option>
           <option value="script">Script review</option>
-          <option value="preview_build">Preview build</option>
           <option value="preview">Preview review</option>
           <option value="premium">Premium render</option>
           <option value="package">Package review</option>
@@ -77,7 +75,7 @@
       </div>
 
       <dialog id="content-review" class="content-review">
-        <form method="dialog" class="review-close-row"><button aria-label="Close content review">Close</button></form>
+        <form method="dialog" class="review-close-row"><button class="review-close" aria-label="Close idea review" title="Close idea review"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button></form>
         <div id="content-review-body" aria-live="polite"></div>
       </dialog>
 
@@ -387,7 +385,7 @@ Do not use celebrity likeness, copied music, third-party clips, or brand logos.<
         <ul>
           <li>Deployed Vercel interface is static and browser-only.</li>
           <li>Full P40–P61 processing is implemented as local Python modules and runners.</li>
-          <li>Local PostgreSQL and the operator API persist review decisions and local media; automatic publishing and final approval remain disabled.</li>
+          <li>No database, automatic publishing, final approval, or external AI call is active in this static deployment.</li>
           <li>Browser output is a first-pass planning pack, not a final video and not a monetization guarantee.</li>
           <li>Human review remains required before production.</li>
         </ul>
