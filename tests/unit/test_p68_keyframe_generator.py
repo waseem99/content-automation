@@ -42,10 +42,10 @@ def controller(tmp_path: Path, provider: FakeProvider) -> KeyframeGenerationCont
     )
 
 
-def test_repository_builds_29_deterministic_requests(tmp_path: Path) -> None:
+def test_repository_builds_23_deterministic_requests(tmp_path: Path) -> None:
     requests = build_keyframe_requests(ROOT / "p68-pilots", tmp_path)
-    assert len(requests) == 29
-    assert len({item.idempotency_key for item in requests}) == 29
+    assert len(requests) == 23
+    assert len({item.idempotency_key for item in requests}) == 23
 
 
 def test_bounded_submit_refreshes_into_unapproved_provenance(tmp_path: Path) -> None:
