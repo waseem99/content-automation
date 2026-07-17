@@ -1,0 +1,10 @@
+{
+    "rawr_packages":  120,
+    "narration_artifacts":  6,
+    "ready":  true,
+    "schema_version":  "p81.local_review_status.v1",
+    "operator_api":  "loopback",
+    "database":  "postgresql",
+    "verified_at":  "2026-07-17T06:27:12.6373946Z",
+    "daily_baseline":  4
+}
