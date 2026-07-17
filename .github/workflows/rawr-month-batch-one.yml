@@ -1,0 +1,91 @@
+name: Rawr Nation month batch one narration
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - test
+    paths:
+      - .github/workflows/rawr-month-batch-one.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: rawr-month-local-production
+  cancel-in-progress: false
+
+jobs:
+  narration:
+    name: Generate six local narration previews
+    runs-on: [self-hosted, Windows, X64, facebook-media]
+    timeout-minutes: 60
+    defaults:
+      run:
+        shell: powershell
+    env:
+      PYTHONUNBUFFERED: "1"
+      BATCH_REVISION: "2"
+      VOICE_PROVIDER: kokoro
+      KOKORO_VOICE: af_heart
+      KOKORO_SPEED: "1.08"
+
+    steps:
+      - name: Check out the production branch
+        uses: actions/checkout@v4
+        with:
+          ref: local-next-720
+          persist-credentials: true
+
+      - name: Verify local production runtime
+        run: |
+          python --version
+          node --version
+          ffmpeg -version | Select-Object -First 1
+
+      - name: Ensure local Kokoro voice engine
+        run: |
+          python -c "import kokoro"
+          if ($LASTEXITCODE -ne 0) {
+            python -m pip install --disable-pip-version-check -r video-engine/voice-requirements.txt
+          }
+
+      - name: Prepare six approved-for-preview narration projects
+        run: |
+          python scripts/p80_prepare_voice_batch.py prepare --limit 6
+          $projects = Get-ChildItem ".local-production\rawr-month-projects\*.json"
+          if ($projects.Count -ne 6) { throw "Expected six narration projects." }
+          Write-Host "Prepared $($projects.Count) projects."
+
+      - name: Generate six Kokoro narration previews
+        run: |
+          New-Item -ItemType Directory -Force "web\static-creator-ui\media\rawr-nation\voice" | Out-Null
+          $projects = Get-ChildItem ".local-production\rawr-month-projects\*.json" | Sort-Object Name
+          foreach ($project in $projects) {
+            Write-Host "Generating narration: $($project.BaseName)"
+            Push-Location video-engine
+            node scripts/generate-voice.mjs $project.FullName
+            if ($LASTEXITCODE -ne 0) { throw "Narration generation failed: $($project.BaseName)" }
+            Pop-Location
+            $source = "video-engine\public\generated\$($project.BaseName)-kokoro.wav"
+            if (-not (Test-Path $source)) { throw "Narration file missing: $source" }
+            Copy-Item $source "web\static-creator-ui\media\rawr-nation\voice\"
+          }
+
+      - name: Attach previews to the month review data
+        run: |
+          python scripts/p80_prepare_voice_batch.py attach --limit 6
+          npm run build
+
+      - name: Publish only review audio and metadata
+        run: |
+          git config user.name "content-automation-runner"
+          git config user.email "actions@users.noreply.github.com"
+          git add web/static-creator-ui/data/rawr-nation-month-studio.json web/static-creator-ui/media/rawr-nation/voice
+          if (git diff --cached --quiet) {
+            Write-Host "Narration previews already current."
+            exit 0
+          }
+          git commit -m "Generate Rawr Nation batch one narration previews"
+          git push origin HEAD:local-next-720
+          Write-Host "Six narration previews are now available in the review UI."
