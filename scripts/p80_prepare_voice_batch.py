@@ -56,7 +56,12 @@ def attach(studio_path: Path, media_dir: Path, limit: int) -> int:
         name = f"{item['id']}-kokoro.wav"
         if not (media_dir / name).is_file():
             continue
-        item["voice"].update({"status": "ready_for_review", "preview_url": f"media/rawr-nation/voice/{name}", "review_required": True})
+        item["voice"].update({
+            "status": "ready_for_review",
+            "delivery": "operator_api_artifact",
+            "review_required": True,
+        })
+        item["voice"].pop("preview_url", None)
         item["review"]["voice"] = "ready_for_review"
         attached += 1
     studio["summary"]["voice_previews_ready"] = attached
