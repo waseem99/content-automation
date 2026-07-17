@@ -1,0 +1,129 @@
+name: P68 Local Preview Keyframes
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - p68-local-preview-keyframes
+    paths:
+      - ".github/workflows/p68-local-preview-keyframes.yml"
+      - "deploy/p68-local-keyframe-worker/**"
+      - "scripts/windows/*p68*keyframe*.ps1"
+      - "scripts/p68_generate_keyframes.py"
+      - "src/p68_keyframe_generator.py"
+      - "src/p68_worker_configuration.py"
+      - "tests/unit/test_p68_keyframe_generator.py"
+      - "tests/unit/test_p68_worker_configuration.py"
+  pull_request:
+    branches:
+      - test
+    paths:
+      - ".github/workflows/p68-local-preview-keyframes.yml"
+      - "deploy/p68-local-keyframe-worker/**"
+      - "scripts/windows/*p68*keyframe*.ps1"
+      - "scripts/p68_generate_keyframes.py"
+      - "src/p68_keyframe_generator.py"
+      - "src/p68_worker_configuration.py"
+      - "tests/unit/test_p68_keyframe_generator.py"
+      - "tests/unit/test_p68_worker_configuration.py"
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Validate bounded local preview workflow
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out local preview branch
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install focused dependencies
+        run: python -m pip install --disable-pip-version-check pillow httpx pytest
+
+      - name: Run focused contracts
+        run: |
+          python -m pytest -q \
+            tests/unit/test_p68_keyframe_generator.py \
+            tests/unit/test_p68_keyframe_provider.py \
+            tests/unit/test_p68_worker_configuration.py
+
+      - name: Verify one-shot low-VRAM plan
+        run: |
+          PYTHONPATH=. python scripts/p68_generate_keyframes.py plan \
+            --pilot animal-octopus-arms \
+            --shots S01 \
+            --width 704 \
+            --height 1280 \
+            --artifact-root /tmp/p68-local-preview \
+            > /tmp/p68-local-preview-plan.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          result = json.loads(Path("/tmp/p68-local-preview-plan.json").read_text())
+          assert result["request_count"] == 1, result
+          assert result["canvas"] == {"width": 704, "height": 1280, "orientation": "portrait"}, result
+          request = result["requests"][0]
+          assert request["pilot_id"] == "animal-octopus-arms", request
+          assert request["shot_id"] == "S01", request
+          assert result["provider_calls_made"] == 0
+          assert result["publish_allowed"] is False
+          PY
+
+      - name: Parse guarded PowerShell scripts
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          $files = @(
+            "scripts/windows/download_p68_sdxl_preview_model.ps1",
+            "scripts/windows/setup_p68_local_keyframe_worker.ps1",
+            "scripts/windows/run_p68_local_keyframe_sample.ps1"
+          )
+          foreach ($file in $files) {
+            $tokens = $null
+            $errors = $null
+            [System.Management.Automation.Language.Parser]::ParseFile(
+              (Resolve-Path $file),
+              [ref]$tokens,
+              [ref]$errors
+            ) | Out-Null
+            if ($errors.Count -gt 0) {
+              $errors | ForEach-Object { Write-Error $_.Message }
+              throw "PowerShell syntax validation failed for $file"
+            }
+          }
+
+      - name: Validate loopback-only Docker Compose configuration
+        run: |
+          mkdir -p /tmp/p68-kf/{models,input,output}
+          cat > /tmp/p68-kf.env <<'EOF'
+          COMFYUI_REF=1d1099bea08efa6904480cf25c54ea92646aea4f
+          P68_KEYFRAME_MODEL_DIR=/tmp/p68-kf/models
+          P68_KEYFRAME_OUTPUT_DIR=/tmp/p68-kf/output
+          P68_KEYFRAME_INPUT_DIR=/tmp/p68-kf/input
+          P68_KEYFRAME_PORT=8188
+          P68_KEYFRAME_CHECKPOINT=sd_xl_base_1.0.safetensors
+          COMFYUI_EXTRA_ARGS=--lowvram
+          EOF
+          docker compose \
+            --env-file /tmp/p68-kf.env \
+            -f deploy/p68-local-keyframe-worker/compose.yaml \
+            config > /tmp/p68-kf-compose.json
+          grep -q '127.0.0.1' /tmp/p68-kf-compose.json
+
+      - name: Confirm no execution occurred
+        run: |
+          test ! -e /tmp/p68-kf/models/sd_xl_base_1.0.safetensors
+          echo "Model downloads: 0"
+          echo "GPU generation jobs: 0"
+          echo "Provider calls: 0"
+          echo "Approvals: 0"
+          echo "Publication: disabled"
