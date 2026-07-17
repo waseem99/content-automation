@@ -1,0 +1,95 @@
+name: P68 Worker Configuration Probe
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - p68-natural-motion-preflight
+    paths:
+      - ".github/workflows/p68-worker-configuration-probe.yml"
+      - "src/p68_worker_configuration.py"
+      - "scripts/p68_probe_worker_configuration.py"
+      - "tests/unit/test_p68_worker_configuration.py"
+  pull_request:
+    branches:
+      - test
+    paths:
+      - ".github/workflows/p68-worker-configuration-probe.yml"
+      - "src/p68_worker_configuration.py"
+      - "scripts/p68_probe_worker_configuration.py"
+      - "tests/unit/test_p68_worker_configuration.py"
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    name: Report P68 worker configuration presence
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      P68_KEYFRAME_BASE_URL: ${{ secrets.P68_KEYFRAME_BASE_URL || vars.P68_KEYFRAME_BASE_URL }}
+      P68_RN_BASE_URL: ${{ secrets.P68_RN_BASE_URL || vars.P68_RN_BASE_URL }}
+      P68_KEYFRAME_CHECKPOINT: ${{ secrets.P68_KEYFRAME_CHECKPOINT || vars.P68_KEYFRAME_CHECKPOINT }}
+      P68_KEYFRAME_MODEL_LICENSE_TYPE: ${{ secrets.P68_KEYFRAME_MODEL_LICENSE_TYPE || vars.P68_KEYFRAME_MODEL_LICENSE_TYPE }}
+      P68_KEYFRAME_MODEL_LICENSE_URL: ${{ secrets.P68_KEYFRAME_MODEL_LICENSE_URL || vars.P68_KEYFRAME_MODEL_LICENSE_URL }}
+      P68_KEYFRAME_BEARER_TOKEN: ${{ secrets.P68_KEYFRAME_BEARER_TOKEN }}
+      P68_RN_BEARER_TOKEN: ${{ secrets.P68_RN_BEARER_TOKEN }}
+      P68_KEYFRAME_GPU_HOURLY_USD: ${{ secrets.P68_KEYFRAME_GPU_HOURLY_USD || vars.P68_KEYFRAME_GPU_HOURLY_USD }}
+      P68_RN_GPU_HOURLY_USD: ${{ secrets.P68_RN_GPU_HOURLY_USD || vars.P68_RN_GPU_HOURLY_USD }}
+      P68_RN_WORKFLOW: ${{ secrets.P68_RN_WORKFLOW || vars.P68_RN_WORKFLOW }}
+      COMFYUI_REF: ${{ secrets.COMFYUI_REF || vars.COMFYUI_REF }}
+      WAN22_REVISION: ${{ secrets.WAN22_REVISION || vars.WAN22_REVISION }}
+      WAN21_REVISION: ${{ secrets.WAN21_REVISION || vars.WAN21_REVISION }}
+      RN_MODEL_DIR: ${{ secrets.RN_MODEL_DIR || vars.RN_MODEL_DIR }}
+      RN_OUTPUT_DIR: ${{ secrets.RN_OUTPUT_DIR || vars.RN_OUTPUT_DIR }}
+      RN_INPUT_DIR: ${{ secrets.RN_INPUT_DIR || vars.RN_INPUT_DIR }}
+
+    steps:
+      - name: Check out configuration probe
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install focused test dependency
+        run: python -m pip install --disable-pip-version-check pytest
+
+      - name: Verify secret-safe behavior
+        run: python -m pytest -q tests/unit/test_p68_worker_configuration.py
+
+      - name: Write sanitized configuration report
+        run: |
+          mkdir -p p68-probe
+          PYTHONPATH=. python scripts/p68_probe_worker_configuration.py \
+            --output p68-probe/worker-configuration.json \
+            | tee p68-probe/worker-configuration.stdout.json
+
+      - name: Record presence-only summary
+        run: |
+          PYTHONPATH=. python - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import json
+          from pathlib import Path
+
+          result = json.loads(Path("p68-probe/worker-configuration.json").read_text())
+          keyframe = result["keyframe_worker"]
+          video = result["natural_video_worker"]
+          print("## P68 worker configuration presence")
+          print()
+          print(f"- Keyframe application ready: {keyframe['application_ready']}")
+          print(f"- Natural-video application ready: {video['application_ready']}")
+          print(f"- Worker deployment configuration ready: {result['deployment_configuration_ready']}")
+          print(f"- Next gate: `{result['next_gate']}`")
+          print("- Secret values printed: no")
+          print("- Provider calls made: 0")
+          PY
+
+      - name: Upload sanitized report
+        uses: actions/upload-artifact@v4
+        with:
+          name: p68-worker-configuration-presence
+          path: p68-probe
+          if-no-files-found: error
+          retention-days: 3
