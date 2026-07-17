@@ -22,6 +22,13 @@ def test_setup_and_sample_scripts_preserve_review_only_boundaries() -> None:
     assert "Publish allowed: false" in sample
 
 
+def test_sdxl_download_url_uses_braced_powershell_variables() -> None:
+    download = (ROOT / "scripts/windows/download_p68_sdxl_preview_model.ps1").read_text(encoding="utf-8")
+
+    assert "/resolve/${modelRevision}/${modelName}?download=true" in download
+    assert "$modelName?download" not in download
+
+
 def test_local_worker_is_loopback_only_and_does_not_include_wan_models() -> None:
     compose = (ROOT / "deploy/p68-local-keyframe-worker/compose.yaml").read_text(encoding="utf-8")
     entrypoint = (ROOT / "deploy/p68-local-keyframe-worker/entrypoint.sh").read_text(encoding="utf-8")
