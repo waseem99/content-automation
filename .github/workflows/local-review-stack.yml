@@ -72,14 +72,15 @@ jobs:
 
       - name: Seed and synchronize the full Rawr month
         run: |
-          python scripts/p71_bootstrap_portfolio.py
-          python scripts/p80_sync_month_workspace.py
+          python scripts/p81_build_high_volume_calendar.py
+          python scripts/p71_bootstrap_portfolio.py --config .local-production/rawr-high-volume-bootstrap.json
+          python scripts/p80_sync_month_workspace.py --studio web/static-creator-ui/data/rawr-nation-high-volume.json
 
       - name: Generate six narration previews locally
         run: |
           python -c "import kokoro"
           if ($LASTEXITCODE -ne 0) { python -m pip install --disable-pip-version-check -r video-engine/voice-requirements.txt }
-          python scripts/p80_prepare_voice_batch.py prepare --limit 6
+          python scripts/p80_prepare_voice_batch.py prepare --studio web/static-creator-ui/data/rawr-nation-high-volume.json --limit 6
           $projects = Get-ChildItem ".local-production\rawr-month-projects\*.json" | Sort-Object Name
           if ($projects.Count -ne 6) { throw "Expected six narration projects." }
           foreach ($project in $projects) {
@@ -91,7 +92,7 @@ jobs:
 
       - name: Register playable narration in PostgreSQL
         run: |
-          python scripts/p80_sync_voice_artifacts.py --media-root "$env:PORTFOLIO_MEDIA_ROOT" --limit 6
+          python scripts/p80_sync_voice_artifacts.py --studio web/static-creator-ui/data/rawr-nation-high-volume.json --media-root "$env:PORTFOLIO_MEDIA_ROOT" --limit 6
           $queue = Invoke-RestMethod -Headers @{"X-Operator-Key"=$env:OPERATOR_KEY} -Uri "$env:OPERATOR_API_URL/portfolio/queue"
           $voiceCount = @($queue.items | Where-Object {$_.brand_slug -eq "rawr-nation" -and $_.has_voiceover_artifact}).Count
           if ($voiceCount -lt 6) { throw "Expected at least six registered narration artifacts; found $voiceCount." }
@@ -100,7 +101,7 @@ jobs:
 
           - PostgreSQL: connected
           - Operator API: http://127.0.0.1:8000
-          - Rawr Nation month packages: 24
+          - Rawr Nation month packages: 120 (4/day)
           - Playable narration artifacts: $voiceCount
           - UI: http://127.0.0.1:8080
           "@ | Add-Content $env:GITHUB_STEP_SUMMARY
@@ -110,9 +111,9 @@ jobs:
           $queue = Invoke-RestMethod -Headers @{"X-Operator-Key"=$env:OPERATOR_KEY} -Uri "$env:OPERATOR_API_URL/portfolio/queue"
           $voiceCount = @($queue.items | Where-Object {$_.brand_slug -eq "rawr-nation" -and $_.has_voiceover_artifact}).Count
           $target = "web/static-creator-ui/data/local-review-stack-status.json"
-          @{schema_version="p80.local_review_status.v1"; ready=$true; database="postgresql"; operator_api="loopback"; rawr_packages=24; narration_artifacts=$voiceCount; verified_at=(Get-Date).ToUniversalTime().ToString("o")} | ConvertTo-Json | Set-Content $target
+          @{schema_version="p81.local_review_status.v1"; ready=$true; database="postgresql"; operator_api="loopback"; rawr_packages=120; daily_baseline=4; narration_artifacts=$voiceCount; verified_at=(Get-Date).ToUniversalTime().ToString("o")} | ConvertTo-Json | Set-Content $target
           git config user.name "content-automation-runner"
           git config user.email "actions@users.noreply.github.com"
-          git add $target
-          git commit -m "Verify local database review stack"
+          git add $target web/static-creator-ui/data/rawr-nation-high-volume.json
+          git commit -m "Build 120-item Rawr Nation review calendar"
           if ($LASTEXITCODE -eq 0) { git push origin HEAD:local-next-720 }
