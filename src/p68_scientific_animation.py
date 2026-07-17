@@ -22,7 +22,7 @@ from src.p68_clip_stitcher import probe_media, sha256_file
 from src.p68_job_state import atomic_write_json
 
 
-ANIMATION_VERSION = "p68.scientific_animation.v4"
+ANIMATION_VERSION = "p68.scientific_animation.v5"
 CANVAS = (540, 960)
 FPS = 30
 
@@ -451,6 +451,8 @@ def render_animation(renderer: Callable[[float], Image.Image], output: Path, dur
     command = [
         ffmpeg,
         "-y",
+        "-loglevel",
+        "error",
         "-f",
         "rawvideo",
         "-pix_fmt",
@@ -461,41 +463,45 @@ def render_animation(renderer: Callable[[float], Image.Image], output: Path, dur
         str(FPS),
         "-i",
         "-",
-        "-f",
-        "lavfi",
-        "-i",
-        "anullsrc=channel_layout=stereo:sample_rate=48000",
         "-vf",
         "scale=1080:1920:flags=lanczos,format=yuv420p",
+        "-frames:v",
+        str(frames),
+        "-an",
         "-c:v",
         "libx264",
         "-preset",
         "medium",
         "-crf",
         "18",
-        "-c:a",
-        "aac",
-        "-b:a",
-        "128k",
-        "-shortest",
         "-movflags",
         "+faststart",
         str(output),
     ]
-    process = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    process = subprocess.Popen(
+        command,
+        stdin=subprocess.PIPE,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
     assert process.stdin is not None
     try:
         for index in range(frames):
             image = renderer(index / max(frames - 1, 1)).convert("RGB")
             process.stdin.write(image.tobytes())
         process.stdin.close()
-        stderr = process.stderr.read().decode(errors="replace") if process.stderr else ""
-        code = process.wait(timeout=300)
+        process.stdin = None
+        code = process.wait(timeout=max(30, round((frames / FPS) * 20)))
+    except subprocess.TimeoutExpired as exc:
+        process.kill()
+        process.wait()
+        raise RuntimeError(f"ffmpeg timed out while rendering {output}") from exc
     except Exception:
         process.kill()
+        process.wait()
         raise
     if code:
-        raise RuntimeError(stderr[-4000:])
+        raise RuntimeError(f"ffmpeg exited with code {code} while rendering {output}")
     return probe_media(output)
 
 
