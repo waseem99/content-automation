@@ -33,6 +33,13 @@ def _latest_science_manifest(artifact_dir: Path) -> Path:
     return paths[-1]
 
 
+def _optional_narration(artifact_dir: Path) -> Path | None:
+    try:
+        return select_narration(artifact_dir)
+    except FileNotFoundError:
+        return None
+
+
 def build_hybrid_manifest(
     plan: dict[str, Any],
     natural_manifest: dict[str, Any],
@@ -81,11 +88,12 @@ def assemble_hybrid_review(pilot_dir: Path, artifact_dir: Path) -> dict[str, Any
     hybrid = build_hybrid_manifest(plan, natural, science, selection)
     manifest_path = artifact_dir / "clips" / "hybrid-v1" / "clip-manifest.json"
     atomic_write_json(manifest_path, hybrid)
+    narration = _optional_narration(artifact_dir)
     render = assemble_clip_plan(
         plan,
         hybrid,
         artifact_dir / "renders" / "hybrid-v1",
-        narration_path=select_narration(artifact_dir),
+        narration_path=narration,
         captions_path=pilot_dir / "captions.srt",
     )
     if not render.get("is_valid"):
@@ -97,5 +105,8 @@ def assemble_hybrid_review(pilot_dir: Path, artifact_dir: Path) -> dict[str, Any
         "hybrid_manifest_path": str(manifest_path),
         "render": render,
         "quality": quality,
+        "narration_included": narration is not None,
+        "visual_review_only": narration is None,
+        "quality_approved": False,
         "publish_allowed": False,
     }
