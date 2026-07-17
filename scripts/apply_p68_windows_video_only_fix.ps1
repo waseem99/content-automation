@@ -16,8 +16,6 @@ if ($branch -ne "local-next-720") {
 
 $target = Join-Path $repoRoot "src\p68_scientific_animation.py"
 $testPath = "tests\unit\test_p68_scientific_animation.py"
-$stdoutPath = Join-Path $env:TEMP "p68-scientific-video-only.stdout.log"
-$stderrPath = Join-Path $env:TEMP "p68-scientific-video-only.stderr.log"
 $original = [System.IO.File]::ReadAllText($target)
 
 $replacement = @'
@@ -101,32 +99,9 @@ else {
     Write-Host "Patched scientific renderer to exact-frame video-only output." -ForegroundColor Cyan
 }
 
-Remove-Item $stdoutPath, $stderrPath -Force -ErrorAction SilentlyContinue
-Write-Host "Running isolated scientific-animation test with a $TestTimeoutSeconds-second guard..." -ForegroundColor Cyan
-
-$arguments = @('-m', 'pytest', '-vv', '-x', '--tb=short', $testPath)
-$process = Start-Process `
-    -FilePath "python" `
-    -ArgumentList $arguments `
-    -WorkingDirectory $repoRoot `
-    -RedirectStandardOutput $stdoutPath `
-    -RedirectStandardError $stderrPath `
-    -PassThru `
-    -NoNewWindow
-
-$completed = $process.WaitForExit($TestTimeoutSeconds * 1000)
-if (-not $completed) {
-    & taskkill.exe /PID $process.Id /T /F | Out-Null
-    git checkout -- src/p68_scientific_animation.py
-    Get-Content $stdoutPath -Tail 120 -ErrorAction SilentlyContinue
-    Get-Content $stderrPath -Tail 120 -ErrorAction SilentlyContinue
-    throw "Scientific-animation test exceeded $TestTimeoutSeconds seconds. The source change was reverted."
-}
-
-$process.Refresh()
-$exitCode = $process.ExitCode
-Get-Content $stdoutPath -ErrorAction SilentlyContinue
-Get-Content $stderrPath -ErrorAction SilentlyContinue
+Write-Host "Running isolated scientific-animation test. The renderer has its own bounded FFmpeg timeout." -ForegroundColor Cyan
+& python -m pytest -vv -x --tb=short $testPath
+$exitCode = $LASTEXITCODE
 
 if ($exitCode -ne 0) {
     git checkout -- src/p68_scientific_animation.py
@@ -135,7 +110,7 @@ if ($exitCode -ne 0) {
 
 Write-Host "Scientific-animation test passed." -ForegroundColor Green
 
-git add src/p68_scientific_animation.py tests/unit/test_p68_scientific_animation.py
+git add src/p68_scientific_animation.py
 if (git diff --cached --quiet) {
     Write-Host "No new renderer change needs committing." -ForegroundColor Yellow
     exit 0
