@@ -76,7 +76,11 @@ for ($index = 0; $index -lt $testPaths.Count; $index++) {
         throw "Diagnostic stopped because $testPath exceeded $PerFileTimeoutSeconds seconds."
     }
 
-    $exitCode = $process.ExitCode
+    # Windows PowerShell can leave ExitCode unset after the timed WaitForExit overload.
+    # A parameterless wait plus Refresh guarantees that the final native exit code is loaded.
+    $process.WaitForExit()
+    $process.Refresh()
+    $exitCode = [int]$process.ExitCode
     $result = if ($exitCode -eq 0) { 'PASSED' } else { 'FAILED' }
     $summary += [PSCustomObject]@{
         Test = $testPath
@@ -85,7 +89,7 @@ for ($index = 0; $index -lt $testPaths.Count; $index++) {
     }
 
     if ($exitCode -ne 0) {
-        Write-Host "FAILED: $testPath" -ForegroundColor Red
+        Write-Host "FAILED: $testPath (exit code $exitCode)" -ForegroundColor Red
         Get-Content $stdoutPath -Tail 120 -ErrorAction SilentlyContinue
         Get-Content $stderrPath -Tail 120 -ErrorAction SilentlyContinue
         $summary | Format-Table -AutoSize
