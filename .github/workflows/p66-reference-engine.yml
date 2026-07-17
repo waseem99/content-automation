@@ -64,12 +64,20 @@ jobs:
           set -o pipefail
           pytest -vv 2>&1 | tee ../p66-pytest.log
 
+      - name: Verify P75 offline acceptance matrix
+        working-directory: reference-engine
+        run: |
+          pytest -vv tests/test_p75_acceptance.py tests/test_p75_orchestration.py
+          refintel profiles --json | tee ../p75-profiles.json
+
       - name: Upload test diagnostics
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: p66-pytest-log
-          path: p66-pytest.log
+          path: |
+            p66-pytest.log
+            p75-profiles.json
           if-no-files-found: warn
           retention-days: 3
 

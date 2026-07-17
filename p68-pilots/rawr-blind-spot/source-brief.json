@@ -1,0 +1,118 @@
+{
+  "pilot_id": "rawr-blind-spot",
+  "brand_profile": "rawr_nation",
+  "topic": "the physiological blind spot and perceptual filling-in",
+  "selected_concept_id": "rawr_nation-concept-1",
+  "reusable_mechanics": [
+    "first-second contradiction",
+    "visible demonstration before explanation",
+    "mechanism reveal after escalation",
+    "short resolution after payoff"
+  ],
+  "continuity_bible": {
+    "subject_identity": "the same adult viewer represented only by one hazel human eye and one consistent clean anatomical eye model",
+    "environment": "dark charcoal science studio with a single warm practical reflection and restrained teal optical graphics",
+    "lighting": "soft key from camera left, narrow warm rim from camera right, black-to-charcoal background",
+    "color_treatment": "photoreal neutral skin and eye color, deep charcoal, restrained teal signal paths, amber payoff accent",
+    "screen_direction": "visual information travels left-to-right toward the optic nerve and brain",
+    "camera_language": "macro optics, precise slow pushes, motivated transitions through the pupil, no handheld shake"
+  },
+  "factual_notes": [
+    {
+      "claim": "Photoreceptors in the retina convert light into electrical signals that travel through the optic nerve to the brain.",
+      "source_url": "https://www.nei.nih.gov/eye-health-information/healthy-vision/how-eyes-work",
+      "source_title": "How the Eyes Work — National Eye Institute",
+      "review_status": "pending_human_fact_review"
+    },
+    {
+      "claim": "The physiological blind spot corresponds to the location where the optic nerve exits and visual cells are absent.",
+      "source_url": "https://www.nei.nih.gov/sites/default/files/nei-pdfs/nei_executive-summary.pdf",
+      "source_title": "National Eye Institute glossary — blind spot",
+      "review_status": "pending_human_fact_review"
+    },
+    {
+      "claim": "Perceptual filling-in can make the visual system fill the informational void at the blind spot using surrounding content.",
+      "source_url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC4784844/",
+      "source_title": "Predictive Coding: A Possible Explanation of Filling-In at the Blind Spot",
+      "review_status": "pending_human_fact_review"
+    }
+  ],
+  "source_phrases_for_originality_check": [
+    "photoreceptors turn the light into electrical signals",
+    "the visual system fills the informational void"
+  ],
+  "script_segments": [
+    {
+      "story_stage": "hook",
+      "duration_seconds": 4.5,
+      "narration": "There is a hole in your vision right now, and you almost never notice it.",
+      "caption": "A HOLE IN YOUR VISION",
+      "visual_action": "Extreme macro of the same hazel eye opening; a tiny circular region of the reflected scene vanishes without a glitch effect",
+      "entry_action": "Begin on black and reveal the eye with one natural blink",
+      "exit_action": "End pushing directly toward the pupil while the missing region stays visually stable",
+      "camera": "100mm macro, slow centered push toward pupil",
+      "ambience": "Continuous low optical-room hum",
+      "sfx": "Soft iris-open pulse"
+    },
+    {
+      "story_stage": "setup",
+      "duration_seconds": 5.0,
+      "narration": "Inside each eye, light lands on a retina packed with cells that detect it.",
+      "caption": "LIGHT → RETINA",
+      "visual_action": "Seamless travel through the pupil into the same anatomically clean eye model as focused light reaches the curved retina",
+      "entry_action": "Continue the forward movement through the pupil from shot one",
+      "exit_action": "Follow one teal signal left-to-right across the retina",
+      "camera": "Controlled macro fly-through, medically plausible proportions",
+      "ambience": "Same optical-room hum with a faint electrical texture",
+      "sfx": "Delicate focused-light sweep"
+    },
+    {
+      "story_stage": "mechanism",
+      "duration_seconds": 5.0,
+      "narration": "But one small spot has no visual cells at all.",
+      "caption": "NO VISUAL CELLS HERE",
+      "visual_action": "The retinal surface reveals one small optic-disc region without photoreceptor markers while surrounding cells remain dense",
+      "entry_action": "Enter following the same teal signal across the retina",
+      "exit_action": "Signal curves toward the optic nerve opening at frame right",
+      "camera": "Slow lateral macro track across retinal surface",
+      "ambience": "Continuous hum; electrical texture briefly thins",
+      "sfx": "Subtle low drop when the empty region appears"
+    },
+    {
+      "story_stage": "explanation",
+      "duration_seconds": 5.5,
+      "narration": "That is where the optic nerve leaves the eye, carrying signals toward the brain.",
+      "caption": "THE OPTIC NERVE EXIT",
+      "visual_action": "Same eye model rotates slightly as signal paths converge and leave through the optic nerve toward an abstract brain silhouette",
+      "entry_action": "Continue the signal movement from the optic-disc region",
+      "exit_action": "End with the signal exiting frame right toward the brain",
+      "camera": "Measured pullback from retina to eye-and-nerve profile",
+      "ambience": "Hum continues with gentle neural pulses",
+      "sfx": "Three soft signal ticks"
+    },
+    {
+      "story_stage": "demonstration",
+      "duration_seconds": 5.5,
+      "narration": "Close one eye during a dot test, and the missing mark can disappear completely.",
+      "caption": "TRY THE DOT TEST",
+      "visual_action": "Minimal original dot-and-cross demonstration in the same charcoal studio; the dot naturally disappears at one viewing position",
+      "entry_action": "Brain-bound signal becomes the horizontal test line",
+      "exit_action": "Hold briefly after the dot disappears, then begin restoring the surrounding pattern",
+      "camera": "Locked perpendicular demonstration view with a subtle controlled push",
+      "ambience": "Continuous hum with space left for narration",
+      "sfx": "Quiet disappearance tick, no digital glitch"
+    },
+    {
+      "story_stage": "payoff",
+      "duration_seconds": 5.0,
+      "narration": "Your brain fills the gap from the surrounding pattern. Seeing is partly reconstruction.",
+      "caption": "SEEING IS RECONSTRUCTION",
+      "visual_action": "Return to the same hazel eye as the surrounding studio reflection flows smoothly across the blind-spot region; restrained amber highlight marks the reveal",
+      "entry_action": "The test pattern flows into the reflection on the eye",
+      "exit_action": "End on a steady eye with the complete reflection and a clean half-second hold",
+      "camera": "Slow pull back from macro eye to a composed final close-up",
+      "ambience": "Hum resolves into a warm sustained tone",
+      "sfx": "Soft reveal bloom"
+    }
+  ]
+}

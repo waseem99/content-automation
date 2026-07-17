@@ -1,0 +1,109 @@
+{
+  "pilot_id": "rawr-gecko-grip",
+  "brand_profile": "rawr_nation",
+  "topic": "how gecko toe structures create dry adhesion",
+  "selected_concept_id": "rawr_nation-concept-1",
+  "reusable_mechanics": [
+    "first-second visual contradiction",
+    "one continuous subject or mechanism",
+    "cause revealed after visible evidence",
+    "short memorable payoff"
+  ],
+  "continuity_bible": {
+    "subject_identity": "the same tokay gecko with blue-gray skin, orange spots, intact toes, and anatomically consistent feet",
+    "environment": "one charcoal macro-science set built around the same vertical glass panel",
+    "lighting": "soft cool key from upper left and narrow amber rim from camera right",
+    "color_treatment": "photoreal blue-gray gecko, charcoal glass, restrained cyan microscopy accents",
+    "screen_direction": "the gecko and magnified contact sequence progress bottom-left to top-right",
+    "camera_language": "natural wildlife macro joined to precise microscopy scale transitions"
+  },
+  "factual_notes": [
+    {
+      "claim": "Gecko adhesive toe pads contain microscopic setae that branch into smaller contacts.",
+      "source_url": "https://doi.org/10.1073/pnas.192252799",
+      "source_title": "Evidence for van der Waals adhesion in gecko setae",
+      "review_status": "pending_human_fact_review"
+    },
+    {
+      "claim": "The many close contacts generate dry adhesion without liquid glue.",
+      "source_url": "https://doi.org/10.1073/pnas.1219317110",
+      "source_title": "How geckos stick and unstick",
+      "review_status": "pending_human_fact_review"
+    }
+  ],
+  "source_phrases_for_originality_check": [],
+  "script_segments": [
+    {
+      "story_stage": "hook",
+      "duration_seconds": 4.5,
+      "narration": "This gecko can sprint up glass without glue, suction, or sticky liquid.",
+      "caption": "NO GLUE. NO SUCTION.",
+      "visual_action": "The gecko takes three clearly visible steps straight up clean glass",
+      "entry_action": "Open on a planted rear foot as the front foot lifts",
+      "exit_action": "End when one front toe pad contacts the glass",
+      "camera": "85mm wildlife macro tracking upward",
+      "ambience": "One continuous location ambience and restrained cinematic music bed",
+      "sfx": "Three light toe taps"
+    },
+    {
+      "story_stage": "evidence",
+      "duration_seconds": 5.0,
+      "narration": "The secret begins under each wide toe, where ridges divide into dense microscopic hairs.",
+      "caption": "MILLIONS OF TINY CONTACTS",
+      "visual_action": "A motivated match move enters the same front toe and reveals dense branching setae",
+      "entry_action": "Continue through the contacting toe pad",
+      "exit_action": "Settle beside one branching seta",
+      "camera": "Controlled macro-to-micro push",
+      "ambience": "One continuous location ambience and restrained cinematic music bed",
+      "sfx": "Soft scale-shift sweep"
+    },
+    {
+      "story_stage": "mechanism",
+      "duration_seconds": 5.0,
+      "narration": "Each hair branches again, creating enormous contact with the surface at tiny scales.",
+      "caption": "CONTACT AT TINY SCALES",
+      "visual_action": "One seta branches into spatula-shaped tips meeting the glass",
+      "entry_action": "Begin on the same seta",
+      "exit_action": "Track the contact wave left-to-right",
+      "camera": "Lateral microscopy track",
+      "ambience": "One continuous location ambience and restrained cinematic music bed",
+      "sfx": "Fine contact ticks"
+    },
+    {
+      "story_stage": "cause",
+      "duration_seconds": 5.0,
+      "narration": "At that distance, weak molecular attractions add up across the whole foot.",
+      "caption": "WEAK FORCES ADD UP",
+      "visual_action": "Restrained cyan force lines appear only at touching tips and spread across the planted foot",
+      "entry_action": "Continue the contact wave",
+      "exit_action": "Force pattern resolves into the full toe silhouette",
+      "camera": "Slow pullback through scale",
+      "ambience": "One continuous location ambience and restrained cinematic music bed",
+      "sfx": "Low cohesive pulse"
+    },
+    {
+      "story_stage": "release",
+      "duration_seconds": 5.0,
+      "narration": "To let go, the gecko changes the angle of its toes and peels them away.",
+      "caption": "ANGLE TO RELEASE",
+      "visual_action": "The same toe hyperextends and peels cleanly from glass in one natural action",
+      "entry_action": "Enter on the resolved toe silhouette",
+      "exit_action": "Finish as the foot swings upward",
+      "camera": "High-speed side macro",
+      "ambience": "One continuous location ambience and restrained cinematic music bed",
+      "sfx": "Single soft peel accent"
+    },
+    {
+      "story_stage": "payoff",
+      "duration_seconds": 5.5,
+      "narration": "So the grip is powerful, reversible, and dry: geometry turns tiny forces into a climbing system.",
+      "caption": "GEOMETRY BECOMES GRIP",
+      "visual_action": "Return to the same gecko completing the climb and pausing above the glass edge",
+      "entry_action": "Match the upward foot swing",
+      "exit_action": "Hold the gecko safely perched for half a second",
+      "camera": "Measured pullback to hero frame",
+      "ambience": "One continuous location ambience and restrained cinematic music bed",
+      "sfx": "Warm resolve"
+    }
+  ]
+}

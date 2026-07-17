@@ -147,6 +147,127 @@ class OllamaVisionProvider:
             )
         return findings
 
+    def analyze_sequence(
+        self,
+        workspace: Path,
+        frames: list[FrameArtifact],
+        transcript: list[TranscriptSegment],
+        duration: float,
+    ) -> tuple[list[dict[str, object]], list[AnalysisFinding], dict[str, object]]:
+        """Analyze chronological visual evidence as a sequence instead of isolated images."""
+        preferred = sorted(
+            [frame for frame in frames if frame.preferred],
+            key=lambda item: item.timestamp_seconds,
+        )
+        if len(preferred) > self.max_frames:
+            step = (len(preferred) - 1) / max(self.max_frames - 1, 1)
+            selected = [preferred[round(index * step)] for index in range(self.max_frames)]
+        else:
+            selected = preferred
+        if not selected:
+            return [], [], {}
+        images = [
+            base64.b64encode((workspace / frame.relative_path).read_bytes()).decode("ascii")
+            for frame in selected
+        ]
+        timestamps = [round(frame.timestamp_seconds, 3) for frame in selected]
+        transcript_text = "\n".join(
+            f"[{segment.start_seconds:.2f}-{segment.end_seconds:.2f}] {segment.text}"
+            for segment in transcript
+        )[:10_000]
+        prompt = (
+            "Analyze these chronologically ordered frames and transcript as one short-form video. "
+            "Return JSON with: story_arc (list of stage,start_seconds,end_seconds,summary), "
+            "hook_mechanic, visual_progression, editing_patterns (list), emotional_progression, "
+            "payoff, reusable_mechanics (list), and source_specific_elements_to_avoid (list). "
+            "Describe mechanics for creating original work; never recommend copying exact shots, "
+            "wording, branding, characters, music, or artwork. Frames occur at seconds: "
+            f"{timestamps}. Video duration: {duration:.3f}. "
+            f"Transcript:\n{transcript_text or '[unavailable]'}"
+        )
+        payload = {
+            "model": self.model,
+            "stream": False,
+            "format": "json",
+            "messages": [{"role": "user", "content": prompt, "images": images}],
+        }
+        request = urllib.request.Request(
+            self.endpoint,
+            data=json.dumps(payload).encode("utf-8"),
+            headers={"Content-Type": "application/json"},
+            method="POST",
+        )
+        try:
+            with urllib.request.urlopen(request, timeout=240) as response:
+                raw = json.loads(response.read().decode("utf-8"))
+            content = raw.get("message", {}).get("content", "{}")
+            observation = json.loads(content) if isinstance(content, str) else content
+        except (urllib.error.URLError, TimeoutError, json.JSONDecodeError, OSError) as exc:
+            raise RuntimeError(f"Local sequence model request failed: {exc}") from exc
+
+        story_arc: list[dict[str, object]] = []
+        for index, item in enumerate(observation.get("story_arc") or []):
+            if not isinstance(item, dict):
+                continue
+            try:
+                start = max(0.0, min(duration, float(item.get("start_seconds", 0))))
+                end = max(start, min(duration, float(item.get("end_seconds", duration))))
+            except (TypeError, ValueError):
+                continue
+            story_arc.append(
+                {
+                    "stage": str(item.get("stage") or f"beat_{index + 1}"),
+                    "start_seconds": round(start, 3),
+                    "end_seconds": round(end, 3),
+                    "summary": str(item.get("summary") or "Sequence-level observed beat."),
+                    "basis": "local multimodal sequence observation; confirm during human review",
+                    "source_type": EvidenceSource.MODEL_OBSERVATION.value,
+                    "confidence": _model_confidence(item.get("confidence")),
+                }
+            )
+        common = {
+            "start_seconds": 0,
+            "end_seconds": duration,
+            "confidence": _model_confidence(observation.get("confidence")),
+            "evidence": [frame.relative_path for frame in selected],
+            "source_type": EvidenceSource.MODEL_OBSERVATION,
+            "provider": f"{self.name}:{self.model}:sequence",
+            "measured": False,
+        }
+        findings = [
+            AnalysisFinding(
+                id="sequence-storytelling",
+                category="storytelling",
+                label=str(observation.get("hook_mechanic") or "sequence-level story observation"),
+                summary=(
+                    f"Visual progression: {observation.get('visual_progression') or 'uncertain'}. "
+                    "Emotional progression: "
+                    f"{observation.get('emotional_progression') or 'uncertain'}. "
+                    f"Payoff: {observation.get('payoff') or 'uncertain'}."
+                ),
+                **common,
+            ),
+            AnalysisFinding(
+                id="sequence-editing-patterns",
+                category="editing_pattern",
+                label="sequence-level editing mechanics",
+                summary=json.dumps(observation.get("editing_patterns") or [], ensure_ascii=False),
+                **common,
+            ),
+        ]
+        summary = {
+            "hook_mechanic": observation.get("hook_mechanic"),
+            "visual_progression": observation.get("visual_progression"),
+            "emotional_progression": observation.get("emotional_progression"),
+            "payoff": observation.get("payoff"),
+            "reusable_mechanics": observation.get("reusable_mechanics") or [],
+            "source_specific_elements_to_avoid": (
+                observation.get("source_specific_elements_to_avoid") or []
+            ),
+            "evidence_timestamps": timestamps,
+        }
+        return story_arc, findings, summary
+
 
 def _model_confidence(value: object) -> float:
     try:
@@ -355,9 +476,17 @@ def analyze_reference(
         fallback_reasons.append("measured silence intervals are unavailable")
     analyzer_name = "rule-based-fallback"
     analyzer_version = "1"
+    sequence_summary: dict[str, object] = {}
+    observed_story_arc: list[dict[str, object]] = []
     if visual_provider is not None:
         try:
             findings.extend(visual_provider.analyze_frames(workspace, frames))
+            sequence_analyzer = getattr(visual_provider, "analyze_sequence", None)
+            if callable(sequence_analyzer):
+                observed_story_arc, sequence_findings, sequence_summary = sequence_analyzer(
+                    workspace, frames, transcript, duration
+                )
+                findings.extend(sequence_findings)
             analyzer_name = visual_provider.name
             analyzer_version = visual_provider.version
         except RuntimeError as exc:
@@ -442,7 +571,7 @@ def analyze_reference(
             "hook_type": "immediate-visual" if hook_visible_at <= 1 else "delayed-context",
             "human_review_required": True,
         },
-        story_arc=_story_arc(duration),
+        story_arc=observed_story_arc or _story_arc(duration),
         pacing={
             "duration_seconds": round(duration, 3),
             "scene_count": len(scenes),
@@ -470,6 +599,7 @@ def analyze_reference(
                 [finding for finding in findings if finding.category == "ocr" and finding.evidence]
             ),
             "human_style_classification_required": True,
+            "sequence_storytelling": sequence_summary,
         },
         audio_language={**transcript_metrics, "audio_cues": audio_cues},
         findings=findings,
@@ -500,7 +630,10 @@ def analyze_reference(
             ),
             "production_difficulty": ObjectiveScore(
                 score=min(100, int(25 + len(scenes) * 2 + len(preferred_frames))),
-                evidence=[f"{len(scenes)} detected scenes", f"{len(preferred_frames)} usable frames"],
+                evidence=[
+                    f"{len(scenes)} detected scenes",
+                    f"{len(preferred_frames)} usable frames",
+                ],
             ),
             "originality_risk": ObjectiveScore(
                 score=originality_risk,

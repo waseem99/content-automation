@@ -1,0 +1,334 @@
+{
+  "schema_version": "p68.original_continuity_plan.v1",
+  "topic": "the physiological blind spot and perceptual filling-in",
+  "brand_profile": "rawr_nation",
+  "concept_options": [
+    {
+      "concept_id": "rawr_nation-concept-1",
+      "topic": "the physiological blind spot and perceptual filling-in",
+      "angle": "hidden mechanism",
+      "format": "premium factual explainer",
+      "premise": "Explain the physiological blind spot and perceptual filling-in through an original hidden mechanism visual story.",
+      "hook_direction": "Open on a visible consequence of the physiological blind spot and perceptual filling-in, then withhold the cause.",
+      "payoff_direction": "Reveal the mechanism behind the physiological blind spot and perceptual filling-in with a new visual demonstration.",
+      "tone": "credible, visual, concise, curious",
+      "reusable_mechanics": [
+        "first-second contradiction",
+        "visible demonstration before explanation",
+        "mechanism reveal after escalation",
+        "short resolution after payoff"
+      ],
+      "source_expression_allowed": false,
+      "status": "option_pending_human_selection"
+    },
+    {
+      "concept_id": "rawr_nation-concept-2",
+      "topic": "the physiological blind spot and perceptual filling-in",
+      "angle": "counterintuitive cause",
+      "format": "premium factual explainer",
+      "premise": "Explain the physiological blind spot and perceptual filling-in through an original counterintuitive cause visual story.",
+      "hook_direction": "Open on a visible consequence of the physiological blind spot and perceptual filling-in, then withhold the cause.",
+      "payoff_direction": "Reveal the mechanism behind the physiological blind spot and perceptual filling-in with a new visual demonstration.",
+      "tone": "credible, visual, concise, curious",
+      "reusable_mechanics": [
+        "first-second contradiction",
+        "visible demonstration before explanation",
+        "mechanism reveal after escalation",
+        "short resolution after payoff"
+      ],
+      "source_expression_allowed": false,
+      "status": "option_pending_human_selection"
+    },
+    {
+      "concept_id": "rawr_nation-concept-3",
+      "topic": "the physiological blind spot and perceptual filling-in",
+      "angle": "scale-shift reveal",
+      "format": "premium factual explainer",
+      "premise": "Explain the physiological blind spot and perceptual filling-in through an original scale-shift reveal visual story.",
+      "hook_direction": "Open on a visible consequence of the physiological blind spot and perceptual filling-in, then withhold the cause.",
+      "payoff_direction": "Reveal the mechanism behind the physiological blind spot and perceptual filling-in with a new visual demonstration.",
+      "tone": "credible, visual, concise, curious",
+      "reusable_mechanics": [
+        "first-second contradiction",
+        "visible demonstration before explanation",
+        "mechanism reveal after escalation",
+        "short resolution after payoff"
+      ],
+      "source_expression_allowed": false,
+      "status": "option_pending_human_selection"
+    }
+  ],
+  "selected_concept": {
+    "concept_id": "rawr_nation-concept-1",
+    "topic": "the physiological blind spot and perceptual filling-in",
+    "angle": "hidden mechanism",
+    "format": "premium factual explainer",
+    "premise": "Explain the physiological blind spot and perceptual filling-in through an original hidden mechanism visual story.",
+    "hook_direction": "Open on a visible consequence of the physiological blind spot and perceptual filling-in, then withhold the cause.",
+    "payoff_direction": "Reveal the mechanism behind the physiological blind spot and perceptual filling-in with a new visual demonstration.",
+    "tone": "credible, visual, concise, curious",
+    "reusable_mechanics": [
+      "first-second contradiction",
+      "visible demonstration before explanation",
+      "mechanism reveal after escalation",
+      "short resolution after payoff"
+    ],
+    "source_expression_allowed": false,
+    "status": "selected_pending_human_review"
+  },
+  "original_script": "There is a hole in your vision right now, and you almost never notice it. Inside each eye, light lands on a retina packed with cells that detect it. But one small spot has no visual cells at all. That is where the optic nerve leaves the eye, carrying signals toward the brain. Close one eye during a dot test, and the missing mark can disappear completely. Your brain fills the gap from the surrounding pattern. Seeing is partly reconstruction.",
+  "storyboard": [
+    {
+      "shot_id": "S01",
+      "story_stage": "hook",
+      "visual": "Extreme macro of the same hazel eye opening; a tiny circular region of the reflected scene vanishes without a glitch effect",
+      "caption": "A HOLE IN YOUR VISION"
+    },
+    {
+      "shot_id": "S02",
+      "story_stage": "setup",
+      "visual": "Seamless travel through the pupil into the same anatomically clean eye model as focused light reaches the curved retina",
+      "caption": "LIGHT \u2192 RETINA"
+    },
+    {
+      "shot_id": "S03",
+      "story_stage": "mechanism",
+      "visual": "The retinal surface reveals one small optic-disc region without photoreceptor markers while surrounding cells remain dense",
+      "caption": "NO VISUAL CELLS HERE"
+    },
+    {
+      "shot_id": "S04",
+      "story_stage": "explanation",
+      "visual": "Same eye model rotates slightly as signal paths converge and leave through the optic nerve toward an abstract brain silhouette",
+      "caption": "THE OPTIC NERVE EXIT"
+    },
+    {
+      "shot_id": "S05",
+      "story_stage": "demonstration",
+      "visual": "Minimal original dot-and-cross demonstration in the same charcoal studio; the dot naturally disappears at one viewing position",
+      "caption": "TRY THE DOT TEST"
+    },
+    {
+      "shot_id": "S06",
+      "story_stage": "payoff",
+      "visual": "Return to the same hazel eye as the surrounding studio reflection flows smoothly across the blind-spot region; restrained amber highlight marks the reveal",
+      "caption": "SEEING IS RECONSTRUCTION"
+    }
+  ],
+  "continuity_bible": {
+    "subject_identity": "the same adult viewer represented only by one hazel human eye and one consistent clean anatomical eye model",
+    "environment": "dark charcoal science studio with a single warm practical reflection and restrained teal optical graphics",
+    "lighting": "soft key from camera left, narrow warm rim from camera right, black-to-charcoal background",
+    "color_treatment": "photoreal neutral skin and eye color, deep charcoal, restrained teal signal paths, amber payoff accent",
+    "screen_direction": "visual information travels left-to-right toward the optic nerve and brain",
+    "camera_language": "macro optics, precise slow pushes, motivated transitions through the pupil, no handheld shake",
+    "identity_lock": "Preserve defining features, anatomy, wardrobe, proportions, and scale.",
+    "environment_lock": "Preserve geography, background landmarks, weather, and time of day.",
+    "audio_ambience_lock": "Use one continuous ambience bed unless the story motivates a change.",
+    "human_review_required": true
+  },
+  "shots": [
+    {
+      "shot_id": "S01",
+      "story_stage": "hook",
+      "start_seconds": 0.0,
+      "end_seconds": 4.5,
+      "duration_seconds": 4.5,
+      "narration": "There is a hole in your vision right now, and you almost never notice it.",
+      "caption": "A HOLE IN YOUR VISION",
+      "visual_action": "Extreme macro of the same hazel eye opening; a tiny circular region of the reflected scene vanishes without a glitch effect",
+      "camera": "100mm macro, slow centered push toward pupil",
+      "entry_action": "Begin on black and reveal the eye with one natural blink",
+      "exit_action": "End pushing directly toward the pupil while the missing region stays visually stable",
+      "screen_direction": "visual information travels left-to-right toward the optic nerve and brain",
+      "transition_in": {
+        "strategy": "cold_open",
+        "audio_bridge": "narration starts on first visible action"
+      },
+      "transition_handle_seconds": 0.5,
+      "ambience": "Continuous low optical-room hum",
+      "sfx": "Soft iris-open pulse",
+      "clip_prompt": "Original vertical cinematic clip. Extreme macro of the same hazel eye opening; a tiny circular region of the reflected scene vanishes without a glitch effect. Subject lock: the same adult viewer represented only by one hazel human eye and one consistent clean anatomical eye model. Environment lock: dark charcoal science studio with a single warm practical reflection and restrained teal optical graphics. Lighting: soft key from camera left, narrow warm rim from camera right, black-to-charcoal background. Color: photoreal neutral skin and eye color, deep charcoal, restrained teal signal paths, amber payoff accent. Camera: 100mm macro, slow centered push toward pupil. Entry: Begin on black and reveal the eye with one natural blink. Exit: End pushing directly toward the pupil while the missing region stays visually stable. Screen direction: visual information travels left-to-right toward the optic nerve and brain. Leave clean motion handles at both ends; no embedded text.",
+      "negative_prompt": "identity drift, anatomy change, wardrobe change, background jump, lighting flip, reversed screen direction, duplicate subject, watermark, logo, embedded captions",
+      "clip_status": "awaiting_generated_or_approved_clip",
+      "human_review_required": true
+    },
+    {
+      "shot_id": "S02",
+      "story_stage": "setup",
+      "start_seconds": 4.5,
+      "end_seconds": 9.5,
+      "duration_seconds": 5.0,
+      "narration": "Inside each eye, light lands on a retina packed with cells that detect it.",
+      "caption": "LIGHT \u2192 RETINA",
+      "visual_action": "Seamless travel through the pupil into the same anatomically clean eye model as focused light reaches the curved retina",
+      "camera": "Controlled macro fly-through, medically plausible proportions",
+      "entry_action": "Continue the forward movement through the pupil from shot one",
+      "exit_action": "Follow one teal signal left-to-right across the retina",
+      "screen_direction": "visual information travels left-to-right toward the optic nerve and brain",
+      "transition_in": {
+        "strategy": "action_cut",
+        "audio_bridge": "carry narration, ambience, or motivated SFX across the cut"
+      },
+      "transition_handle_seconds": 0.5,
+      "ambience": "Same optical-room hum with a faint electrical texture",
+      "sfx": "Delicate focused-light sweep",
+      "clip_prompt": "Original vertical cinematic clip. Seamless travel through the pupil into the same anatomically clean eye model as focused light reaches the curved retina. Subject lock: the same adult viewer represented only by one hazel human eye and one consistent clean anatomical eye model. Environment lock: dark charcoal science studio with a single warm practical reflection and restrained teal optical graphics. Lighting: soft key from camera left, narrow warm rim from camera right, black-to-charcoal background. Color: photoreal neutral skin and eye color, deep charcoal, restrained teal signal paths, amber payoff accent. Camera: Controlled macro fly-through, medically plausible proportions. Entry: Continue the forward movement through the pupil from shot one. Exit: Follow one teal signal left-to-right across the retina. Screen direction: visual information travels left-to-right toward the optic nerve and brain. Leave clean motion handles at both ends; no embedded text.",
+      "negative_prompt": "identity drift, anatomy change, wardrobe change, background jump, lighting flip, reversed screen direction, duplicate subject, watermark, logo, embedded captions",
+      "clip_status": "awaiting_generated_or_approved_clip",
+      "human_review_required": true
+    },
+    {
+      "shot_id": "S03",
+      "story_stage": "mechanism",
+      "start_seconds": 9.5,
+      "end_seconds": 14.5,
+      "duration_seconds": 5.0,
+      "narration": "But one small spot has no visual cells at all.",
+      "caption": "NO VISUAL CELLS HERE",
+      "visual_action": "The retinal surface reveals one small optic-disc region without photoreceptor markers while surrounding cells remain dense",
+      "camera": "Slow lateral macro track across retinal surface",
+      "entry_action": "Enter following the same teal signal across the retina",
+      "exit_action": "Signal curves toward the optic nerve opening at frame right",
+      "screen_direction": "visual information travels left-to-right toward the optic nerve and brain",
+      "transition_in": {
+        "strategy": "match_cut",
+        "audio_bridge": "carry narration, ambience, or motivated SFX across the cut"
+      },
+      "transition_handle_seconds": 0.5,
+      "ambience": "Continuous hum; electrical texture briefly thins",
+      "sfx": "Subtle low drop when the empty region appears",
+      "clip_prompt": "Original vertical cinematic clip. The retinal surface reveals one small optic-disc region without photoreceptor markers while surrounding cells remain dense. Subject lock: the same adult viewer represented only by one hazel human eye and one consistent clean anatomical eye model. Environment lock: dark charcoal science studio with a single warm practical reflection and restrained teal optical graphics. Lighting: soft key from camera left, narrow warm rim from camera right, black-to-charcoal background. Color: photoreal neutral skin and eye color, deep charcoal, restrained teal signal paths, amber payoff accent. Camera: Slow lateral macro track across retinal surface. Entry: Enter following the same teal signal across the retina. Exit: Signal curves toward the optic nerve opening at frame right. Screen direction: visual information travels left-to-right toward the optic nerve and brain. Leave clean motion handles at both ends; no embedded text.",
+      "negative_prompt": "identity drift, anatomy change, wardrobe change, background jump, lighting flip, reversed screen direction, duplicate subject, watermark, logo, embedded captions",
+      "clip_status": "awaiting_generated_or_approved_clip",
+      "human_review_required": true
+    },
+    {
+      "shot_id": "S04",
+      "story_stage": "explanation",
+      "start_seconds": 14.5,
+      "end_seconds": 20.0,
+      "duration_seconds": 5.5,
+      "narration": "That is where the optic nerve leaves the eye, carrying signals toward the brain.",
+      "caption": "THE OPTIC NERVE EXIT",
+      "visual_action": "Same eye model rotates slightly as signal paths converge and leave through the optic nerve toward an abstract brain silhouette",
+      "camera": "Measured pullback from retina to eye-and-nerve profile",
+      "entry_action": "Continue the signal movement from the optic-disc region",
+      "exit_action": "End with the signal exiting frame right toward the brain",
+      "screen_direction": "visual information travels left-to-right toward the optic nerve and brain",
+      "transition_in": {
+        "strategy": "direct_cut",
+        "audio_bridge": "carry narration, ambience, or motivated SFX across the cut"
+      },
+      "transition_handle_seconds": 0.5,
+      "ambience": "Hum continues with gentle neural pulses",
+      "sfx": "Three soft signal ticks",
+      "clip_prompt": "Original vertical cinematic clip. Same eye model rotates slightly as signal paths converge and leave through the optic nerve toward an abstract brain silhouette. Subject lock: the same adult viewer represented only by one hazel human eye and one consistent clean anatomical eye model. Environment lock: dark charcoal science studio with a single warm practical reflection and restrained teal optical graphics. Lighting: soft key from camera left, narrow warm rim from camera right, black-to-charcoal background. Color: photoreal neutral skin and eye color, deep charcoal, restrained teal signal paths, amber payoff accent. Camera: Measured pullback from retina to eye-and-nerve profile. Entry: Continue the signal movement from the optic-disc region. Exit: End with the signal exiting frame right toward the brain. Screen direction: visual information travels left-to-right toward the optic nerve and brain. Leave clean motion handles at both ends; no embedded text.",
+      "negative_prompt": "identity drift, anatomy change, wardrobe change, background jump, lighting flip, reversed screen direction, duplicate subject, watermark, logo, embedded captions",
+      "clip_status": "awaiting_generated_or_approved_clip",
+      "human_review_required": true
+    },
+    {
+      "shot_id": "S05",
+      "story_stage": "demonstration",
+      "start_seconds": 20.0,
+      "end_seconds": 25.5,
+      "duration_seconds": 5.5,
+      "narration": "Close one eye during a dot test, and the missing mark can disappear completely.",
+      "caption": "TRY THE DOT TEST",
+      "visual_action": "Minimal original dot-and-cross demonstration in the same charcoal studio; the dot naturally disappears at one viewing position",
+      "camera": "Locked perpendicular demonstration view with a subtle controlled push",
+      "entry_action": "Brain-bound signal becomes the horizontal test line",
+      "exit_action": "Hold briefly after the dot disappears, then begin restoring the surrounding pattern",
+      "screen_direction": "visual information travels left-to-right toward the optic nerve and brain",
+      "transition_in": {
+        "strategy": "j_cut",
+        "audio_bridge": "carry narration, ambience, or motivated SFX across the cut"
+      },
+      "transition_handle_seconds": 0.5,
+      "ambience": "Continuous hum with space left for narration",
+      "sfx": "Quiet disappearance tick, no digital glitch",
+      "clip_prompt": "Original vertical cinematic clip. Minimal original dot-and-cross demonstration in the same charcoal studio; the dot naturally disappears at one viewing position. Subject lock: the same adult viewer represented only by one hazel human eye and one consistent clean anatomical eye model. Environment lock: dark charcoal science studio with a single warm practical reflection and restrained teal optical graphics. Lighting: soft key from camera left, narrow warm rim from camera right, black-to-charcoal background. Color: photoreal neutral skin and eye color, deep charcoal, restrained teal signal paths, amber payoff accent. Camera: Locked perpendicular demonstration view with a subtle controlled push. Entry: Brain-bound signal becomes the horizontal test line. Exit: Hold briefly after the dot disappears, then begin restoring the surrounding pattern. Screen direction: visual information travels left-to-right toward the optic nerve and brain. Leave clean motion handles at both ends; no embedded text.",
+      "negative_prompt": "identity drift, anatomy change, wardrobe change, background jump, lighting flip, reversed screen direction, duplicate subject, watermark, logo, embedded captions",
+      "clip_status": "awaiting_generated_or_approved_clip",
+      "human_review_required": true
+    },
+    {
+      "shot_id": "S06",
+      "story_stage": "payoff",
+      "start_seconds": 25.5,
+      "end_seconds": 30.5,
+      "duration_seconds": 5.0,
+      "narration": "Your brain fills the gap from the surrounding pattern. Seeing is partly reconstruction.",
+      "caption": "SEEING IS RECONSTRUCTION",
+      "visual_action": "Return to the same hazel eye as the surrounding studio reflection flows smoothly across the blind-spot region; restrained amber highlight marks the reveal",
+      "camera": "Slow pull back from macro eye to a composed final close-up",
+      "entry_action": "The test pattern flows into the reflection on the eye",
+      "exit_action": "End on a steady eye with the complete reflection and a clean half-second hold",
+      "screen_direction": "visual information travels left-to-right toward the optic nerve and brain",
+      "transition_in": {
+        "strategy": "l_cut",
+        "audio_bridge": "carry narration, ambience, or motivated SFX across the cut"
+      },
+      "transition_handle_seconds": 0.5,
+      "ambience": "Hum resolves into a warm sustained tone",
+      "sfx": "Soft reveal bloom",
+      "clip_prompt": "Original vertical cinematic clip. Return to the same hazel eye as the surrounding studio reflection flows smoothly across the blind-spot region; restrained amber highlight marks the reveal. Subject lock: the same adult viewer represented only by one hazel human eye and one consistent clean anatomical eye model. Environment lock: dark charcoal science studio with a single warm practical reflection and restrained teal optical graphics. Lighting: soft key from camera left, narrow warm rim from camera right, black-to-charcoal background. Color: photoreal neutral skin and eye color, deep charcoal, restrained teal signal paths, amber payoff accent. Camera: Slow pull back from macro eye to a composed final close-up. Entry: The test pattern flows into the reflection on the eye. Exit: End on a steady eye with the complete reflection and a clean half-second hold. Screen direction: visual information travels left-to-right toward the optic nerve and brain. Leave clean motion handles at both ends; no embedded text.",
+      "negative_prompt": "identity drift, anatomy change, wardrobe change, background jump, lighting flip, reversed screen direction, duplicate subject, watermark, logo, embedded captions",
+      "clip_status": "awaiting_generated_or_approved_clip",
+      "human_review_required": true
+    }
+  ],
+  "factual_notes": [
+    {
+      "claim": "Photoreceptors in the retina convert light into electrical signals that travel through the optic nerve to the brain.",
+      "source_url": "https://www.nei.nih.gov/eye-health-information/healthy-vision/how-eyes-work",
+      "source_title": "How the Eyes Work \u2014 National Eye Institute",
+      "review_status": "pending_human_fact_review"
+    },
+    {
+      "claim": "The physiological blind spot corresponds to the location where the optic nerve exits and visual cells are absent.",
+      "source_url": "https://www.nei.nih.gov/sites/default/files/nei-pdfs/nei_executive-summary.pdf",
+      "source_title": "National Eye Institute glossary \u2014 blind spot",
+      "review_status": "pending_human_fact_review"
+    },
+    {
+      "claim": "Perceptual filling-in can make the visual system fill the informational void at the blind spot using surrounding content.",
+      "source_url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC4784844/",
+      "source_title": "Predictive Coding: A Possible Explanation of Filling-In at the Blind Spot",
+      "review_status": "pending_human_fact_review"
+    }
+  ],
+  "originality_distance": {
+    "max_similarity": 0.0462,
+    "threshold": 0.35,
+    "copied_long_phrases": [],
+    "comparisons": [
+      {
+        "source_phrase": "photoreceptors turn the light into electrical signals",
+        "similarity": 0.0455
+      },
+      {
+        "source_phrase": "the visual system fills the informational void",
+        "similarity": 0.0462
+      }
+    ],
+    "automated_check": "pass",
+    "human_originality_review_required": true
+  },
+  "visual_identity": {
+    "format": "premium factual explainer",
+    "tone": "credible, visual, concise, curious",
+    "continuity_before_style": true
+  },
+  "render_allowed": false,
+  "publish_allowed": false,
+  "human_review_required": true,
+  "status": "draft_for_fact_rights_originality_and_creative_review",
+  "validation": {
+    "passed": true,
+    "errors": []
+  },
+  "pilot_id": "rawr-blind-spot",
+  "source_brief_path": "p68-pilots/rawr-blind-spot/source-brief.json"
+}

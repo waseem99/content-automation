@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Content Engine Studio</title>
   <meta name="description" content="Interactive architecture map and static creator studio for the content automation engine.">
+  <meta name="content-api-base" content="">
+  <meta name="content-plan-month" content="2026-08-01">
   <link rel="stylesheet" href="assets/styles.css">
 </head>
 <body>
@@ -26,6 +28,87 @@
   </header>
 
   <main>
+    <section id="portfolio-studio" class="portfolio-section" aria-labelledby="portfolio-heading">
+      <div class="portfolio-head">
+        <div>
+          <p class="eyebrow dark-eyebrow">30-Day Content Portfolio</p>
+          <h2 id="portfolio-heading">Operate every brand one month ahead</h2>
+          <p class="section-copy">A Facebook-first command center for planning original master videos, approving scripts and previews, routing only high-value shots to paid generation, and exporting complete platform packages.</p>
+        </div>
+        <div class="horizon-card"><strong>Target buffer</strong><span>30 approved publishing days</span><small>Publishing always remains human-controlled</small></div>
+      </div>
+
+      <div id="portfolio-metrics" class="portfolio-metrics" aria-label="Portfolio production metrics"></div>
+
+      <div class="portfolio-toolbar">
+        <label for="brand-filter">Brand</label>
+        <select id="brand-filter"></select>
+        <label for="status-filter">Workflow stage</label>
+        <select id="status-filter">
+          <option value="all">All stages</option>
+          <option value="idea">Idea review</option>
+          <option value="script">Script review</option>
+          <option value="preview">Preview review</option>
+          <option value="premium">Premium render</option>
+          <option value="package">Package review</option>
+          <option value="ready">Ready to publish</option>
+        </select>
+        <button id="export-calendar" type="button">Export 30-Day Plan</button>
+        <button id="connect-api" class="secondary" type="button">Connect Data</button>
+        <span id="data-mode" class="data-mode demo">Demo data</span>
+      </div>
+
+      <div class="portfolio-layout">
+        <aside id="brand-summary" class="brand-summary" aria-live="polite"></aside>
+        <section class="calendar-panel" aria-labelledby="queue-heading">
+          <div class="queue-title">
+            <div><p class="eyebrow dark-eyebrow">Production Queue</p><h3 id="queue-heading">Monthly content inventory</h3></div>
+            <span class="queue-note">One original master → Facebook, YouTube Shorts, TikTok exports</span>
+          </div>
+          <div class="table-wrap">
+            <table class="content-table">
+              <thead><tr><th>Date</th><th>Brand & concept</th><th>Format</th><th>Stage</th><th>Assets</th><th>Action</th></tr></thead>
+              <tbody id="content-queue"></tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+
+      <dialog id="content-review" class="content-review">
+        <form method="dialog" class="review-close-row"><button class="review-close" aria-label="Close idea review" title="Close idea review"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button></form>
+        <div id="content-review-body" aria-live="polite"></div>
+      </dialog>
+
+      <section class="workflow-policy" aria-labelledby="workflow-policy-heading">
+        <div><p class="eyebrow dark-eyebrow">Approval Economics</p><h3 id="workflow-policy-heading">Spend after the idea proves itself</h3></div>
+        <ol>
+          <li><strong>Research:</strong> evidence, trend signal and duplicate check.</li>
+          <li><strong>Approve idea:</strong> hook, angle and monetization role.</li>
+          <li><strong>Approve script:</strong> narration, claims and scene plan.</li>
+          <li><strong>Free preview:</strong> timing, captions, VO and rough motion.</li>
+          <li><strong>Premium shots:</strong> realism-critical clips only.</li>
+          <li><strong>Package:</strong> platform exports, thumbnail, caption, hashtags and provenance.</li>
+        </ol>
+      </section>
+
+      <section id="reference-intelligence" class="reference-intelligence" aria-labelledby="reference-heading">
+        <div class="reference-heading-row">
+          <div><p class="eyebrow dark-eyebrow">Reference Intelligence</p><h3 id="reference-heading">Research evidence ready for human review</h3></div>
+          <p>Heavy media processing and source files stay in the local workspace. This surface receives sanitized metadata and review-safe artifact fingerprints only; it cannot process or publish content.</p>
+        </div>
+        <div id="reference-metrics" class="reference-metrics" aria-label="Reference queue metrics"></div>
+        <div class="reference-toolbar">
+          <label for="reference-brand-filter">Brand</label><select id="reference-brand-filter"><option value="">All brands</option></select>
+          <label for="reference-platform-filter">Platform</label><select id="reference-platform-filter"><option value="">All platforms</option><option>facebook</option><option>instagram</option><option>youtube</option><option>tiktok</option><option>x</option><option>snapchat</option><option>local</option></select>
+          <label for="reference-status-filter">Status</label><select id="reference-status-filter"><option value="">All statuses</option><option value="queued">Queued</option><option value="processing">Processing</option><option value="partial">Partial</option><option value="ready_for_review">Ready for review</option><option value="failed">Failed</option><option value="blocked">Blocked</option></select>
+        </div>
+        <div class="reference-layout">
+          <div class="table-wrap"><table class="content-table"><thead><tr><th>Reference</th><th>Platform</th><th>Status</th><th>Progress</th><th>Evidence</th><th>Action</th></tr></thead><tbody id="reference-queue"></tbody></table></div>
+          <aside id="reference-detail" class="reference-detail" aria-live="polite"><h4>Select a reference</h4><p>Connect the operator API to inspect artifacts, brand assignments, approval gates, and research-to-idea links.</p></aside>
+        </div>
+      </section>
+    </section>
+
     <section id="engine-map" class="engine-section" aria-labelledby="engine-heading">
       <div class="engine-heading-row">
         <div>
@@ -315,6 +398,7 @@ Do not use celebrity likeness, copied music, third-party clips, or brand logos.<
     <span>Architecture map · Static Creator Studio · Human-controlled workflow</span>
   </footer>
 
+  <script src="assets/portfolio-api.js" defer></script>
   <script src="assets/app.js" defer></script>
 </body>
 </html>

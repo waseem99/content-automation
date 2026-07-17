@@ -1,0 +1,118 @@
+{
+  "pilot_id": "animal-elephant-signals",
+  "brand_profile": "animal_x",
+  "topic": "elephant seismic communication through ground vibrations",
+  "selected_concept_id": "animal_x-concept-2",
+  "reusable_mechanics": [
+    "behavior mystery in the first second",
+    "ground-level visual evidence",
+    "sensory mechanism reveal",
+    "quiet observational resolution"
+  ],
+  "continuity_bible": {
+    "subject_identity": "one adult African savanna elephant with a small triangular notch in the right ear, intact tusks, natural proportions, dust on lower legs",
+    "environment": "the same dry East African savanna clearing with one fallen acacia branch at frame left and distant low hills",
+    "lighting": "warm dawn light from camera right with long soft shadows and light ground haze",
+    "color_treatment": "natural earth tones, warm restrained highlights, soft blue-gray distant hills, documentary contrast",
+    "screen_direction": "the elephant faces or moves right-to-left; vibration energy travels left-to-right toward the elephant",
+    "camera_language": "grounded wildlife documentary, long-lens observation mixed with motivated ground-level macro views, no impossible drone dives"
+  },
+  "factual_notes": [
+    {
+      "claim": "Elephant calls can generate seismic vibrations that propagate through the ground.",
+      "source_url": "https://academic.oup.com/icb/article/41/5/1157/343557",
+      "source_title": "Exploring the Potential Use of Seismic Waves as a Communication Channel by Elephants and Other Large Mammals",
+      "review_status": "pending_human_fact_review"
+    },
+    {
+      "claim": "Research indicates elephants can detect and distinguish information in ground-borne vibration signals.",
+      "source_url": "https://med.stanford.edu/news/all-news/2007/05/caller-id-in-the-wild-african-elephants-communicate-by-ground-vibration-stanford-researcher-finds.html",
+      "source_title": "Stanford Medicine — African elephants communicate by ground vibration",
+      "review_status": "pending_human_fact_review"
+    },
+    {
+      "claim": "The feet are a plausible initial interface for detecting seismic signals, with more than one sensory pathway proposed.",
+      "source_url": "https://www.neuwritewest.org/blog/4037",
+      "source_title": "Seismic Communication in Elephants — research explainer",
+      "review_status": "pending_human_fact_review"
+    }
+  ],
+  "source_phrases_for_originality_check": [
+    "listening with their feet to vibrations in the ground",
+    "generate similar acoustic and seismic vibrations"
+  ],
+  "script_segments": [
+    {
+      "story_stage": "hook",
+      "duration_seconds": 5.0,
+      "narration": "This elephant may be listening to a message you cannot hear, through the ground.",
+      "caption": "A MESSAGE BENEATH ITS FEET",
+      "visual_action": "The same elephant abruptly pauses mid-step beside the fallen acacia branch and lowers its weight onto the front feet",
+      "entry_action": "Begin on a low ground-level view as the right front foot settles into dust",
+      "exit_action": "End with the elephant completely still, right ear notch visible, facing left",
+      "camera": "Ground-level 85mm documentary close shot, gentle forward creep",
+      "ambience": "Continuous dawn savanna wind, distant birds, very low insect bed",
+      "sfx": "Muted footfall followed by near-silence"
+    },
+    {
+      "story_stage": "setup",
+      "duration_seconds": 5.5,
+      "narration": "A deep rumble does not travel only through air. Some energy enters the soil as vibration.",
+      "caption": "RUMBLE → GROUND VIBRATION",
+      "visual_action": "Long-lens profile of the same elephant producing a subtle low rumble; dust grains near the feet tremble almost imperceptibly",
+      "entry_action": "Continue from the still listening pose, maintaining right-to-left orientation",
+      "exit_action": "End tilting down toward the right front foot and vibrating dust",
+      "camera": "Stable 135mm side profile, slow tilt from head to feet",
+      "ambience": "Same savanna bed with a restrained sub-bass rumble",
+      "sfx": "Natural low rumble without cinematic boom"
+    },
+    {
+      "story_stage": "evidence",
+      "duration_seconds": 5.5,
+      "narration": "The signal can move across the landscape while the receiving elephant stands completely still.",
+      "caption": "THE GROUND CARRIES IT",
+      "visual_action": "Macro ground view travels from a distant dust ripple past cracked soil toward the same elephant foot; no glowing fantasy waves",
+      "entry_action": "Enter on the vibrating dust from shot two",
+      "exit_action": "End when the subtle ripple reaches the planted front foot from frame left",
+      "camera": "Low tracking macro parallel to the ground, left-to-right energy movement",
+      "ambience": "Continuous wind and birds with faint earth resonance",
+      "sfx": "Soft granular vibration texture"
+    },
+    {
+      "story_stage": "mechanism",
+      "duration_seconds": 5.5,
+      "narration": "Sensitive feet and body pathways can help turn that vibration into useful information.",
+      "caption": "FEET DETECT THE SIGNAL",
+      "visual_action": "Close view of the same planted foot and lower leg, then a restrained anatomical overlay traces a plausible pathway upward without labeling certainty",
+      "entry_action": "Continue exactly as the ripple reaches the front foot",
+      "exit_action": "Overlay fades while camera rises toward the elephant's attentive head",
+      "camera": "Documentary close-up transitioning to a slow vertical rise",
+      "ambience": "Same continuous environment under a subtle tactile pulse",
+      "sfx": "Quiet low-frequency pulse synchronized to the arrival"
+    },
+    {
+      "story_stage": "reveal",
+      "duration_seconds": 5.5,
+      "narration": "Studies suggest elephants can distinguish information in these signals, including who produced a call.",
+      "caption": "THE SIGNAL CARRIES IDENTITY",
+      "visual_action": "The same elephant lifts its head and turns slightly toward a distant off-screen herd; ear notch and lighting remain identical",
+      "entry_action": "Enter as the camera rise reaches the attentive eye",
+      "exit_action": "End on the elephant holding its gaze toward frame left",
+      "camera": "Long-lens close portrait with a gentle motivated pan left",
+      "ambience": "Continuous savanna bed; distant low rumble arrives before picture settles",
+      "sfx": "Very distant natural elephant rumble"
+    },
+    {
+      "story_stage": "resolution",
+      "duration_seconds": 6.0,
+      "narration": "When a herd suddenly pauses, the conversation may already be beneath them.",
+      "caption": "A CONVERSATION UNDERFOOT",
+      "visual_action": "Wide dawn view reveals two distant herd silhouettes while the same foreground elephant remains still beside the fallen acacia branch",
+      "entry_action": "Continue the elephant's gaze direction into the wide landscape",
+      "exit_action": "Hold the quiet tableau for a clean half second as dust moves through warm light",
+      "camera": "Slow pullback to a wide grounded wildlife composition",
+      "ambience": "Savanna ambience opens wider and the low rumble fades naturally",
+      "sfx": "No impact; end on environmental sound"
+    }
+  ]
+}

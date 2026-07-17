@@ -1,0 +1,3499 @@
+{
+  "schema_version": "p80.brand_month_studio.v1",
+  "brand": {
+    "slug": "rawr-nation",
+    "name": "Rawr Nation",
+    "primary_platform": "facebook",
+    "cadence": "5 shorts and 1 feature weekly",
+    "pillars": [
+      "Animal senses",
+      "Survival mechanisms",
+      "Myth versus fact",
+      "Behaviour reveals"
+    ]
+  },
+  "month_start": "2026-08-01",
+  "coverage_days": 31,
+  "reference_intelligence": {
+    "verified_media": 3,
+    "analyzed_media": 3,
+    "status": "verified_local_evidence",
+    "creative_rule": "reuse pacing and reveal mechanics only; never copy source wording, sequence, or assets"
+  },
+  "items": [
+    {
+      "id": "rawr-nation-2026-08-01-01",
+      "scheduled_for": "2026-08-01",
+      "title": "The blind spot predators exploit",
+      "concept": "Show where common prey animals cannot see and how stalking predators approach through that narrow visual gap.",
+      "pillar": "Animal senses",
+      "format": "vertical_feature",
+      "batch": 1,
+      "duration_seconds": 35,
+      "workflow_stage": "preview_queue",
+      "script": {
+        "hook": "A bird can scan almost everything around it and still leave one approach unseen.",
+        "narration": "A bird can scan almost everything around it and still leave one approach unseen. Map the bird's measured visual field first, then show the rear sector that its eyes do not cover at that instant. Show where common prey animals cannot see and how stalking predators approach through that narrow visual gap. Many birds trade a wide visual field for a blind area behind the head; head movements help them sample that missing space. The gap creates vulnerability, but species, posture, movement, sound, and group vigilance all change the outcome.",
+        "payoff": "The gap creates vulnerability, but species, posture, movement, sound, and group vigilance all change the outcome.",
+        "word_count": 90,
+        "fact_review_required": true,
+        "fact_status": "source_ready_pending_human",
+        "sources": [
+          {
+            "title": "What Drives Bird Vision? Bill Control and Predator Detection Overshadow Flight",
+            "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC5682009/",
+            "supports": "Many birds have extensive visual fields but retain a blind area behind the head that can increase vulnerability."
+          },
+          {
+            "title": "Fine-scale tracking reveals visual field use for predator detection",
+            "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC11392528/",
+            "supports": "Head orientation changes which parts of the environment fall inside an animal's visual field and blind area."
+          }
+        ]
+      },
+      "scene_plan": [
+        {
+          "scene": 1,
+          "start_seconds": 0,
+          "end_seconds": 4,
+          "purpose": "hook",
+          "narration": "A bird can scan almost everything around it and still leave one approach unseen.",
+          "visual_direction": "Immediate behavior-led close-up; movement begins in frame one.",
+          "preview_route": "open_source_motion",
+          "final_route": "premium_video",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        },
+        {
+          "scene": 2,
+          "start_seconds": 4,
+          "end_seconds": 11,
+          "purpose": "observable_evidence",
+          "narration": "Map the bird's measured visual field first, then show the rear sector that its eyes do not cover at that instant.",
+          "visual_direction": "One continuous wildlife action with a restrained tracking move.",
+          "preview_route": "open_source_motion",
+          "final_route": "premium_video",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        },
+        {
+          "scene": 3,
+          "start_seconds": 11,
+          "end_seconds": 20,
+          "purpose": "mechanism",
+          "narration": "Show where common prey animals cannot see and how stalking predators approach through that narrow visual gap.",
+          "visual_direction": "Macro-to-micro transition or clean anatomical cutaway showing cause and effect.",
+          "preview_route": "open_source_motion",
+          "final_route": "deterministic_or_premium",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        },
+        {
+          "scene": 4,
+          "start_seconds": 20,
+          "end_seconds": 28,
+          "purpose": "clarifier",
+          "narration": "Many birds trade a wide visual field for a blind area behind the head; head movements help them sample that missing space.",
+          "visual_direction": "Return to real behavior; one minimal label separates evidence from myth.",
+          "preview_route": "open_source_motion",
+          "final_route": "deterministic_or_premium",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        },
+        {
+          "scene": 5,
+          "start_seconds": 28,
+          "end_seconds": 35,
+          "purpose": "payoff",
+          "narration": "The gap creates vulnerability, but species, posture, movement, sound, and group vigilance all change the outcome.",
+          "visual_direction": "Complete the action in a wider hero frame and hold the final readable pose.",
+          "preview_route": "open_source_motion",
+          "final_route": "premium_video",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        }
+      ],
+      "voice": {
+        "development_provider": "kokoro_local",
+        "style": "energetic, credible wildlife explainer",
+        "pace": "fast but intelligible",
+        "production_provider": "human-approved premium or retained local voice",
+        "status": "ready_for_review",
+        "delivery": "operator_api_artifact",
+        "review_required": true
+      },
+      "thumbnail": {
+        "primary_text": "THE GAP IT CAN'T SEE",
+        "alternates": [
+          "THE BLIND SPOT PREDATORS EXPLOIT",
+          "A BIRD CAN SCAN ALMOST EVERYTHING AROUND IT AND "
+        ],
+        "composition": "single animal, one impossible-looking action, clean dark negative space, no collage"
+      },
+      "platform_packages": [
+        {
+          "platform": "facebook",
+          "caption": "A bird can scan almost everything around it and still leave one approach unseen. The gap creates vulnerability, but species, posture, movement, sound, and group vigilance all change the outcome.",
+          "title": "The blind spot predators exploit",
+          "hashtags": [
+            "Wildlife",
+            "AnimalFacts",
+            "Nature",
+            "Animalsenses"
+          ],
+          "cta": "Which animal should we decode next?"
+        },
+        {
+          "platform": "youtube_shorts",
+          "caption": "The gap creates vulnerability, but species, posture, movement, sound, and group vigilance all change the outcome.",
+          "title": "The blind spot predators exploit",
+          "hashtags": [
+            "Wildlife",
+            "AnimalFacts",
+            "Nature"
+          ],
+          "cta": "Subscribe for the next animal mechanism."
+        },
+        {
+          "platform": "tiktok",
+          "caption": "A bird can scan almost everything around it and still leave one approach unseen. Watch the mechanism unfold.",
+          "title": "The blind spot predators exploit",
+          "hashtags": [
+            "Wildlife",
+            "AnimalFacts",
+            "Nature",
+            "Animalsenses"
+          ],
+          "cta": "Follow for more wildlife reveals."
+        }
+      ],
+      "production": {
+        "free_preview": "queued",
+        "premium_render": "blocked_pending_human_approval",
+        "publish": "blocked"
+      },
+      "review": {
+        "idea": "ready",
+        "script": "pending_human_review",
+        "voice": "ready_for_review",
+        "visual": "pending_preview",
+        "premium_spend": "blocked"
+      },
+      "content_fingerprint": "a8869186892785c0109eb1f05195e22482edfac45ef8cca0bec82b5529b13a2e"
+    },
+    {
+      "id": "rawr-nation-2026-08-01-02",
+      "scheduled_for": "2026-08-02",
+      "title": "Why owl flight sounds like nothing",
+      "concept": "Explain how fringed feather edges break up airflow and reduce the sound made by a hunting owl in flight.",
+      "pillar": "Survival mechanisms",
+      "format": "vertical_short",
+      "batch": 1,
+      "duration_seconds": 30,
+      "workflow_stage": "preview_queue",
+      "script": {
+        "hook": "An owl does not merely fly quietly. Its wings dismantle the sound before prey can react.",
+        "narration": "An owl does not merely fly quietly. Its wings dismantle the sound before prey can react. Compare an ordinary wing beat with the owl's feather edge as air passes across it. Explain how fringed feather edges break up airflow and reduce the sound made by a hunting owl in flight. Comb-like leading edges and soft fringes break turbulent airflow into smaller, quieter patterns. The silence is not magic; it is feather structure controlling air.",
+        "payoff": "The silence is not magic; it is feather structure controlling air.",
+        "word_count": 74,
+        "fact_review_required": true,
+        "fact_status": "source_ready_pending_human",
+        "sources": [
+          {
+            "title": "Sound-reducing mechanisms in the owl wing",
+            "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC5206597/",
+            "supports": "Owl wing and feather specializations reduce flight noise across several mechanisms."
+          },
+          {
+            "title": "Leading-edge serrations delay transition and reduce noise",
+            "url": "https://doi.org/10.1177/1475472X17706131",
+            "supports": "Leading-edge comb structures influence airflow and aerodynamic noise."
+          }
+        ]
+      },
+      "scene_plan": [
+        {
+          "scene": 1,
+          "start_seconds": 0,
+          "end_seconds": 3,
+          "purpose": "hook",
+          "narration": "An owl does not merely fly quietly. Its wings dismantle the sound before prey can react.",
+          "visual_direction": "Immediate behavior-led close-up; movement begins in frame one.",
+          "preview_route": "open_source_motion",
+          "final_route": "premium_video",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        },
+        {
+          "scene": 2,
+          "start_seconds": 3,
+          "end_seconds": 9,
+          "purpose": "observable_evidence",
+          "narration": "Compare an ordinary wing beat with the owl's feather edge as air passes across it.",
+          "visual_direction": "One continuous wildlife action with a restrained tracking move.",
+          "preview_route": "open_source_motion",
+          "final_route": "premium_video",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        },
+        {
+          "scene": 3,
+          "start_seconds": 9,
+          "end_seconds": 17,
+          "purpose": "mechanism",
+          "narration": "Explain how fringed feather edges break up airflow and reduce the sound made by a hunting owl in flight.",
+          "visual_direction": "Macro-to-micro transition or clean anatomical cutaway showing cause and effect.",
+          "preview_route": "open_source_motion",
+          "final_route": "deterministic_or_premium",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        },
+        {
+          "scene": 4,
+          "start_seconds": 17,
+          "end_seconds": 24,
+          "purpose": "clarifier",
+          "narration": "Comb-like leading edges and soft fringes break turbulent airflow into smaller, quieter patterns.",
+          "visual_direction": "Return to real behavior; one minimal label separates evidence from myth.",
+          "preview_route": "open_source_motion",
+          "final_route": "deterministic_or_premium",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        },
+        {
+          "scene": 5,
+          "start_seconds": 24,
+          "end_seconds": 30,
+          "purpose": "payoff",
+          "narration": "The silence is not magic; it is feather structure controlling air.",
+          "visual_direction": "Complete the action in a wider hero frame and hold the final readable pose.",
+          "preview_route": "open_source_motion",
+          "final_route": "premium_video",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        }
+      ],
+      "voice": {
+        "development_provider": "kokoro_local",
+        "style": "energetic, credible wildlife explainer",
+        "pace": "fast but intelligible",
+        "production_provider": "human-approved premium or retained local voice",
+        "status": "ready_for_review",
+        "delivery": "operator_api_artifact",
+        "review_required": true
+      },
+      "thumbnail": {
+        "primary_text": "WHY OWLS FLY SILENT",
+        "alternates": [
+          "WHY OWL FLIGHT SOUNDS LIKE NOTHING",
+          "AN OWL DOES NOT MERELY FLY QUIETLY. ITS WINGS DI"
+        ],
+        "composition": "single animal, one impossible-looking action, clean dark negative space, no collage"
+      },
+      "platform_packages": [
+        {
+          "platform": "facebook",
+          "caption": "An owl does not merely fly quietly. Its wings dismantle the sound before prey can react. The silence is not magic; it is feather structure controlling air.",
+          "title": "Why owl flight sounds like nothing",
+          "hashtags": [
+            "Wildlife",
+            "AnimalFacts",
+            "Nature",
+            "Survivalmechanisms"
+          ],
+          "cta": "Which animal should we decode next?"
+        },
+        {
+          "platform": "youtube_shorts",
+          "caption": "The silence is not magic; it is feather structure controlling air.",
+          "title": "Why owl flight sounds like nothing",
+          "hashtags": [
+            "Wildlife",
+            "AnimalFacts",
+            "Nature"
+          ],
+          "cta": "Subscribe for the next animal mechanism."
+        },
+        {
+          "platform": "tiktok",
+          "caption": "An owl does not merely fly quietly. Its wings dismantle the sound before prey can react. Watch the mechanism unfold.",
+          "title": "Why owl flight sounds like nothing",
+          "hashtags": [
+            "Wildlife",
+            "AnimalFacts",
+            "Nature",
+            "Survivalmechanisms"
+          ],
+          "cta": "Follow for more wildlife reveals."
+        }
+      ],
+      "production": {
+        "free_preview": "queued",
+        "premium_render": "blocked_pending_human_approval",
+        "publish": "blocked"
+      },
+      "review": {
+        "idea": "ready",
+        "script": "pending_human_review",
+        "voice": "ready_for_review",
+        "visual": "pending_preview",
+        "premium_spend": "blocked"
+      },
+      "content_fingerprint": "3366586e0eb0dca5bf94af7fbba8a1f84b6f42af1dc1a20872d5b48fd911ee9d"
+    },
+    {
+      "id": "rawr-nation-2026-08-01-03",
+      "scheduled_for": "2026-08-03",
+      "title": "The shrimp punch that flashes",
+      "concept": "Visualize how a mantis shrimp strike creates a collapsing cavitation bubble and a brief flash, separate from the direct impact.",
+      "pillar": "Survival mechanisms",
+      "format": "vertical_short",
+      "batch": 1,
+      "duration_seconds": 30,
+      "workflow_stage": "preview_queue",
+      "script": {
+        "hook": "This strike is so fast that the water delivers a second hit.",
+        "narration": "This strike is so fast that the water delivers a second hit. Follow the club through the water before the first impact reaches the target. Visualize how a mantis shrimp strike creates a collapsing cavitation bubble and a brief flash, separate from the direct impact. The club accelerates water into a low-pressure cavitation bubble that collapses with shock, heat, and a tiny flash. The prey faces the punch\u2014and then the bubble's collapse.",
+        "payoff": "The prey faces the punch\u2014and then the bubble's collapse.",
+        "word_count": 72,
+        "fact_review_required": true,
+        "fact_status": "source_ready_pending_human",
+        "sources": [
+          {
+            "title": "Deadly strike mechanism of a mantis shrimp",
+            "url": "https://pubmed.ncbi.nlm.nih.gov/16169943/",
+            "supports": "The ultrafast strike produces cavitation; bubble collapse contributes a second impact and emits light."
+          },
+          {
+            "title": "Mechanics of movement: mantis shrimp",
+            "url": "https://pateklab.biology.duke.edu/research/mechanics-of-ultrafast-movement/mechanics-of-movement-mantis-shrimp/",
+            "supports": "Laboratory overview of the spring-loaded strike and cavitation mechanism."
+          }
+        ]
+      },
+      "scene_plan": [
+        {
+          "scene": 1,
+          "start_seconds": 0,
+          "end_seconds": 3,
+          "purpose": "hook",
+          "narration": "This strike is so fast that the water delivers a second hit.",
+          "visual_direction": "Immediate behavior-led close-up; movement begins in frame one.",
+          "preview_route": "open_source_motion",
+          "final_route": "premium_video",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        },
+        {
+          "scene": 2,
+          "start_seconds": 3,
+          "end_seconds": 9,
+          "purpose": "observable_evidence",
+          "narration": "Follow the club through the water before the first impact reaches the target.",
+          "visual_direction": "One continuous wildlife action with a restrained tracking move.",
+          "preview_route": "open_source_motion",
+          "final_route": "premium_video",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        },
+        {
+          "scene": 3,
+          "start_seconds": 9,
+          "end_seconds": 17,
+          "purpose": "mechanism",
+          "narration": "Visualize how a mantis shrimp strike creates a collapsing cavitation bubble and a brief flash, separate from the direct impact.",
+          "visual_direction": "Macro-to-micro transition or clean anatomical cutaway showing cause and effect.",
+          "preview_route": "open_source_motion",
+          "final_route": "deterministic_or_premium",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        },
+        {
+          "scene": 4,
+          "start_seconds": 17,
+          "end_seconds": 24,
+          "purpose": "clarifier",
+          "narration": "The club accelerates water into a low-pressure cavitation bubble that collapses with shock, heat, and a tiny flash.",
+          "visual_direction": "Return to real behavior; one minimal label separates evidence from myth.",
+          "preview_route": "open_source_motion",
+          "final_route": "deterministic_or_premium",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        },
+        {
+          "scene": 5,
+          "start_seconds": 24,
+          "end_seconds": 30,
+          "purpose": "payoff",
+          "narration": "The prey faces the punch\u2014and then the bubble's collapse.",
+          "visual_direction": "Complete the action in a wider hero frame and hold the final readable pose.",
+          "preview_route": "open_source_motion",
+          "final_route": "premium_video",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        }
+      ],
+      "voice": {
+        "development_provider": "kokoro_local",
+        "style": "energetic, credible wildlife explainer",
+        "pace": "fast but intelligible",
+        "production_provider": "human-approved premium or retained local voice",
+        "status": "ready_for_review",
+        "delivery": "operator_api_artifact",
+        "review_required": true
+      },
+      "thumbnail": {
+        "primary_text": "A PUNCH THAT FLASHES",
+        "alternates": [
+          "THE SHRIMP PUNCH THAT FLASHES",
+          "THIS STRIKE IS SO FAST THAT THE WATER DELIVERS A"
+        ],
+        "composition": "single animal, one impossible-looking action, clean dark negative space, no collage"
+      },
+      "platform_packages": [
+        {
+          "platform": "facebook",
+          "caption": "This strike is so fast that the water delivers a second hit. The prey faces the punch\u2014and then the bubble's collapse.",
+          "title": "The shrimp punch that flashes",
+          "hashtags": [
+            "Wildlife",
+            "AnimalFacts",
+            "Nature",
+            "Survivalmechanisms"
+          ],
+          "cta": "Which animal should we decode next?"
+        },
+        {
+          "platform": "youtube_shorts",
+          "caption": "The prey faces the punch\u2014and then the bubble's collapse.",
+          "title": "The shrimp punch that flashes",
+          "hashtags": [
+            "Wildlife",
+            "AnimalFacts",
+            "Nature"
+          ],
+          "cta": "Subscribe for the next animal mechanism."
+        },
+        {
+          "platform": "tiktok",
+          "caption": "This strike is so fast that the water delivers a second hit. Watch the mechanism unfold.",
+          "title": "The shrimp punch that flashes",
+          "hashtags": [
+            "Wildlife",
+            "AnimalFacts",
+            "Nature",
+            "Survivalmechanisms"
+          ],
+          "cta": "Follow for more wildlife reveals."
+        }
+      ],
+      "production": {
+        "free_preview": "queued",
+        "premium_render": "blocked_pending_human_approval",
+        "publish": "blocked"
+      },
+      "review": {
+        "idea": "ready",
+        "script": "pending_human_review",
+        "voice": "ready_for_review",
+        "visual": "pending_preview",
+        "premium_spend": "blocked"
+      },
+      "content_fingerprint": "f89e81c4ba23ae5bab3b654b4518a40f80c8d0c6a2606cd0574dcc347b160314"
+    },
+    {
+      "id": "rawr-nation-2026-08-01-04",
+      "scheduled_for": "2026-08-05",
+      "title": "A shark's hidden electric map",
+      "concept": "Reveal how ampullae around a shark's snout detect weak electrical fields produced by nearby living animals.",
+      "pillar": "Animal senses",
+      "format": "vertical_short",
+      "batch": 1,
+      "duration_seconds": 30,
+      "workflow_stage": "preview_queue",
+      "script": {
+        "hook": "Even buried prey cannot hide its heartbeat from this shark.",
+        "narration": "Even buried prey cannot hide its heartbeat from this shark. A hidden animal still produces tiny electrical changes with every muscle and heartbeat. Reveal how ampullae around a shark's snout detect weak electrical fields produced by nearby living animals. Gel-filled pores around the snout conduct weak electrical changes toward sensory cells. In dark or cloudy water, electricity becomes another map of life.",
+        "payoff": "In dark or cloudy water, electricity becomes another map of life.",
+        "word_count": 62,
+        "fact_review_required": true,
+        "fact_status": "source_ready_pending_human",
+        "sources": [
+          {
+            "title": "The electric sense of sharks and rays",
+            "url": "https://www1.pbrc.hawaii.edu/~danh/Neurodiversity/Spring%202010/Session12-ElasmobranchElectroreception%5BTim%5D/Kalmijn%201971.pdf",
+            "supports": "Elasmobranchs detect weak bioelectric fields and use electroreception while locating prey."
+          },
+          {
+            "title": "The electrosensory world of sharks",
+            "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC2211453/",
+            "supports": "Ampullary electroreceptors and their ecological role in prey detection."
+          }
+        ]
+      },
+      "scene_plan": [
+        {
+          "scene": 1,
+          "start_seconds": 0,
+          "end_seconds": 3,
+          "purpose": "hook",
+          "narration": "Even buried prey cannot hide its heartbeat from this shark.",
+          "visual_direction": "Immediate behavior-led close-up; movement begins in frame one.",
+          "preview_route": "open_source_motion",
+          "final_route": "premium_video",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        },
+        {
+          "scene": 2,
+          "start_seconds": 3,
+          "end_seconds": 9,
+          "purpose": "observable_evidence",
+          "narration": "A hidden animal still produces tiny electrical changes with every muscle and heartbeat.",
+          "visual_direction": "One continuous wildlife action with a restrained tracking move.",
+          "preview_route": "open_source_motion",
+          "final_route": "premium_video",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        },
+        {
+          "scene": 3,
+          "start_seconds": 9,
+          "end_seconds": 17,
+          "purpose": "mechanism",
+          "narration": "Reveal how ampullae around a shark's snout detect weak electrical fields produced by nearby living animals.",
+          "visual_direction": "Macro-to-micro transition or clean anatomical cutaway showing cause and effect.",
+          "preview_route": "open_source_motion",
+          "final_route": "deterministic_or_premium",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        },
+        {
+          "scene": 4,
+          "start_seconds": 17,
+          "end_seconds": 24,
+          "purpose": "clarifier",
+          "narration": "Gel-filled pores around the snout conduct weak electrical changes toward sensory cells.",
+          "visual_direction": "Return to real behavior; one minimal label separates evidence from myth.",
+          "preview_route": "open_source_motion",
+          "final_route": "deterministic_or_premium",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        },
+        {
+          "scene": 5,
+          "start_seconds": 24,
+          "end_seconds": 30,
+          "purpose": "payoff",
+          "narration": "In dark or cloudy water, electricity becomes another map of life.",
+          "visual_direction": "Complete the action in a wider hero frame and hold the final readable pose.",
+          "preview_route": "open_source_motion",
+          "final_route": "premium_video",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        }
+      ],
+      "voice": {
+        "development_provider": "kokoro_local",
+        "style": "energetic, credible wildlife explainer",
+        "pace": "fast but intelligible",
+        "production_provider": "human-approved premium or retained local voice",
+        "status": "ready_for_review",
+        "delivery": "operator_api_artifact",
+        "review_required": true
+      },
+      "thumbnail": {
+        "primary_text": "SHARKS SENSE ELECTRICITY",
+        "alternates": [
+          "A SHARK'S HIDDEN ELECTRIC MAP",
+          "EVEN BURIED PREY CANNOT HIDE ITS HEARTBEAT FROM "
+        ],
+        "composition": "single animal, one impossible-looking action, clean dark negative space, no collage"
+      },
+      "platform_packages": [
+        {
+          "platform": "facebook",
+          "caption": "Even buried prey cannot hide its heartbeat from this shark. In dark or cloudy water, electricity becomes another map of life.",
+          "title": "A shark's hidden electric map",
+          "hashtags": [
+            "Wildlife",
+            "AnimalFacts",
+            "Nature",
+            "Animalsenses"
+          ],
+          "cta": "Which animal should we decode next?"
+        },
+        {
+          "platform": "youtube_shorts",
+          "caption": "In dark or cloudy water, electricity becomes another map of life.",
+          "title": "A shark's hidden electric map",
+          "hashtags": [
+            "Wildlife",
+            "AnimalFacts",
+            "Nature"
+          ],
+          "cta": "Subscribe for the next animal mechanism."
+        },
+        {
+          "platform": "tiktok",
+          "caption": "Even buried prey cannot hide its heartbeat from this shark. Watch the mechanism unfold.",
+          "title": "A shark's hidden electric map",
+          "hashtags": [
+            "Wildlife",
+            "AnimalFacts",
+            "Nature",
+            "Animalsenses"
+          ],
+          "cta": "Follow for more wildlife reveals."
+        }
+      ],
+      "production": {
+        "free_preview": "queued",
+        "premium_render": "blocked_pending_human_approval",
+        "publish": "blocked"
+      },
+      "review": {
+        "idea": "ready",
+        "script": "pending_human_review",
+        "voice": "ready_for_review",
+        "visual": "pending_preview",
+        "premium_spend": "blocked"
+      },
+      "content_fingerprint": "810c606962d6fe4851b21b5302602765049b30c03ac9b65affc1774b14ccb7a7"
+    },
+    {
+      "id": "rawr-nation-2026-08-01-05",
+      "scheduled_for": "2026-08-06",
+      "title": "The lizard that shoots blood",
+      "concept": "Explain the horned lizard's eye-sinus defence and why the surprising blood spray can deter particular predators.",
+      "pillar": "Survival mechanisms",
+      "format": "vertical_short",
+      "batch": 1,
+      "duration_seconds": 30,
+      "workflow_stage": "preview_queue",
+      "script": {
+        "hook": "Corner this lizard and the defence may come from its eyes.",
+        "narration": "Corner this lizard and the defence may come from its eyes. The defence begins only after escape, camouflage, and inflation have failed. Explain the horned lizard's eye-sinus defence and why the surprising blood spray can deter particular predators. Pressure around the eye sinuses can rupture tiny vessels and direct a blood stream toward a threat. Against some predators, the surprise\u2014and the chemistry\u2014can end the attack.",
+        "payoff": "Against some predators, the surprise\u2014and the chemistry\u2014can end the attack.",
+        "word_count": 65,
+        "fact_review_required": true,
+        "fact_status": "source_ready_pending_human",
+        "sources": [
+          {
+            "title": "Responses of kit foxes to antipredator blood-squirting",
+            "url": "https://bioone.org/journals/ichthyology-and-herpetology/volume-2004/issue-3/CH-03-157R1/Responses-of-Kit-Foxes-Vulpes-macrotis-to-Antipredator-Blood-Squirting/10.1643/CH-03-157R1.short",
+            "supports": "Experimental evidence that horned-lizard blood-squirting can deter a canid predator."
+          },
+          {
+            "title": "Blood-squirting in horned lizards",
+            "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC8131779/",
+            "supports": "Anatomical and behavioral context for ocular-sinus blood-squirting defense."
+          }
+        ]
+      },
+      "scene_plan": [
+        {
+          "scene": 1,
+          "start_seconds": 0,
+          "end_seconds": 3,
+          "purpose": "hook",
+          "narration": "Corner this lizard and the defence may come from its eyes.",
+          "visual_direction": "Immediate behavior-led close-up; movement begins in frame one.",
+          "preview_route": "open_source_motion",
+          "final_route": "premium_video",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        },
+        {
+          "scene": 2,
+          "start_seconds": 3,
+          "end_seconds": 9,
+          "purpose": "observable_evidence",
+          "narration": "The defence begins only after escape, camouflage, and inflation have failed.",
+          "visual_direction": "One continuous wildlife action with a restrained tracking move.",
+          "preview_route": "open_source_motion",
+          "final_route": "premium_video",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        },
+        {
+          "scene": 3,
+          "start_seconds": 9,
+          "end_seconds": 17,
+          "purpose": "mechanism",
+          "narration": "Explain the horned lizard's eye-sinus defence and why the surprising blood spray can deter particular predators.",
+          "visual_direction": "Macro-to-micro transition or clean anatomical cutaway showing cause and effect.",
+          "preview_route": "open_source_motion",
+          "final_route": "deterministic_or_premium",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        },
+        {
+          "scene": 4,
+          "start_seconds": 17,
+          "end_seconds": 24,
+          "purpose": "clarifier",
+          "narration": "Pressure around the eye sinuses can rupture tiny vessels and direct a blood stream toward a threat.",
+          "visual_direction": "Return to real behavior; one minimal label separates evidence from myth.",
+          "preview_route": "open_source_motion",
+          "final_route": "deterministic_or_premium",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        },
+        {
+          "scene": 5,
+          "start_seconds": 24,
+          "end_seconds": 30,
+          "purpose": "payoff",
+          "narration": "Against some predators, the surprise\u2014and the chemistry\u2014can end the attack.",
+          "visual_direction": "Complete the action in a wider hero frame and hold the final readable pose.",
+          "preview_route": "open_source_motion",
+          "final_route": "premium_video",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        }
+      ],
+      "voice": {
+        "development_provider": "kokoro_local",
+        "style": "energetic, credible wildlife explainer",
+        "pace": "fast but intelligible",
+        "production_provider": "human-approved premium or retained local voice",
+        "status": "ready_for_review",
+        "delivery": "operator_api_artifact",
+        "review_required": true
+      },
+      "thumbnail": {
+        "primary_text": "BLOOD FROM ITS EYES?",
+        "alternates": [
+          "THE LIZARD THAT SHOOTS BLOOD",
+          "CORNER THIS LIZARD AND THE DEFENCE MAY COME FROM"
+        ],
+        "composition": "single animal, one impossible-looking action, clean dark negative space, no collage"
+      },
+      "platform_packages": [
+        {
+          "platform": "facebook",
+          "caption": "Corner this lizard and the defence may come from its eyes. Against some predators, the surprise\u2014and the chemistry\u2014can end the attack.",
+          "title": "The lizard that shoots blood",
+          "hashtags": [
+            "Wildlife",
+            "AnimalFacts",
+            "Nature",
+            "Survivalmechanisms"
+          ],
+          "cta": "Which animal should we decode next?"
+        },
+        {
+          "platform": "youtube_shorts",
+          "caption": "Against some predators, the surprise\u2014and the chemistry\u2014can end the attack.",
+          "title": "The lizard that shoots blood",
+          "hashtags": [
+            "Wildlife",
+            "AnimalFacts",
+            "Nature"
+          ],
+          "cta": "Subscribe for the next animal mechanism."
+        },
+        {
+          "platform": "tiktok",
+          "caption": "Corner this lizard and the defence may come from its eyes. Watch the mechanism unfold.",
+          "title": "The lizard that shoots blood",
+          "hashtags": [
+            "Wildlife",
+            "AnimalFacts",
+            "Nature",
+            "Survivalmechanisms"
+          ],
+          "cta": "Follow for more wildlife reveals."
+        }
+      ],
+      "production": {
+        "free_preview": "queued",
+        "premium_render": "blocked_pending_human_approval",
+        "publish": "blocked"
+      },
+      "review": {
+        "idea": "ready",
+        "script": "pending_human_review",
+        "voice": "ready_for_review",
+        "visual": "pending_preview",
+        "premium_spend": "blocked"
+      },
+      "content_fingerprint": "3ebe9276851543d3e2af6fb3de34cf8740a304353fb4fc2238adc96e082751a9"
+    },
+    {
+      "id": "rawr-nation-2026-08-01-06",
+      "scheduled_for": "2026-08-07",
+      "title": "Do camels really store water?",
+      "concept": "Correct the hump myth by showing fat storage, water conservation, and the body systems that help camels endure arid conditions.",
+      "pillar": "Myth versus fact",
+      "format": "vertical_feature",
+      "batch": 1,
+      "duration_seconds": 35,
+      "workflow_stage": "preview_queue",
+      "script": {
+        "hook": "A camel's hump is not a water tank.",
+        "narration": "A camel's hump is not a water tank. Open the hump and the supposed water reservoir is nowhere to be found. Correct the hump myth by showing fat storage, water conservation, and the body systems that help camels endure arid conditions. It stores fat, while the rest of the body limits water loss and tolerates dehydration unusually well. The hump stores fuel; the camel's whole physiology saves water.",
+        "payoff": "The hump stores fuel; the camel's whole physiology saves water.",
+        "word_count": 68,
+        "fact_review_required": true,
+        "fact_status": "source_ready_pending_human",
+        "sources": [
+          {
+            "title": "What do camels store in their humps?",
+            "url": "https://www.worldwildlife.org/resources/explainers/wildlife-climate-heroes/what-do-camels-store-in-their-humps-and-other-camel-superpowers/",
+            "supports": "Camel humps store fat rather than water; multiple physiological traits conserve water."
+          }
+        ]
+      },
+      "scene_plan": [
+        {
+          "scene": 1,
+          "start_seconds": 0,
+          "end_seconds": 4,
+          "purpose": "hook",
+          "narration": "A camel's hump is not a water tank.",
+          "visual_direction": "Immediate behavior-led close-up; movement begins in frame one.",
+          "preview_route": "open_source_motion",
+          "final_route": "premium_video",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        },
+        {
+          "scene": 2,
+          "start_seconds": 4,
+          "end_seconds": 11,
+          "purpose": "observable_evidence",
+          "narration": "Open the hump and the supposed water reservoir is nowhere to be found.",
+          "visual_direction": "One continuous wildlife action with a restrained tracking move.",
+          "preview_route": "open_source_motion",
+          "final_route": "premium_video",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        },
+        {
+          "scene": 3,
+          "start_seconds": 11,
+          "end_seconds": 20,
+          "purpose": "mechanism",
+          "narration": "Correct the hump myth by showing fat storage, water conservation, and the body systems that help camels endure arid conditions.",
+          "visual_direction": "Macro-to-micro transition or clean anatomical cutaway showing cause and effect.",
+          "preview_route": "open_source_motion",
+          "final_route": "deterministic_or_premium",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        },
+        {
+          "scene": 4,
+          "start_seconds": 20,
+          "end_seconds": 28,
+          "purpose": "clarifier",
+          "narration": "It stores fat, while the rest of the body limits water loss and tolerates dehydration unusually well.",
+          "visual_direction": "Return to real behavior; one minimal label separates evidence from myth.",
+          "preview_route": "open_source_motion",
+          "final_route": "deterministic_or_premium",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        },
+        {
+          "scene": 5,
+          "start_seconds": 28,
+          "end_seconds": 35,
+          "purpose": "payoff",
+          "narration": "The hump stores fuel; the camel's whole physiology saves water.",
+          "visual_direction": "Complete the action in a wider hero frame and hold the final readable pose.",
+          "preview_route": "open_source_motion",
+          "final_route": "premium_video",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        }
+      ],
+      "voice": {
+        "development_provider": "kokoro_local",
+        "style": "energetic, credible wildlife explainer",
+        "pace": "fast but intelligible",
+        "production_provider": "human-approved premium or retained local voice",
+        "status": "ready_for_review",
+        "delivery": "operator_api_artifact",
+        "review_required": true
+      },
+      "thumbnail": {
+        "primary_text": "NO WATER IN THE HUMP",
+        "alternates": [
+          "DO CAMELS REALLY STORE WATER?",
+          "A CAMEL'S HUMP IS NOT A WATER TANK."
+        ],
+        "composition": "single animal, one impossible-looking action, clean dark negative space, no collage"
+      },
+      "platform_packages": [
+        {
+          "platform": "facebook",
+          "caption": "A camel's hump is not a water tank. The hump stores fuel; the camel's whole physiology saves water.",
+          "title": "Do camels really store water?",
+          "hashtags": [
+            "Wildlife",
+            "AnimalFacts",
+            "Nature",
+            "Mythversusfact"
+          ],
+          "cta": "Which animal should we decode next?"
+        },
+        {
+          "platform": "youtube_shorts",
+          "caption": "The hump stores fuel; the camel's whole physiology saves water.",
+          "title": "Do camels really store water?",
+          "hashtags": [
+            "Wildlife",
+            "AnimalFacts",
+            "Nature"
+          ],
+          "cta": "Subscribe for the next animal mechanism."
+        },
+        {
+          "platform": "tiktok",
+          "caption": "A camel's hump is not a water tank. Watch the mechanism unfold.",
+          "title": "Do camels really store water?",
+          "hashtags": [
+            "Wildlife",
+            "AnimalFacts",
+            "Nature",
+            "Mythversusfact"
+          ],
+          "cta": "Follow for more wildlife reveals."
+        }
+      ],
+      "production": {
+        "free_preview": "queued",
+        "premium_render": "blocked_pending_human_approval",
+        "publish": "blocked"
+      },
+      "review": {
+        "idea": "ready",
+        "script": "pending_human_review",
+        "voice": "ready_for_review",
+        "visual": "pending_preview",
+        "premium_spend": "blocked"
+      },
+      "content_fingerprint": "5aff18f6e65f7a50eb0f263e7024122e85cb8025be674f59c32a219c2ada50a9"
+    },
+    {
+      "id": "rawr-nation-2026-08-01-07",
+      "scheduled_for": "2026-08-09",
+      "title": "How a gecko defeats gravity",
+      "concept": "Zoom from a gecko foot to microscopic setae and explain how enormous contact area enables dry adhesion.",
+      "pillar": "Survival mechanisms",
+      "format": "vertical_short",
+      "batch": 2,
+      "duration_seconds": 30,
+      "workflow_stage": "script_review",
+      "script": {
+        "hook": "A gecko climbs glass without glue, suction, or sticky liquid.",
+        "narration": "A gecko climbs glass without glue, suction, or sticky liquid. One planted toe holds while the next foot peels and resets higher on the glass. Zoom from a gecko foot to microscopic setae and explain how enormous contact area enables dry adhesion. Microscopic setae branch into vast numbers of close contacts that add weak molecular attractions together. By changing toe angle, the same powerful grip releases in an instant.",
+        "payoff": "By changing toe angle, the same powerful grip releases in an instant.",
+        "word_count": 69,
+        "fact_review_required": true,
+        "fact_status": "research_pending",
+        "sources": []
+      },
+      "scene_plan": [
+        {
+          "scene": 1,
+          "start_seconds": 0,
+          "end_seconds": 3,
+          "purpose": "hook",
+          "narration": "A gecko climbs glass without glue, suction, or sticky liquid.",
+          "visual_direction": "Immediate behavior-led close-up; movement begins in frame one.",
+          "preview_route": "open_source_motion",
+          "final_route": "premium_video",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        },
+        {
+          "scene": 2,
+          "start_seconds": 3,
+          "end_seconds": 9,
+          "purpose": "observable_evidence",
+          "narration": "One planted toe holds while the next foot peels and resets higher on the glass.",
+          "visual_direction": "One continuous wildlife action with a restrained tracking move.",
+          "preview_route": "open_source_motion",
+          "final_route": "premium_video",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        },
+        {
+          "scene": 3,
+          "start_seconds": 9,
+          "end_seconds": 17,
+          "purpose": "mechanism",
+          "narration": "Zoom from a gecko foot to microscopic setae and explain how enormous contact area enables dry adhesion.",
+          "visual_direction": "Macro-to-micro transition or clean anatomical cutaway showing cause and effect.",
+          "preview_route": "open_source_motion",
+          "final_route": "deterministic_or_premium",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        },
+        {
+          "scene": 4,
+          "start_seconds": 17,
+          "end_seconds": 24,
+          "purpose": "clarifier",
+          "narration": "Microscopic setae branch into vast numbers of close contacts that add weak molecular attractions together.",
+          "visual_direction": "Return to real behavior; one minimal label separates evidence from myth.",
+          "preview_route": "open_source_motion",
+          "final_route": "deterministic_or_premium",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        },
+        {
+          "scene": 5,
+          "start_seconds": 24,
+          "end_seconds": 30,
+          "purpose": "payoff",
+          "narration": "By changing toe angle, the same powerful grip releases in an instant.",
+          "visual_direction": "Complete the action in a wider hero frame and hold the final readable pose.",
+          "preview_route": "open_source_motion",
+          "final_route": "premium_video",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        }
+      ],
+      "voice": {
+        "development_provider": "kokoro_local",
+        "style": "energetic, credible wildlife explainer",
+        "pace": "fast but intelligible",
+        "production_provider": "human-approved premium or retained local voice"
+      },
+      "thumbnail": {
+        "primary_text": "NO GLUE. STILL GRIPS.",
+        "alternates": [
+          "HOW A GECKO DEFEATS GRAVITY",
+          "A GECKO CLIMBS GLASS WITHOUT GLUE, SUCTION, OR S"
+        ],
+        "composition": "single animal, one impossible-looking action, clean dark negative space, no collage"
+      },
+      "platform_packages": [
+        {
+          "platform": "facebook",
+          "caption": "A gecko climbs glass without glue, suction, or sticky liquid. By changing toe angle, the same powerful grip releases in an instant.",
+          "title": "How a gecko defeats gravity",
+          "hashtags": [
+            "Wildlife",
+            "AnimalFacts",
+            "Nature",
+            "Survivalmechanisms"
+          ],
+          "cta": "Which animal should we decode next?"
+        },
+        {
+          "platform": "youtube_shorts",
+          "caption": "By changing toe angle, the same powerful grip releases in an instant.",
+          "title": "How a gecko defeats gravity",
+          "hashtags": [
+            "Wildlife",
+            "AnimalFacts",
+            "Nature"
+          ],
+          "cta": "Subscribe for the next animal mechanism."
+        },
+        {
+          "platform": "tiktok",
+          "caption": "A gecko climbs glass without glue, suction, or sticky liquid. Watch the mechanism unfold.",
+          "title": "How a gecko defeats gravity",
+          "hashtags": [
+            "Wildlife",
+            "AnimalFacts",
+            "Nature",
+            "Survivalmechanisms"
+          ],
+          "cta": "Follow for more wildlife reveals."
+        }
+      ],
+      "production": {
+        "free_preview": "after_script_review",
+        "premium_render": "blocked_pending_human_approval",
+        "publish": "blocked"
+      },
+      "review": {
+        "idea": "ready",
+        "script": "pending_human_review",
+        "voice": "pending_preview",
+        "visual": "pending_preview",
+        "premium_spend": "blocked"
+      },
+      "content_fingerprint": "03f9d807f7c8ecb9fd76ee995780472f24c0e79e0ad20e073287df3ff7914107"
+    },
+    {
+      "id": "rawr-nation-2026-08-01-08",
+      "scheduled_for": "2026-08-10",
+      "title": "The snake that sees body heat",
+      "concept": "Map how pit vipers combine infrared-sensitive pit organs with vision to locate warm prey in darkness.",
+      "pillar": "Animal senses",
+      "format": "vertical_short",
+      "batch": 2,
+      "duration_seconds": 30,
+      "workflow_stage": "script_review",
+      "script": {
+        "hook": "In darkness, this snake can detect the warm outline of prey.",
+        "narration": "In darkness, this snake can detect the warm outline of prey. A warm body stands out even when visible detail disappears into darkness. Map how pit vipers combine infrared-sensitive pit organs with vision to locate warm prey in darkness. Pit membranes respond to infrared energy and the brain combines that signal with ordinary vision. The result is not a photograph, but a second channel for locating heat.",
+        "payoff": "The result is not a photograph, but a second channel for locating heat.",
+        "word_count": 67,
+        "fact_review_required": true,
+        "fact_status": "research_pending",
+        "sources": []
+      },
+      "scene_plan": [
+        {
+          "scene": 1,
+          "start_seconds": 0,
+          "end_seconds": 3,
+          "purpose": "hook",
+          "narration": "In darkness, this snake can detect the warm outline of prey.",
+          "visual_direction": "Immediate behavior-led close-up; movement begins in frame one.",
+          "preview_route": "open_source_motion",
+          "final_route": "premium_video",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        },
+        {
+          "scene": 2,
+          "start_seconds": 3,
+          "end_seconds": 9,
+          "purpose": "observable_evidence",
+          "narration": "A warm body stands out even when visible detail disappears into darkness.",
+          "visual_direction": "One continuous wildlife action with a restrained tracking move.",
+          "preview_route": "open_source_motion",
+          "final_route": "premium_video",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        },
+        {
+          "scene": 3,
+          "start_seconds": 9,
+          "end_seconds": 17,
+          "purpose": "mechanism",
+          "narration": "Map how pit vipers combine infrared-sensitive pit organs with vision to locate warm prey in darkness.",
+          "visual_direction": "Macro-to-micro transition or clean anatomical cutaway showing cause and effect.",
+          "preview_route": "open_source_motion",
+          "final_route": "deterministic_or_premium",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        },
+        {
+          "scene": 4,
+          "start_seconds": 17,
+          "end_seconds": 24,
+          "purpose": "clarifier",
+          "narration": "Pit membranes respond to infrared energy and the brain combines that signal with ordinary vision.",
+          "visual_direction": "Return to real behavior; one minimal label separates evidence from myth.",
+          "preview_route": "open_source_motion",
+          "final_route": "deterministic_or_premium",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        },
+        {
+          "scene": 5,
+          "start_seconds": 24,
+          "end_seconds": 30,
+          "purpose": "payoff",
+          "narration": "The result is not a photograph, but a second channel for locating heat.",
+          "visual_direction": "Complete the action in a wider hero frame and hold the final readable pose.",
+          "preview_route": "open_source_motion",
+          "final_route": "premium_video",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        }
+      ],
+      "voice": {
+        "development_provider": "kokoro_local",
+        "style": "energetic, credible wildlife explainer",
+        "pace": "fast but intelligible",
+        "production_provider": "human-approved premium or retained local voice"
+      },
+      "thumbnail": {
+        "primary_text": "IT CAN SENSE YOUR HEAT",
+        "alternates": [
+          "THE SNAKE THAT SEES BODY HEAT",
+          "IN DARKNESS, THIS SNAKE CAN DETECT THE WARM OUTL"
+        ],
+        "composition": "single animal, one impossible-looking action, clean dark negative space, no collage"
+      },
+      "platform_packages": [
+        {
+          "platform": "facebook",
+          "caption": "In darkness, this snake can detect the warm outline of prey. The result is not a photograph, but a second channel for locating heat.",
+          "title": "The snake that sees body heat",
+          "hashtags": [
+            "Wildlife",
+            "AnimalFacts",
+            "Nature",
+            "Animalsenses"
+          ],
+          "cta": "Which animal should we decode next?"
+        },
+        {
+          "platform": "youtube_shorts",
+          "caption": "The result is not a photograph, but a second channel for locating heat.",
+          "title": "The snake that sees body heat",
+          "hashtags": [
+            "Wildlife",
+            "AnimalFacts",
+            "Nature"
+          ],
+          "cta": "Subscribe for the next animal mechanism."
+        },
+        {
+          "platform": "tiktok",
+          "caption": "In darkness, this snake can detect the warm outline of prey. Watch the mechanism unfold.",
+          "title": "The snake that sees body heat",
+          "hashtags": [
+            "Wildlife",
+            "AnimalFacts",
+            "Nature",
+            "Animalsenses"
+          ],
+          "cta": "Follow for more wildlife reveals."
+        }
+      ],
+      "production": {
+        "free_preview": "after_script_review",
+        "premium_render": "blocked_pending_human_approval",
+        "publish": "blocked"
+      },
+      "review": {
+        "idea": "ready",
+        "script": "pending_human_review",
+        "voice": "pending_preview",
+        "visual": "pending_preview",
+        "premium_spend": "blocked"
+      },
+      "content_fingerprint": "50292f2228c9fc7152c62268403c5bd88e5df33d9973892b5ccb17be640804cc"
+    },
+    {
+      "id": "rawr-nation-2026-08-01-09",
+      "scheduled_for": "2026-08-11",
+      "title": "This frog freezes and wakes up",
+      "concept": "Follow a wood frog through winter as ice forms outside its cells while glucose helps protect vulnerable tissues.",
+      "pillar": "Survival mechanisms",
+      "format": "vertical_short",
+      "batch": 2,
+      "duration_seconds": 30,
+      "workflow_stage": "script_review",
+      "script": {
+        "hook": "This frog can stop moving, partly freeze, and wake when winter releases it.",
+        "narration": "This frog can stop moving, partly freeze, and wake when winter releases it. As temperature falls, the frog becomes rigid and its heartbeat can become undetectable. Follow a wood frog through winter as ice forms outside its cells while glucose helps protect vulnerable tissues. Ice forms mainly outside cells while glucose rises through vulnerable tissues and limits damaging dehydration. Its winter survival is controlled freezing\u2014not invulnerability to ice.",
+        "payoff": "Its winter survival is controlled freezing\u2014not invulnerability to ice.",
+        "word_count": 68,
+        "fact_review_required": true,
+        "fact_status": "research_pending",
+        "sources": []
+      },
+      "scene_plan": [
+        {
+          "scene": 1,
+          "start_seconds": 0,
+          "end_seconds": 3,
+          "purpose": "hook",
+          "narration": "This frog can stop moving, partly freeze, and wake when winter releases it.",
+          "visual_direction": "Immediate behavior-led close-up; movement begins in frame one.",
+          "preview_route": "open_source_motion",
+          "final_route": "premium_video",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        },
+        {
+          "scene": 2,
+          "start_seconds": 3,
+          "end_seconds": 9,
+          "purpose": "observable_evidence",
+          "narration": "As temperature falls, the frog becomes rigid and its heartbeat can become undetectable.",
+          "visual_direction": "One continuous wildlife action with a restrained tracking move.",
+          "preview_route": "open_source_motion",
+          "final_route": "premium_video",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        },
+        {
+          "scene": 3,
+          "start_seconds": 9,
+          "end_seconds": 17,
+          "purpose": "mechanism",
+          "narration": "Follow a wood frog through winter as ice forms outside its cells while glucose helps protect vulnerable tissues.",
+          "visual_direction": "Macro-to-micro transition or clean anatomical cutaway showing cause and effect.",
+          "preview_route": "open_source_motion",
+          "final_route": "deterministic_or_premium",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        },
+        {
+          "scene": 4,
+          "start_seconds": 17,
+          "end_seconds": 24,
+          "purpose": "clarifier",
+          "narration": "Ice forms mainly outside cells while glucose rises through vulnerable tissues and limits damaging dehydration.",
+          "visual_direction": "Return to real behavior; one minimal label separates evidence from myth.",
+          "preview_route": "open_source_motion",
+          "final_route": "deterministic_or_premium",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        },
+        {
+          "scene": 5,
+          "start_seconds": 24,
+          "end_seconds": 30,
+          "purpose": "payoff",
+          "narration": "Its winter survival is controlled freezing\u2014not invulnerability to ice.",
+          "visual_direction": "Complete the action in a wider hero frame and hold the final readable pose.",
+          "preview_route": "open_source_motion",
+          "final_route": "premium_video",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        }
+      ],
+      "voice": {
+        "development_provider": "kokoro_local",
+        "style": "energetic, credible wildlife explainer",
+        "pace": "fast but intelligible",
+        "production_provider": "human-approved premium or retained local voice"
+      },
+      "thumbnail": {
+        "primary_text": "FROZEN\u2014BUT NOT DEAD",
+        "alternates": [
+          "THIS FROG FREEZES AND WAKES UP",
+          "THIS FROG CAN STOP MOVING, PARTLY FREEZE, AND WA"
+        ],
+        "composition": "single animal, one impossible-looking action, clean dark negative space, no collage"
+      },
+      "platform_packages": [
+        {
+          "platform": "facebook",
+          "caption": "This frog can stop moving, partly freeze, and wake when winter releases it. Its winter survival is controlled freezing\u2014not invulnerability to ice.",
+          "title": "This frog freezes and wakes up",
+          "hashtags": [
+            "Wildlife",
+            "AnimalFacts",
+            "Nature",
+            "Survivalmechanisms"
+          ],
+          "cta": "Which animal should we decode next?"
+        },
+        {
+          "platform": "youtube_shorts",
+          "caption": "Its winter survival is controlled freezing\u2014not invulnerability to ice.",
+          "title": "This frog freezes and wakes up",
+          "hashtags": [
+            "Wildlife",
+            "AnimalFacts",
+            "Nature"
+          ],
+          "cta": "Subscribe for the next animal mechanism."
+        },
+        {
+          "platform": "tiktok",
+          "caption": "This frog can stop moving, partly freeze, and wake when winter releases it. Watch the mechanism unfold.",
+          "title": "This frog freezes and wakes up",
+          "hashtags": [
+            "Wildlife",
+            "AnimalFacts",
+            "Nature",
+            "Survivalmechanisms"
+          ],
+          "cta": "Follow for more wildlife reveals."
+        }
+      ],
+      "production": {
+        "free_preview": "after_script_review",
+        "premium_render": "blocked_pending_human_approval",
+        "publish": "blocked"
+      },
+      "review": {
+        "idea": "ready",
+        "script": "pending_human_review",
+        "voice": "pending_preview",
+        "visual": "pending_preview",
+        "premium_spend": "blocked"
+      },
+      "content_fingerprint": "fe90d01ef46d102dff2f958dc712696c3a8b6fcf2ff761d10a07ae9540d58e1c"
+    },
+    {
+      "id": "rawr-nation-2026-08-01-10",
+      "scheduled_for": "2026-08-13",
+      "title": "Why zebras are hard to bite",
+      "concept": "Test the evidence that zebra stripes disrupt the final landing approach of biting flies rather than simply hiding zebras from lions.",
+      "pillar": "Myth versus fact",
+      "format": "vertical_short",
+      "batch": 2,
+      "duration_seconds": 30,
+      "workflow_stage": "script_review",
+      "script": {
+        "hook": "Zebra stripes may confuse something much smaller than a lion.",
+        "narration": "Zebra stripes may confuse something much smaller than a lion. Watch a fly approach normally, then lose control during the final centimetres above stripes. Test the evidence that zebra stripes disrupt the final landing approach of biting flies rather than simply hiding zebras from lions. Experiments show biting flies struggle with their final approach and landing on striped surfaces. The strongest evidence points to disrupted landings, not camouflage from big predators.",
+        "payoff": "The strongest evidence points to disrupted landings, not camouflage from big predators.",
+        "word_count": 71,
+        "fact_review_required": true,
+        "fact_status": "research_pending",
+        "sources": []
+      },
+      "scene_plan": [
+        {
+          "scene": 1,
+          "start_seconds": 0,
+          "end_seconds": 3,
+          "purpose": "hook",
+          "narration": "Zebra stripes may confuse something much smaller than a lion.",
+          "visual_direction": "Immediate behavior-led close-up; movement begins in frame one.",
+          "preview_route": "open_source_motion",
+          "final_route": "premium_video",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        },
+        {
+          "scene": 2,
+          "start_seconds": 3,
+          "end_seconds": 9,
+          "purpose": "observable_evidence",
+          "narration": "Watch a fly approach normally, then lose control during the final centimetres above stripes.",
+          "visual_direction": "One continuous wildlife action with a restrained tracking move.",
+          "preview_route": "open_source_motion",
+          "final_route": "premium_video",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        },
+        {
+          "scene": 3,
+          "start_seconds": 9,
+          "end_seconds": 17,
+          "purpose": "mechanism",
+          "narration": "Test the evidence that zebra stripes disrupt the final landing approach of biting flies rather than simply hiding zebras from lions.",
+          "visual_direction": "Macro-to-micro transition or clean anatomical cutaway showing cause and effect.",
+          "preview_route": "open_source_motion",
+          "final_route": "deterministic_or_premium",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        },
+        {
+          "scene": 4,
+          "start_seconds": 17,
+          "end_seconds": 24,
+          "purpose": "clarifier",
+          "narration": "Experiments show biting flies struggle with their final approach and landing on striped surfaces.",
+          "visual_direction": "Return to real behavior; one minimal label separates evidence from myth.",
+          "preview_route": "open_source_motion",
+          "final_route": "deterministic_or_premium",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        },
+        {
+          "scene": 5,
+          "start_seconds": 24,
+          "end_seconds": 30,
+          "purpose": "payoff",
+          "narration": "The strongest evidence points to disrupted landings, not camouflage from big predators.",
+          "visual_direction": "Complete the action in a wider hero frame and hold the final readable pose.",
+          "preview_route": "open_source_motion",
+          "final_route": "premium_video",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        }
+      ],
+      "voice": {
+        "development_provider": "kokoro_local",
+        "style": "energetic, credible wildlife explainer",
+        "pace": "fast but intelligible",
+        "production_provider": "human-approved premium or retained local voice"
+      },
+      "thumbnail": {
+        "primary_text": "STRIPES VS BITING FLIES",
+        "alternates": [
+          "WHY ZEBRAS ARE HARD TO BITE",
+          "ZEBRA STRIPES MAY CONFUSE SOMETHING MUCH SMALLER"
+        ],
+        "composition": "single animal, one impossible-looking action, clean dark negative space, no collage"
+      },
+      "platform_packages": [
+        {
+          "platform": "facebook",
+          "caption": "Zebra stripes may confuse something much smaller than a lion. The strongest evidence points to disrupted landings, not camouflage from big predators.",
+          "title": "Why zebras are hard to bite",
+          "hashtags": [
+            "Wildlife",
+            "AnimalFacts",
+            "Nature",
+            "Mythversusfact"
+          ],
+          "cta": "Which animal should we decode next?"
+        },
+        {
+          "platform": "youtube_shorts",
+          "caption": "The strongest evidence points to disrupted landings, not camouflage from big predators.",
+          "title": "Why zebras are hard to bite",
+          "hashtags": [
+            "Wildlife",
+            "AnimalFacts",
+            "Nature"
+          ],
+          "cta": "Subscribe for the next animal mechanism."
+        },
+        {
+          "platform": "tiktok",
+          "caption": "Zebra stripes may confuse something much smaller than a lion. Watch the mechanism unfold.",
+          "title": "Why zebras are hard to bite",
+          "hashtags": [
+            "Wildlife",
+            "AnimalFacts",
+            "Nature",
+            "Mythversusfact"
+          ],
+          "cta": "Follow for more wildlife reveals."
+        }
+      ],
+      "production": {
+        "free_preview": "after_script_review",
+        "premium_render": "blocked_pending_human_approval",
+        "publish": "blocked"
+      },
+      "review": {
+        "idea": "ready",
+        "script": "pending_human_review",
+        "voice": "pending_preview",
+        "visual": "pending_preview",
+        "premium_spend": "blocked"
+      },
+      "content_fingerprint": "6c91a6e8592220008ff79f2dc8f93cefeb99c41eb9d0c1e9c545c811f666a590"
+    },
+    {
+      "id": "rawr-nation-2026-08-01-11",
+      "scheduled_for": "2026-08-14",
+      "title": "The beetle that drinks fog",
+      "concept": "Show how a desert beetle positions its body to collect fog droplets and channel usable water toward its mouth.",
+      "pillar": "Survival mechanisms",
+      "format": "vertical_feature",
+      "batch": 2,
+      "duration_seconds": 35,
+      "workflow_stage": "script_review",
+      "script": {
+        "hook": "In a desert with almost no rain, this beetle waits for water in the air.",
+        "narration": "In a desert with almost no rain, this beetle waits for water in the air. At the right angle, droplets grow on the raised body instead of vanishing into sand. Show how a desert beetle positions its body to collect fog droplets and channel usable water toward its mouth. It raises its body into fog so droplets collect, merge, and travel down its surface toward the mouth. A change in posture turns moving mist into a drink.",
+        "payoff": "A change in posture turns moving mist into a drink.",
+        "word_count": 77,
+        "fact_review_required": true,
+        "fact_status": "research_pending",
+        "sources": []
+      },
+      "scene_plan": [
+        {
+          "scene": 1,
+          "start_seconds": 0,
+          "end_seconds": 4,
+          "purpose": "hook",
+          "narration": "In a desert with almost no rain, this beetle waits for water in the air.",
+          "visual_direction": "Immediate behavior-led close-up; movement begins in frame one.",
+          "preview_route": "open_source_motion",
+          "final_route": "premium_video",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        },
+        {
+          "scene": 2,
+          "start_seconds": 4,
+          "end_seconds": 11,
+          "purpose": "observable_evidence",
+          "narration": "At the right angle, droplets grow on the raised body instead of vanishing into sand.",
+          "visual_direction": "One continuous wildlife action with a restrained tracking move.",
+          "preview_route": "open_source_motion",
+          "final_route": "premium_video",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        },
+        {
+          "scene": 3,
+          "start_seconds": 11,
+          "end_seconds": 20,
+          "purpose": "mechanism",
+          "narration": "Show how a desert beetle positions its body to collect fog droplets and channel usable water toward its mouth.",
+          "visual_direction": "Macro-to-micro transition or clean anatomical cutaway showing cause and effect.",
+          "preview_route": "open_source_motion",
+          "final_route": "deterministic_or_premium",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        },
+        {
+          "scene": 4,
+          "start_seconds": 20,
+          "end_seconds": 28,
+          "purpose": "clarifier",
+          "narration": "It raises its body into fog so droplets collect, merge, and travel down its surface toward the mouth.",
+          "visual_direction": "Return to real behavior; one minimal label separates evidence from myth.",
+          "preview_route": "open_source_motion",
+          "final_route": "deterministic_or_premium",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        },
+        {
+          "scene": 5,
+          "start_seconds": 28,
+          "end_seconds": 35,
+          "purpose": "payoff",
+          "narration": "A change in posture turns moving mist into a drink.",
+          "visual_direction": "Complete the action in a wider hero frame and hold the final readable pose.",
+          "preview_route": "open_source_motion",
+          "final_route": "premium_video",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        }
+      ],
+      "voice": {
+        "development_provider": "kokoro_local",
+        "style": "energetic, credible wildlife explainer",
+        "pace": "fast but intelligible",
+        "production_provider": "human-approved premium or retained local voice"
+      },
+      "thumbnail": {
+        "primary_text": "DRINKING WATER FROM FOG",
+        "alternates": [
+          "THE BEETLE THAT DRINKS FOG",
+          "IN A DESERT WITH ALMOST NO RAIN, THIS BEETLE WAI"
+        ],
+        "composition": "single animal, one impossible-looking action, clean dark negative space, no collage"
+      },
+      "platform_packages": [
+        {
+          "platform": "facebook",
+          "caption": "In a desert with almost no rain, this beetle waits for water in the air. A change in posture turns moving mist into a drink.",
+          "title": "The beetle that drinks fog",
+          "hashtags": [
+            "Wildlife",
+            "AnimalFacts",
+            "Nature",
+            "Survivalmechanisms"
+          ],
+          "cta": "Which animal should we decode next?"
+        },
+        {
+          "platform": "youtube_shorts",
+          "caption": "A change in posture turns moving mist into a drink.",
+          "title": "The beetle that drinks fog",
+          "hashtags": [
+            "Wildlife",
+            "AnimalFacts",
+            "Nature"
+          ],
+          "cta": "Subscribe for the next animal mechanism."
+        },
+        {
+          "platform": "tiktok",
+          "caption": "In a desert with almost no rain, this beetle waits for water in the air. Watch the mechanism unfold.",
+          "title": "The beetle that drinks fog",
+          "hashtags": [
+            "Wildlife",
+            "AnimalFacts",
+            "Nature",
+            "Survivalmechanisms"
+          ],
+          "cta": "Follow for more wildlife reveals."
+        }
+      ],
+      "production": {
+        "free_preview": "after_script_review",
+        "premium_render": "blocked_pending_human_approval",
+        "publish": "blocked"
+      },
+      "review": {
+        "idea": "ready",
+        "script": "pending_human_review",
+        "voice": "pending_preview",
+        "visual": "pending_preview",
+        "premium_spend": "blocked"
+      },
+      "content_fingerprint": "c745f2987270ad6f95f4bbb35f594fb92672edf97047066ceea5476f4f2461ae"
+    },
+    {
+      "id": "rawr-nation-2026-08-01-12",
+      "scheduled_for": "2026-08-15",
+      "title": "A crocodile's face can feel ripples",
+      "concept": "Explain the pressure-sensitive dome organs around crocodilian jaws that detect tiny disturbances at the water surface.",
+      "pillar": "Animal senses",
+      "format": "vertical_short",
+      "batch": 2,
+      "duration_seconds": 30,
+      "workflow_stage": "script_review",
+      "script": {
+        "hook": "A crocodile can detect a disturbance too small for us to notice.",
+        "narration": "A crocodile can detect a disturbance too small for us to notice. A single drop spreads across the surface before the animal turns toward its source. Explain the pressure-sensitive dome organs around crocodilian jaws that detect tiny disturbances at the water surface. Dome pressure receptors around the jaws respond when surface ripples bend the skin by tiny amounts. At the waterline, its face works like a field of motion sensors.",
+        "payoff": "At the waterline, its face works like a field of motion sensors.",
+        "word_count": 70,
+        "fact_review_required": true,
+        "fact_status": "research_pending",
+        "sources": []
+      },
+      "scene_plan": [
+        {
+          "scene": 1,
+          "start_seconds": 0,
+          "end_seconds": 3,
+          "purpose": "hook",
+          "narration": "A crocodile can detect a disturbance too small for us to notice.",
+          "visual_direction": "Immediate behavior-led close-up; movement begins in frame one.",
+          "preview_route": "open_source_motion",
+          "final_route": "premium_video",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        },
+        {
+          "scene": 2,
+          "start_seconds": 3,
+          "end_seconds": 9,
+          "purpose": "observable_evidence",
+          "narration": "A single drop spreads across the surface before the animal turns toward its source.",
+          "visual_direction": "One continuous wildlife action with a restrained tracking move.",
+          "preview_route": "open_source_motion",
+          "final_route": "premium_video",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        },
+        {
+          "scene": 3,
+          "start_seconds": 9,
+          "end_seconds": 17,
+          "purpose": "mechanism",
+          "narration": "Explain the pressure-sensitive dome organs around crocodilian jaws that detect tiny disturbances at the water surface.",
+          "visual_direction": "Macro-to-micro transition or clean anatomical cutaway showing cause and effect.",
+          "preview_route": "open_source_motion",
+          "final_route": "deterministic_or_premium",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        },
+        {
+          "scene": 4,
+          "start_seconds": 17,
+          "end_seconds": 24,
+          "purpose": "clarifier",
+          "narration": "Dome pressure receptors around the jaws respond when surface ripples bend the skin by tiny amounts.",
+          "visual_direction": "Return to real behavior; one minimal label separates evidence from myth.",
+          "preview_route": "open_source_motion",
+          "final_route": "deterministic_or_premium",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        },
+        {
+          "scene": 5,
+          "start_seconds": 24,
+          "end_seconds": 30,
+          "purpose": "payoff",
+          "narration": "At the waterline, its face works like a field of motion sensors.",
+          "visual_direction": "Complete the action in a wider hero frame and hold the final readable pose.",
+          "preview_route": "open_source_motion",
+          "final_route": "premium_video",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        }
+      ],
+      "voice": {
+        "development_provider": "kokoro_local",
+        "style": "energetic, credible wildlife explainer",
+        "pace": "fast but intelligible",
+        "production_provider": "human-approved premium or retained local voice"
+      },
+      "thumbnail": {
+        "primary_text": "ITS FACE FEELS WATER",
+        "alternates": [
+          "A CROCODILE'S FACE CAN FEEL RIPPLES",
+          "A CROCODILE CAN DETECT A DISTURBANCE TOO SMALL F"
+        ],
+        "composition": "single animal, one impossible-looking action, clean dark negative space, no collage"
+      },
+      "platform_packages": [
+        {
+          "platform": "facebook",
+          "caption": "A crocodile can detect a disturbance too small for us to notice. At the waterline, its face works like a field of motion sensors.",
+          "title": "A crocodile's face can feel ripples",
+          "hashtags": [
+            "Wildlife",
+            "AnimalFacts",
+            "Nature",
+            "Animalsenses"
+          ],
+          "cta": "Which animal should we decode next?"
+        },
+        {
+          "platform": "youtube_shorts",
+          "caption": "At the waterline, its face works like a field of motion sensors.",
+          "title": "A crocodile's face can feel ripples",
+          "hashtags": [
+            "Wildlife",
+            "AnimalFacts",
+            "Nature"
+          ],
+          "cta": "Subscribe for the next animal mechanism."
+        },
+        {
+          "platform": "tiktok",
+          "caption": "A crocodile can detect a disturbance too small for us to notice. Watch the mechanism unfold.",
+          "title": "A crocodile's face can feel ripples",
+          "hashtags": [
+            "Wildlife",
+            "AnimalFacts",
+            "Nature",
+            "Animalsenses"
+          ],
+          "cta": "Follow for more wildlife reveals."
+        }
+      ],
+      "production": {
+        "free_preview": "after_script_review",
+        "premium_render": "blocked_pending_human_approval",
+        "publish": "blocked"
+      },
+      "review": {
+        "idea": "ready",
+        "script": "pending_human_review",
+        "voice": "pending_preview",
+        "visual": "pending_preview",
+        "premium_spend": "blocked"
+      },
+      "content_fingerprint": "467a325c59691f48f636c5c376a39f5de1fc45df90e5a027d68ff9cda03bac46"
+    },
+    {
+      "id": "rawr-nation-2026-08-01-13",
+      "scheduled_for": "2026-08-17",
+      "title": "Why goats have rectangle pupils",
+      "concept": "Compare horizontal pupils with round and vertical pupils to show how grazing animals monitor a broad horizon.",
+      "pillar": "Animal senses",
+      "format": "vertical_short",
+      "batch": 3,
+      "duration_seconds": 30,
+      "workflow_stage": "script_review",
+      "script": {
+        "hook": "A goat's rectangular pupil is a panoramic survival tool.",
+        "narration": "A goat's rectangular pupil is a panoramic survival tool. Lower the goat's head and notice that the long pupil remains aligned with the horizon. Compare horizontal pupils with round and vertical pupils to show how grazing animals monitor a broad horizon. Horizontal pupils admit a broad strip of the horizon, and the eyes rotate as the head lowers to graze. The landscape stays level even while the animal's head points down.",
+        "payoff": "The landscape stays level even while the animal's head points down.",
+        "word_count": 71,
+        "fact_review_required": true,
+        "fact_status": "research_pending",
+        "sources": []
+      },
+      "scene_plan": [
+        {
+          "scene": 1,
+          "start_seconds": 0,
+          "end_seconds": 3,
+          "purpose": "hook",
+          "narration": "A goat's rectangular pupil is a panoramic survival tool.",
+          "visual_direction": "Immediate behavior-led close-up; movement begins in frame one.",
+          "preview_route": "open_source_motion",
+          "final_route": "premium_video",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        },
+        {
+          "scene": 2,
+          "start_seconds": 3,
+          "end_seconds": 9,
+          "purpose": "observable_evidence",
+          "narration": "Lower the goat's head and notice that the long pupil remains aligned with the horizon.",
+          "visual_direction": "One continuous wildlife action with a restrained tracking move.",
+          "preview_route": "open_source_motion",
+          "final_route": "premium_video",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        },
+        {
+          "scene": 3,
+          "start_seconds": 9,
+          "end_seconds": 17,
+          "purpose": "mechanism",
+          "narration": "Compare horizontal pupils with round and vertical pupils to show how grazing animals monitor a broad horizon.",
+          "visual_direction": "Macro-to-micro transition or clean anatomical cutaway showing cause and effect.",
+          "preview_route": "open_source_motion",
+          "final_route": "deterministic_or_premium",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        },
+        {
+          "scene": 4,
+          "start_seconds": 17,
+          "end_seconds": 24,
+          "purpose": "clarifier",
+          "narration": "Horizontal pupils admit a broad strip of the horizon, and the eyes rotate as the head lowers to graze.",
+          "visual_direction": "Return to real behavior; one minimal label separates evidence from myth.",
+          "preview_route": "open_source_motion",
+          "final_route": "deterministic_or_premium",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        },
+        {
+          "scene": 5,
+          "start_seconds": 24,
+          "end_seconds": 30,
+          "purpose": "payoff",
+          "narration": "The landscape stays level even while the animal's head points down.",
+          "visual_direction": "Complete the action in a wider hero frame and hold the final readable pose.",
+          "preview_route": "open_source_motion",
+          "final_route": "premium_video",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        }
+      ],
+      "voice": {
+        "development_provider": "kokoro_local",
+        "style": "energetic, credible wildlife explainer",
+        "pace": "fast but intelligible",
+        "production_provider": "human-approved premium or retained local voice"
+      },
+      "thumbnail": {
+        "primary_text": "WHY GOAT EYES ARE RECTANGLES",
+        "alternates": [
+          "WHY GOATS HAVE RECTANGLE PUPILS",
+          "A GOAT'S RECTANGULAR PUPIL IS A PANORAMIC SURVIV"
+        ],
+        "composition": "single animal, one impossible-looking action, clean dark negative space, no collage"
+      },
+      "platform_packages": [
+        {
+          "platform": "facebook",
+          "caption": "A goat's rectangular pupil is a panoramic survival tool. The landscape stays level even while the animal's head points down.",
+          "title": "Why goats have rectangle pupils",
+          "hashtags": [
+            "Wildlife",
+            "AnimalFacts",
+            "Nature",
+            "Animalsenses"
+          ],
+          "cta": "Which animal should we decode next?"
+        },
+        {
+          "platform": "youtube_shorts",
+          "caption": "The landscape stays level even while the animal's head points down.",
+          "title": "Why goats have rectangle pupils",
+          "hashtags": [
+            "Wildlife",
+            "AnimalFacts",
+            "Nature"
+          ],
+          "cta": "Subscribe for the next animal mechanism."
+        },
+        {
+          "platform": "tiktok",
+          "caption": "A goat's rectangular pupil is a panoramic survival tool. Watch the mechanism unfold.",
+          "title": "Why goats have rectangle pupils",
+          "hashtags": [
+            "Wildlife",
+            "AnimalFacts",
+            "Nature",
+            "Animalsenses"
+          ],
+          "cta": "Follow for more wildlife reveals."
+        }
+      ],
+      "production": {
+        "free_preview": "after_script_review",
+        "premium_render": "blocked_pending_human_approval",
+        "publish": "blocked"
+      },
+      "review": {
+        "idea": "ready",
+        "script": "pending_human_review",
+        "voice": "pending_preview",
+        "visual": "pending_preview",
+        "premium_spend": "blocked"
+      },
+      "content_fingerprint": "297500a38befa09ac6d69533203c8781ca660fcc9e5d01540fc21013f3528c17"
+    },
+    {
+      "id": "rawr-nation-2026-08-01-14",
+      "scheduled_for": "2026-08-18",
+      "title": "The fish wearing its own flashlight",
+      "concept": "Explore how flashlight fish use light-producing bacteria beneath their eyes and control the visible glow.",
+      "pillar": "Behaviour reveals",
+      "format": "vertical_short",
+      "batch": 3,
+      "duration_seconds": 30,
+      "workflow_stage": "script_review",
+      "script": {
+        "hook": "This fish carries living lights beneath its eyes.",
+        "narration": "This fish carries living lights beneath its eyes. Two luminous patches blink beneath the eyes as the fish moves through darkness. Explore how flashlight fish use light-producing bacteria beneath their eyes and control the visible glow. Symbiotic bacteria produce the glow, while the fish can cover or rotate the light organs to control flashes. The light can help with orientation, signalling, and feeding in darkness.",
+        "payoff": "The light can help with orientation, signalling, and feeding in darkness.",
+        "word_count": 65,
+        "fact_review_required": true,
+        "fact_status": "research_pending",
+        "sources": []
+      },
+      "scene_plan": [
+        {
+          "scene": 1,
+          "start_seconds": 0,
+          "end_seconds": 3,
+          "purpose": "hook",
+          "narration": "This fish carries living lights beneath its eyes.",
+          "visual_direction": "Immediate behavior-led close-up; movement begins in frame one.",
+          "preview_route": "open_source_motion",
+          "final_route": "premium_video",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        },
+        {
+          "scene": 2,
+          "start_seconds": 3,
+          "end_seconds": 9,
+          "purpose": "observable_evidence",
+          "narration": "Two luminous patches blink beneath the eyes as the fish moves through darkness.",
+          "visual_direction": "One continuous wildlife action with a restrained tracking move.",
+          "preview_route": "open_source_motion",
+          "final_route": "premium_video",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        },
+        {
+          "scene": 3,
+          "start_seconds": 9,
+          "end_seconds": 17,
+          "purpose": "mechanism",
+          "narration": "Explore how flashlight fish use light-producing bacteria beneath their eyes and control the visible glow.",
+          "visual_direction": "Macro-to-micro transition or clean anatomical cutaway showing cause and effect.",
+          "preview_route": "open_source_motion",
+          "final_route": "deterministic_or_premium",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        },
+        {
+          "scene": 4,
+          "start_seconds": 17,
+          "end_seconds": 24,
+          "purpose": "clarifier",
+          "narration": "Symbiotic bacteria produce the glow, while the fish can cover or rotate the light organs to control flashes.",
+          "visual_direction": "Return to real behavior; one minimal label separates evidence from myth.",
+          "preview_route": "open_source_motion",
+          "final_route": "deterministic_or_premium",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        },
+        {
+          "scene": 5,
+          "start_seconds": 24,
+          "end_seconds": 30,
+          "purpose": "payoff",
+          "narration": "The light can help with orientation, signalling, and feeding in darkness.",
+          "visual_direction": "Complete the action in a wider hero frame and hold the final readable pose.",
+          "preview_route": "open_source_motion",
+          "final_route": "premium_video",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        }
+      ],
+      "voice": {
+        "development_provider": "kokoro_local",
+        "style": "energetic, credible wildlife explainer",
+        "pace": "fast but intelligible",
+        "production_provider": "human-approved premium or retained local voice"
+      },
+      "thumbnail": {
+        "primary_text": "A FISH WITH HEADLIGHTS",
+        "alternates": [
+          "THE FISH WEARING ITS OWN FLASHLIGHT",
+          "THIS FISH CARRIES LIVING LIGHTS BENEATH ITS EYES"
+        ],
+        "composition": "single animal, one impossible-looking action, clean dark negative space, no collage"
+      },
+      "platform_packages": [
+        {
+          "platform": "facebook",
+          "caption": "This fish carries living lights beneath its eyes. The light can help with orientation, signalling, and feeding in darkness.",
+          "title": "The fish wearing its own flashlight",
+          "hashtags": [
+            "Wildlife",
+            "AnimalFacts",
+            "Nature",
+            "Behaviourreveals"
+          ],
+          "cta": "Which animal should we decode next?"
+        },
+        {
+          "platform": "youtube_shorts",
+          "caption": "The light can help with orientation, signalling, and feeding in darkness.",
+          "title": "The fish wearing its own flashlight",
+          "hashtags": [
+            "Wildlife",
+            "AnimalFacts",
+            "Nature"
+          ],
+          "cta": "Subscribe for the next animal mechanism."
+        },
+        {
+          "platform": "tiktok",
+          "caption": "This fish carries living lights beneath its eyes. Watch the mechanism unfold.",
+          "title": "The fish wearing its own flashlight",
+          "hashtags": [
+            "Wildlife",
+            "AnimalFacts",
+            "Nature",
+            "Behaviourreveals"
+          ],
+          "cta": "Follow for more wildlife reveals."
+        }
+      ],
+      "production": {
+        "free_preview": "after_script_review",
+        "premium_render": "blocked_pending_human_approval",
+        "publish": "blocked"
+      },
+      "review": {
+        "idea": "ready",
+        "script": "pending_human_review",
+        "voice": "pending_preview",
+        "visual": "pending_preview",
+        "premium_spend": "blocked"
+      },
+      "content_fingerprint": "d89444248705617db4483a66de2bda0d88e616e664de38acce210505fb5f6d44"
+    },
+    {
+      "id": "rawr-nation-2026-08-01-15",
+      "scheduled_for": "2026-08-19",
+      "title": "Can porcupines shoot their quills?",
+      "concept": "Debunk the projectile-quill myth and demonstrate how loose, barbed quills transfer through direct contact.",
+      "pillar": "Myth versus fact",
+      "format": "vertical_short",
+      "batch": 3,
+      "duration_seconds": 30,
+      "workflow_stage": "script_review",
+      "script": {
+        "hook": "Porcupines cannot fire their quills across a room.",
+        "narration": "Porcupines cannot fire their quills across a room. Create distance and no quills fly; contact the coat and the real transfer mechanism appears. Debunk the projectile-quill myth and demonstrate how loose, barbed quills transfer through direct contact. The quills detach during direct contact, and microscopic barbs can make some of them difficult to remove. The danger is real\u2014but the projectile story is a myth.",
+        "payoff": "The danger is real\u2014but the projectile story is a myth.",
+        "word_count": 64,
+        "fact_review_required": true,
+        "fact_status": "research_pending",
+        "sources": []
+      },
+      "scene_plan": [
+        {
+          "scene": 1,
+          "start_seconds": 0,
+          "end_seconds": 3,
+          "purpose": "hook",
+          "narration": "Porcupines cannot fire their quills across a room.",
+          "visual_direction": "Immediate behavior-led close-up; movement begins in frame one.",
+          "preview_route": "open_source_motion",
+          "final_route": "premium_video",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        },
+        {
+          "scene": 2,
+          "start_seconds": 3,
+          "end_seconds": 9,
+          "purpose": "observable_evidence",
+          "narration": "Create distance and no quills fly; contact the coat and the real transfer mechanism appears.",
+          "visual_direction": "One continuous wildlife action with a restrained tracking move.",
+          "preview_route": "open_source_motion",
+          "final_route": "premium_video",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        },
+        {
+          "scene": 3,
+          "start_seconds": 9,
+          "end_seconds": 17,
+          "purpose": "mechanism",
+          "narration": "Debunk the projectile-quill myth and demonstrate how loose, barbed quills transfer through direct contact.",
+          "visual_direction": "Macro-to-micro transition or clean anatomical cutaway showing cause and effect.",
+          "preview_route": "open_source_motion",
+          "final_route": "deterministic_or_premium",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        },
+        {
+          "scene": 4,
+          "start_seconds": 17,
+          "end_seconds": 24,
+          "purpose": "clarifier",
+          "narration": "The quills detach during direct contact, and microscopic barbs can make some of them difficult to remove.",
+          "visual_direction": "Return to real behavior; one minimal label separates evidence from myth.",
+          "preview_route": "open_source_motion",
+          "final_route": "deterministic_or_premium",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        },
+        {
+          "scene": 5,
+          "start_seconds": 24,
+          "end_seconds": 30,
+          "purpose": "payoff",
+          "narration": "The danger is real\u2014but the projectile story is a myth.",
+          "visual_direction": "Complete the action in a wider hero frame and hold the final readable pose.",
+          "preview_route": "open_source_motion",
+          "final_route": "premium_video",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        }
+      ],
+      "voice": {
+        "development_provider": "kokoro_local",
+        "style": "energetic, credible wildlife explainer",
+        "pace": "fast but intelligible",
+        "production_provider": "human-approved premium or retained local voice"
+      },
+      "thumbnail": {
+        "primary_text": "NO, THEY DON'T SHOOT",
+        "alternates": [
+          "CAN PORCUPINES SHOOT THEIR QUILLS?",
+          "PORCUPINES CANNOT FIRE THEIR QUILLS ACROSS A ROO"
+        ],
+        "composition": "single animal, one impossible-looking action, clean dark negative space, no collage"
+      },
+      "platform_packages": [
+        {
+          "platform": "facebook",
+          "caption": "Porcupines cannot fire their quills across a room. The danger is real\u2014but the projectile story is a myth.",
+          "title": "Can porcupines shoot their quills?",
+          "hashtags": [
+            "Wildlife",
+            "AnimalFacts",
+            "Nature",
+            "Mythversusfact"
+          ],
+          "cta": "Which animal should we decode next?"
+        },
+        {
+          "platform": "youtube_shorts",
+          "caption": "The danger is real\u2014but the projectile story is a myth.",
+          "title": "Can porcupines shoot their quills?",
+          "hashtags": [
+            "Wildlife",
+            "AnimalFacts",
+            "Nature"
+          ],
+          "cta": "Subscribe for the next animal mechanism."
+        },
+        {
+          "platform": "tiktok",
+          "caption": "Porcupines cannot fire their quills across a room. Watch the mechanism unfold.",
+          "title": "Can porcupines shoot their quills?",
+          "hashtags": [
+            "Wildlife",
+            "AnimalFacts",
+            "Nature",
+            "Mythversusfact"
+          ],
+          "cta": "Follow for more wildlife reveals."
+        }
+      ],
+      "production": {
+        "free_preview": "after_script_review",
+        "premium_render": "blocked_pending_human_approval",
+        "publish": "blocked"
+      },
+      "review": {
+        "idea": "ready",
+        "script": "pending_human_review",
+        "voice": "pending_preview",
+        "visual": "pending_preview",
+        "premium_spend": "blocked"
+      },
+      "content_fingerprint": "5494a40a26ad5299baf4090ecf021fcea294714d113ab67902401f4f67db6b9b"
+    },
+    {
+      "id": "rawr-nation-2026-08-01-16",
+      "scheduled_for": "2026-08-21",
+      "title": "The bird that fakes an injury",
+      "concept": "Reconstruct a killdeer's broken-wing display that draws a threat away from a vulnerable ground nest.",
+      "pillar": "Behaviour reveals",
+      "format": "vertical_feature",
+      "batch": 3,
+      "duration_seconds": 35,
+      "workflow_stage": "script_review",
+      "script": {
+        "hook": "This bird appears to break a wing exactly when a predator gets close.",
+        "narration": "This bird appears to break a wing exactly when a predator gets close. A threat approaches the nest and the parent suddenly becomes the easiest target in view. Reconstruct a killdeer's broken-wing display that draws a threat away from a vulnerable ground nest. A killdeer moves away from its ground nest while exaggerating a vulnerable, dragging-wing display. Once the threat follows far enough, the injured bird suddenly flies normally.",
+        "payoff": "Once the threat follows far enough, the injured bird suddenly flies normally.",
+        "word_count": 69,
+        "fact_review_required": true,
+        "fact_status": "research_pending",
+        "sources": []
+      },
+      "scene_plan": [
+        {
+          "scene": 1,
+          "start_seconds": 0,
+          "end_seconds": 4,
+          "purpose": "hook",
+          "narration": "This bird appears to break a wing exactly when a predator gets close.",
+          "visual_direction": "Immediate behavior-led close-up; movement begins in frame one.",
+          "preview_route": "open_source_motion",
+          "final_route": "premium_video",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        },
+        {
+          "scene": 2,
+          "start_seconds": 4,
+          "end_seconds": 11,
+          "purpose": "observable_evidence",
+          "narration": "A threat approaches the nest and the parent suddenly becomes the easiest target in view.",
+          "visual_direction": "One continuous wildlife action with a restrained tracking move.",
+          "preview_route": "open_source_motion",
+          "final_route": "premium_video",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        },
+        {
+          "scene": 3,
+          "start_seconds": 11,
+          "end_seconds": 20,
+          "purpose": "mechanism",
+          "narration": "Reconstruct a killdeer's broken-wing display that draws a threat away from a vulnerable ground nest.",
+          "visual_direction": "Macro-to-micro transition or clean anatomical cutaway showing cause and effect.",
+          "preview_route": "open_source_motion",
+          "final_route": "deterministic_or_premium",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        },
+        {
+          "scene": 4,
+          "start_seconds": 20,
+          "end_seconds": 28,
+          "purpose": "clarifier",
+          "narration": "A killdeer moves away from its ground nest while exaggerating a vulnerable, dragging-wing display.",
+          "visual_direction": "Return to real behavior; one minimal label separates evidence from myth.",
+          "preview_route": "open_source_motion",
+          "final_route": "deterministic_or_premium",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        },
+        {
+          "scene": 5,
+          "start_seconds": 28,
+          "end_seconds": 35,
+          "purpose": "payoff",
+          "narration": "Once the threat follows far enough, the injured bird suddenly flies normally.",
+          "visual_direction": "Complete the action in a wider hero frame and hold the final readable pose.",
+          "preview_route": "open_source_motion",
+          "final_route": "premium_video",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        }
+      ],
+      "voice": {
+        "development_provider": "kokoro_local",
+        "style": "energetic, credible wildlife explainer",
+        "pace": "fast but intelligible",
+        "production_provider": "human-approved premium or retained local voice"
+      },
+      "thumbnail": {
+        "primary_text": "THE BROKEN-WING TRICK",
+        "alternates": [
+          "THE BIRD THAT FAKES AN INJURY",
+          "THIS BIRD APPEARS TO BREAK A WING EXACTLY WHEN A"
+        ],
+        "composition": "single animal, one impossible-looking action, clean dark negative space, no collage"
+      },
+      "platform_packages": [
+        {
+          "platform": "facebook",
+          "caption": "This bird appears to break a wing exactly when a predator gets close. Once the threat follows far enough, the injured bird suddenly flies normally.",
+          "title": "The bird that fakes an injury",
+          "hashtags": [
+            "Wildlife",
+            "AnimalFacts",
+            "Nature",
+            "Behaviourreveals"
+          ],
+          "cta": "Which animal should we decode next?"
+        },
+        {
+          "platform": "youtube_shorts",
+          "caption": "Once the threat follows far enough, the injured bird suddenly flies normally.",
+          "title": "The bird that fakes an injury",
+          "hashtags": [
+            "Wildlife",
+            "AnimalFacts",
+            "Nature"
+          ],
+          "cta": "Subscribe for the next animal mechanism."
+        },
+        {
+          "platform": "tiktok",
+          "caption": "This bird appears to break a wing exactly when a predator gets close. Watch the mechanism unfold.",
+          "title": "The bird that fakes an injury",
+          "hashtags": [
+            "Wildlife",
+            "AnimalFacts",
+            "Nature",
+            "Behaviourreveals"
+          ],
+          "cta": "Follow for more wildlife reveals."
+        }
+      ],
+      "production": {
+        "free_preview": "after_script_review",
+        "premium_render": "blocked_pending_human_approval",
+        "publish": "blocked"
+      },
+      "review": {
+        "idea": "ready",
+        "script": "pending_human_review",
+        "voice": "pending_preview",
+        "visual": "pending_preview",
+        "premium_spend": "blocked"
+      },
+      "content_fingerprint": "af2ac19a6c51f96ddc70a761403ab5fe6b1e543159153093f817b383d012145b"
+    },
+    {
+      "id": "rawr-nation-2026-08-01-17",
+      "scheduled_for": "2026-08-22",
+      "title": "How seals sleep without drowning",
+      "concept": "Explain unihemispheric sleep and surface-resting strategies that let some seals balance breathing with vigilance.",
+      "pillar": "Survival mechanisms",
+      "format": "vertical_short",
+      "batch": 3,
+      "duration_seconds": 30,
+      "workflow_stage": "script_review",
+      "script": {
+        "hook": "Sleeping at sea requires remembering every breath.",
+        "narration": "Sleeping at sea requires remembering every breath. Breathing stays tied to access to air even when the animal enters a resting state. Explain unihemispheric sleep and surface-resting strategies that let some seals balance breathing with vigilance. Some seals rest at the surface or sleep with one brain hemisphere more alert while breathing remains deliberate. Their sleep strategy changes with species, location, and danger.",
+        "payoff": "Their sleep strategy changes with species, location, and danger.",
+        "word_count": 63,
+        "fact_review_required": true,
+        "fact_status": "research_pending",
+        "sources": []
+      },
+      "scene_plan": [
+        {
+          "scene": 1,
+          "start_seconds": 0,
+          "end_seconds": 3,
+          "purpose": "hook",
+          "narration": "Sleeping at sea requires remembering every breath.",
+          "visual_direction": "Immediate behavior-led close-up; movement begins in frame one.",
+          "preview_route": "open_source_motion",
+          "final_route": "premium_video",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        },
+        {
+          "scene": 2,
+          "start_seconds": 3,
+          "end_seconds": 9,
+          "purpose": "observable_evidence",
+          "narration": "Breathing stays tied to access to air even when the animal enters a resting state.",
+          "visual_direction": "One continuous wildlife action with a restrained tracking move.",
+          "preview_route": "open_source_motion",
+          "final_route": "premium_video",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        },
+        {
+          "scene": 3,
+          "start_seconds": 9,
+          "end_seconds": 17,
+          "purpose": "mechanism",
+          "narration": "Explain unihemispheric sleep and surface-resting strategies that let some seals balance breathing with vigilance.",
+          "visual_direction": "Macro-to-micro transition or clean anatomical cutaway showing cause and effect.",
+          "preview_route": "open_source_motion",
+          "final_route": "deterministic_or_premium",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        },
+        {
+          "scene": 4,
+          "start_seconds": 17,
+          "end_seconds": 24,
+          "purpose": "clarifier",
+          "narration": "Some seals rest at the surface or sleep with one brain hemisphere more alert while breathing remains deliberate.",
+          "visual_direction": "Return to real behavior; one minimal label separates evidence from myth.",
+          "preview_route": "open_source_motion",
+          "final_route": "deterministic_or_premium",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        },
+        {
+          "scene": 5,
+          "start_seconds": 24,
+          "end_seconds": 30,
+          "purpose": "payoff",
+          "narration": "Their sleep strategy changes with species, location, and danger.",
+          "visual_direction": "Complete the action in a wider hero frame and hold the final readable pose.",
+          "preview_route": "open_source_motion",
+          "final_route": "premium_video",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        }
+      ],
+      "voice": {
+        "development_provider": "kokoro_local",
+        "style": "energetic, credible wildlife explainer",
+        "pace": "fast but intelligible",
+        "production_provider": "human-approved premium or retained local voice"
+      },
+      "thumbnail": {
+        "primary_text": "HOW SEALS SLEEP AT SEA",
+        "alternates": [
+          "HOW SEALS SLEEP WITHOUT DROWNING",
+          "SLEEPING AT SEA REQUIRES REMEMBERING EVERY BREAT"
+        ],
+        "composition": "single animal, one impossible-looking action, clean dark negative space, no collage"
+      },
+      "platform_packages": [
+        {
+          "platform": "facebook",
+          "caption": "Sleeping at sea requires remembering every breath. Their sleep strategy changes with species, location, and danger.",
+          "title": "How seals sleep without drowning",
+          "hashtags": [
+            "Wildlife",
+            "AnimalFacts",
+            "Nature",
+            "Survivalmechanisms"
+          ],
+          "cta": "Which animal should we decode next?"
+        },
+        {
+          "platform": "youtube_shorts",
+          "caption": "Their sleep strategy changes with species, location, and danger.",
+          "title": "How seals sleep without drowning",
+          "hashtags": [
+            "Wildlife",
+            "AnimalFacts",
+            "Nature"
+          ],
+          "cta": "Subscribe for the next animal mechanism."
+        },
+        {
+          "platform": "tiktok",
+          "caption": "Sleeping at sea requires remembering every breath. Watch the mechanism unfold.",
+          "title": "How seals sleep without drowning",
+          "hashtags": [
+            "Wildlife",
+            "AnimalFacts",
+            "Nature",
+            "Survivalmechanisms"
+          ],
+          "cta": "Follow for more wildlife reveals."
+        }
+      ],
+      "production": {
+        "free_preview": "after_script_review",
+        "premium_render": "blocked_pending_human_approval",
+        "publish": "blocked"
+      },
+      "review": {
+        "idea": "ready",
+        "script": "pending_human_review",
+        "voice": "pending_preview",
+        "visual": "pending_preview",
+        "premium_spend": "blocked"
+      },
+      "content_fingerprint": "e578f97e93abee75ea61765e427a9fccf0e12e88549a9ff95b3daadf98e266f0"
+    },
+    {
+      "id": "rawr-nation-2026-08-01-18",
+      "scheduled_for": "2026-08-23",
+      "title": "The insect that hears with its knees",
+      "concept": "Locate tympanal hearing organs on a cricket's forelegs and trace how vibrations reach its nervous system.",
+      "pillar": "Animal senses",
+      "format": "vertical_short",
+      "batch": 3,
+      "duration_seconds": 30,
+      "workflow_stage": "script_review",
+      "script": {
+        "hook": "A cricket's ears are not on its head.",
+        "narration": "A cricket's ears are not on its head. Trace sound toward two small membranes just below the cricket's front-leg joints. Locate tympanal hearing organs on a cricket's forelegs and trace how vibrations reach its nervous system. Thin tympanal membranes on the forelegs vibrate with sound and transmit the pattern into sensory pathways. Its knees place hearing close to the ground\u2014and close to danger.",
+        "payoff": "Its knees place hearing close to the ground\u2014and close to danger.",
+        "word_count": 63,
+        "fact_review_required": true,
+        "fact_status": "research_pending",
+        "sources": []
+      },
+      "scene_plan": [
+        {
+          "scene": 1,
+          "start_seconds": 0,
+          "end_seconds": 3,
+          "purpose": "hook",
+          "narration": "A cricket's ears are not on its head.",
+          "visual_direction": "Immediate behavior-led close-up; movement begins in frame one.",
+          "preview_route": "open_source_motion",
+          "final_route": "premium_video",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        },
+        {
+          "scene": 2,
+          "start_seconds": 3,
+          "end_seconds": 9,
+          "purpose": "observable_evidence",
+          "narration": "Trace sound toward two small membranes just below the cricket's front-leg joints.",
+          "visual_direction": "One continuous wildlife action with a restrained tracking move.",
+          "preview_route": "open_source_motion",
+          "final_route": "premium_video",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        },
+        {
+          "scene": 3,
+          "start_seconds": 9,
+          "end_seconds": 17,
+          "purpose": "mechanism",
+          "narration": "Locate tympanal hearing organs on a cricket's forelegs and trace how vibrations reach its nervous system.",
+          "visual_direction": "Macro-to-micro transition or clean anatomical cutaway showing cause and effect.",
+          "preview_route": "open_source_motion",
+          "final_route": "deterministic_or_premium",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        },
+        {
+          "scene": 4,
+          "start_seconds": 17,
+          "end_seconds": 24,
+          "purpose": "clarifier",
+          "narration": "Thin tympanal membranes on the forelegs vibrate with sound and transmit the pattern into sensory pathways.",
+          "visual_direction": "Return to real behavior; one minimal label separates evidence from myth.",
+          "preview_route": "open_source_motion",
+          "final_route": "deterministic_or_premium",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        },
+        {
+          "scene": 5,
+          "start_seconds": 24,
+          "end_seconds": 30,
+          "purpose": "payoff",
+          "narration": "Its knees place hearing close to the ground\u2014and close to danger.",
+          "visual_direction": "Complete the action in a wider hero frame and hold the final readable pose.",
+          "preview_route": "open_source_motion",
+          "final_route": "premium_video",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        }
+      ],
+      "voice": {
+        "development_provider": "kokoro_local",
+        "style": "energetic, credible wildlife explainer",
+        "pace": "fast but intelligible",
+        "production_provider": "human-approved premium or retained local voice"
+      },
+      "thumbnail": {
+        "primary_text": "EARS ON ITS KNEES",
+        "alternates": [
+          "THE INSECT THAT HEARS WITH ITS KNEES",
+          "A CRICKET'S EARS ARE NOT ON ITS HEAD."
+        ],
+        "composition": "single animal, one impossible-looking action, clean dark negative space, no collage"
+      },
+      "platform_packages": [
+        {
+          "platform": "facebook",
+          "caption": "A cricket's ears are not on its head. Its knees place hearing close to the ground\u2014and close to danger.",
+          "title": "The insect that hears with its knees",
+          "hashtags": [
+            "Wildlife",
+            "AnimalFacts",
+            "Nature",
+            "Animalsenses"
+          ],
+          "cta": "Which animal should we decode next?"
+        },
+        {
+          "platform": "youtube_shorts",
+          "caption": "Its knees place hearing close to the ground\u2014and close to danger.",
+          "title": "The insect that hears with its knees",
+          "hashtags": [
+            "Wildlife",
+            "AnimalFacts",
+            "Nature"
+          ],
+          "cta": "Subscribe for the next animal mechanism."
+        },
+        {
+          "platform": "tiktok",
+          "caption": "A cricket's ears are not on its head. Watch the mechanism unfold.",
+          "title": "The insect that hears with its knees",
+          "hashtags": [
+            "Wildlife",
+            "AnimalFacts",
+            "Nature",
+            "Animalsenses"
+          ],
+          "cta": "Follow for more wildlife reveals."
+        }
+      ],
+      "production": {
+        "free_preview": "after_script_review",
+        "premium_render": "blocked_pending_human_approval",
+        "publish": "blocked"
+      },
+      "review": {
+        "idea": "ready",
+        "script": "pending_human_review",
+        "voice": "pending_preview",
+        "visual": "pending_preview",
+        "premium_spend": "blocked"
+      },
+      "content_fingerprint": "817beeefde58c9dd11d7fe0d71213a84b56b4e3d0d86fbf4b790662939f3de98"
+    },
+    {
+      "id": "rawr-nation-2026-08-01-19",
+      "scheduled_for": "2026-08-25",
+      "title": "Why vultures rarely get sick",
+      "concept": "Follow a scavenged meal through highly acidic digestion and explain the limits of a vulture's pathogen defences.",
+      "pillar": "Survival mechanisms",
+      "format": "vertical_short",
+      "batch": 4,
+      "duration_seconds": 30,
+      "workflow_stage": "script_review",
+      "script": {
+        "hook": "A meal full of dangerous microbes enters this bird\u2014and most do not survive the journey.",
+        "narration": "A meal full of dangerous microbes enters this bird\u2014and most do not survive the journey. The meal may contain microbes that would be dangerous to many other animals. Follow a scavenged meal through highly acidic digestion and explain the limits of a vulture's pathogen defences. Highly acidic digestion destroys many pathogens, while immune and microbial defences add protection. Vultures are resilient, not disease-proof; the defence has limits.",
+        "payoff": "Vultures are resilient, not disease-proof; the defence has limits.",
+        "word_count": 67,
+        "fact_review_required": true,
+        "fact_status": "research_pending",
+        "sources": []
+      },
+      "scene_plan": [
+        {
+          "scene": 1,
+          "start_seconds": 0,
+          "end_seconds": 3,
+          "purpose": "hook",
+          "narration": "A meal full of dangerous microbes enters this bird\u2014and most do not survive the journey.",
+          "visual_direction": "Immediate behavior-led close-up; movement begins in frame one.",
+          "preview_route": "open_source_motion",
+          "final_route": "premium_video",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        },
+        {
+          "scene": 2,
+          "start_seconds": 3,
+          "end_seconds": 9,
+          "purpose": "observable_evidence",
+          "narration": "The meal may contain microbes that would be dangerous to many other animals.",
+          "visual_direction": "One continuous wildlife action with a restrained tracking move.",
+          "preview_route": "open_source_motion",
+          "final_route": "premium_video",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        },
+        {
+          "scene": 3,
+          "start_seconds": 9,
+          "end_seconds": 17,
+          "purpose": "mechanism",
+          "narration": "Follow a scavenged meal through highly acidic digestion and explain the limits of a vulture's pathogen defences.",
+          "visual_direction": "Macro-to-micro transition or clean anatomical cutaway showing cause and effect.",
+          "preview_route": "open_source_motion",
+          "final_route": "deterministic_or_premium",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        },
+        {
+          "scene": 4,
+          "start_seconds": 17,
+          "end_seconds": 24,
+          "purpose": "clarifier",
+          "narration": "Highly acidic digestion destroys many pathogens, while immune and microbial defences add protection.",
+          "visual_direction": "Return to real behavior; one minimal label separates evidence from myth.",
+          "preview_route": "open_source_motion",
+          "final_route": "deterministic_or_premium",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        },
+        {
+          "scene": 5,
+          "start_seconds": 24,
+          "end_seconds": 30,
+          "purpose": "payoff",
+          "narration": "Vultures are resilient, not disease-proof; the defence has limits.",
+          "visual_direction": "Complete the action in a wider hero frame and hold the final readable pose.",
+          "preview_route": "open_source_motion",
+          "final_route": "premium_video",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        }
+      ],
+      "voice": {
+        "development_provider": "kokoro_local",
+        "style": "energetic, credible wildlife explainer",
+        "pace": "fast but intelligible",
+        "production_provider": "human-approved premium or retained local voice"
+      },
+      "thumbnail": {
+        "primary_text": "HOW VULTURES EAT CARRION",
+        "alternates": [
+          "WHY VULTURES RARELY GET SICK",
+          "A MEAL FULL OF DANGEROUS MICROBES ENTERS THIS BI"
+        ],
+        "composition": "single animal, one impossible-looking action, clean dark negative space, no collage"
+      },
+      "platform_packages": [
+        {
+          "platform": "facebook",
+          "caption": "A meal full of dangerous microbes enters this bird\u2014and most do not survive the journey. Vultures are resilient, not disease-proof; the defence has limits.",
+          "title": "Why vultures rarely get sick",
+          "hashtags": [
+            "Wildlife",
+            "AnimalFacts",
+            "Nature",
+            "Survivalmechanisms"
+          ],
+          "cta": "Which animal should we decode next?"
+        },
+        {
+          "platform": "youtube_shorts",
+          "caption": "Vultures are resilient, not disease-proof; the defence has limits.",
+          "title": "Why vultures rarely get sick",
+          "hashtags": [
+            "Wildlife",
+            "AnimalFacts",
+            "Nature"
+          ],
+          "cta": "Subscribe for the next animal mechanism."
+        },
+        {
+          "platform": "tiktok",
+          "caption": "A meal full of dangerous microbes enters this bird\u2014and most do not survive the journey. Watch the mechanism unfold.",
+          "title": "Why vultures rarely get sick",
+          "hashtags": [
+            "Wildlife",
+            "AnimalFacts",
+            "Nature",
+            "Survivalmechanisms"
+          ],
+          "cta": "Follow for more wildlife reveals."
+        }
+      ],
+      "production": {
+        "free_preview": "after_script_review",
+        "premium_render": "blocked_pending_human_approval",
+        "publish": "blocked"
+      },
+      "review": {
+        "idea": "ready",
+        "script": "pending_human_review",
+        "voice": "pending_preview",
+        "visual": "pending_preview",
+        "premium_spend": "blocked"
+      },
+      "content_fingerprint": "60e954dd84089c9085544011efe764c4e49ffaa8235c93606e34c137ff4cd487"
+    },
+    {
+      "id": "rawr-nation-2026-08-01-20",
+      "scheduled_for": "2026-08-26",
+      "title": "The spider that becomes an ant",
+      "concept": "Show how ant-mimicking spiders copy body shape and movement to avoid predators or approach prey.",
+      "pillar": "Behaviour reveals",
+      "format": "vertical_short",
+      "batch": 4,
+      "duration_seconds": 30,
+      "workflow_stage": "script_review",
+      "script": {
+        "hook": "This spider walks like an ant because being mistaken can keep it alive.",
+        "narration": "This spider walks like an ant because being mistaken can keep it alive. Count the legs, then watch the front pair rise and move like ant antennae. Show how ant-mimicking spiders copy body shape and movement to avoid predators or approach prey. Body shape, raised front legs, stop-start movement, and association with ants strengthen the disguise. For some species, the mimicry also helps them approach prey.",
+        "payoff": "For some species, the mimicry also helps them approach prey.",
+        "word_count": 66,
+        "fact_review_required": true,
+        "fact_status": "research_pending",
+        "sources": []
+      },
+      "scene_plan": [
+        {
+          "scene": 1,
+          "start_seconds": 0,
+          "end_seconds": 3,
+          "purpose": "hook",
+          "narration": "This spider walks like an ant because being mistaken can keep it alive.",
+          "visual_direction": "Immediate behavior-led close-up; movement begins in frame one.",
+          "preview_route": "open_source_motion",
+          "final_route": "premium_video",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        },
+        {
+          "scene": 2,
+          "start_seconds": 3,
+          "end_seconds": 9,
+          "purpose": "observable_evidence",
+          "narration": "Count the legs, then watch the front pair rise and move like ant antennae.",
+          "visual_direction": "One continuous wildlife action with a restrained tracking move.",
+          "preview_route": "open_source_motion",
+          "final_route": "premium_video",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        },
+        {
+          "scene": 3,
+          "start_seconds": 9,
+          "end_seconds": 17,
+          "purpose": "mechanism",
+          "narration": "Show how ant-mimicking spiders copy body shape and movement to avoid predators or approach prey.",
+          "visual_direction": "Macro-to-micro transition or clean anatomical cutaway showing cause and effect.",
+          "preview_route": "open_source_motion",
+          "final_route": "deterministic_or_premium",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        },
+        {
+          "scene": 4,
+          "start_seconds": 17,
+          "end_seconds": 24,
+          "purpose": "clarifier",
+          "narration": "Body shape, raised front legs, stop-start movement, and association with ants strengthen the disguise.",
+          "visual_direction": "Return to real behavior; one minimal label separates evidence from myth.",
+          "preview_route": "open_source_motion",
+          "final_route": "deterministic_or_premium",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        },
+        {
+          "scene": 5,
+          "start_seconds": 24,
+          "end_seconds": 30,
+          "purpose": "payoff",
+          "narration": "For some species, the mimicry also helps them approach prey.",
+          "visual_direction": "Complete the action in a wider hero frame and hold the final readable pose.",
+          "preview_route": "open_source_motion",
+          "final_route": "premium_video",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        }
+      ],
+      "voice": {
+        "development_provider": "kokoro_local",
+        "style": "energetic, credible wildlife explainer",
+        "pace": "fast but intelligible",
+        "production_provider": "human-approved premium or retained local voice"
+      },
+      "thumbnail": {
+        "primary_text": "THE SPIDER PRETENDING TO BE AN ANT",
+        "alternates": [
+          "THE SPIDER THAT BECOMES AN ANT",
+          "THIS SPIDER WALKS LIKE AN ANT BECAUSE BEING MIST"
+        ],
+        "composition": "single animal, one impossible-looking action, clean dark negative space, no collage"
+      },
+      "platform_packages": [
+        {
+          "platform": "facebook",
+          "caption": "This spider walks like an ant because being mistaken can keep it alive. For some species, the mimicry also helps them approach prey.",
+          "title": "The spider that becomes an ant",
+          "hashtags": [
+            "Wildlife",
+            "AnimalFacts",
+            "Nature",
+            "Behaviourreveals"
+          ],
+          "cta": "Which animal should we decode next?"
+        },
+        {
+          "platform": "youtube_shorts",
+          "caption": "For some species, the mimicry also helps them approach prey.",
+          "title": "The spider that becomes an ant",
+          "hashtags": [
+            "Wildlife",
+            "AnimalFacts",
+            "Nature"
+          ],
+          "cta": "Subscribe for the next animal mechanism."
+        },
+        {
+          "platform": "tiktok",
+          "caption": "This spider walks like an ant because being mistaken can keep it alive. Watch the mechanism unfold.",
+          "title": "The spider that becomes an ant",
+          "hashtags": [
+            "Wildlife",
+            "AnimalFacts",
+            "Nature",
+            "Behaviourreveals"
+          ],
+          "cta": "Follow for more wildlife reveals."
+        }
+      ],
+      "production": {
+        "free_preview": "after_script_review",
+        "premium_render": "blocked_pending_human_approval",
+        "publish": "blocked"
+      },
+      "review": {
+        "idea": "ready",
+        "script": "pending_human_review",
+        "voice": "pending_preview",
+        "visual": "pending_preview",
+        "premium_spend": "blocked"
+      },
+      "content_fingerprint": "4b8f0d24180f8bf14f726444423fe71e6c9e09e17e634763b8839649a2358ae3"
+    },
+    {
+      "id": "rawr-nation-2026-08-01-21",
+      "scheduled_for": "2026-08-27",
+      "title": "A whale's ear is not where you think",
+      "concept": "Trace underwater sound through specialized tissues in a toothed whale's lower jaw toward the middle and inner ear.",
+      "pillar": "Animal senses",
+      "format": "vertical_short",
+      "batch": 4,
+      "duration_seconds": 30,
+      "workflow_stage": "script_review",
+      "script": {
+        "hook": "A toothed whale receives much of its underwater sound through the lower jaw.",
+        "narration": "A toothed whale receives much of its underwater sound through the lower jaw. Sound reaches the head from water without relying on an external ear flap. Trace underwater sound through specialized tissues in a toothed whale's lower jaw toward the middle and inner ear. Specialized fatty tissues guide vibration toward the middle and inner ear complexes. Underwater hearing reshapes the pathway, not the need for an ear.",
+        "payoff": "Underwater hearing reshapes the pathway, not the need for an ear.",
+        "word_count": 67,
+        "fact_review_required": true,
+        "fact_status": "research_pending",
+        "sources": []
+      },
+      "scene_plan": [
+        {
+          "scene": 1,
+          "start_seconds": 0,
+          "end_seconds": 3,
+          "purpose": "hook",
+          "narration": "A toothed whale receives much of its underwater sound through the lower jaw.",
+          "visual_direction": "Immediate behavior-led close-up; movement begins in frame one.",
+          "preview_route": "open_source_motion",
+          "final_route": "premium_video",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        },
+        {
+          "scene": 2,
+          "start_seconds": 3,
+          "end_seconds": 9,
+          "purpose": "observable_evidence",
+          "narration": "Sound reaches the head from water without relying on an external ear flap.",
+          "visual_direction": "One continuous wildlife action with a restrained tracking move.",
+          "preview_route": "open_source_motion",
+          "final_route": "premium_video",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        },
+        {
+          "scene": 3,
+          "start_seconds": 9,
+          "end_seconds": 17,
+          "purpose": "mechanism",
+          "narration": "Trace underwater sound through specialized tissues in a toothed whale's lower jaw toward the middle and inner ear.",
+          "visual_direction": "Macro-to-micro transition or clean anatomical cutaway showing cause and effect.",
+          "preview_route": "open_source_motion",
+          "final_route": "deterministic_or_premium",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        },
+        {
+          "scene": 4,
+          "start_seconds": 17,
+          "end_seconds": 24,
+          "purpose": "clarifier",
+          "narration": "Specialized fatty tissues guide vibration toward the middle and inner ear complexes.",
+          "visual_direction": "Return to real behavior; one minimal label separates evidence from myth.",
+          "preview_route": "open_source_motion",
+          "final_route": "deterministic_or_premium",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        },
+        {
+          "scene": 5,
+          "start_seconds": 24,
+          "end_seconds": 30,
+          "purpose": "payoff",
+          "narration": "Underwater hearing reshapes the pathway, not the need for an ear.",
+          "visual_direction": "Complete the action in a wider hero frame and hold the final readable pose.",
+          "preview_route": "open_source_motion",
+          "final_route": "premium_video",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        }
+      ],
+      "voice": {
+        "development_provider": "kokoro_local",
+        "style": "energetic, credible wildlife explainer",
+        "pace": "fast but intelligible",
+        "production_provider": "human-approved premium or retained local voice"
+      },
+      "thumbnail": {
+        "primary_text": "A WHALE HEARS THROUGH ITS JAW",
+        "alternates": [
+          "A WHALE'S EAR IS NOT WHERE YOU THINK",
+          "A TOOTHED WHALE RECEIVES MUCH OF ITS UNDERWATER "
+        ],
+        "composition": "single animal, one impossible-looking action, clean dark negative space, no collage"
+      },
+      "platform_packages": [
+        {
+          "platform": "facebook",
+          "caption": "A toothed whale receives much of its underwater sound through the lower jaw. Underwater hearing reshapes the pathway, not the need for an ear.",
+          "title": "A whale's ear is not where you think",
+          "hashtags": [
+            "Wildlife",
+            "AnimalFacts",
+            "Nature",
+            "Animalsenses"
+          ],
+          "cta": "Which animal should we decode next?"
+        },
+        {
+          "platform": "youtube_shorts",
+          "caption": "Underwater hearing reshapes the pathway, not the need for an ear.",
+          "title": "A whale's ear is not where you think",
+          "hashtags": [
+            "Wildlife",
+            "AnimalFacts",
+            "Nature"
+          ],
+          "cta": "Subscribe for the next animal mechanism."
+        },
+        {
+          "platform": "tiktok",
+          "caption": "A toothed whale receives much of its underwater sound through the lower jaw. Watch the mechanism unfold.",
+          "title": "A whale's ear is not where you think",
+          "hashtags": [
+            "Wildlife",
+            "AnimalFacts",
+            "Nature",
+            "Animalsenses"
+          ],
+          "cta": "Follow for more wildlife reveals."
+        }
+      ],
+      "production": {
+        "free_preview": "after_script_review",
+        "premium_render": "blocked_pending_human_approval",
+        "publish": "blocked"
+      },
+      "review": {
+        "idea": "ready",
+        "script": "pending_human_review",
+        "voice": "pending_preview",
+        "visual": "pending_preview",
+        "premium_spend": "blocked"
+      },
+      "content_fingerprint": "5d9d61fbf43b5da87b881ff9c67c7cb54ca46c023707f790fb95508584670307"
+    },
+    {
+      "id": "rawr-nation-2026-08-01-22",
+      "scheduled_for": "2026-08-29",
+      "title": "The octopus disappearing act",
+      "concept": "Break down how chromatophores, reflective cells, papillae, and posture combine to change an octopus's appearance.",
+      "pillar": "Survival mechanisms",
+      "format": "vertical_feature",
+      "batch": 4,
+      "duration_seconds": 35,
+      "workflow_stage": "script_review",
+      "script": {
+        "hook": "An octopus does not change only its colour\u2014it rebuilds the visible surface of its body.",
+        "narration": "An octopus does not change only its colour\u2014it rebuilds the visible surface of its body. Hold the background constant while the animal changes colour, texture, outline, and posture. Break down how chromatophores, reflective cells, papillae, and posture combine to change an octopus's appearance. Chromatophores, reflective cells, skin papillae, and posture combine in a coordinated display. The disguise works because colour, texture, shape, and movement change together.",
+        "payoff": "The disguise works because colour, texture, shape, and movement change together.",
+        "word_count": 66,
+        "fact_review_required": true,
+        "fact_status": "research_pending",
+        "sources": []
+      },
+      "scene_plan": [
+        {
+          "scene": 1,
+          "start_seconds": 0,
+          "end_seconds": 4,
+          "purpose": "hook",
+          "narration": "An octopus does not change only its colour\u2014it rebuilds the visible surface of its body.",
+          "visual_direction": "Immediate behavior-led close-up; movement begins in frame one.",
+          "preview_route": "open_source_motion",
+          "final_route": "premium_video",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        },
+        {
+          "scene": 2,
+          "start_seconds": 4,
+          "end_seconds": 11,
+          "purpose": "observable_evidence",
+          "narration": "Hold the background constant while the animal changes colour, texture, outline, and posture.",
+          "visual_direction": "One continuous wildlife action with a restrained tracking move.",
+          "preview_route": "open_source_motion",
+          "final_route": "premium_video",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        },
+        {
+          "scene": 3,
+          "start_seconds": 11,
+          "end_seconds": 20,
+          "purpose": "mechanism",
+          "narration": "Break down how chromatophores, reflective cells, papillae, and posture combine to change an octopus's appearance.",
+          "visual_direction": "Macro-to-micro transition or clean anatomical cutaway showing cause and effect.",
+          "preview_route": "open_source_motion",
+          "final_route": "deterministic_or_premium",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        },
+        {
+          "scene": 4,
+          "start_seconds": 20,
+          "end_seconds": 28,
+          "purpose": "clarifier",
+          "narration": "Chromatophores, reflective cells, skin papillae, and posture combine in a coordinated display.",
+          "visual_direction": "Return to real behavior; one minimal label separates evidence from myth.",
+          "preview_route": "open_source_motion",
+          "final_route": "deterministic_or_premium",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        },
+        {
+          "scene": 5,
+          "start_seconds": 28,
+          "end_seconds": 35,
+          "purpose": "payoff",
+          "narration": "The disguise works because colour, texture, shape, and movement change together.",
+          "visual_direction": "Complete the action in a wider hero frame and hold the final readable pose.",
+          "preview_route": "open_source_motion",
+          "final_route": "premium_video",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        }
+      ],
+      "voice": {
+        "development_provider": "kokoro_local",
+        "style": "energetic, credible wildlife explainer",
+        "pace": "fast but intelligible",
+        "production_provider": "human-approved premium or retained local voice"
+      },
+      "thumbnail": {
+        "primary_text": "FOUR LAYERS OF CAMOUFLAGE",
+        "alternates": [
+          "THE OCTOPUS DISAPPEARING ACT",
+          "AN OCTOPUS DOES NOT CHANGE ONLY ITS COLOUR\u2014IT RE"
+        ],
+        "composition": "single animal, one impossible-looking action, clean dark negative space, no collage"
+      },
+      "platform_packages": [
+        {
+          "platform": "facebook",
+          "caption": "An octopus does not change only its colour\u2014it rebuilds the visible surface of its body. The disguise works because colour, texture, shape, and movement change together.",
+          "title": "The octopus disappearing act",
+          "hashtags": [
+            "Wildlife",
+            "AnimalFacts",
+            "Nature",
+            "Survivalmechanisms"
+          ],
+          "cta": "Which animal should we decode next?"
+        },
+        {
+          "platform": "youtube_shorts",
+          "caption": "The disguise works because colour, texture, shape, and movement change together.",
+          "title": "The octopus disappearing act",
+          "hashtags": [
+            "Wildlife",
+            "AnimalFacts",
+            "Nature"
+          ],
+          "cta": "Subscribe for the next animal mechanism."
+        },
+        {
+          "platform": "tiktok",
+          "caption": "An octopus does not change only its colour\u2014it rebuilds the visible surface of its body. Watch the mechanism unfold.",
+          "title": "The octopus disappearing act",
+          "hashtags": [
+            "Wildlife",
+            "AnimalFacts",
+            "Nature",
+            "Survivalmechanisms"
+          ],
+          "cta": "Follow for more wildlife reveals."
+        }
+      ],
+      "production": {
+        "free_preview": "after_script_review",
+        "premium_render": "blocked_pending_human_approval",
+        "publish": "blocked"
+      },
+      "review": {
+        "idea": "ready",
+        "script": "pending_human_review",
+        "voice": "pending_preview",
+        "visual": "pending_preview",
+        "premium_spend": "blocked"
+      },
+      "content_fingerprint": "0937747840ef8f8e1b996c038819fadf8c310367c4083e90b085ff7bae45398c"
+    },
+    {
+      "id": "rawr-nation-2026-08-01-23",
+      "scheduled_for": "2026-08-30",
+      "title": "Do bats really have bad eyesight?",
+      "concept": "Replace the blind-bat myth with a comparison of bat vision and echolocation across different species and tasks.",
+      "pillar": "Myth versus fact",
+      "format": "vertical_short",
+      "batch": 4,
+      "duration_seconds": 30,
+      "workflow_stage": "script_review",
+      "script": {
+        "hook": "Bats are not blind.",
+        "narration": "Bats are not blind. A bat can use visible landmarks before echolocation resolves a nearby obstacle or insect. Replace the blind-bat myth with a comparison of bat vision and echolocation across different species and tasks. Many species use useful vision alongside echolocation, shifting between channels as light, distance, and task change. Echolocation is an extra sense\u2014not proof that the eyes do not work.",
+        "payoff": "Echolocation is an extra sense\u2014not proof that the eyes do not work.",
+        "word_count": 63,
+        "fact_review_required": true,
+        "fact_status": "research_pending",
+        "sources": []
+      },
+      "scene_plan": [
+        {
+          "scene": 1,
+          "start_seconds": 0,
+          "end_seconds": 3,
+          "purpose": "hook",
+          "narration": "Bats are not blind.",
+          "visual_direction": "Immediate behavior-led close-up; movement begins in frame one.",
+          "preview_route": "open_source_motion",
+          "final_route": "premium_video",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        },
+        {
+          "scene": 2,
+          "start_seconds": 3,
+          "end_seconds": 9,
+          "purpose": "observable_evidence",
+          "narration": "A bat can use visible landmarks before echolocation resolves a nearby obstacle or insect.",
+          "visual_direction": "One continuous wildlife action with a restrained tracking move.",
+          "preview_route": "open_source_motion",
+          "final_route": "premium_video",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        },
+        {
+          "scene": 3,
+          "start_seconds": 9,
+          "end_seconds": 17,
+          "purpose": "mechanism",
+          "narration": "Replace the blind-bat myth with a comparison of bat vision and echolocation across different species and tasks.",
+          "visual_direction": "Macro-to-micro transition or clean anatomical cutaway showing cause and effect.",
+          "preview_route": "open_source_motion",
+          "final_route": "deterministic_or_premium",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        },
+        {
+          "scene": 4,
+          "start_seconds": 17,
+          "end_seconds": 24,
+          "purpose": "clarifier",
+          "narration": "Many species use useful vision alongside echolocation, shifting between channels as light, distance, and task change.",
+          "visual_direction": "Return to real behavior; one minimal label separates evidence from myth.",
+          "preview_route": "open_source_motion",
+          "final_route": "deterministic_or_premium",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        },
+        {
+          "scene": 5,
+          "start_seconds": 24,
+          "end_seconds": 30,
+          "purpose": "payoff",
+          "narration": "Echolocation is an extra sense\u2014not proof that the eyes do not work.",
+          "visual_direction": "Complete the action in a wider hero frame and hold the final readable pose.",
+          "preview_route": "open_source_motion",
+          "final_route": "premium_video",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        }
+      ],
+      "voice": {
+        "development_provider": "kokoro_local",
+        "style": "energetic, credible wildlife explainer",
+        "pace": "fast but intelligible",
+        "production_provider": "human-approved premium or retained local voice"
+      },
+      "thumbnail": {
+        "primary_text": "BATS ARE NOT BLIND",
+        "alternates": [
+          "DO BATS REALLY HAVE BAD EYESIGHT?",
+          "BATS ARE NOT BLIND."
+        ],
+        "composition": "single animal, one impossible-looking action, clean dark negative space, no collage"
+      },
+      "platform_packages": [
+        {
+          "platform": "facebook",
+          "caption": "Bats are not blind. Echolocation is an extra sense\u2014not proof that the eyes do not work.",
+          "title": "Do bats really have bad eyesight?",
+          "hashtags": [
+            "Wildlife",
+            "AnimalFacts",
+            "Nature",
+            "Mythversusfact"
+          ],
+          "cta": "Which animal should we decode next?"
+        },
+        {
+          "platform": "youtube_shorts",
+          "caption": "Echolocation is an extra sense\u2014not proof that the eyes do not work.",
+          "title": "Do bats really have bad eyesight?",
+          "hashtags": [
+            "Wildlife",
+            "AnimalFacts",
+            "Nature"
+          ],
+          "cta": "Subscribe for the next animal mechanism."
+        },
+        {
+          "platform": "tiktok",
+          "caption": "Bats are not blind. Watch the mechanism unfold.",
+          "title": "Do bats really have bad eyesight?",
+          "hashtags": [
+            "Wildlife",
+            "AnimalFacts",
+            "Nature",
+            "Mythversusfact"
+          ],
+          "cta": "Follow for more wildlife reveals."
+        }
+      ],
+      "production": {
+        "free_preview": "after_script_review",
+        "premium_render": "blocked_pending_human_approval",
+        "publish": "blocked"
+      },
+      "review": {
+        "idea": "ready",
+        "script": "pending_human_review",
+        "voice": "pending_preview",
+        "visual": "pending_preview",
+        "premium_spend": "blocked"
+      },
+      "content_fingerprint": "02994f7e550a7630aa841f513d42e9612a291d609014dc8b3ec127a69dd3c253"
+    },
+    {
+      "id": "rawr-nation-2026-08-01-24",
+      "scheduled_for": "2026-08-31",
+      "title": "The fox that dives into snow",
+      "concept": "Examine how a red fox listens for hidden prey and commits to a steep pounce through deep snow.",
+      "pillar": "Behaviour reveals",
+      "format": "vertical_short",
+      "batch": 4,
+      "duration_seconds": 30,
+      "workflow_stage": "script_review",
+      "script": {
+        "hook": "A fox can locate prey it cannot see beneath deep snow.",
+        "narration": "A fox can locate prey it cannot see beneath deep snow. Before the leap, the fox freezes and triangulates a sound moving beneath the surface. Examine how a red fox listens for hidden prey and commits to a steep pounce through deep snow. It pauses, rotates its ears toward faint movement, estimates position, and commits to a steep head-first pounce. The spectacular dive begins with patient listening.",
+        "payoff": "The spectacular dive begins with patient listening.",
+        "word_count": 67,
+        "fact_review_required": true,
+        "fact_status": "research_pending",
+        "sources": []
+      },
+      "scene_plan": [
+        {
+          "scene": 1,
+          "start_seconds": 0,
+          "end_seconds": 3,
+          "purpose": "hook",
+          "narration": "A fox can locate prey it cannot see beneath deep snow.",
+          "visual_direction": "Immediate behavior-led close-up; movement begins in frame one.",
+          "preview_route": "open_source_motion",
+          "final_route": "premium_video",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        },
+        {
+          "scene": 2,
+          "start_seconds": 3,
+          "end_seconds": 9,
+          "purpose": "observable_evidence",
+          "narration": "Before the leap, the fox freezes and triangulates a sound moving beneath the surface.",
+          "visual_direction": "One continuous wildlife action with a restrained tracking move.",
+          "preview_route": "open_source_motion",
+          "final_route": "premium_video",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        },
+        {
+          "scene": 3,
+          "start_seconds": 9,
+          "end_seconds": 17,
+          "purpose": "mechanism",
+          "narration": "Examine how a red fox listens for hidden prey and commits to a steep pounce through deep snow.",
+          "visual_direction": "Macro-to-micro transition or clean anatomical cutaway showing cause and effect.",
+          "preview_route": "open_source_motion",
+          "final_route": "deterministic_or_premium",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        },
+        {
+          "scene": 4,
+          "start_seconds": 17,
+          "end_seconds": 24,
+          "purpose": "clarifier",
+          "narration": "It pauses, rotates its ears toward faint movement, estimates position, and commits to a steep head-first pounce.",
+          "visual_direction": "Return to real behavior; one minimal label separates evidence from myth.",
+          "preview_route": "open_source_motion",
+          "final_route": "deterministic_or_premium",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        },
+        {
+          "scene": 5,
+          "start_seconds": 24,
+          "end_seconds": 30,
+          "purpose": "payoff",
+          "narration": "The spectacular dive begins with patient listening.",
+          "visual_direction": "Complete the action in a wider hero frame and hold the final readable pose.",
+          "preview_route": "open_source_motion",
+          "final_route": "premium_video",
+          "continuity": "same subject, location, light direction, markings, and screen direction"
+        }
+      ],
+      "voice": {
+        "development_provider": "kokoro_local",
+        "style": "energetic, credible wildlife explainer",
+        "pace": "fast but intelligible",
+        "production_provider": "human-approved premium or retained local voice"
+      },
+      "thumbnail": {
+        "primary_text": "THE FOX'S SNOW DIVE",
+        "alternates": [
+          "THE FOX THAT DIVES INTO SNOW",
+          "A FOX CAN LOCATE PREY IT CANNOT SEE BENEATH DEEP"
+        ],
+        "composition": "single animal, one impossible-looking action, clean dark negative space, no collage"
+      },
+      "platform_packages": [
+        {
+          "platform": "facebook",
+          "caption": "A fox can locate prey it cannot see beneath deep snow. The spectacular dive begins with patient listening.",
+          "title": "The fox that dives into snow",
+          "hashtags": [
+            "Wildlife",
+            "AnimalFacts",
+            "Nature",
+            "Behaviourreveals"
+          ],
+          "cta": "Which animal should we decode next?"
+        },
+        {
+          "platform": "youtube_shorts",
+          "caption": "The spectacular dive begins with patient listening.",
+          "title": "The fox that dives into snow",
+          "hashtags": [
+            "Wildlife",
+            "AnimalFacts",
+            "Nature"
+          ],
+          "cta": "Subscribe for the next animal mechanism."
+        },
+        {
+          "platform": "tiktok",
+          "caption": "A fox can locate prey it cannot see beneath deep snow. Watch the mechanism unfold.",
+          "title": "The fox that dives into snow",
+          "hashtags": [
+            "Wildlife",
+            "AnimalFacts",
+            "Nature",
+            "Behaviourreveals"
+          ],
+          "cta": "Follow for more wildlife reveals."
+        }
+      ],
+      "production": {
+        "free_preview": "after_script_review",
+        "premium_render": "blocked_pending_human_approval",
+        "publish": "blocked"
+      },
+      "review": {
+        "idea": "ready",
+        "script": "pending_human_review",
+        "voice": "pending_preview",
+        "visual": "pending_preview",
+        "premium_spend": "blocked"
+      },
+      "content_fingerprint": "61f5cc187cafed9404ee39f2cfb97f5650b2a80d2b6362159df335fd2d862963"
+    }
+  ],
+  "summary": {
+    "masters": 24,
+    "facebook_packages": 24,
+    "youtube_shorts_packages": 24,
+    "tiktok_packages": 24,
+    "scripts_ready": 24,
+    "batch_one_preview_queue": 6,
+    "paid_jobs_started": 0,
+    "publish_jobs_started": 0,
+    "voice_previews_ready": 6
+  }
+}

@@ -1,0 +1,38 @@
+[
+  {
+    "shot_id": "S01",
+    "story_stage": "hook",
+    "visual": "Extreme macro of the same hazel eye opening; a tiny circular region of the reflected scene vanishes without a glitch effect",
+    "caption": "A HOLE IN YOUR VISION"
+  },
+  {
+    "shot_id": "S02",
+    "story_stage": "setup",
+    "visual": "Seamless travel through the pupil into the same anatomically clean eye model as focused light reaches the curved retina",
+    "caption": "LIGHT \u2192 RETINA"
+  },
+  {
+    "shot_id": "S03",
+    "story_stage": "mechanism",
+    "visual": "The retinal surface reveals one small optic-disc region without photoreceptor markers while surrounding cells remain dense",
+    "caption": "NO VISUAL CELLS HERE"
+  },
+  {
+    "shot_id": "S04",
+    "story_stage": "explanation",
+    "visual": "Same eye model rotates slightly as signal paths converge and leave through the optic nerve toward an abstract brain silhouette",
+    "caption": "THE OPTIC NERVE EXIT"
+  },
+  {
+    "shot_id": "S05",
+    "story_stage": "demonstration",
+    "visual": "Minimal original dot-and-cross demonstration in the same charcoal studio; the dot naturally disappears at one viewing position",
+    "caption": "TRY THE DOT TEST"
+  },
+  {
+    "shot_id": "S06",
+    "story_stage": "payoff",
+    "visual": "Return to the same hazel eye as the surrounding studio reflection flows smoothly across the blind-spot region; restrained amber highlight marks the reveal",
+    "caption": "SEEING IS RECONSTRUCTION"
+  }
+]

@@ -4,8 +4,18 @@ import hashlib
 import shutil
 import uuid
 from pathlib import Path
-from urllib.parse import parse_qs, urlparse
 
+from .acquisition import (
+    AcquisitionManifest,
+    AcquisitionService,
+    AcquisitionStatus,
+    sanitize_diagnostic,
+)
+from .adapters import (
+    ReferenceInputType,
+    canonicalize_url,
+    normalize_reference,
+)
 from .models import (
     Platform,
     ProjectStatus,
@@ -15,28 +25,6 @@ from .models import (
     SourceDescriptor,
 )
 from .storage import WorkspaceStore
-
-
-PLATFORM_HOSTS: tuple[tuple[str, Platform], ...] = (
-    ("facebook.com", Platform.FACEBOOK),
-    ("fb.watch", Platform.FACEBOOK),
-    ("instagram.com", Platform.INSTAGRAM),
-    ("youtube.com", Platform.YOUTUBE),
-    ("youtu.be", Platform.YOUTUBE),
-    ("tiktok.com", Platform.TIKTOK),
-    ("twitter.com", Platform.X),
-    ("x.com", Platform.X),
-    ("drive.google.com", Platform.GOOGLE_DRIVE),
-)
-
-
-DIRECT_VIDEO_PATH_HINTS: dict[Platform, tuple[str, ...]] = {
-    Platform.FACEBOOK: ("/reel/", "/videos/"),
-    Platform.INSTAGRAM: ("/reel/", "/reels/", "/tv/", "/p/"),
-    Platform.YOUTUBE: ("/shorts/", "/live/"),
-    Platform.TIKTOK: ("/video/",),
-    Platform.X: ("/status/",),
-}
 
 LOCAL_COOKIE_BROWSERS = {
     "brave",
@@ -58,48 +46,23 @@ def sha256_file(path: Path, chunk_size: int = 1024 * 1024) -> str:
     return digest.hexdigest()
 
 
-def detect_platform(url: str) -> Platform:
-    host = (urlparse(url).hostname or "").lower()
-    for known, platform in PLATFORM_HOSTS:
-        if host == known or host.endswith(f".{known}"):
-            return platform
-    return Platform.UNKNOWN
-
-
 def validate_direct_video_url(url: str) -> Platform:
     """Require a direct video/post URL instead of a platform profile or home page."""
-    parsed = urlparse(url)
-    platform = detect_platform(url)
-    path = parsed.path.lower()
-    query = parse_qs(parsed.query)
-    host = (parsed.hostname or "").lower()
-
-    direct = False
-    if platform == Platform.FACEBOOK:
-        direct = (
-            (host == "fb.watch" and path not in {"", "/"})
-            or any(hint in path for hint in DIRECT_VIDEO_PATH_HINTS[platform])
-            or (path.rstrip("/") == "/watch" and bool(query.get("v")))
-        )
-    elif platform == Platform.YOUTUBE:
-        direct = (
-            (host == "youtu.be" and path not in {"", "/"})
-            or any(hint in path for hint in DIRECT_VIDEO_PATH_HINTS[platform])
-            or (path.rstrip("/") == "/watch" and bool(query.get("v")))
-        )
-    elif platform in DIRECT_VIDEO_PATH_HINTS:
-        direct = any(hint in path for hint in DIRECT_VIDEO_PATH_HINTS[platform])
-
-    if direct:
-        return platform
-
-    supported = "Facebook, Instagram, YouTube, TikTok, or X"
-    if platform == Platform.UNKNOWN:
+    reference = normalize_reference(url)
+    if reference.input_type == ReferenceInputType.DIRECT_MEDIA:
+        return reference.platform
+    supported = "Facebook, Instagram, YouTube, TikTok, X, or Snapchat"
+    if reference.platform == Platform.UNKNOWN:
         raise ValueError(
             f"Unsupported platform URL. Use a direct {supported} video URL or ingest-file."
         )
+    if reference.requires_resolution:
+        raise ValueError(
+            f"{reference.platform.value} share links must be resolved to a direct media URL "
+            "before ingestion, or use ingest-file with an authorized local copy."
+        )
     raise ValueError(
-        f"{platform.value} profile/page URLs are not direct video inputs. "
+        f"{reference.platform.value} profile/page URLs are not direct video inputs. "
         "Use a direct reel/video/post URL or ingest-file with an authorized local copy."
     )
 
@@ -117,14 +80,40 @@ def validate_local_cookie_browser(browser: str | None) -> str | None:
 
 
 def canonical_url_key(url: str) -> str:
-    parsed = urlparse(url)
-    host = (parsed.hostname or "").lower()
-    path = parsed.path.rstrip("/") or "/"
-    return f"url:{host}{path}"
+    return f"url:{canonicalize_url(url)}"
 
 
 def reference_id_from_key(canonical_key: str) -> str:
     return f"ref-{hashlib.sha256(canonical_key.encode('utf-8')).hexdigest()[:12]}"
+
+
+def has_valid_cached_acquisition(project: ReferenceProject) -> bool:
+    """Only reuse a URL acquisition whose manifest and primary bytes both verify."""
+    workspace = Path(project.workspace_path)
+    manifest_path = workspace / "source" / "acquisition-manifest.json"
+    if not manifest_path.is_file():
+        return False
+    try:
+        manifest = AcquisitionManifest.model_validate_json(
+            manifest_path.read_text(encoding="utf-8")
+        )
+    except ValueError:
+        return False
+    if manifest.status not in {AcquisitionStatus.SUCCEEDED, AcquisitionStatus.REUSED}:
+        return False
+    if not manifest.primary_asset:
+        return False
+    primary = workspace / manifest.primary_asset
+    record = next(
+        (asset for asset in manifest.assets if asset.relative_path == manifest.primary_asset),
+        None,
+    )
+    return bool(
+        primary.is_file()
+        and primary.stat().st_size > 0
+        and record is not None
+        and record.sha256 == sha256_file(primary)
+    )
 
 
 class IngestionService:
@@ -188,41 +177,60 @@ class IngestionService:
         title: str | None = None,
         operator_note: str | None = None,
         cookies_from_browser: str | None = None,
+        cookie_file: Path | str | None = None,
         force_new: bool = False,
     ) -> ReferenceProject:
         platform = validate_direct_video_url(url)
         local_cookie_browser = validate_local_cookie_browser(cookies_from_browser)
+        local_cookie_file = Path(cookie_file).expanduser().resolve() if cookie_file else None
+        if local_cookie_file and not local_cookie_file.is_file():
+            raise FileNotFoundError(local_cookie_file)
+        if local_cookie_browser and local_cookie_file:
+            raise ValueError("Use either cookies_from_browser or cookie_file, not both")
         canonical_key = canonical_url_key(url)
         existing_id = self.store.find_by_canonical_key(canonical_key)
         if existing_id and not force_new:
-            return self.store.load_project(existing_id)
-        reference_id = (
-            reference_id_from_key(canonical_key)
-            if not force_new
-            else f"{reference_id_from_key(canonical_key)}-{uuid.uuid4().hex[:6]}"
-        )
-        workspace = self.store.create_workspace(reference_id)
-        project = ReferenceProject(
-            reference_id=reference_id,
-            status=ProjectStatus.INGESTING,
-            source=SourceDescriptor(
-                kind="url",
-                platform=platform,
-                original_url=url,
-                title=title or f"{platform.value} reference",
-                canonical_key=canonical_key,
-            ),
-            access=SourceAccess(declaration=rights, operator_note=operator_note),
-            workspace_path=str(workspace),
-        )
+            project = self.store.load_project(existing_id)
+            if has_valid_cached_acquisition(project):
+                return project
+            reference_id = project.reference_id
+            workspace = Path(project.workspace_path)
+            project.status = ProjectStatus.INGESTING
+            project.errors = []
+            project.access = SourceAccess(declaration=rights, operator_note=operator_note)
+            if title:
+                project.source.title = title
+        else:
+            reference_id = (
+                reference_id_from_key(canonical_key)
+                if not force_new
+                else f"{reference_id_from_key(canonical_key)}-{uuid.uuid4().hex[:6]}"
+            )
+            workspace = self.store.create_workspace(reference_id)
+            project = ReferenceProject(
+                reference_id=reference_id,
+                status=ProjectStatus.INGESTING,
+                source=SourceDescriptor(
+                    kind="url",
+                    platform=platform,
+                    original_url=canonicalize_url(url),
+                    title=title or f"{platform.value} reference",
+                    canonical_key=canonical_key,
+                ),
+                access=SourceAccess(declaration=rights, operator_note=operator_note),
+                workspace_path=str(workspace),
+            )
         self.store.save_project(project)
         try:
-            metadata = self._download_public_reference(
+            outcome = AcquisitionService().acquire(
                 url,
                 workspace,
+                rights=rights,
                 cookies_from_browser=local_cookie_browser,
+                cookie_file=local_cookie_file,
             )
-            source_file = self._find_downloaded_media(workspace / "source")
+            source_file = outcome.primary_path
+            metadata = outcome.manifest.metadata
             project.source.source_sha256 = sha256_file(source_file)
             project.source.title = str(metadata.get("title") or project.source.title)
             project.source.uploader = metadata.get("uploader")
@@ -233,64 +241,31 @@ class IngestionService:
                 stage="ingest",
                 status="completed",
                 message="Authorized public URL ingestion completed.",
-                details={"platform": platform.value, "source_file": source_file.name},
+                details={
+                    "platform": platform.value,
+                    "source_file": source_file.name,
+                    "acquisition_status": outcome.manifest.status.value,
+                    "asset_count": len(outcome.manifest.assets),
+                    "manifest": "source/acquisition-manifest.json",
+                },
             )
             return project
         except Exception as exc:
+            sanitized_error = sanitize_diagnostic(
+                exc,
+                private_paths=[path for path in (local_cookie_file,) if path],
+            )
             project.status = ProjectStatus.FAILED
-            project.errors.append(str(exc))
+            project.errors.append(sanitized_error)
             self.store.save_project(project)
             self.store.record_event(
                 reference_id,
                 stage="ingest",
                 status="failed",
-                message="URL ingestion failed. Download the authorized file manually and use ingest-file.",
-                details={"error": str(exc)},
+                message=(
+                    "URL ingestion failed. Download the authorized file manually and use "
+                    "ingest-file."
+                ),
+                details={"error": sanitized_error},
             )
             raise
-
-    @staticmethod
-    def _download_public_reference(
-        url: str,
-        workspace: Path,
-        *,
-        cookies_from_browser: str | None = None,
-    ) -> dict[str, object]:
-        try:
-            import yt_dlp  # type: ignore
-        except ImportError as exc:
-            raise RuntimeError("Install the media extra to enable URL ingestion") from exc
-        options: dict[str, object] = {
-            "outtmpl": str(workspace / "source" / "original.%(ext)s"),
-            "format": "bv*+ba/b",
-            "merge_output_format": "mp4",
-            "writesubtitles": True,
-            "writeautomaticsub": True,
-            "writethumbnail": True,
-            "writeinfojson": True,
-            "noplaylist": True,
-            "retries": 3,
-            "fragment_retries": 3,
-            "socket_timeout": 30,
-            "quiet": True,
-            "no_warnings": True,
-        }
-        if cookies_from_browser:
-            # yt-dlp reads this operator-owned browser profile locally. The value,
-            # cookies, and session data are never persisted in project metadata.
-            options["cookiesfrombrowser"] = (cookies_from_browser,)
-        with yt_dlp.YoutubeDL(options) as downloader:
-            info = downloader.extract_info(url, download=True)
-            return downloader.sanitize_info(info)
-
-    @staticmethod
-    def _find_downloaded_media(source_dir: Path) -> Path:
-        candidates = [
-            path
-            for path in source_dir.iterdir()
-            if path.is_file()
-            and path.suffix.lower() in {".mp4", ".mov", ".mkv", ".webm", ".m4v"}
-        ]
-        if not candidates:
-            raise RuntimeError("No supported media file was produced")
-        return max(candidates, key=lambda path: path.stat().st_size)

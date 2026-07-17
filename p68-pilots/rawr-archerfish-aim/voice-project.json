@@ -1,0 +1,156 @@
+{
+  "id": "rawr-archerfish-aim",
+  "brand": {
+    "id": "rawr_nation",
+    "name": "Rawr Nation",
+    "tagline": "Real facts. Clear reveals.",
+    "primaryColor": "#FFD84D",
+    "secondaryColor": "#70D6FF",
+    "backgroundColor": "#0B1018",
+    "captionColor": "#FFFFFF",
+    "watermark": "RAWR NATION",
+    "tone": "energetic, curious, factual",
+    "voiceStyle": "clear, quick international English narrator"
+  },
+  "narration": "This fish hits a target above water even though the surface makes it appear displaced. Light changes direction when it crosses from air into water, shifting the insect's apparent position. The archerfish learns the relationship between what it sees and where the target really is. Then its mouth shapes a fast water jet aimed through the surface. The jet strengthens toward the front, concentrating the impact near the target. It is not a lucky shot. The fish combines optics, learned calibration, and precise fluid control.",
+  "render": {
+    "width": 1080,
+    "height": 1920,
+    "fps": 30,
+    "codec": "h264",
+    "durationSeconds": 29.5
+  },
+  "scenes": [
+    {
+      "id": "S01",
+      "startSec": 0.0,
+      "endSec": 4.5,
+      "headline": "THE TARGET IS NOT WHERE IT LOOKS",
+      "body": "This fish hits a target above water even though the surface makes it appear displaced.",
+      "visual": "generated_clip",
+      "accent": "#FFD84D",
+      "safetyLevel": "pending_human_review",
+      "objectives": [
+        "engagement",
+        "compliance"
+      ]
+    },
+    {
+      "id": "S02",
+      "startSec": 4.5,
+      "endSec": 9.5,
+      "headline": "THE SURFACE BENDS LIGHT",
+      "body": "Light changes direction when it crosses from air into water, shifting the insect's apparent position.",
+      "visual": "generated_clip",
+      "accent": "#FFD84D",
+      "safetyLevel": "pending_human_review",
+      "objectives": [
+        "engagement",
+        "compliance"
+      ]
+    },
+    {
+      "id": "S03",
+      "startSec": 9.5,
+      "endSec": 14.5,
+      "headline": "VISION BECOMES A MAP",
+      "body": "The archerfish learns the relationship between what it sees and where the target really is.",
+      "visual": "generated_clip",
+      "accent": "#FFD84D",
+      "safetyLevel": "pending_human_review",
+      "objectives": [
+        "engagement",
+        "compliance"
+      ]
+    },
+    {
+      "id": "S04",
+      "startSec": 14.5,
+      "endSec": 19.0,
+      "headline": "A WATER JET FIRES",
+      "body": "Then its mouth shapes a fast water jet aimed through the surface.",
+      "visual": "generated_clip",
+      "accent": "#FFD84D",
+      "safetyLevel": "pending_human_review",
+      "objectives": [
+        "engagement",
+        "compliance"
+      ]
+    },
+    {
+      "id": "S05",
+      "startSec": 19.0,
+      "endSec": 24.0,
+      "headline": "THE IMPACT CONCENTRATES",
+      "body": "The jet strengthens toward the front, concentrating the impact near the target.",
+      "visual": "generated_clip",
+      "accent": "#FFD84D",
+      "safetyLevel": "pending_human_review",
+      "objectives": [
+        "engagement",
+        "compliance"
+      ]
+    },
+    {
+      "id": "S06",
+      "startSec": 24.0,
+      "endSec": 29.5,
+      "headline": "OPTICS + CONTROL",
+      "body": "It is not a lucky shot. The fish combines optics, learned calibration, and precise fluid control.",
+      "visual": "generated_clip",
+      "accent": "#FFD84D",
+      "safetyLevel": "pending_human_review",
+      "objectives": [
+        "engagement",
+        "compliance"
+      ]
+    }
+  ],
+  "captions": [
+    {
+      "startSec": 0.0,
+      "endSec": 4.5,
+      "text": "THE TARGET IS NOT WHERE IT LOOKS",
+      "highlight": "LOOKS",
+      "emphasis": "fact"
+    },
+    {
+      "startSec": 4.5,
+      "endSec": 9.5,
+      "text": "THE SURFACE BENDS LIGHT",
+      "highlight": "LIGHT",
+      "emphasis": "fact"
+    },
+    {
+      "startSec": 9.5,
+      "endSec": 14.5,
+      "text": "VISION BECOMES A MAP",
+      "highlight": "MAP",
+      "emphasis": "fact"
+    },
+    {
+      "startSec": 14.5,
+      "endSec": 19.0,
+      "text": "A WATER JET FIRES",
+      "highlight": "FIRES",
+      "emphasis": "fact"
+    },
+    {
+      "startSec": 19.0,
+      "endSec": 24.0,
+      "text": "THE IMPACT CONCENTRATES",
+      "highlight": "CONCENTRATES",
+      "emphasis": "fact"
+    },
+    {
+      "startSec": 24.0,
+      "endSec": 29.5,
+      "text": "OPTICS + CONTROL",
+      "highlight": "CONTROL",
+      "emphasis": "fact"
+    }
+  ],
+  "editorialStatus": "draft_for_human_review",
+  "humanReviewRequired": true,
+  "publishAllowed": false
+}

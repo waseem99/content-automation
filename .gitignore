@@ -5,6 +5,8 @@ __pycache__/
 .pytest_cache/
 .cache/
 .vscode/
+.runtime/
+.venv-kokoro/
 
 .env
 
@@ -19,3 +21,11 @@ data/campaigns/**/*
 *.wav
 *.m4a
 *.mp3
+
+# Local P68 renders, generated plates, narration, and review evidence.
+p68-artifacts/
+
+# Local reference media, authenticated browser profiles, and cookie jars.
+reference-engine/workspace/
+reference-engine/.refintel-browser/
+**/facebook-cookies.txt

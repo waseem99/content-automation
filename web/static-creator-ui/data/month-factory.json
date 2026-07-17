@@ -1,0 +1,923 @@
+{
+  "schema_version": "p79.month_factory.v1",
+  "month_start": "2026-08-01",
+  "priority_brand_count": 4,
+  "batch_size": 6,
+  "brands": [
+    {
+      "id": "rawr-nation",
+      "name": "Rawr Nation",
+      "niche": "Wildlife facts and animal science",
+      "kind": "video",
+      "cadence": "5 shorts and 1 feature weekly",
+      "monthlyTarget": 24,
+      "primary": "Facebook",
+      "pillars": [
+        "Animal senses",
+        "Survival mechanisms",
+        "Myth versus fact",
+        "Behaviour reveals"
+      ],
+      "onboardingStatus": "active",
+      "conceptCount": 24,
+      "blocker": null
+    },
+    {
+      "id": "animal-x",
+      "name": "Animal X",
+      "niche": "Animal behaviour and hidden signals",
+      "kind": "video",
+      "cadence": "5 shorts and 1 feature weekly",
+      "monthlyTarget": 24,
+      "primary": "Facebook",
+      "pillars": [
+        "Hidden signals",
+        "Social intelligence",
+        "Anatomy in action",
+        "Field discoveries"
+      ],
+      "onboardingStatus": "active",
+      "conceptCount": 24,
+      "blocker": null
+    },
+    {
+      "id": "historiq",
+      "name": "Historiq",
+      "niche": "AI-assisted history, philosophy, and ideas",
+      "kind": "video",
+      "cadence": "5 shorts and 1 feature weekly",
+      "monthlyTarget": 24,
+      "primary": "Facebook",
+      "pillars": [
+        "Hidden history",
+        "Ideas that changed society",
+        "Historical turning points",
+        "Myth versus record"
+      ],
+      "onboardingStatus": "active_research_pending",
+      "conceptCount": 0,
+      "blocker": "account_brief_and_reference_review_required"
+    },
+    {
+      "id": "ani-films",
+      "name": "Ani Films",
+      "niche": "Simple animation for complex ideas",
+      "kind": "video",
+      "cadence": "5 shorts and 1 feature weekly",
+      "monthlyTarget": 24,
+      "primary": "Facebook",
+      "pillars": [
+        "Visual explainers",
+        "How systems work",
+        "Everyday science",
+        "Big ideas made simple"
+      ],
+      "onboardingStatus": "active_research_pending",
+      "conceptCount": 0,
+      "blocker": "account_brief_and_reference_review_required"
+    }
+  ],
+  "items": [
+    {
+      "id": "rawr-nation-2026-08-01-01",
+      "date": "2026-08-01",
+      "brand": "rawr-nation",
+      "title": "The blind spot predators exploit",
+      "concept": "Show where common prey animals cannot see and how stalking predators approach through that narrow visual gap.",
+      "format": "vertical_feature",
+      "pillar": "Animal senses",
+      "stage": "idea",
+      "batch": 1,
+      "pilotId": null,
+      "previewPath": null,
+      "nextAction": "research_and_build_script_pack",
+      "assets": [
+        "concept"
+      ]
+    },
+    {
+      "id": "rawr-nation-2026-08-01-02",
+      "date": "2026-08-02",
+      "brand": "rawr-nation",
+      "title": "Why owl flight sounds like nothing",
+      "concept": "Explain how fringed feather edges break up airflow and reduce the sound made by a hunting owl in flight.",
+      "format": "vertical_short",
+      "pillar": "Survival mechanisms",
+      "stage": "idea",
+      "batch": 1,
+      "pilotId": null,
+      "previewPath": null,
+      "nextAction": "research_and_build_script_pack",
+      "assets": [
+        "concept"
+      ]
+    },
+    {
+      "id": "rawr-nation-2026-08-01-03",
+      "date": "2026-08-03",
+      "brand": "rawr-nation",
+      "title": "The shrimp punch that flashes",
+      "concept": "Visualize how a mantis shrimp strike creates a collapsing cavitation bubble and a brief flash, separate from the direct impact.",
+      "format": "vertical_short",
+      "pillar": "Survival mechanisms",
+      "stage": "idea",
+      "batch": 1,
+      "pilotId": null,
+      "previewPath": null,
+      "nextAction": "research_and_build_script_pack",
+      "assets": [
+        "concept"
+      ]
+    },
+    {
+      "id": "rawr-nation-2026-08-01-04",
+      "date": "2026-08-05",
+      "brand": "rawr-nation",
+      "title": "A shark's hidden electric map",
+      "concept": "Reveal how ampullae around a shark's snout detect weak electrical fields produced by nearby living animals.",
+      "format": "vertical_short",
+      "pillar": "Animal senses",
+      "stage": "idea",
+      "batch": 1,
+      "pilotId": null,
+      "previewPath": null,
+      "nextAction": "research_and_build_script_pack",
+      "assets": [
+        "concept"
+      ]
+    },
+    {
+      "id": "rawr-nation-2026-08-01-05",
+      "date": "2026-08-06",
+      "brand": "rawr-nation",
+      "title": "The lizard that shoots blood",
+      "concept": "Explain the horned lizard's eye-sinus defence and why the surprising blood spray can deter particular predators.",
+      "format": "vertical_short",
+      "pillar": "Survival mechanisms",
+      "stage": "idea",
+      "batch": 1,
+      "pilotId": null,
+      "previewPath": null,
+      "nextAction": "research_and_build_script_pack",
+      "assets": [
+        "concept"
+      ]
+    },
+    {
+      "id": "rawr-nation-2026-08-01-06",
+      "date": "2026-08-07",
+      "brand": "rawr-nation",
+      "title": "Do camels really store water?",
+      "concept": "Correct the hump myth by showing fat storage, water conservation, and the body systems that help camels endure arid conditions.",
+      "format": "vertical_feature",
+      "pillar": "Myth versus fact",
+      "stage": "idea",
+      "batch": 1,
+      "pilotId": null,
+      "previewPath": null,
+      "nextAction": "research_and_build_script_pack",
+      "assets": [
+        "concept"
+      ]
+    },
+    {
+      "id": "rawr-nation-2026-08-01-07",
+      "date": "2026-08-09",
+      "brand": "rawr-nation",
+      "title": "How a gecko defeats gravity",
+      "concept": "Zoom from a gecko foot to microscopic setae and explain how enormous contact area enables dry adhesion.",
+      "format": "vertical_short",
+      "pillar": "Survival mechanisms",
+      "stage": "preview",
+      "batch": 2,
+      "pilotId": "rawr-gecko-grip",
+      "previewPath": "p68-artifacts/gold/rawr-gecko-grip/renders/visual-v1/final_review.mp4",
+      "nextAction": "human_review_before_paid_render",
+      "assets": [
+        "concept",
+        "script pack",
+        "VO",
+        "preview"
+      ]
+    },
+    {
+      "id": "rawr-nation-2026-08-01-08",
+      "date": "2026-08-10",
+      "brand": "rawr-nation",
+      "title": "The snake that sees body heat",
+      "concept": "Map how pit vipers combine infrared-sensitive pit organs with vision to locate warm prey in darkness.",
+      "format": "vertical_short",
+      "pillar": "Animal senses",
+      "stage": "idea",
+      "batch": 2,
+      "pilotId": null,
+      "previewPath": null,
+      "nextAction": "research_and_build_script_pack",
+      "assets": [
+        "concept"
+      ]
+    },
+    {
+      "id": "rawr-nation-2026-08-01-09",
+      "date": "2026-08-11",
+      "brand": "rawr-nation",
+      "title": "This frog freezes and wakes up",
+      "concept": "Follow a wood frog through winter as ice forms outside its cells while glucose helps protect vulnerable tissues.",
+      "format": "vertical_short",
+      "pillar": "Survival mechanisms",
+      "stage": "idea",
+      "batch": 2,
+      "pilotId": null,
+      "previewPath": null,
+      "nextAction": "research_and_build_script_pack",
+      "assets": [
+        "concept"
+      ]
+    },
+    {
+      "id": "rawr-nation-2026-08-01-10",
+      "date": "2026-08-13",
+      "brand": "rawr-nation",
+      "title": "Why zebras are hard to bite",
+      "concept": "Test the evidence that zebra stripes disrupt the final landing approach of biting flies rather than simply hiding zebras from lions.",
+      "format": "vertical_short",
+      "pillar": "Myth versus fact",
+      "stage": "idea",
+      "batch": 2,
+      "pilotId": null,
+      "previewPath": null,
+      "nextAction": "research_and_build_script_pack",
+      "assets": [
+        "concept"
+      ]
+    },
+    {
+      "id": "rawr-nation-2026-08-01-11",
+      "date": "2026-08-14",
+      "brand": "rawr-nation",
+      "title": "The beetle that drinks fog",
+      "concept": "Show how a desert beetle positions its body to collect fog droplets and channel usable water toward its mouth.",
+      "format": "vertical_feature",
+      "pillar": "Survival mechanisms",
+      "stage": "idea",
+      "batch": 2,
+      "pilotId": null,
+      "previewPath": null,
+      "nextAction": "research_and_build_script_pack",
+      "assets": [
+        "concept"
+      ]
+    },
+    {
+      "id": "rawr-nation-2026-08-01-12",
+      "date": "2026-08-15",
+      "brand": "rawr-nation",
+      "title": "A crocodile's face can feel ripples",
+      "concept": "Explain the pressure-sensitive dome organs around crocodilian jaws that detect tiny disturbances at the water surface.",
+      "format": "vertical_short",
+      "pillar": "Animal senses",
+      "stage": "idea",
+      "batch": 2,
+      "pilotId": null,
+      "previewPath": null,
+      "nextAction": "research_and_build_script_pack",
+      "assets": [
+        "concept"
+      ]
+    },
+    {
+      "id": "rawr-nation-2026-08-01-13",
+      "date": "2026-08-17",
+      "brand": "rawr-nation",
+      "title": "Why goats have rectangle pupils",
+      "concept": "Compare horizontal pupils with round and vertical pupils to show how grazing animals monitor a broad horizon.",
+      "format": "vertical_short",
+      "pillar": "Animal senses",
+      "stage": "idea",
+      "batch": 3,
+      "pilotId": null,
+      "previewPath": null,
+      "nextAction": "research_and_build_script_pack",
+      "assets": [
+        "concept"
+      ]
+    },
+    {
+      "id": "rawr-nation-2026-08-01-14",
+      "date": "2026-08-18",
+      "brand": "rawr-nation",
+      "title": "The fish wearing its own flashlight",
+      "concept": "Explore how flashlight fish use light-producing bacteria beneath their eyes and control the visible glow.",
+      "format": "vertical_short",
+      "pillar": "Behaviour reveals",
+      "stage": "idea",
+      "batch": 3,
+      "pilotId": null,
+      "previewPath": null,
+      "nextAction": "research_and_build_script_pack",
+      "assets": [
+        "concept"
+      ]
+    },
+    {
+      "id": "rawr-nation-2026-08-01-15",
+      "date": "2026-08-19",
+      "brand": "rawr-nation",
+      "title": "Can porcupines shoot their quills?",
+      "concept": "Debunk the projectile-quill myth and demonstrate how loose, barbed quills transfer through direct contact.",
+      "format": "vertical_short",
+      "pillar": "Myth versus fact",
+      "stage": "idea",
+      "batch": 3,
+      "pilotId": null,
+      "previewPath": null,
+      "nextAction": "research_and_build_script_pack",
+      "assets": [
+        "concept"
+      ]
+    },
+    {
+      "id": "rawr-nation-2026-08-01-16",
+      "date": "2026-08-21",
+      "brand": "rawr-nation",
+      "title": "The bird that fakes an injury",
+      "concept": "Reconstruct a killdeer's broken-wing display that draws a threat away from a vulnerable ground nest.",
+      "format": "vertical_feature",
+      "pillar": "Behaviour reveals",
+      "stage": "idea",
+      "batch": 3,
+      "pilotId": null,
+      "previewPath": null,
+      "nextAction": "research_and_build_script_pack",
+      "assets": [
+        "concept"
+      ]
+    },
+    {
+      "id": "rawr-nation-2026-08-01-17",
+      "date": "2026-08-22",
+      "brand": "rawr-nation",
+      "title": "How seals sleep without drowning",
+      "concept": "Explain unihemispheric sleep and surface-resting strategies that let some seals balance breathing with vigilance.",
+      "format": "vertical_short",
+      "pillar": "Survival mechanisms",
+      "stage": "idea",
+      "batch": 3,
+      "pilotId": null,
+      "previewPath": null,
+      "nextAction": "research_and_build_script_pack",
+      "assets": [
+        "concept"
+      ]
+    },
+    {
+      "id": "rawr-nation-2026-08-01-18",
+      "date": "2026-08-23",
+      "brand": "rawr-nation",
+      "title": "The insect that hears with its knees",
+      "concept": "Locate tympanal hearing organs on a cricket's forelegs and trace how vibrations reach its nervous system.",
+      "format": "vertical_short",
+      "pillar": "Animal senses",
+      "stage": "idea",
+      "batch": 3,
+      "pilotId": null,
+      "previewPath": null,
+      "nextAction": "research_and_build_script_pack",
+      "assets": [
+        "concept"
+      ]
+    },
+    {
+      "id": "rawr-nation-2026-08-01-19",
+      "date": "2026-08-25",
+      "brand": "rawr-nation",
+      "title": "Why vultures rarely get sick",
+      "concept": "Follow a scavenged meal through highly acidic digestion and explain the limits of a vulture's pathogen defences.",
+      "format": "vertical_short",
+      "pillar": "Survival mechanisms",
+      "stage": "idea",
+      "batch": 4,
+      "pilotId": null,
+      "previewPath": null,
+      "nextAction": "research_and_build_script_pack",
+      "assets": [
+        "concept"
+      ]
+    },
+    {
+      "id": "rawr-nation-2026-08-01-20",
+      "date": "2026-08-26",
+      "brand": "rawr-nation",
+      "title": "The spider that becomes an ant",
+      "concept": "Show how ant-mimicking spiders copy body shape and movement to avoid predators or approach prey.",
+      "format": "vertical_short",
+      "pillar": "Behaviour reveals",
+      "stage": "idea",
+      "batch": 4,
+      "pilotId": null,
+      "previewPath": null,
+      "nextAction": "research_and_build_script_pack",
+      "assets": [
+        "concept"
+      ]
+    },
+    {
+      "id": "rawr-nation-2026-08-01-21",
+      "date": "2026-08-27",
+      "brand": "rawr-nation",
+      "title": "A whale's ear is not where you think",
+      "concept": "Trace underwater sound through specialized tissues in a toothed whale's lower jaw toward the middle and inner ear.",
+      "format": "vertical_short",
+      "pillar": "Animal senses",
+      "stage": "idea",
+      "batch": 4,
+      "pilotId": null,
+      "previewPath": null,
+      "nextAction": "research_and_build_script_pack",
+      "assets": [
+        "concept"
+      ]
+    },
+    {
+      "id": "rawr-nation-2026-08-01-22",
+      "date": "2026-08-29",
+      "brand": "rawr-nation",
+      "title": "The octopus disappearing act",
+      "concept": "Break down how chromatophores, reflective cells, papillae, and posture combine to change an octopus's appearance.",
+      "format": "vertical_feature",
+      "pillar": "Survival mechanisms",
+      "stage": "idea",
+      "batch": 4,
+      "pilotId": null,
+      "previewPath": null,
+      "nextAction": "research_and_build_script_pack",
+      "assets": [
+        "concept"
+      ]
+    },
+    {
+      "id": "rawr-nation-2026-08-01-23",
+      "date": "2026-08-30",
+      "brand": "rawr-nation",
+      "title": "Do bats really have bad eyesight?",
+      "concept": "Replace the blind-bat myth with a comparison of bat vision and echolocation across different species and tasks.",
+      "format": "vertical_short",
+      "pillar": "Myth versus fact",
+      "stage": "idea",
+      "batch": 4,
+      "pilotId": null,
+      "previewPath": null,
+      "nextAction": "research_and_build_script_pack",
+      "assets": [
+        "concept"
+      ]
+    },
+    {
+      "id": "rawr-nation-2026-08-01-24",
+      "date": "2026-08-31",
+      "brand": "rawr-nation",
+      "title": "The fox that dives into snow",
+      "concept": "Examine how a red fox listens for hidden prey and commits to a steep pounce through deep snow.",
+      "format": "vertical_short",
+      "pillar": "Behaviour reveals",
+      "stage": "idea",
+      "batch": 4,
+      "pilotId": null,
+      "previewPath": null,
+      "nextAction": "research_and_build_script_pack",
+      "assets": [
+        "concept"
+      ]
+    },
+    {
+      "id": "animal-x-2026-08-01-01",
+      "date": "2026-08-01",
+      "brand": "animal-x",
+      "title": "Elephants hear through the ground",
+      "concept": "Show how elephant foot and trunk receptors detect low-frequency seismic vibrations travelling through soil.",
+      "format": "vertical_feature",
+      "pillar": "Hidden signals",
+      "stage": "preview",
+      "batch": 1,
+      "pilotId": "animal-elephant-signals",
+      "previewPath": "p68-artifacts/gold/animal-elephant-signals/renders/review-v1/final_review.mp4",
+      "nextAction": "human_review_before_paid_render",
+      "assets": [
+        "concept",
+        "script pack",
+        "VO",
+        "preview"
+      ]
+    },
+    {
+      "id": "animal-x-2026-08-01-02",
+      "date": "2026-08-02",
+      "brand": "animal-x",
+      "title": "The dance that gives directions",
+      "concept": "Decode how a honeybee waggle dance communicates the direction and relative distance of a food source.",
+      "format": "vertical_short",
+      "pillar": "Hidden signals",
+      "stage": "idea",
+      "batch": 1,
+      "pilotId": null,
+      "previewPath": null,
+      "nextAction": "research_and_build_script_pack",
+      "assets": [
+        "concept"
+      ]
+    },
+    {
+      "id": "animal-x-2026-08-01-03",
+      "date": "2026-08-03",
+      "brand": "animal-x",
+      "title": "Ravens remember who cheated",
+      "concept": "Explore experiments and observations showing long-lived social memory for unfair exchanges and threatening individuals in ravens.",
+      "format": "vertical_short",
+      "pillar": "Social intelligence",
+      "stage": "idea",
+      "batch": 1,
+      "pilotId": null,
+      "previewPath": null,
+      "nextAction": "research_and_build_script_pack",
+      "assets": [
+        "concept"
+      ]
+    },
+    {
+      "id": "animal-x-2026-08-01-04",
+      "date": "2026-08-05",
+      "brand": "animal-x",
+      "title": "Prairie dogs describe danger",
+      "concept": "Break down alarm calls that vary with predator type and can carry surprisingly detailed information.",
+      "format": "vertical_short",
+      "pillar": "Hidden signals",
+      "stage": "script",
+      "batch": 1,
+      "pilotId": "animal-prairie-dog-alarm",
+      "previewPath": null,
+      "nextAction": "human_review_script_and_scene_plan",
+      "assets": [
+        "concept",
+        "script pack"
+      ]
+    },
+    {
+      "id": "animal-x-2026-08-01-05",
+      "date": "2026-08-06",
+      "brand": "animal-x",
+      "title": "A dolphin's signature whistle",
+      "concept": "Explain how bottlenose dolphins develop individually distinctive whistles used to identify and contact one another.",
+      "format": "vertical_short",
+      "pillar": "Social intelligence",
+      "stage": "idea",
+      "batch": 1,
+      "pilotId": null,
+      "previewPath": null,
+      "nextAction": "research_and_build_script_pack",
+      "assets": [
+        "concept"
+      ]
+    },
+    {
+      "id": "animal-x-2026-08-01-06",
+      "date": "2026-08-07",
+      "brand": "animal-x",
+      "title": "What a cat's slow blink says",
+      "concept": "Separate evidence from folklore around relaxed eye narrowing and slow-blink exchanges between domestic cats and people.",
+      "format": "vertical_feature",
+      "pillar": "Hidden signals",
+      "stage": "idea",
+      "batch": 1,
+      "pilotId": null,
+      "previewPath": null,
+      "nextAction": "research_and_build_script_pack",
+      "assets": [
+        "concept"
+      ]
+    },
+    {
+      "id": "animal-x-2026-08-01-07",
+      "date": "2026-08-09",
+      "brand": "animal-x",
+      "title": "Ants vote with their feet",
+      "concept": "Follow scout ants as recruitment and quorum sensing steer a colony toward a new nest without a central commander.",
+      "format": "vertical_short",
+      "pillar": "Social intelligence",
+      "stage": "idea",
+      "batch": 2,
+      "pilotId": null,
+      "previewPath": null,
+      "nextAction": "research_and_build_script_pack",
+      "assets": [
+        "concept"
+      ]
+    },
+    {
+      "id": "animal-x-2026-08-01-08",
+      "date": "2026-08-10",
+      "brand": "animal-x",
+      "title": "The fish that asks for cleaning",
+      "concept": "Read the poses and colour signals reef fish use to request parasite removal at cleaner stations.",
+      "format": "vertical_short",
+      "pillar": "Hidden signals",
+      "stage": "idea",
+      "batch": 2,
+      "pilotId": null,
+      "previewPath": null,
+      "nextAction": "research_and_build_script_pack",
+      "assets": [
+        "concept"
+      ]
+    },
+    {
+      "id": "animal-x-2026-08-01-09",
+      "date": "2026-08-11",
+      "brand": "animal-x",
+      "title": "Orcas teach a family recipe",
+      "concept": "Show how hunting techniques can spread through matrilineal killer-whale groups as learned local traditions.",
+      "format": "vertical_short",
+      "pillar": "Field discoveries",
+      "stage": "idea",
+      "batch": 2,
+      "pilotId": null,
+      "previewPath": null,
+      "nextAction": "research_and_build_script_pack",
+      "assets": [
+        "concept"
+      ]
+    },
+    {
+      "id": "animal-x-2026-08-01-10",
+      "date": "2026-08-13",
+      "brand": "animal-x",
+      "title": "A chimp's leaf-clipping message",
+      "concept": "Explore how chimpanzee communities modify leaves to create sounds whose social meaning depends on local tradition.",
+      "format": "vertical_short",
+      "pillar": "Hidden signals",
+      "stage": "idea",
+      "batch": 2,
+      "pilotId": null,
+      "previewPath": null,
+      "nextAction": "research_and_build_script_pack",
+      "assets": [
+        "concept"
+      ]
+    },
+    {
+      "id": "animal-x-2026-08-01-11",
+      "date": "2026-08-14",
+      "brand": "animal-x",
+      "title": "How wolves settle a disagreement",
+      "concept": "Analyze posture, facial tension, appeasement, and reunion behaviours that regulate conflict inside a wolf family.",
+      "format": "vertical_feature",
+      "pillar": "Social intelligence",
+      "stage": "idea",
+      "batch": 2,
+      "pilotId": null,
+      "previewPath": null,
+      "nextAction": "research_and_build_script_pack",
+      "assets": [
+        "concept"
+      ]
+    },
+    {
+      "id": "animal-x-2026-08-01-12",
+      "date": "2026-08-15",
+      "brand": "animal-x",
+      "title": "The mouse song humans cannot hear",
+      "concept": "Shift ultrasonic mouse courtship vocalizations into human hearing range and explain what researchers measure.",
+      "format": "vertical_short",
+      "pillar": "Hidden signals",
+      "stage": "idea",
+      "batch": 2,
+      "pilotId": null,
+      "previewPath": null,
+      "nextAction": "research_and_build_script_pack",
+      "assets": [
+        "concept"
+      ]
+    },
+    {
+      "id": "animal-x-2026-08-01-13",
+      "date": "2026-08-17",
+      "brand": "animal-x",
+      "title": "Cuttlefish send two messages at once",
+      "concept": "Show a male cuttlefish presenting courtship colours on one side while masking them from a nearby rival on the other.",
+      "format": "vertical_short",
+      "pillar": "Anatomy in action",
+      "stage": "idea",
+      "batch": 3,
+      "pilotId": null,
+      "previewPath": null,
+      "nextAction": "research_and_build_script_pack",
+      "assets": [
+        "concept"
+      ]
+    },
+    {
+      "id": "animal-x-2026-08-01-14",
+      "date": "2026-08-18",
+      "brand": "animal-x",
+      "title": "Meerkats teach pups to hunt",
+      "concept": "Follow adults as they adjust the condition of scorpion prey to match a young meerkat's developing skill.",
+      "format": "vertical_short",
+      "pillar": "Social intelligence",
+      "stage": "idea",
+      "batch": 3,
+      "pilotId": null,
+      "previewPath": null,
+      "nextAction": "research_and_build_script_pack",
+      "assets": [
+        "concept"
+      ]
+    },
+    {
+      "id": "animal-x-2026-08-01-15",
+      "date": "2026-08-19",
+      "brand": "animal-x",
+      "title": "The urine signal that starts a fight",
+      "concept": "Explain how chemical cues let lobsters assess rivals and how social status changes later encounters.",
+      "format": "vertical_short",
+      "pillar": "Hidden signals",
+      "stage": "idea",
+      "batch": 3,
+      "pilotId": null,
+      "previewPath": null,
+      "nextAction": "research_and_build_script_pack",
+      "assets": [
+        "concept"
+      ]
+    },
+    {
+      "id": "animal-x-2026-08-01-16",
+      "date": "2026-08-21",
+      "brand": "animal-x",
+      "title": "Inside a whale's bubble-net team",
+      "concept": "Reconstruct coordinated humpback feeding roles while distinguishing documented cooperation from assumed communication.",
+      "format": "vertical_feature",
+      "pillar": "Field discoveries",
+      "stage": "idea",
+      "batch": 3,
+      "pilotId": null,
+      "previewPath": null,
+      "nextAction": "research_and_build_script_pack",
+      "assets": [
+        "concept"
+      ]
+    },
+    {
+      "id": "animal-x-2026-08-01-17",
+      "date": "2026-08-22",
+      "brand": "animal-x",
+      "title": "Parrots name their chicks",
+      "concept": "Examine evidence that parent parrots shape individually distinctive contact calls learned by nestlings.",
+      "format": "vertical_short",
+      "pillar": "Social intelligence",
+      "stage": "idea",
+      "batch": 3,
+      "pilotId": null,
+      "previewPath": null,
+      "nextAction": "research_and_build_script_pack",
+      "assets": [
+        "concept"
+      ]
+    },
+    {
+      "id": "animal-x-2026-08-01-18",
+      "date": "2026-08-23",
+      "brand": "animal-x",
+      "title": "Why dogs shake after tension",
+      "concept": "Interpret full-body shaking as a transition behaviour while avoiding claims that one gesture has a universal emotional meaning.",
+      "format": "vertical_short",
+      "pillar": "Hidden signals",
+      "stage": "idea",
+      "batch": 3,
+      "pilotId": null,
+      "previewPath": null,
+      "nextAction": "research_and_build_script_pack",
+      "assets": [
+        "concept"
+      ]
+    },
+    {
+      "id": "animal-x-2026-08-01-19",
+      "date": "2026-08-25",
+      "brand": "animal-x",
+      "title": "The mole-rat colony's accent",
+      "concept": "Explore how naked mole-rat greeting chirps vary by colony and are socially maintained.",
+      "format": "vertical_short",
+      "pillar": "Field discoveries",
+      "stage": "idea",
+      "batch": 4,
+      "pilotId": null,
+      "previewPath": null,
+      "nextAction": "research_and_build_script_pack",
+      "assets": [
+        "concept"
+      ]
+    },
+    {
+      "id": "animal-x-2026-08-01-20",
+      "date": "2026-08-26",
+      "brand": "animal-x",
+      "title": "A spider's coded love song",
+      "concept": "Turn jumping-spider vibrations and visual displays into a synchronized courtship sequence humans can perceive.",
+      "format": "vertical_short",
+      "pillar": "Anatomy in action",
+      "stage": "idea",
+      "batch": 4,
+      "pilotId": null,
+      "previewPath": null,
+      "nextAction": "research_and_build_script_pack",
+      "assets": [
+        "concept"
+      ]
+    },
+    {
+      "id": "animal-x-2026-08-01-21",
+      "date": "2026-08-27",
+      "brand": "animal-x",
+      "title": "How horses read human faces",
+      "concept": "Review controlled studies of how domestic horses respond differently to human facial and vocal emotional cues.",
+      "format": "vertical_short",
+      "pillar": "Social intelligence",
+      "stage": "idea",
+      "batch": 4,
+      "pilotId": null,
+      "previewPath": null,
+      "nextAction": "research_and_build_script_pack",
+      "assets": [
+        "concept"
+      ]
+    },
+    {
+      "id": "animal-x-2026-08-01-22",
+      "date": "2026-08-29",
+      "brand": "animal-x",
+      "title": "The secret handshake of elephants",
+      "concept": "Map the trunk touches, rumbles, body orientation, and scent checks involved in an elephant greeting reunion.",
+      "format": "vertical_feature",
+      "pillar": "Hidden signals",
+      "stage": "idea",
+      "batch": 4,
+      "pilotId": null,
+      "previewPath": null,
+      "nextAction": "research_and_build_script_pack",
+      "assets": [
+        "concept"
+      ]
+    },
+    {
+      "id": "animal-x-2026-08-01-23",
+      "date": "2026-08-30",
+      "brand": "animal-x",
+      "title": "Bats share food with trusted partners",
+      "concept": "Explain reciprocal food sharing in vampire bats and why repeated social relationships matter more than a simple trade.",
+      "format": "vertical_short",
+      "pillar": "Social intelligence",
+      "stage": "idea",
+      "batch": 4,
+      "pilotId": null,
+      "previewPath": null,
+      "nextAction": "research_and_build_script_pack",
+      "assets": [
+        "concept"
+      ]
+    },
+    {
+      "id": "animal-x-2026-08-01-24",
+      "date": "2026-08-31",
+      "brand": "animal-x",
+      "title": "The alarm call that crosses species",
+      "concept": "Show how animals eavesdrop on another species' warning calls and learn which signals predict real danger.",
+      "format": "vertical_short",
+      "pillar": "Field discoveries",
+      "stage": "idea",
+      "batch": 4,
+      "pilotId": null,
+      "previewPath": null,
+      "nextAction": "research_and_build_script_pack",
+      "assets": [
+        "concept"
+      ]
+    }
+  ],
+  "summary": {
+    "monthly_target": 96,
+    "concepts_ready": 48,
+    "brands_with_complete_inventory": 2,
+    "brands_blocked_for_brief": 2,
+    "stage_counts": {
+      "idea": 45,
+      "preview": 2,
+      "script": 1
+    },
+    "paid_render_jobs_started": 0,
+    "publish_jobs_started": 0
+  },
+  "guardrails": {
+    "human_approval_before_paid_render": true,
+    "human_approval_before_publish": true,
+    "vercel_deployment_performed": false
+  }
+}

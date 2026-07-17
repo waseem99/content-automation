@@ -1,0 +1,12 @@
+{
+    "schema_version":  "p82.local_review_status.v1",
+    "ready":  true,
+    "narration_artifacts":  24,
+    "daily_per_brand":  4,
+    "portfolio_packages":  480,
+    "verified_at":  "2026-07-17T07:24:04.7114582Z",
+    "packages_per_brand":  120,
+    "operator_api":  "loopback",
+    "active_brands":  4,
+    "database":  "postgresql"
+}

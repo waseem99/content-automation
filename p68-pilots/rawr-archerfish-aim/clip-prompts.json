@@ -1,0 +1,44 @@
+[
+  {
+    "shot_id": "S01",
+    "prompt": "Original vertical cinematic clip. A split-level view holds fish below and insect above while one apparent ray bends. Subject lock: the same banded archerfish with five dark bars, intact fins, and consistent scale pattern. Environment lock: one shallow mangrove tank with the same branch, waterline, and single insect above it. Lighting: dappled daylight from upper left with stable caustics below the surface. Color: natural olive water, silver fish, dark mangrove wood, restrained amber trajectory accents. Camera: Locked split-level 70mm view. Entry: Open on the insect reflection rippling. Exit: End as the fish settles beneath the branch. Screen direction: the fish approaches left-to-right and the water jet travels lower-left to upper-right. Leave clean motion handles at both ends; no embedded text.",
+    "negative_prompt": "identity drift, anatomy change, wardrobe change, background jump, lighting flip, reversed screen direction, duplicate subject, watermark, logo, embedded captions",
+    "entry_action": "Open on the insect reflection rippling",
+    "exit_action": "End as the fish settles beneath the branch"
+  },
+  {
+    "shot_id": "S02",
+    "prompt": "Original vertical cinematic clip. Clean rays from the insect bend at the same waterline toward the same fish. Subject lock: the same banded archerfish with five dark bars, intact fins, and consistent scale pattern. Environment lock: one shallow mangrove tank with the same branch, waterline, and single insect above it. Lighting: dappled daylight from upper left with stable caustics below the surface. Color: natural olive water, silver fish, dark mangrove wood, restrained amber trajectory accents. Camera: Slow push along waterline. Entry: Continue from the rippling reflection. Exit: Converge rays at the fish's eye. Screen direction: the fish approaches left-to-right and the water jet travels lower-left to upper-right. Leave clean motion handles at both ends; no embedded text.",
+    "negative_prompt": "identity drift, anatomy change, wardrobe change, background jump, lighting flip, reversed screen direction, duplicate subject, watermark, logo, embedded captions",
+    "entry_action": "Continue from the rippling reflection",
+    "exit_action": "Converge rays at the fish's eye"
+  },
+  {
+    "shot_id": "S03",
+    "prompt": "Original vertical cinematic clip. The fish holds position while a restrained true-position marker separates from the apparent position. Subject lock: the same banded archerfish with five dark bars, intact fins, and consistent scale pattern. Environment lock: one shallow mangrove tank with the same branch, waterline, and single insect above it. Lighting: dappled daylight from upper left with stable caustics below the surface. Color: natural olive water, silver fish, dark mangrove wood, restrained amber trajectory accents. Camera: Underwater profile track. Entry: Begin at the same eye-line. Exit: Fish rotates its body into firing posture. Screen direction: the fish approaches left-to-right and the water jet travels lower-left to upper-right. Leave clean motion handles at both ends; no embedded text.",
+    "negative_prompt": "identity drift, anatomy change, wardrobe change, background jump, lighting flip, reversed screen direction, duplicate subject, watermark, logo, embedded captions",
+    "entry_action": "Begin at the same eye-line",
+    "exit_action": "Fish rotates its body into firing posture"
+  },
+  {
+    "shot_id": "S04",
+    "prompt": "Original vertical cinematic clip. One continuous high-speed shot shows the mouth jet crossing the waterline. Subject lock: the same banded archerfish with five dark bars, intact fins, and consistent scale pattern. Environment lock: one shallow mangrove tank with the same branch, waterline, and single insect above it. Lighting: dappled daylight from upper left with stable caustics below the surface. Color: natural olive water, silver fish, dark mangrove wood, restrained amber trajectory accents. Camera: High-speed action track. Entry: Start on firing posture. Exit: Follow the jet toward the insect. Screen direction: the fish approaches left-to-right and the water jet travels lower-left to upper-right. Leave clean motion handles at both ends; no embedded text.",
+    "negative_prompt": "identity drift, anatomy change, wardrobe change, background jump, lighting flip, reversed screen direction, duplicate subject, watermark, logo, embedded captions",
+    "entry_action": "Start on firing posture",
+    "exit_action": "Follow the jet toward the insect"
+  },
+  {
+    "shot_id": "S05",
+    "prompt": "Original vertical cinematic clip. Macro slow motion follows later water catching the leading jet just before impact. Subject lock: the same banded archerfish with five dark bars, intact fins, and consistent scale pattern. Environment lock: one shallow mangrove tank with the same branch, waterline, and single insect above it. Lighting: dappled daylight from upper left with stable caustics below the surface. Color: natural olive water, silver fish, dark mangrove wood, restrained amber trajectory accents. Camera: Telephoto high-speed macro. Entry: Continue along the same jet. Exit: Insect releases from branch without distress. Screen direction: the fish approaches left-to-right and the water jet travels lower-left to upper-right. Leave clean motion handles at both ends; no embedded text.",
+    "negative_prompt": "identity drift, anatomy change, wardrobe change, background jump, lighting flip, reversed screen direction, duplicate subject, watermark, logo, embedded captions",
+    "entry_action": "Continue along the same jet",
+    "exit_action": "Insect releases from branch without distress"
+  },
+  {
+    "shot_id": "S06",
+    "prompt": "Original vertical cinematic clip. The insect lands on the surface and the same fish turns toward it in one natural motion. Subject lock: the same banded archerfish with five dark bars, intact fins, and consistent scale pattern. Environment lock: one shallow mangrove tank with the same branch, waterline, and single insect above it. Lighting: dappled daylight from upper left with stable caustics below the surface. Color: natural olive water, silver fish, dark mangrove wood, restrained amber trajectory accents. Camera: Gentle overhead pullback. Entry: Match the falling insect. Exit: End before feeding on a clean water ripple. Screen direction: the fish approaches left-to-right and the water jet travels lower-left to upper-right. Leave clean motion handles at both ends; no embedded text.",
+    "negative_prompt": "identity drift, anatomy change, wardrobe change, background jump, lighting flip, reversed screen direction, duplicate subject, watermark, logo, embedded captions",
+    "entry_action": "Match the falling insect",
+    "exit_action": "End before feeding on a clean water ripple"
+  }
+]

@@ -8,8 +8,11 @@ import subprocess
 from datetime import UTC, datetime
 from pathlib import Path
 
+from .acquisition import AcquisitionManifest, AssetRole
 from .analysis import OllamaVisionProvider, analyze_reference
 from .fingerprint import create_fingerprint, create_original_brief
+from .frame_stream import analyze_every_frame
+from .images import ImageReferenceProcessor, OllamaImageObserver, collect_images
 from .ingest import IngestionService
 from .media import (
     detect_scenes,
@@ -23,6 +26,7 @@ from .media import (
 from .models import ProcessingEvent, ProjectStatus, ReferenceProject, RightsDeclaration
 from .report import generate_report
 from .storage import WorkspaceStore
+from .temporal import build_temporal_report
 from .transcript import transcribe_audio
 
 
@@ -60,6 +64,7 @@ def tool_versions() -> dict[str, str]:
         "yt-dlp": _version("yt-dlp"),
         "pyscenedetect": _version("scenedetect"),
         "faster-whisper": _version("faster-whisper"),
+        "playwright": _version("playwright"),
         "pillow": _version("pillow"),
         "pydantic": _version("pydantic"),
     }
@@ -96,16 +101,19 @@ class ReferencePipeline:
         title: str | None = None,
         operator_note: str | None = None,
         cookies_from_browser: str | None = None,
+        cookie_file: Path | str | None = None,
         force_new: bool = False,
     ) -> ReferenceProject:
-        return self.ingestion.ingest_url(
-            url,
-            rights=rights,
-            title=title,
-            operator_note=operator_note,
-            cookies_from_browser=cookies_from_browser,
-            force_new=force_new,
-        )
+        options: dict[str, object] = {
+            "rights": rights,
+            "title": title,
+            "operator_note": operator_note,
+            "cookies_from_browser": cookies_from_browser,
+            "force_new": force_new,
+        }
+        if cookie_file is not None:
+            options["cookie_file"] = cookie_file
+        return self.ingestion.ingest_url(url, **options)
 
     def _event(
         self,
@@ -140,6 +148,7 @@ class ReferencePipeline:
         transcription_model: str = "small",
         transcription_device: str = "auto",
         use_local_vision: bool | None = None,
+        every_frame: bool = False,
         force: bool = False,
     ) -> ReferenceProject:
         project = self.store.load_project(reference_id)
@@ -148,7 +157,64 @@ class ReferencePipeline:
         project.tool_versions = tool_versions()
         self._event(project, "pipeline", "started", "Reference processing started.")
         try:
-            source = find_source_media(workspace)
+            try:
+                source = find_source_media(workspace)
+            except FileNotFoundError as video_error:
+                image_paths = self._image_sources(workspace)
+                if not image_paths:
+                    raise video_error
+                image_vision_enabled = (
+                    os.getenv("REFINTEL_USE_OLLAMA", "0") == "1"
+                    if use_local_vision is None
+                    else use_local_vision
+                )
+                image_observer = (
+                    OllamaImageObserver(
+                        model=os.getenv("REFINTEL_OLLAMA_MODEL", "qwen2.5vl:7b"),
+                        endpoint=os.getenv(
+                            "REFINTEL_OLLAMA_ENDPOINT",
+                            "http://127.0.0.1:11434/api/chat",
+                        ),
+                    )
+                    if image_vision_enabled
+                    else None
+                )
+                self._event(
+                    project,
+                    "images",
+                    "started",
+                    "Processing image or carousel evidence.",
+                    asset_count=len(image_paths),
+                )
+                image_manifest, image_manifest_path = ImageReferenceProcessor(
+                    observer=image_observer
+                ).process(
+                    image_paths,
+                    workspace / "image-analysis",
+                    rights=project.access.declaration,
+                    title=project.source.title,
+                    force=force,
+                )
+                project.status = (
+                    ProjectStatus.COMPLETE if image_manifest.slide_count else ProjectStatus.FAILED
+                )
+                project.updated_at = datetime.now(UTC)
+                self._event(
+                    project,
+                    "images",
+                    "completed" if image_manifest.slide_count else "failed",
+                    "Image or carousel evidence processing completed.",
+                    manifest=str(image_manifest_path.relative_to(workspace)),
+                    slide_count=image_manifest.slide_count,
+                    failure_count=len(image_manifest.failures),
+                )
+                self._event(
+                    project,
+                    "pipeline",
+                    "completed" if image_manifest.slide_count else "failed",
+                    "Reference processing completed.",
+                )
+                return project
             proxy_path = workspace / "media" / "analysis.mp4"
             audio_path = workspace / "media" / "audio.wav"
             if force or not proxy_path.exists():
@@ -201,6 +267,24 @@ class ReferencePipeline:
                     scene_count=len(project.scenes),
                 )
 
+            every_frame_path = workspace / "frames" / "every_frame_metrics.json"
+            if every_frame and (force or not every_frame_path.exists()):
+                self._event(
+                    project,
+                    "every_frame",
+                    "started",
+                    "Decoding and measuring every source frame.",
+                )
+                frame_metrics = analyze_every_frame(proxy_path, workspace)
+                self._event(
+                    project,
+                    "every_frame",
+                    "completed",
+                    "Every-frame motion analysis completed.",
+                    frame_count=frame_metrics["frame_count"],
+                    candidate_cut_count=frame_metrics["candidate_cut_count"],
+                )
+
             transcript_json = workspace / "transcript" / "transcript.json"
             if force or not transcript_json.exists():
                 self._event(project, "transcript", "started", "Generating local transcript.")
@@ -248,6 +332,28 @@ class ReferencePipeline:
             analysis_path.write_text(project.analysis.model_dump_json(indent=2), encoding="utf-8")
             self._event(project, "analysis", "completed", "Reference analysis completed.")
 
+            self._event(
+                project,
+                "temporal_report",
+                "started",
+                "Building temporal and multimodal evidence report.",
+            )
+            temporal_report, temporal_path, temporal_html = build_temporal_report(
+                project,
+                workspace,
+                force=force,
+            )
+            self._event(
+                project,
+                "temporal_report",
+                "completed",
+                "Temporal and multimodal evidence report completed.",
+                temporal_status=temporal_report.status.value,
+                manifest=str(temporal_path.relative_to(workspace)),
+                report=str(temporal_html.relative_to(workspace)),
+                window_count=len(temporal_report.windows),
+            )
+
             self._event(project, "report", "started", "Generating offline interactive report.")
             report_path = generate_report(project, workspace)
             self._event(
@@ -281,6 +387,29 @@ class ReferencePipeline:
                 error=str(exc),
             )
             raise
+
+    @staticmethod
+    def _image_sources(workspace: Path) -> list[Path]:
+        manifest_path = workspace / "source" / "acquisition-manifest.json"
+        if manifest_path.is_file():
+            try:
+                manifest = AcquisitionManifest.model_validate_json(
+                    manifest_path.read_text(encoding="utf-8")
+                )
+                roles = {AssetRole.PRIMARY_IMAGE, AssetRole.CAROUSEL_IMAGE}
+                selected = [
+                    workspace / asset.relative_path
+                    for asset in manifest.assets
+                    if asset.role in roles
+                ]
+                if selected:
+                    return collect_images(selected)
+            except (ValueError, FileNotFoundError):
+                pass
+        try:
+            return collect_images(workspace / "source")
+        except (FileNotFoundError, ValueError):
+            return []
 
     def export_brief(
         self,

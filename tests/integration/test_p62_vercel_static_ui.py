@@ -14,6 +14,7 @@ def test_static_ui_expected_files_exist():
         STATIC_ROOT / "index.html",
         STATIC_ROOT / "assets" / "styles.css",
         STATIC_ROOT / "assets" / "app.js",
+        STATIC_ROOT / "assets" / "portfolio-api.js",
         STATIC_ROOT / "sample-brief.json",
         STATIC_ROOT / "wordpress-embed.html",
         STATIC_ROOT / "vercel.json",
@@ -49,9 +50,32 @@ def test_interactive_engine_map_is_present_and_decision_oriented():
         "How output is controlled against the three objectives",
         "How the engine proves what happened",
         "Planned AI Generation Layer",
+        'id="portfolio-studio"',
+        'id="brand-filter"',
+        'id="content-queue"',
+        "30-Day Content Portfolio",
     ]
     for marker in required:
         assert marker in html
+
+
+def test_portfolio_dashboard_exposes_brand_queue_and_approval_economics():
+    app = read(STATIC_ROOT / "assets" / "app.js")
+    required = [
+        "portfolioBrands",
+        "portfolioItems",
+        "Rawr Nation",
+        "Animal X",
+        "News Brand",
+        "monthlyTarget",
+        "renderPortfolio",
+        "bindPortfolioControls",
+        "portfolio-30-day-plan.json",
+        'primary: "facebook"',
+        'approval_required: true',
+    ]
+    for marker in required:
+        assert marker in app
 
 
 def test_engine_map_js_tracks_modules_tools_outputs_and_quality_gates():
@@ -97,6 +121,19 @@ def test_app_js_is_browser_only_without_external_calls():
     assert "buildReviewPack" in app
     assert "navigator.clipboard" in app
     assert "URL.createObjectURL" in app
+
+
+def test_portfolio_api_client_is_opt_in_and_session_scoped():
+    client = read(STATIC_ROOT / "assets" / "portfolio-api.js")
+    html = read(STATIC_ROOT / "index.html")
+    assert 'meta name="content-api-base" content=""' in html
+    assert 'src="assets/portfolio-api.js"' in html
+    assert "sessionStorage" in client
+    assert "localStorage" not in client
+    assert '"X-Operator-Key"' in client
+    assert "window.PortfolioApi" in client
+    assert "http://" not in client
+    assert "https://" not in client
 
 
 def test_subdirectory_vercel_config_forces_static_framework():

@@ -1,0 +1,33 @@
+{
+  "schema_version": "p68.rn_model_manifest.v1",
+  "model_id": "wan2.2-ti2v-5b",
+  "license": {
+    "type": "Apache-2.0",
+    "url": "https://github.com/Wan-Video/Wan2.2/blob/main/LICENSE.txt",
+    "commercial_use_allowed": true,
+    "modification_allowed": true,
+    "terms_snapshot_sha256": null,
+    "approval_status": "pending_snapshot_verification"
+  },
+  "files": [
+    {
+      "path": "diffusion_models/wan2.2_ti2v_5B_fp16.safetensors",
+      "source": "Comfy-Org/Wan_2.2_ComfyUI_Repackaged",
+      "source_revision": null,
+      "sha256": null
+    },
+    {
+      "path": "text_encoders/umt5_xxl_fp8_e4m3fn_scaled.safetensors",
+      "source": "Comfy-Org/Wan_2.1_ComfyUI_repackaged",
+      "source_revision": null,
+      "sha256": null
+    },
+    {
+      "path": "vae/wan2.2_vae.safetensors",
+      "source": "Comfy-Org/Wan_2.2_ComfyUI_Repackaged",
+      "source_revision": null,
+      "sha256": null
+    }
+  ],
+  "publish_allowed": false
+}

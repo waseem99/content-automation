@@ -1,0 +1,156 @@
+{
+  "id": "animal-octopus-arms",
+  "brand": {
+    "id": "animal_x",
+    "name": "Animal X",
+    "tagline": "Wild behavior. Clearly explained.",
+    "primaryColor": "#D6B56D",
+    "secondaryColor": "#87B8A2",
+    "backgroundColor": "#101814",
+    "captionColor": "#FFFFFF",
+    "watermark": "ANIMAL X",
+    "tone": "cinematic, respectful, factual",
+    "voiceStyle": "warm restrained wildlife-documentary narrator"
+  },
+  "narration": "An octopus arm can explore, taste, and adjust before the whole animal changes course. Its suckers are packed with sensors that sample touch and chemicals on the surface. Much of the octopus nervous system lies outside the central brain, including dense networks in the arms. Those networks handle local details while still coordinating with signals from the brain. That division of work helps a soft body control many flexible joints at once. It is one animal, but movement emerges from a conversation between brain, arms, and environment.",
+  "render": {
+    "width": 1080,
+    "height": 1920,
+    "fps": 30,
+    "codec": "h264",
+    "durationSeconds": 30.0
+  },
+  "scenes": [
+    {
+      "id": "S01",
+      "startSec": 0.0,
+      "endSec": 4.5,
+      "headline": "AN ARM EXPLORES FIRST",
+      "body": "An octopus arm can explore, taste, and adjust before the whole animal changes course.",
+      "visual": "generated_clip",
+      "accent": "#D6B56D",
+      "safetyLevel": "pending_human_review",
+      "objectives": [
+        "engagement",
+        "compliance"
+      ]
+    },
+    {
+      "id": "S02",
+      "startSec": 4.5,
+      "endSec": 9.5,
+      "headline": "SUCKERS TOUCH AND TASTE",
+      "body": "Its suckers are packed with sensors that sample touch and chemicals on the surface.",
+      "visual": "generated_clip",
+      "accent": "#D6B56D",
+      "safetyLevel": "pending_human_review",
+      "objectives": [
+        "engagement",
+        "compliance"
+      ]
+    },
+    {
+      "id": "S03",
+      "startSec": 9.5,
+      "endSec": 14.5,
+      "headline": "A NERVOUS SYSTEM IN THE ARMS",
+      "body": "Much of the octopus nervous system lies outside the central brain, including dense networks in the arms.",
+      "visual": "generated_clip",
+      "accent": "#D6B56D",
+      "safetyLevel": "pending_human_review",
+      "objectives": [
+        "engagement",
+        "compliance"
+      ]
+    },
+    {
+      "id": "S04",
+      "startSec": 14.5,
+      "endSec": 19.5,
+      "headline": "LOCAL CONTROL, SHARED GOAL",
+      "body": "Those networks handle local details while still coordinating with signals from the brain.",
+      "visual": "generated_clip",
+      "accent": "#D6B56D",
+      "safetyLevel": "pending_human_review",
+      "objectives": [
+        "engagement",
+        "compliance"
+      ]
+    },
+    {
+      "id": "S05",
+      "startSec": 19.5,
+      "endSec": 24.5,
+      "headline": "COORDINATING A SOFT BODY",
+      "body": "That division of work helps a soft body control many flexible joints at once.",
+      "visual": "generated_clip",
+      "accent": "#D6B56D",
+      "safetyLevel": "pending_human_review",
+      "objectives": [
+        "engagement",
+        "compliance"
+      ]
+    },
+    {
+      "id": "S06",
+      "startSec": 24.5,
+      "endSec": 30.0,
+      "headline": "ONE BODY, DISTRIBUTED CONTROL",
+      "body": "It is one animal, but movement emerges from a conversation between brain, arms, and environment.",
+      "visual": "generated_clip",
+      "accent": "#D6B56D",
+      "safetyLevel": "pending_human_review",
+      "objectives": [
+        "engagement",
+        "compliance"
+      ]
+    }
+  ],
+  "captions": [
+    {
+      "startSec": 0.0,
+      "endSec": 4.5,
+      "text": "AN ARM EXPLORES FIRST",
+      "highlight": "FIRST",
+      "emphasis": "fact"
+    },
+    {
+      "startSec": 4.5,
+      "endSec": 9.5,
+      "text": "SUCKERS TOUCH AND TASTE",
+      "highlight": "TASTE",
+      "emphasis": "fact"
+    },
+    {
+      "startSec": 9.5,
+      "endSec": 14.5,
+      "text": "A NERVOUS SYSTEM IN THE ARMS",
+      "highlight": "ARMS",
+      "emphasis": "fact"
+    },
+    {
+      "startSec": 14.5,
+      "endSec": 19.5,
+      "text": "LOCAL CONTROL, SHARED GOAL",
+      "highlight": "GOAL",
+      "emphasis": "fact"
+    },
+    {
+      "startSec": 19.5,
+      "endSec": 24.5,
+      "text": "COORDINATING A SOFT BODY",
+      "highlight": "BODY",
+      "emphasis": "fact"
+    },
+    {
+      "startSec": 24.5,
+      "endSec": 30.0,
+      "text": "ONE BODY, DISTRIBUTED CONTROL",
+      "highlight": "CONTROL",
+      "emphasis": "fact"
+    }
+  ],
+  "editorialStatus": "draft_for_human_review",
+  "humanReviewRequired": true,
+  "publishAllowed": false
+}

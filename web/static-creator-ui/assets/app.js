@@ -3,10 +3,405 @@
     brief: null,
     pack: null,
     engineFilter: "all",
-    selectedStage: "brief-intake"
+    selectedStage: "brief-intake",
+    brandFilter: "all",
+    statusFilter: "all",
+    referenceBrandFilter: "",
+    referencePlatformFilter: "",
+    referenceStatusFilter: ""
   };
 
   const $ = (id) => document.getElementById(id);
+
+  const demoPortfolioBrands = [
+    { id: "rawr-nation", name: "Rawr Nation", niche: "Wildlife facts", kind: "video", cadence: "4 original videos daily; capacity 8 after analytics approval", monthlyTarget: 120, primary: "Facebook", pillars: ["Animal senses", "Survival mechanisms", "Myth vs fact", "Behaviour reveals"] },
+    { id: "animal-x", name: "Animal X", niche: "Animal behaviour", kind: "video", cadence: "5 shorts + 1 feature weekly", monthlyTarget: 24, primary: "Facebook", pillars: ["Hidden signals", "Social intelligence", "Anatomy in action", "Field discoveries"] },
+    { id: "historiq", name: "Historiq", niche: "AI-assisted history, philosophy, and ideas", kind: "video", cadence: "5 shorts + 1 feature weekly", monthlyTarget: 24, primary: "Facebook", pillars: ["Hidden history", "Ideas that changed society", "Historical turning points", "Myth versus record"] },
+    { id: "ani-films", name: "Ani Films", niche: "Simple animation for complex ideas", kind: "video", cadence: "5 shorts + 1 feature weekly", monthlyTarget: 24, primary: "Facebook", pillars: ["Visual explainers", "How systems work", "Everyday science", "Big ideas made simple"] },
+    { id: "brand-05", name: "Brand 05", niche: "Awaiting onboarding", kind: "video", cadence: "5 shorts + 1 feature weekly", monthlyTarget: 24, primary: "Facebook", pillars: ["Complete brand onboarding"] },
+    { id: "brand-06", name: "Brand 06", niche: "Awaiting onboarding", kind: "video", cadence: "5 shorts + 1 feature weekly", monthlyTarget: 24, primary: "Facebook", pillars: ["Complete brand onboarding"] },
+    { id: "news-brand", name: "News Brand", niche: "News and explainers", kind: "mixed", cadence: "2 timely posts daily", monthlyTarget: 60, primary: "Facebook", pillars: ["Breaking update", "Context card", "What changes next", "Daily roundup"] }
+  ];
+
+  const demoPortfolioItems = [
+    { date: "Day 01", brand: "rawr-nation", title: "The hidden blind spot predators exploit", format: "45s vertical", stage: "ready", assets: ["3 exports", "thumbnail", "caption", "hashtags"] },
+    { date: "Day 02", brand: "animal-x", title: "How elephants hear through the ground", format: "50s vertical", stage: "premium", assets: ["VO", "captions", "4 premium shots"] },
+    { date: "Day 03", brand: "rawr-nation", title: "Why owl flight sounds almost silent", format: "35s vertical", stage: "preview", assets: ["script", "VO", "rough preview"] },
+    { date: "Day 04", brand: "animal-x", title: "The warning signal hidden in a tail", format: "40s vertical", stage: "script", assets: ["research", "script", "scene plan"] },
+    { date: "Day 05", brand: "rawr-nation", title: "The animal that sees colors we cannot", format: "40s vertical", stage: "idea", assets: ["sources", "hook options"] },
+    { date: "Day 06", brand: "news-brand", title: "Daily context card and source summary", format: "1080×1350", stage: "script", assets: ["sources", "headline", "image brief"] }
+  ];
+  let portfolioBrands = demoPortfolioBrands.slice();
+  let portfolioItems = demoPortfolioItems.slice();
+  let portfolioReadiness = null;
+  let portfolioReferences = [];
+  let activeContentReview = null;
+  let reviewMediaUrls = [];
+  let reviewHistoryActive = false;
+
+  const stageLabels = { idea: "Idea review", script: "Script review", preview: "Preview review", premium: "Premium render", package: "Package review", ready: "Ready", published: "Published record", blocked: "Blocked", archived: "Archived" };
+
+  function renderPortfolio() {
+    const brands = state.brandFilter === "all" ? portfolioBrands : portfolioBrands.filter((brand) => brand.id === state.brandFilter);
+    const items = portfolioItems.filter((item) => (state.brandFilter === "all" || item.brand === state.brandFilter) && (state.statusFilter === "all" || item.stage === state.statusFilter));
+    const monthlyMasters = portfolioBrands.reduce((total, brand) => total + brand.monthlyTarget, 0);
+    const videoMasters = portfolioBrands.filter((brand) => brand.kind === "video").reduce((total, brand) => total + brand.monthlyTarget, 0);
+    const metrics = portfolioReadiness ? [
+      [String(portfolioReadiness.brand_count), "brand workspaces"],
+      [`${portfolioReadiness.planned_count}/${portfolioReadiness.target_count}`, "ideas planned"],
+      [String(portfolioReadiness.ready_brand_count), "inventories complete"],
+      [String(Math.max(portfolioReadiness.target_count - portfolioReadiness.planned_count, 0)), "remaining idea gap"]
+    ] : [
+      ["7", "brand workspaces"], [String(monthlyMasters), "monthly master assets"], [String(videoMasters * 3), "video platform exports"], ["30 days", "target approval buffer"]
+    ];
+    $("portfolio-metrics").innerHTML = metrics.map(([value, label]) => `<article><strong>${value}</strong><span>${label}</span></article>`).join("");
+
+    const selected = brands[0];
+    $("brand-summary").innerHTML = state.brandFilter === "all"
+      ? `<p class="eyebrow dark-eyebrow">Portfolio policy</p><h3>Facebook-first, platform-native delivery</h3><p>Each active brand is planned at four original masters daily, with deliberate Facebook, YouTube Shorts and TikTok packages. Volume increases only after retention and revenue evidence supports it.</p><dl><div><dt>Active portfolio</dt><dd>${portfolioBrands.length} brands · ${portfolioItems.length} concepts</dd></div><div><dt>Daily mix</dt><dd>1 premium hero · 2 hybrid · 1 efficient</dd></div><div><dt>Quality gate</dt><dd>Human approval before paid render and publishing</dd></div></dl>`
+      : `<p class="eyebrow dark-eyebrow">Selected brand</p><h3>${escapeHtml(selected.name)}</h3><p>${escapeHtml(selected.niche)}</p><dl><div><dt>Primary platform</dt><dd>${selected.primary}</dd></div><div><dt>Cadence</dt><dd>${escapeHtml(selected.cadence)}</dd></div><div><dt>Monthly target</dt><dd>${selected.monthlyTarget} original masters</dd></div></dl><h4>Content pillars</h4><ul>${selected.pillars.map((pillar) => `<li>${escapeHtml(pillar)}</li>`).join("")}</ul>`;
+
+    $("content-queue").innerHTML = items.length ? items.map((item) => {
+      const brand = portfolioBrands.find((candidate) => candidate.id === item.brand);
+      const next = { idea: "Review idea", script: "Review script", preview: "Watch preview", premium: "Inspect render", package: "Review package", ready: "Open package" }[item.stage];
+      return `<tr><td>${item.date}</td><td><strong>${escapeHtml(brand.name)}</strong><span>${escapeHtml(item.title)}</span></td><td>${escapeHtml(item.format)}</td><td><span class="stage-pill ${item.stage}">${stageLabels[item.stage]}</span></td><td>${item.assets.map((asset) => `<span class="asset-chip">${escapeHtml(asset)}</span>`).join("")}</td><td><button class="table-action" type="button" data-item-id="${escapeHtml(item.id || "")}" data-item-title="${escapeHtml(item.title)}">${next || "Review"}</button></td></tr>`;
+    }).join("") : '<tr><td colspan="6" class="empty-row">No content matches these filters.</td></tr>';
+  }
+
+  function renderReferenceQueue() {
+    const ready = portfolioReferences.filter((item) => item.status === "ready_for_review").length;
+    const failed = portfolioReferences.filter((item) => ["failed", "blocked"].includes(item.status)).length;
+    const artifacts = portfolioReferences.reduce((total, item) => total + Number(item.artifact_count || 0), 0);
+    $("reference-metrics").innerHTML = [[portfolioReferences.length, "references"], [ready, "ready for review"], [artifacts, "review artifacts"], [failed, "need attention"]].map(([value, label]) => `<article><strong>${value}</strong><span>${label}</span></article>`).join("");
+    $("reference-queue").innerHTML = portfolioReferences.length ? portfolioReferences.map((item) => `<tr><td><strong>${escapeHtml(item.title)}</strong><span>${escapeHtml(item.local_reference_id)}</span></td><td>${escapeHtml(item.platform)}</td><td><span class="stage-pill ${item.status === "ready_for_review" ? "ready" : item.status === "processing" ? "preview" : "idea"}">${escapeHtml(item.status.replaceAll("_", " "))}</span></td><td>${Number(item.progress_percent || 0)}%</td><td>${Number(item.artifact_count || 0)} artifacts · ${Number(item.approved_gate_count || 0)}/3 gates · ${Number(item.idea_link_count || 0)} ideas</td><td><button class="table-action reference-review" type="button" data-reference-id="${item.id}">Review</button></td></tr>`).join("") : '<tr><td colspan="6" class="empty-row">No database-backed references match these filters. Source media remains local.</td></tr>';
+  }
+
+  function renderReferenceDetail(payload) {
+    const source = payload.source;
+    const gates = Object.fromEntries((payload.gates || []).map((gate) => [gate.gate, gate.decision]));
+    const evidence = (payload.artifacts || [])[0]?.sha256 || "";
+    $("reference-detail").innerHTML = `<p class="eyebrow dark-eyebrow">Human review</p><h4>${escapeHtml(source.title)}</h4><p>${escapeHtml(source.platform)} · ${escapeHtml(source.media_type)} · rights declared: ${escapeHtml(source.rights_declaration)}</p><dl><div><dt>Artifacts</dt><dd>${(payload.artifacts || []).map((item) => escapeHtml(item.artifact_kind)).join(", ") || "None yet"}</dd></div><div><dt>Brands</dt><dd>${(payload.brand_assignments || []).map((item) => escapeHtml(item.brand_name)).join(", ") || "Unassigned"}</dd></div><div><dt>Idea links</dt><dd>${(payload.idea_links || []).length}</dd></div></dl><div class="reference-gates">${["rights", "originality", "editorial"].map((gate) => `<button type="button" data-reference-gate="${gate}" data-reference-id="${source.id}" data-evidence="${evidence}" ${evidence ? "" : "disabled"}>${escapeHtml(gate)}: ${escapeHtml(gates[gate] || "pending")}</button>`).join("")}</div><small>Approvals are explicit, append-only human decisions. No approval triggers generation or publication.</small>`;
+  }
+
+  async function refreshReferencesFromApi() {
+    if (!window.PortfolioApi?.configured()) {
+      portfolioReferences = [];
+      renderReferenceQueue();
+      return;
+    }
+    const payload = await window.PortfolioApi.references({ brandId: state.referenceBrandFilter, platform: state.referencePlatformFilter, status: state.referenceStatusFilter });
+    portfolioReferences = payload.items || [];
+    renderReferenceQueue();
+  }
+
+  function mapApiBrand(brand) {
+    return {
+      id: brand.id,
+      name: brand.display_name,
+      niche: brand.niche,
+      kind: brand.content_mode,
+      cadence: brand.metadata?.cadence || `${brand.monthly_target} masters monthly`,
+      monthlyTarget: brand.monthly_target,
+      primary: brand.primary_platform === "facebook" ? "Facebook" : brand.primary_platform,
+      pillars: Array.isArray(brand.content_pillars) ? brand.content_pillars : []
+    };
+  }
+
+  function mapApiItem(item) {
+    return {
+      id: item.id,
+      date: item.scheduled_for,
+      brand: item.brand_id || portfolioBrands.find((brand) => brand.name === item.brand_name)?.id,
+      title: item.title,
+      format: item.format,
+      stage: item.stage,
+      sourceStage: item.stage,
+      assets: [item.script ? "script" : "concept", item.has_voiceover_artifact ? "VO" : item.voiceover ? "VO metadata" : "VO pending", item.has_preview_artifact ? "preview" : "preview pending"]
+    };
+  }
+
+  async function loadStaticHighVolumeCalendar() {
+    try {
+      const response = await fetch("data/portfolio-high-volume.json", { cache: "no-store" });
+      if (!response.ok) return false;
+      const studio = await response.json();
+      portfolioBrands = studio.brands.map((brandStudio) => {
+        const base = demoPortfolioBrands.find((item) => item.id === brandStudio.brand.slug);
+        return { ...base, name: brandStudio.brand.name, cadence: "4 original videos daily", monthlyTarget: brandStudio.summary.masters, pillars: brandStudio.brand.pillars };
+      });
+      portfolioItems = studio.brands.flatMap((brandStudio) => brandStudio.items.map((item) => ({
+        id: item.id,
+        date: `${item.scheduled_for} · ${item.scheduled_time_local || ""}`,
+        brand: brandStudio.brand.slug,
+        title: item.title,
+        format: `${item.format} · ${item.production_tier || "review"}`,
+        stage: item.workflow_stage === "preview_queue" ? "preview" : "script",
+        assets: ["script", `${(item.scene_plan || []).length} scenes`, "3 platform packages"],
+        staticPackage: item
+      })));
+      portfolioReadiness = { brand_count: studio.brand_count, planned_count: studio.summary.masters, target_count: studio.summary.masters, ready_brand_count: studio.brand_count };
+      portfolioReferences = [];
+      state.brandFilter = "all";
+      $("brand-filter").innerHTML = '<option value="all">All brands</option>' + portfolioBrands.map((brand) => `<option value="${brand.id}">${escapeHtml(brand.name)}</option>`).join("");
+      updateDataMode(`${studio.summary.masters} read-only review packages`, false);
+      renderPortfolio();
+      renderReferenceQueue();
+      return true;
+    } catch (_error) {
+      return false;
+    }
+  }
+
+  function renderStaticPackageReview(item) {
+    const pack = item.staticPackage;
+    const sources = pack.script?.sources || [];
+    $("content-review-body").innerHTML = `
+      <header class="review-header"><div><p class="eyebrow dark-eyebrow">${escapeHtml(portfolioBrands.find((brand) => brand.id === item.brand)?.name || item.brand)} · ${escapeHtml(item.date)}</p><h2>${escapeHtml(pack.title)}</h2><p>${escapeHtml(pack.concept)}</p></div><span class="stage-pill script">Read-only share</span></header>
+      <div class="review-grid">
+        <section class="review-editor"><h3>Script</h3><p><strong>Hook:</strong> ${escapeHtml(pack.script?.hook)}</p><p>${escapeHtml(pack.script?.narration)}</p><p><strong>Payoff:</strong> ${escapeHtml(pack.script?.payoff)}</p><p><strong>Fact status:</strong> ${escapeHtml(pack.script?.fact_status)}</p></section>
+        <section class="review-media"><h3>Production plan</h3><p>${escapeHtml(pack.daily_slot)} · ${escapeHtml(pack.production_tier)} · ${escapeHtml(pack.duration_seconds)} seconds</p><ol class="review-history">${(pack.scene_plan || []).map((scene) => `<li><strong>${escapeHtml(scene.start_seconds)}–${escapeHtml(scene.end_seconds)}s · ${escapeHtml(scene.purpose)}</strong><span>${escapeHtml(scene.visual_direction)}</span></li>`).join("")}</ol></section>
+      </div>
+      <section class="review-decision"><div><h3>Platform delivery</h3><p>${(pack.platform_packages || []).map((platform) => `<strong>${escapeHtml(platform.platform)}</strong>: ${escapeHtml(platform.caption)}`).join("<br>")}</p><p>${sources.length ? `${sources.length} source records attached for human fact review.` : "Research is required before production approval."}</p><small>This shared view cannot approve, spend, generate, or publish. Open the local database-connected UI for those actions.</small></div></section>`;
+  }
+
+  function prettyJson(value) {
+    return value ? JSON.stringify(value, null, 2) : "";
+  }
+
+  function reviewGate(stage) {
+    return { idea: "idea", script: "script", preview: "preview", premium: "premium_spend", package: "package", ready: "publish" }[stage];
+  }
+
+  function productionRoute(stage) {
+    return {
+      idea: { title: "Next: script review", copy: "Approval moves this idea into script refinement. No video credits are spent.", button: "Approve idea → script review", tone: "free" },
+      script: { title: "Next: free rough preview", copy: "Approval queues local voiceover, captions, timing and rough motion using the free/open-source preview pipeline.", button: "Approve script → free preview", tone: "free" },
+      preview: { title: "Next: final production", copy: "Approval sends selected quality-critical shots to paid production; reusable or simple shots remain on the lean pipeline.", button: "Approve preview → paid production", tone: "paid" },
+      premium: { title: "Next: final package review", copy: "Approval locks the paid render and assembles platform-native exports, thumbnail, caption and hashtags.", button: "Approve render → package", tone: "paid" },
+      package: { title: "Next: publishing approval", copy: "Approval marks the package ready for a final human-controlled publishing decision.", button: "Approve final package", tone: "controlled" },
+      ready: { title: "Publishing remains human-controlled", copy: "This records publish approval only. It does not automatically post to any platform.", button: "Approve for publishing", tone: "controlled" }
+    }[stage] || { title: "Human review required", copy: "Approval advances this item to its next controlled stage.", button: "Approve next stage", tone: "controlled" };
+  }
+
+  function scriptView(script) {
+    if (!script) return '<p class="empty-review">Script has not been prepared yet.</p>';
+    const narration = Array.isArray(script.narration) ? script.narration.join(" ") : (script.narration || script.body || "");
+    return `<div class="script-card">${script.hook ? `<div><span>Hook</span><p>${escapeHtml(script.hook)}</p></div>` : ""}${narration ? `<div><span>Narration</span><p>${escapeHtml(narration)}</p></div>` : ""}${script.payoff ? `<div><span>Payoff</span><p>${escapeHtml(script.payoff)}</p></div>` : ""}${script.cta ? `<div><span>Call to action</span><p>${escapeHtml(script.cta)}</p></div>` : ""}</div>`;
+  }
+
+  function sceneView(scenePlan) {
+    const scenes = Array.isArray(scenePlan) ? scenePlan : (scenePlan?.scenes || []);
+    if (!scenes.length) return '<p class="empty-review">Scene plan has not been prepared yet.</p>';
+    return `<ol class="scene-list">${scenes.map((scene, index) => `<li><span class="scene-number">${index + 1}</span><div><strong>${escapeHtml(scene.purpose || scene.title || scene.beat || `Scene ${index + 1}`)}</strong><p>${escapeHtml(scene.visual_direction || scene.visual || scene.description || "Visual direction pending")}</p>${scene.start_seconds !== undefined || scene.end_seconds !== undefined ? `<small>${escapeHtml(scene.start_seconds ?? 0)}–${escapeHtml(scene.end_seconds ?? "?")} seconds</small>` : ""}</div></li>`).join("")}</ol>`;
+  }
+
+  function voiceView(voiceover) {
+    if (!voiceover) return '<p class="empty-review">Voice direction has not been prepared yet.</p>';
+    const summary = voiceover.direction || voiceover.style || voiceover.voice || voiceover.provider || "Voice metadata attached";
+    return `<div class="voice-summary"><strong>${escapeHtml(summary)}</strong>${voiceover.provider ? `<span>Preview engine: ${escapeHtml(voiceover.provider)}</span>` : ""}${voiceover.pace ? `<span>Pace: ${escapeHtml(voiceover.pace)}</span>` : ""}</div>`;
+  }
+
+  async function hydrateReviewMedia(payload) {
+    reviewMediaUrls.forEach((url) => URL.revokeObjectURL(url));
+    reviewMediaUrls = [];
+    for (const artifact of payload.artifacts || []) {
+      if (!String(artifact.mime_type).startsWith("audio/") && !String(artifact.mime_type).startsWith("video/")) continue;
+      const mount = document.querySelector(`[data-media-artifact="${artifact.id}"]`);
+      if (!mount) continue;
+      try {
+        const response = await fetch(window.PortfolioApi.mediaUrl(payload.item.id, artifact.id), { headers: window.PortfolioApi.mediaHeaders() });
+        if (!response.ok) throw new Error("Media is not mounted in the local API runtime.");
+        const url = URL.createObjectURL(await response.blob());
+        reviewMediaUrls.push(url);
+        const tag = String(artifact.mime_type).startsWith("video/") ? "video" : "audio";
+        mount.innerHTML = `<${tag} controls preload="metadata" src="${url}"></${tag}>`;
+      } catch (error) {
+        mount.innerHTML = `<small>${escapeHtml(error.message)}</small>`;
+      }
+    }
+  }
+
+  function renderContentReview(payload) {
+    activeContentReview = payload;
+    const item = payload.item;
+    const gate = reviewGate(item.stage);
+    const missing = item.missing_for_approval || [];
+    const artifacts = payload.artifacts || [];
+    const route = productionRoute(item.stage);
+    const artifactCards = artifacts.length ? artifacts.map((artifact) => `<article class="review-artifact"><div><strong>${escapeHtml(artifact.label)}</strong><span>${escapeHtml(artifact.kind)} · v${artifact.version} · ${escapeHtml(artifact.review_status)}</span></div><div data-media-artifact="${artifact.id}"><small>${escapeHtml(artifact.mime_type)} · local review media</small></div></article>`).join("") : '<p class="empty-review">No review media has been registered yet. Local generation workers can attach narration, keyframes, and preview files through the artifact API.</p>';
+    const history = (payload.approvals || []).length ? payload.approvals.map((approval) => `<li><strong>${escapeHtml(approval.decision.replaceAll("_", " "))}</strong> ${escapeHtml(approval.gate)} v${approval.content_version}<span>${escapeHtml(approval.rationale)} · ${escapeHtml(approval.reviewer)}</span></li>`).join("") : "<li>No review decisions yet.</li>";
+    $("content-review-body").innerHTML = `
+      <header class="review-header"><div><p class="eyebrow dark-eyebrow">${escapeHtml(item.brand_name)} · ${escapeHtml(item.scheduled_for)}</p><h2>${escapeHtml(item.title)}</h2><p>${escapeHtml(item.concept)}</p></div><span class="stage-pill ${escapeHtml(item.stage)}">${escapeHtml(stageLabels[item.stage] || item.stage)}</span></header>
+      <aside class="production-route ${route.tone}"><span>Approval route</span><div><strong>${escapeHtml(route.title)}</strong><p>${escapeHtml(route.copy)}</p></div></aside>
+      <div class="review-grid">
+        <section class="review-editor"><h3>Story & script</h3>${scriptView(item.script)}<h3>Scene plan</h3>${sceneView(item.scene_plan)}<h3>Voice direction</h3>${voiceView(item.voiceover)}<details class="advanced-editor"><summary>Advanced editing</summary><p>For a producer or technical operator only. Reviewers normally do not need this section.</p><label>Script data<textarea id="review-script" rows="10">${escapeHtml(prettyJson(item.script))}</textarea></label><label>Scene plan data<textarea id="review-scenes" rows="10">${escapeHtml(prettyJson(item.scene_plan))}</textarea></label><label>Voice settings<textarea id="review-voice" rows="5">${escapeHtml(prettyJson(item.voiceover))}</textarea></label><button id="save-workspace" type="button">Save edited version</button><span id="review-save-status" class="review-status"></span></details></section>
+        <section class="review-media"><h3>Listen & watch</h3>${artifactCards}<h3>Review history</h3><ol class="review-history">${history}</ol></section>
+      </div>
+      <section class="review-decision"><div><h3>Review decision</h3><p>${missing.length ? `Approval blocked until: <strong>${missing.map(escapeHtml).join(", ")}</strong>` : "Required review evidence is present."}</p></div><label>Reviewer note<textarea id="review-rationale" rows="3" placeholder="What works, or what needs to change?"></textarea></label><div class="decision-actions"><button type="button" data-review-decision="approved" ${!gate || missing.length ? "disabled" : ""}>${escapeHtml(route.button)}</button><button type="button" class="secondary" data-review-decision="changes_requested" ${!gate ? "disabled" : ""}>Request changes</button><button type="button" class="danger" data-review-decision="rejected" ${!gate ? "disabled" : ""}>Reject</button></div><span id="review-decision-status" class="review-status"></span></section>`;
+    hydrateReviewMedia(payload);
+  }
+
+  function parseReviewJson(id) {
+    const value = $(id).value.trim();
+    return value ? JSON.parse(value) : null;
+  }
+
+  async function openContentReview(contentId) {
+    const dialog = $("content-review");
+    $("content-review-body").innerHTML = '<p class="review-loading">Loading content workspace…</p>';
+    if (!dialog.open) dialog.showModal();
+    if (!reviewHistoryActive) {
+      history.pushState({ contentReview: true, contentId }, "", `#idea-${contentId}`);
+      reviewHistoryActive = true;
+    }
+    try { renderContentReview(await window.PortfolioApi.content(contentId)); }
+    catch (error) { $("content-review-body").innerHTML = `<p class="review-error">${escapeHtml(error.message)}</p>`; }
+  }
+
+  function closeContentReview(fromHistory = false) {
+    const dialog = $("content-review");
+    if (dialog.open) dialog.close();
+    if (reviewHistoryActive && !fromHistory) history.back();
+    reviewHistoryActive = false;
+  }
+
+  function updateDataMode(message, connected) {
+    $("data-mode").textContent = message;
+    $("data-mode").className = `data-mode ${connected ? "connected" : "demo"}`;
+    $("connect-api").textContent = connected ? "Disconnect" : "Connect Data";
+  }
+
+  async function refreshPortfolioFromApi() {
+    if (!window.PortfolioApi?.configured()) return false;
+    try {
+      const planMonth = document.querySelector('meta[name="content-plan-month"]')?.content || "2026-08-01";
+      const [brandPayload, queuePayload, readinessPayload, referencePayload] = await Promise.all([
+        window.PortfolioApi.brands(),
+        window.PortfolioApi.queue(),
+        window.PortfolioApi.readiness(planMonth),
+        window.PortfolioApi.references()
+      ]);
+      portfolioBrands = brandPayload.brands.map(mapApiBrand);
+      portfolioItems = queuePayload.items.map(mapApiItem);
+      const activeBrandIds = new Set(portfolioItems.map((item) => item.brand));
+      portfolioBrands = portfolioBrands.filter((brand) => activeBrandIds.has(brand.id));
+      const activeTarget = portfolioBrands.reduce((total, brand) => total + Number(brand.monthlyTarget || 0), 0);
+      portfolioReadiness = { ...readinessPayload, brand_count: portfolioBrands.length, planned_count: portfolioItems.length, target_count: activeTarget, ready_brand_count: portfolioBrands.filter((brand) => portfolioItems.filter((item) => item.brand === brand.id).length >= Number(brand.monthlyTarget || 0)).length };
+      portfolioReferences = referencePayload.items || [];
+      state.brandFilter = "all";
+      $("brand-filter").innerHTML = '<option value="all">All brands</option>' + portfolioBrands.map((brand) => `<option value="${brand.id}">${escapeHtml(brand.name)}</option>`).join("");
+      $("reference-brand-filter").innerHTML = '<option value="">All brands</option>' + portfolioBrands.map((brand) => `<option value="${brand.id}">${escapeHtml(brand.name)}</option>`).join("");
+      updateDataMode(`${queuePayload.count} database items`, true);
+      renderPortfolio();
+      renderReferenceQueue();
+      return true;
+    } catch (error) {
+      if (await loadStaticHighVolumeCalendar()) return false;
+      updateDataMode(`Connection error: ${error.message}`, false);
+      return false;
+    }
+  }
+
+  function restoreDemoPortfolio() {
+    portfolioBrands = demoPortfolioBrands.slice();
+    portfolioItems = demoPortfolioItems.slice();
+    portfolioReadiness = null;
+    portfolioReferences = [];
+    state.brandFilter = "all";
+    $("brand-filter").innerHTML = '<option value="all">All brands</option>' + portfolioBrands.map((brand) => `<option value="${brand.id}">${escapeHtml(brand.name)}</option>`).join("");
+    updateDataMode("Demo data", false);
+    renderPortfolio();
+    renderReferenceQueue();
+  }
+
+  function bindPortfolioControls() {
+    $("brand-filter").innerHTML = '<option value="all">All brands</option>' + portfolioBrands.map((brand) => `<option value="${brand.id}">${escapeHtml(brand.name)}</option>`).join("");
+    $("brand-filter").addEventListener("change", (event) => { state.brandFilter = event.target.value; renderPortfolio(); });
+    $("status-filter").addEventListener("change", (event) => { state.statusFilter = event.target.value; renderPortfolio(); });
+    $("export-calendar").addEventListener("click", () => download("portfolio-30-day-plan.json", JSON.stringify({ schema_version: "portfolio_plan.v1", brands: portfolioBrands, items: portfolioItems, publishing_policy: { primary: "facebook", derivatives: ["youtube_shorts", "tiktok"], approval_required: true } }, null, 2), "application/json"));
+    $("connect-api").addEventListener("click", async () => {
+      if (window.PortfolioApi?.configured()) {
+        window.PortfolioApi.disconnect();
+        restoreDemoPortfolio();
+        return;
+      }
+      const base = prompt("Operator API URL (HTTPS in staging/production):", "http://127.0.0.1:8000");
+      if (!base) return;
+      const key = prompt("Operator key (stored for this browser tab only):", "");
+      if (!key) return;
+      try {
+        window.PortfolioApi.connect(base, key);
+        await refreshPortfolioFromApi();
+      } catch (error) {
+        updateDataMode(error.message, false);
+      }
+    });
+    $("content-queue").addEventListener("click", async (event) => {
+      if (!event.target.matches(".table-action")) return;
+      const item = portfolioItems.find((candidate) => candidate.id === event.target.dataset.itemId);
+      if (item?.staticPackage) {
+        $("content-review").showModal();
+        if (!reviewHistoryActive) { history.pushState({ contentReview: true }, "", `#idea-${item.id}`); reviewHistoryActive = true; }
+        renderStaticPackageReview(item);
+        return;
+      }
+      if (!item?.id || !window.PortfolioApi?.configured()) {
+        alert(`${event.target.dataset.itemTitle}\n\nConnect the operator API to open the database-backed review workspace.`);
+        return;
+      }
+      await openContentReview(item.id);
+    });
+    $("content-review").addEventListener("cancel", (event) => { event.preventDefault(); closeContentReview(); });
+    $("content-review").querySelector(".review-close-row").addEventListener("submit", (event) => { event.preventDefault(); closeContentReview(); });
+    $("content-review").addEventListener("click", (event) => { if (event.target === $("content-review")) closeContentReview(); });
+    $("content-review").addEventListener("close", () => { reviewMediaUrls.forEach((url) => URL.revokeObjectURL(url)); reviewMediaUrls = []; activeContentReview = null; });
+    window.addEventListener("popstate", () => { if (reviewHistoryActive) closeContentReview(true); });
+    $("content-review-body").addEventListener("click", async (event) => {
+      if (!activeContentReview) return;
+      const contentId = activeContentReview.item.id;
+      if (event.target.id === "save-workspace") {
+        try {
+          await window.PortfolioApi.updateWorkspace(contentId, { script: parseReviewJson("review-script"), scene_plan: parseReviewJson("review-scenes"), voiceover: parseReviewJson("review-voice"), metadata: { last_workspace_editor: "operator-ui" } });
+          renderContentReview(await window.PortfolioApi.content(contentId));
+          await refreshPortfolioFromApi();
+        } catch (error) { $("review-save-status").textContent = `Save failed: ${error.message}`; }
+      }
+      if (event.target.matches("[data-review-decision]")) {
+        const rationale = $("review-rationale").value.trim();
+        if (rationale.length < 10) { $("review-decision-status").textContent = "Add a specific rationale of at least 10 characters."; return; }
+        const decision = event.target.dataset.reviewDecision;
+        try {
+          await window.PortfolioApi.approve(contentId, reviewGate(activeContentReview.item.stage), decision, rationale);
+          renderContentReview(await window.PortfolioApi.content(contentId));
+          await refreshPortfolioFromApi();
+        } catch (error) { $("review-decision-status").textContent = `Decision failed: ${error.message}`; }
+      }
+    });
+    ["reference-brand-filter", "reference-platform-filter", "reference-status-filter"].forEach((id) => $(id).addEventListener("change", async () => {
+      state.referenceBrandFilter = $("reference-brand-filter").value;
+      state.referencePlatformFilter = $("reference-platform-filter").value;
+      state.referenceStatusFilter = $("reference-status-filter").value;
+      try { await refreshReferencesFromApi(); } catch (error) { alert(`Reference queue failed: ${error.message}`); }
+    }));
+    $("reference-queue").addEventListener("click", async (event) => {
+      if (!event.target.matches(".reference-review")) return;
+      try { renderReferenceDetail(await window.PortfolioApi.reference(event.target.dataset.referenceId)); } catch (error) { alert(`Reference review failed: ${error.message}`); }
+    });
+    $("reference-detail").addEventListener("click", async (event) => {
+      if (!event.target.matches("[data-reference-gate]")) return;
+      const rationale = prompt(`Rationale for approving ${event.target.dataset.referenceGate}:`, "Evidence reviewed and approved for controlled research use.");
+      if (!rationale) return;
+      if (!confirm("Record this human approval? This does not generate or publish content.")) return;
+      try {
+        await window.PortfolioApi.decideReferenceGate(event.target.dataset.referenceId, event.target.dataset.referenceGate, "approved", rationale, event.target.dataset.evidence);
+        renderReferenceDetail(await window.PortfolioApi.reference(event.target.dataset.referenceId));
+        await refreshReferencesFromApi();
+      } catch (error) { alert(`Reference approval failed: ${error.message}`); }
+    });
+    renderPortfolio();
+    renderReferenceQueue();
+    refreshPortfolioFromApi();
+  }
 
   const engineStages = [
     {
@@ -680,6 +1075,7 @@
     $("download-qa").addEventListener("click", () => requirePack() && download("qa-checklist.md", state.pack.exports.qa_checklist_md, "text/markdown"));
   }
 
+  bindPortfolioControls();
   bindEngineControls();
   renderEnginePipeline();
   bindStudioControls();
