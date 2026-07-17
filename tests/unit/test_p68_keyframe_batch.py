@@ -24,9 +24,9 @@ def test_repository_work_orders_cover_only_natural_motion_shots(tmp_path: Path) 
 
     assert result["pilot_count"] == 6
     assert result["roster_complete"] is True
-    assert result["natural_motion_keyframes_required"] == 29
+    assert result["natural_motion_keyframes_required"] == 23
     assert result["approved_keyframes"] == 0
-    assert result["keyframes_awaiting_asset_or_review"] == 29
+    assert result["keyframes_awaiting_asset_or_review"] == 23
     assert result["all_keyframes_ready"] is False
     assert result["generation_calls_made"] == 0
     assert result["vercel_deployment_required"] is False
@@ -82,7 +82,7 @@ def test_rejects_landscape_or_small_keyframe(tmp_path: Path) -> None:
     with pytest.raises(ValueError, match="failed validation"):
         intake_keyframe(
             pilots_root=ROOT / "p68-pilots", artifact_root=tmp_path / "artifacts",
-            pilot_id="rawr-gecko-grip", shot_id="S01", source_path=source,
+            pilot_id="animal-octopus-arms", shot_id="S01", source_path=source,
             source_kind="generated_original", provider="local", model_or_collection="fixture",
             rights_evidence="generated for fixture",
         )
