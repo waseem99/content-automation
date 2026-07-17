@@ -14,6 +14,7 @@ on:
       - "src/p68_worker_configuration.py"
       - "tests/unit/test_p68_keyframe_generator.py"
       - "tests/unit/test_p68_worker_configuration.py"
+      - "tests/unit/test_p68_local_preview_scripts.py"
   pull_request:
     branches:
       - test
@@ -26,6 +27,7 @@ on:
       - "src/p68_worker_configuration.py"
       - "tests/unit/test_p68_keyframe_generator.py"
       - "tests/unit/test_p68_worker_configuration.py"
+      - "tests/unit/test_p68_local_preview_scripts.py"
 
 permissions:
   contents: read
@@ -53,7 +55,8 @@ jobs:
           python -m pytest -q \
             tests/unit/test_p68_keyframe_generator.py \
             tests/unit/test_p68_keyframe_provider.py \
-            tests/unit/test_p68_worker_configuration.py
+            tests/unit/test_p68_worker_configuration.py \
+            tests/unit/test_p68_local_preview_scripts.py
 
       - name: Verify one-shot low-VRAM plan
         run: |
@@ -116,8 +119,8 @@ jobs:
           docker compose \
             --env-file /tmp/p68-kf.env \
             -f deploy/p68-local-keyframe-worker/compose.yaml \
-            config > /tmp/p68-kf-compose.json
-          grep -q '127.0.0.1' /tmp/p68-kf-compose.json
+            config > /tmp/p68-kf-compose.yaml
+          grep -q '127.0.0.1' /tmp/p68-kf-compose.yaml
 
       - name: Confirm no execution occurred
         run: |
