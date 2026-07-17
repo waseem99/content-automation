@@ -6,6 +6,7 @@ from pathlib import Path
 from src.p68_hybrid_review import (
     _latest_science_manifest,
     _load_optional_clip_manifest,
+    _optional_narration,
     build_hybrid_manifest,
 )
 
@@ -66,7 +67,7 @@ def test_science_only_pilot_does_not_require_natural_manifest() -> None:
     assert result["publish_allowed"] is False
 
 
-def test_science_manifest_discovery_uses_canonical_version_directory(tmp_path: Path) -> None:
+def test_science_manifest_discovery_and_optional_inputs(tmp_path: Path) -> None:
     artifact_dir = tmp_path / "gold" / "pilot"
     manifest = artifact_dir / "clips" / "scientific-v5" / "scientific-animation-manifest.json"
     manifest.parent.mkdir(parents=True)
@@ -74,3 +75,4 @@ def test_science_manifest_discovery_uses_canonical_version_directory(tmp_path: P
 
     assert _latest_science_manifest(artifact_dir) == manifest
     assert _load_optional_clip_manifest(artifact_dir / "clips" / "clip-manifest.json") == {"clips": []}
+    assert _optional_narration(artifact_dir) is None
