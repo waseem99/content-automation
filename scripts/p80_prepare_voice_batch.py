@@ -8,28 +8,36 @@ import json
 from pathlib import Path
 
 
-BRAND = {
-    "id": "rawr_nation", "name": "Rawr Nation", "tagline": "Real facts. Clear reveals.",
-    "primaryColor": "#FFD84D", "secondaryColor": "#70D6FF", "backgroundColor": "#0B1018",
-    "captionColor": "#FFFFFF", "watermark": "RAWR NATION", "tone": "energetic, curious, factual",
-    "voiceStyle": "clear, quick international English narrator",
+BRAND_STYLES = {
+    "rawr-nation": ("#FFD84D", "#70D6FF", "Real facts. Clear reveals.", "energetic, curious, factual"),
+    "animal-x": ("#8CE99A", "#74C0FC", "Signals hidden in plain sight.", "observant, intelligent, intriguing"),
+    "historiq": ("#D6B36A", "#8C7AA9", "The evidence behind the story.", "cinematic, measured, historically credible"),
+    "ani-films": ("#FF8A65", "#64B5F6", "Complex ideas, clearly moving.", "clear, visual, confidently explanatory"),
 }
+
+
+def brand_payload(studio: dict) -> dict:
+    slug = studio["brand"]["slug"]
+    primary, secondary, tagline, tone = BRAND_STYLES.get(slug, ("#FFD84D", "#70D6FF", "Clear visual stories.", "clear and credible"))
+    name = studio["brand"]["name"]
+    return {"id": slug.replace("-", "_"), "name": name, "tagline": tagline, "primaryColor": primary, "secondaryColor": secondary, "backgroundColor": "#0B1018", "captionColor": "#FFFFFF", "watermark": name.upper(), "tone": tone, "voiceStyle": "clear, quick international English narrator"}
 
 
 def prepare(studio_path: Path, output: Path, limit: int) -> list[Path]:
     studio = json.loads(studio_path.read_text(encoding="utf-8"))
+    brand = brand_payload(studio)
     output.mkdir(parents=True, exist_ok=True)
     paths = []
     for item in studio["items"][:limit]:
         project = {
             "schemaVersion": "p65.video_project.v1", "id": item["id"], "title": item["title"],
-            "brand": BRAND, "format": "vertical_short", "compositionId": "ReferenceStoryShort",
+            "brand": brand, "format": "vertical_short", "compositionId": "ReferenceStoryShort",
             "visualTheme": "abstract", "narration": item["script"]["narration"],
             "scenes": [
                 {"id": f"scene-{scene['scene']}", "startSec": scene["start_seconds"], "endSec": scene["end_seconds"],
                  "headline": scene["purpose"].replace("_", " ").upper(), "body": scene["narration"],
                  "visual": "hook" if scene["scene"] == 1 else "cta" if scene["scene"] == 5 else "bridge",
-                 "accent": "#FFD84D", "safetyLevel": "pending_human_review", "objectives": ["engagement", "compliance"]}
+                 "accent": brand["primaryColor"], "safetyLevel": "pending_human_review", "objectives": ["engagement", "compliance"]}
                 for scene in item["scene_plan"]
             ],
             "captions": [
