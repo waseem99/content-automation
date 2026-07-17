@@ -14,7 +14,7 @@ $modelName = "sd_xl_base_1.0.safetensors"
 $modelRevision = "a7c2bcc30a3b5489f1f1989e66cd5fe957fdb45c"
 $expectedSha256 = "31e35c80fc4829d14f90153f4c74cd59c90b779f6afe05a74cd6120b893f7e5b"
 $licenseUrl = "https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/blob/main/LICENSE.md"
-$downloadUrl = "https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/resolve/$modelRevision/$modelName?download=true"
+$downloadUrl = "https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/resolve/${modelRevision}/${modelName}?download=true"
 $modelDir = Join-Path $DataRoot "models"
 $modelPath = Join-Path $modelDir $modelName
 $partialPath = "$modelPath.partial"
