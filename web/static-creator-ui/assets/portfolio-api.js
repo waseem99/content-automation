@@ -11,8 +11,13 @@
     return normalizedBase(sessionStorage.getItem(BASE_KEY) || configured);
   }
 
+  function initialKey() {
+    const configured = document.querySelector('meta[name="content-operator-key"]')?.content;
+    return String(sessionStorage.getItem(TOKEN_KEY) || configured || "").trim();
+  }
+
   let base = initialBase();
-  let operatorKey = sessionStorage.getItem(TOKEN_KEY) || "";
+  let operatorKey = initialKey();
 
   async function request(path, options = {}) {
     if (!base || !operatorKey) throw new Error("Portfolio API is not connected.");
