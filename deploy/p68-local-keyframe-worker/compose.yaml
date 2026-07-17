@@ -1,0 +1,25 @@
+services:
+  p68-local-keyframe-worker:
+    build:
+      context: .
+      args:
+        COMFYUI_REF: ${COMFYUI_REF:?Pin COMFYUI_REF}
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${P68_KEYFRAME_PORT:-8188}:8188"
+    volumes:
+      - ${P68_KEYFRAME_MODEL_DIR:?Set P68_KEYFRAME_MODEL_DIR}:/opt/ComfyUI/models/checkpoints
+      - ${P68_KEYFRAME_OUTPUT_DIR:?Set P68_KEYFRAME_OUTPUT_DIR}:/opt/ComfyUI/output
+      - ${P68_KEYFRAME_INPUT_DIR:?Set P68_KEYFRAME_INPUT_DIR}:/opt/ComfyUI/input
+    environment:
+      COMFYUI_LISTEN: 0.0.0.0
+      COMFYUI_PORT: 8188
+      COMFYUI_EXTRA_ARGS: ${COMFYUI_EXTRA_ARGS:---lowvram}
+      P68_KEYFRAME_CHECKPOINT: ${P68_KEYFRAME_CHECKPOINT:?Set P68_KEYFRAME_CHECKPOINT}
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
