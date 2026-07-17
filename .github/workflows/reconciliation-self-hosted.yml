@@ -27,7 +27,7 @@ concurrency:
 jobs:
   validate:
     name: Validate on Waseem Windows runner
-    runs-on: [self-hosted, Windows, X64, facebook-media]
+    runs-on: [self-hosted, Windows, X64]
     timeout-minutes: 60
     defaults:
       run:
@@ -126,7 +126,7 @@ jobs:
           @"
           ## Self-hosted reconciliation validation
 
-          - Runner: Windows self-hosted (`facebook-media`)
+          - Runner: Windows self-hosted
           - Static build: passed
           - JavaScript syntax: passed
           - Python compilation: passed
