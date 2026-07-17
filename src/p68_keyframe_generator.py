@@ -20,7 +20,15 @@ def _seed(pilot_id: str, shot_id: str) -> int:
     return int.from_bytes(hashlib.sha256(f"{pilot_id}:{shot_id}:keyframe-v1".encode()).digest()[:8], "big") % (2**63 - 1)
 
 
-def build_keyframe_requests(pilots_root: Path, artifact_root: Path, *, pilot_id: str | None = None, shot_ids: set[str] | None = None) -> list[KeyframeGenerationRequest]:
+def build_keyframe_requests(
+    pilots_root: Path,
+    artifact_root: Path,
+    *,
+    pilot_id: str | None = None,
+    shot_ids: set[str] | None = None,
+    width: int = 1024,
+    height: int = 1824,
+) -> list[KeyframeGenerationRequest]:
     orders = build_keyframe_work_orders(pilots_root, artifact_root)
     requests = []
     for pilot in orders["pilots"]:
@@ -34,7 +42,7 @@ def build_keyframe_requests(pilots_root: Path, artifact_root: Path, *, pilot_id:
             requests.append(KeyframeGenerationRequest(
                 pilot_id=order["pilot_id"], shot_id=order["shot_id"],
                 prompt=order["still_image_prompt"], negative_prompt=order["negative_prompt"],
-                seed=_seed(order["pilot_id"], order["shot_id"]),
+                seed=_seed(order["pilot_id"], order["shot_id"]), width=width, height=height,
             ))
     return requests
 
@@ -95,6 +103,7 @@ class KeyframeGenerationController:
                 "idempotency_key": request.idempotency_key, "status": job.status.value,
                 "model_id": request.model_id, "checkpoint": self.checkpoint,
                 "prompt_sha256": hashlib.sha256(request.prompt.encode()).hexdigest(), "seed": request.seed,
+                "width": request.width, "height": request.height,
                 "estimated_cost_usd": str(estimate), "actual_cost_usd": None,
                 "license": {"type": self.license_type, "url": self.license_url},
                 "submitted_at": job.submitted_at, "publish_allowed": False,
