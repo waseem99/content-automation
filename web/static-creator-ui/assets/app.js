@@ -37,6 +37,7 @@
   let portfolioReferences = [];
   let activeContentReview = null;
   let reviewMediaUrls = [];
+  let reviewHistoryActive = false;
 
   const stageLabels = { idea: "Idea review", script: "Script review", preview: "Preview review", premium: "Premium render", package: "Package review", ready: "Ready", published: "Published record", blocked: "Blocked", archived: "Archived" };
 
@@ -57,7 +58,7 @@
 
     const selected = brands[0];
     $("brand-summary").innerHTML = state.brandFilter === "all"
-      ? `<p class="eyebrow dark-eyebrow">Portfolio policy</p><h3>Facebook-first, platform-native delivery</h3><p>Rawr Nation launches at four original masters daily, with deliberate Facebook, YouTube Shorts and TikTok packages. Capacity can rise to eight only after retention and revenue evidence supports it.</p><dl><div><dt>Rawr Nation</dt><dd>120 masters / 30 days</dd></div><div><dt>Daily mix</dt><dd>1 premium hero · 2 hybrid · 1 efficient</dd></div><div><dt>Quality gate</dt><dd>Human approval before paid render and publishing</dd></div></dl>`
+      ? `<p class="eyebrow dark-eyebrow">Portfolio policy</p><h3>Facebook-first, platform-native delivery</h3><p>Each active brand is planned at four original masters daily, with deliberate Facebook, YouTube Shorts and TikTok packages. Volume increases only after retention and revenue evidence supports it.</p><dl><div><dt>Active portfolio</dt><dd>${portfolioBrands.length} brands · ${portfolioItems.length} concepts</dd></div><div><dt>Daily mix</dt><dd>1 premium hero · 2 hybrid · 1 efficient</dd></div><div><dt>Quality gate</dt><dd>Human approval before paid render and publishing</dd></div></dl>`
       : `<p class="eyebrow dark-eyebrow">Selected brand</p><h3>${escapeHtml(selected.name)}</h3><p>${escapeHtml(selected.niche)}</p><dl><div><dt>Primary platform</dt><dd>${selected.primary}</dd></div><div><dt>Cadence</dt><dd>${escapeHtml(selected.cadence)}</dd></div><div><dt>Monthly target</dt><dd>${selected.monthlyTarget} original masters</dd></div></dl><h4>Content pillars</h4><ul>${selected.pillars.map((pillar) => `<li>${escapeHtml(pillar)}</li>`).join("")}</ul>`;
 
     $("content-queue").innerHTML = items.length ? items.map((item) => {
@@ -171,6 +172,35 @@
     return { idea: "idea", script: "script", preview: "preview", premium: "premium_spend", package: "package", ready: "publish" }[stage];
   }
 
+  function productionRoute(stage) {
+    return {
+      idea: { title: "Next: script review", copy: "Approval moves this idea into script refinement. No video credits are spent.", button: "Approve idea → script review", tone: "free" },
+      script: { title: "Next: free rough preview", copy: "Approval queues local voiceover, captions, timing and rough motion using the free/open-source preview pipeline.", button: "Approve script → free preview", tone: "free" },
+      preview: { title: "Next: final production", copy: "Approval sends selected quality-critical shots to paid production; reusable or simple shots remain on the lean pipeline.", button: "Approve preview → paid production", tone: "paid" },
+      premium: { title: "Next: final package review", copy: "Approval locks the paid render and assembles platform-native exports, thumbnail, caption and hashtags.", button: "Approve render → package", tone: "paid" },
+      package: { title: "Next: publishing approval", copy: "Approval marks the package ready for a final human-controlled publishing decision.", button: "Approve final package", tone: "controlled" },
+      ready: { title: "Publishing remains human-controlled", copy: "This records publish approval only. It does not automatically post to any platform.", button: "Approve for publishing", tone: "controlled" }
+    }[stage] || { title: "Human review required", copy: "Approval advances this item to its next controlled stage.", button: "Approve next stage", tone: "controlled" };
+  }
+
+  function scriptView(script) {
+    if (!script) return '<p class="empty-review">Script has not been prepared yet.</p>';
+    const narration = Array.isArray(script.narration) ? script.narration.join(" ") : (script.narration || script.body || "");
+    return `<div class="script-card">${script.hook ? `<div><span>Hook</span><p>${escapeHtml(script.hook)}</p></div>` : ""}${narration ? `<div><span>Narration</span><p>${escapeHtml(narration)}</p></div>` : ""}${script.payoff ? `<div><span>Payoff</span><p>${escapeHtml(script.payoff)}</p></div>` : ""}${script.cta ? `<div><span>Call to action</span><p>${escapeHtml(script.cta)}</p></div>` : ""}</div>`;
+  }
+
+  function sceneView(scenePlan) {
+    const scenes = Array.isArray(scenePlan) ? scenePlan : (scenePlan?.scenes || []);
+    if (!scenes.length) return '<p class="empty-review">Scene plan has not been prepared yet.</p>';
+    return `<ol class="scene-list">${scenes.map((scene, index) => `<li><span class="scene-number">${index + 1}</span><div><strong>${escapeHtml(scene.purpose || scene.title || scene.beat || `Scene ${index + 1}`)}</strong><p>${escapeHtml(scene.visual_direction || scene.visual || scene.description || "Visual direction pending")}</p>${scene.start_seconds !== undefined || scene.end_seconds !== undefined ? `<small>${escapeHtml(scene.start_seconds ?? 0)}–${escapeHtml(scene.end_seconds ?? "?")} seconds</small>` : ""}</div></li>`).join("")}</ol>`;
+  }
+
+  function voiceView(voiceover) {
+    if (!voiceover) return '<p class="empty-review">Voice direction has not been prepared yet.</p>';
+    const summary = voiceover.direction || voiceover.style || voiceover.voice || voiceover.provider || "Voice metadata attached";
+    return `<div class="voice-summary"><strong>${escapeHtml(summary)}</strong>${voiceover.provider ? `<span>Preview engine: ${escapeHtml(voiceover.provider)}</span>` : ""}${voiceover.pace ? `<span>Pace: ${escapeHtml(voiceover.pace)}</span>` : ""}</div>`;
+  }
+
   async function hydrateReviewMedia(payload) {
     reviewMediaUrls.forEach((url) => URL.revokeObjectURL(url));
     reviewMediaUrls = [];
@@ -197,15 +227,17 @@
     const gate = reviewGate(item.stage);
     const missing = item.missing_for_approval || [];
     const artifacts = payload.artifacts || [];
+    const route = productionRoute(item.stage);
     const artifactCards = artifacts.length ? artifacts.map((artifact) => `<article class="review-artifact"><div><strong>${escapeHtml(artifact.label)}</strong><span>${escapeHtml(artifact.kind)} · v${artifact.version} · ${escapeHtml(artifact.review_status)}</span></div><div data-media-artifact="${artifact.id}"><small>${escapeHtml(artifact.mime_type)} · local review media</small></div></article>`).join("") : '<p class="empty-review">No review media has been registered yet. Local generation workers can attach narration, keyframes, and preview files through the artifact API.</p>';
     const history = (payload.approvals || []).length ? payload.approvals.map((approval) => `<li><strong>${escapeHtml(approval.decision.replaceAll("_", " "))}</strong> ${escapeHtml(approval.gate)} v${approval.content_version}<span>${escapeHtml(approval.rationale)} · ${escapeHtml(approval.reviewer)}</span></li>`).join("") : "<li>No review decisions yet.</li>";
     $("content-review-body").innerHTML = `
       <header class="review-header"><div><p class="eyebrow dark-eyebrow">${escapeHtml(item.brand_name)} · ${escapeHtml(item.scheduled_for)}</p><h2>${escapeHtml(item.title)}</h2><p>${escapeHtml(item.concept)}</p></div><span class="stage-pill ${escapeHtml(item.stage)}">${escapeHtml(stageLabels[item.stage] || item.stage)}</span></header>
+      <aside class="production-route ${route.tone}"><span>Approval route</span><div><strong>${escapeHtml(route.title)}</strong><p>${escapeHtml(route.copy)}</p></div></aside>
       <div class="review-grid">
-        <section class="review-editor"><h3>Script workspace</h3><label>Script JSON<textarea id="review-script" rows="12" placeholder='{"hook":"...","narration":["..."]}'>${escapeHtml(prettyJson(item.script))}</textarea></label><label>Scene plan JSON<textarea id="review-scenes" rows="12" placeholder='{"scenes":[{"id":"s1","visual":"..."}]}'>${escapeHtml(prettyJson(item.scene_plan))}</textarea></label><label>Voice metadata JSON<textarea id="review-voice" rows="6" placeholder='{"provider":"kokoro","voice":"..."}'>${escapeHtml(prettyJson(item.voiceover))}</textarea></label><label>Premium budget (USD)<input id="review-budget" type="number" min="0" step="0.01" value="${item.premium_budget_usd ?? ""}"></label><button id="save-workspace" type="button">Save new version</button><span id="review-save-status" class="review-status"></span></section>
-        <section class="review-media"><h3>Narration & video</h3>${artifactCards}<h3>Review history</h3><ol class="review-history">${history}</ol></section>
+        <section class="review-editor"><h3>Story & script</h3>${scriptView(item.script)}<h3>Scene plan</h3>${sceneView(item.scene_plan)}<h3>Voice direction</h3>${voiceView(item.voiceover)}<details class="advanced-editor"><summary>Advanced editing</summary><p>For a producer or technical operator only. Reviewers normally do not need this section.</p><label>Script data<textarea id="review-script" rows="10">${escapeHtml(prettyJson(item.script))}</textarea></label><label>Scene plan data<textarea id="review-scenes" rows="10">${escapeHtml(prettyJson(item.scene_plan))}</textarea></label><label>Voice settings<textarea id="review-voice" rows="5">${escapeHtml(prettyJson(item.voiceover))}</textarea></label><button id="save-workspace" type="button">Save edited version</button><span id="review-save-status" class="review-status"></span></details></section>
+        <section class="review-media"><h3>Listen & watch</h3>${artifactCards}<h3>Review history</h3><ol class="review-history">${history}</ol></section>
       </div>
-      <section class="review-decision"><div><h3>Human decision</h3><p>${missing.length ? `Approval blocked until: <strong>${missing.map(escapeHtml).join(", ")}</strong>` : "Required review evidence is present."}</p></div><label>Rationale<textarea id="review-rationale" rows="3" placeholder="What was reviewed, and why is this decision appropriate?"></textarea></label><div class="decision-actions"><button type="button" data-review-decision="approved" ${!gate || missing.length ? "disabled" : ""}>Approve next stage</button><button type="button" class="secondary" data-review-decision="changes_requested" ${!gate ? "disabled" : ""}>Request changes</button><button type="button" class="danger" data-review-decision="rejected" ${!gate ? "disabled" : ""}>Reject</button></div><span id="review-decision-status" class="review-status"></span></section>`;
+      <section class="review-decision"><div><h3>Review decision</h3><p>${missing.length ? `Approval blocked until: <strong>${missing.map(escapeHtml).join(", ")}</strong>` : "Required review evidence is present."}</p></div><label>Reviewer note<textarea id="review-rationale" rows="3" placeholder="What works, or what needs to change?"></textarea></label><div class="decision-actions"><button type="button" data-review-decision="approved" ${!gate || missing.length ? "disabled" : ""}>${escapeHtml(route.button)}</button><button type="button" class="secondary" data-review-decision="changes_requested" ${!gate ? "disabled" : ""}>Request changes</button><button type="button" class="danger" data-review-decision="rejected" ${!gate ? "disabled" : ""}>Reject</button></div><span id="review-decision-status" class="review-status"></span></section>`;
     hydrateReviewMedia(payload);
   }
 
@@ -217,9 +249,20 @@
   async function openContentReview(contentId) {
     const dialog = $("content-review");
     $("content-review-body").innerHTML = '<p class="review-loading">Loading content workspace…</p>';
-    dialog.showModal();
+    if (!dialog.open) dialog.showModal();
+    if (!reviewHistoryActive) {
+      history.pushState({ contentReview: true, contentId }, "", `#idea-${contentId}`);
+      reviewHistoryActive = true;
+    }
     try { renderContentReview(await window.PortfolioApi.content(contentId)); }
     catch (error) { $("content-review-body").innerHTML = `<p class="review-error">${escapeHtml(error.message)}</p>`; }
+  }
+
+  function closeContentReview(fromHistory = false) {
+    const dialog = $("content-review");
+    if (dialog.open) dialog.close();
+    if (reviewHistoryActive && !fromHistory) history.back();
+    reviewHistoryActive = false;
   }
 
   function updateDataMode(message, connected) {
@@ -240,7 +283,10 @@
       ]);
       portfolioBrands = brandPayload.brands.map(mapApiBrand);
       portfolioItems = queuePayload.items.map(mapApiItem);
-      portfolioReadiness = readinessPayload;
+      const activeBrandIds = new Set(portfolioItems.map((item) => item.brand));
+      portfolioBrands = portfolioBrands.filter((brand) => activeBrandIds.has(brand.id));
+      const activeTarget = portfolioBrands.reduce((total, brand) => total + Number(brand.monthlyTarget || 0), 0);
+      portfolioReadiness = { ...readinessPayload, brand_count: portfolioBrands.length, planned_count: portfolioItems.length, target_count: activeTarget, ready_brand_count: portfolioBrands.filter((brand) => portfolioItems.filter((item) => item.brand === brand.id).length >= Number(brand.monthlyTarget || 0)).length };
       portfolioReferences = referencePayload.items || [];
       state.brandFilter = "all";
       $("brand-filter").innerHTML = '<option value="all">All brands</option>' + portfolioBrands.map((brand) => `<option value="${brand.id}">${escapeHtml(brand.name)}</option>`).join("");
@@ -295,6 +341,7 @@
       const item = portfolioItems.find((candidate) => candidate.id === event.target.dataset.itemId);
       if (item?.staticPackage) {
         $("content-review").showModal();
+        if (!reviewHistoryActive) { history.pushState({ contentReview: true }, "", `#idea-${item.id}`); reviewHistoryActive = true; }
         renderStaticPackageReview(item);
         return;
       }
@@ -304,13 +351,17 @@
       }
       await openContentReview(item.id);
     });
+    $("content-review").addEventListener("cancel", (event) => { event.preventDefault(); closeContentReview(); });
+    $("content-review").querySelector(".review-close-row").addEventListener("submit", (event) => { event.preventDefault(); closeContentReview(); });
+    $("content-review").addEventListener("click", (event) => { if (event.target === $("content-review")) closeContentReview(); });
     $("content-review").addEventListener("close", () => { reviewMediaUrls.forEach((url) => URL.revokeObjectURL(url)); reviewMediaUrls = []; activeContentReview = null; });
+    window.addEventListener("popstate", () => { if (reviewHistoryActive) closeContentReview(true); });
     $("content-review-body").addEventListener("click", async (event) => {
       if (!activeContentReview) return;
       const contentId = activeContentReview.item.id;
       if (event.target.id === "save-workspace") {
         try {
-          await window.PortfolioApi.updateWorkspace(contentId, { script: parseReviewJson("review-script"), scene_plan: parseReviewJson("review-scenes"), voiceover: parseReviewJson("review-voice"), premium_budget_usd: $("review-budget").value === "" ? null : Number($("review-budget").value), metadata: { last_workspace_editor: "operator-ui" } });
+          await window.PortfolioApi.updateWorkspace(contentId, { script: parseReviewJson("review-script"), scene_plan: parseReviewJson("review-scenes"), voiceover: parseReviewJson("review-voice"), metadata: { last_workspace_editor: "operator-ui" } });
           renderContentReview(await window.PortfolioApi.content(contentId));
           await refreshPortfolioFromApi();
         } catch (error) { $("review-save-status").textContent = `Save failed: ${error.message}`; }
