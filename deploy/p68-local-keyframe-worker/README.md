@@ -17,10 +17,16 @@ This worker uses the Windows PC's NVIDIA GPU through Docker Desktop to create re
 ## Pinned components
 
 - ComfyUI commit: `1d1099bea08efa6904480cf25c54ea92646aea4f`
+- PyTorch: `2.6.0+cu124`
+- torchvision: `0.21.0`
+- torchaudio: `2.6.0`
+- required compiled GPU architecture: `sm_61`
 - checkpoint: `stabilityai/stable-diffusion-xl-base-1.0/sd_xl_base_1.0.safetensors`
 - checkpoint revision: `a7c2bcc30a3b5489f1f1989e66cd5fe957fdb45c`
 - checkpoint SHA256: `31e35c80fc4829d14f90153f4c74cd59c90b779f6afe05a74cd6120b893f7e5b`
 - model licence: CreativeML Open RAIL++-M
+
+The Docker build verifies that its PyTorch wheel contains `sm_61`. Container startup separately verifies CUDA availability, the detected GPU capability, and compatibility with the compiled architecture list.
 
 The setup script does not download the checkpoint unless the operator supplies `-AcceptModelLicense`. It records local licence evidence and verifies the complete checkpoint hash before starting the worker.
 
