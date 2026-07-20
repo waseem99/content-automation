@@ -35,13 +35,15 @@ def test_local_worker_is_loopback_only_and_does_not_include_wan_models() -> None
     assert "wan2.2" not in entrypoint.lower()
 
 
-def test_local_worker_uses_the_verified_gtx1080_base_image() -> None:
+def test_local_worker_uses_verified_base_and_runtime_gpu_check() -> None:
     dockerfile = (ROOT / "deploy/p68-local-keyframe-worker/Dockerfile").read_text(encoding="utf-8")
     entrypoint = (ROOT / "deploy/p68-local-keyframe-worker/entrypoint.sh").read_text(encoding="utf-8")
     assert "FROM pytorch/pytorch:2.0.1-cuda11.7-cudnn8-runtime" in dockerfile
-    assert "python -m pip install -r /tmp/comfyui-requirements-no-torch.txt" in dockerfile
+    assert "p68-runtime-constraints.txt" in dockerfile
+    assert "python -m pip install cmake lit" in dockerfile
     assert "python -m pip check" in dockerfile
-    assert 'assert "sm_61" in compiled_arches' in dockerfile
     assert "download.pytorch.org/whl" not in dockerfile
     assert "torch.cuda.is_available()" in entrypoint
     assert "torch.cuda.get_device_capability(0)" in entrypoint
+    assert "torch.cuda.get_arch_list()" in entrypoint
+    assert "required_arch not in compiled_arches" in entrypoint
