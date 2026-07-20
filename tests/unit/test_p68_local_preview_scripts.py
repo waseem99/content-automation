@@ -40,7 +40,8 @@ def test_local_worker_uses_verified_base_and_runtime_gpu_check() -> None:
     entrypoint = (ROOT / "deploy/p68-local-keyframe-worker/entrypoint.sh").read_text(encoding="utf-8")
     assert "FROM pytorch/pytorch:2.0.1-cuda11.7-cudnn8-runtime" in dockerfile
     assert "p68-runtime-constraints.txt" in dockerfile
-    assert "python -m pip install cmake lit" in dockerfile
+    assert "comfyui-frontend-package==1.12.8" in dockerfile
+    assert "cmake lit" in dockerfile
     assert "python -m pip check" in dockerfile
     assert "download.pytorch.org/whl" not in dockerfile
     assert "torch.cuda.is_available()" in entrypoint
