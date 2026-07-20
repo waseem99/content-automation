@@ -30,11 +30,13 @@ RUN git clone https://github.com/Comfy-Org/ComfyUI.git "$COMFYUI_HOME" \
     && git checkout "$COMFYUI_REF" \
     && grep -Ev '^(torch|torchvision|torchaudio)([<=>].*)?$' requirements.txt > /tmp/comfyui-requirements-no-torch.txt \
     && python -m pip install -c /tmp/p68-runtime-constraints.txt -r /tmp/comfyui-requirements-no-torch.txt \
-    && python -m pip check \
-    && python - <<'PY'
+    && python -m pip install cmake lit \
+    && python -m pip check
+
+RUN python - <<'PY'
 import torch
 assert torch.__version__.startswith("2.0.1"), torch.__version__
-print("Verified pinned Torch after ComfyUI dependencies:", torch.__version__)
+print("Verified pinned Torch after dependencies:", torch.__version__)
 PY
 
 COPY entrypoint.sh /usr/local/bin/p68-local-keyframe-entrypoint
