@@ -16,6 +16,7 @@ on:
       - "tests/unit/test_p68_local_preview_scripts.py"
       - "tests/unit/test_p68_keyframe_cli.py"
       - "tests/unit/test_p68_model_download_safety.py"
+      - "tests/unit/test_p68_legacy_comfyui_pin.py"
   pull_request:
     branches: [test]
     paths:
@@ -30,6 +31,7 @@ on:
       - "tests/unit/test_p68_local_preview_scripts.py"
       - "tests/unit/test_p68_keyframe_cli.py"
       - "tests/unit/test_p68_model_download_safety.py"
+      - "tests/unit/test_p68_legacy_comfyui_pin.py"
 
 permissions:
   contents: read
@@ -65,6 +67,9 @@ jobs:
 
       - name: Test clean model download behavior
         run: python -m pytest -q tests/unit/test_p68_model_download_safety.py
+
+      - name: Test legacy ComfyUI pin
+        run: python -m pytest -q tests/unit/test_p68_legacy_comfyui_pin.py
 
       - name: Test low-VRAM command-line plan
         run: python -m pytest -q tests/unit/test_p68_keyframe_cli.py
@@ -114,7 +119,7 @@ jobs:
         run: |
           mkdir -p /tmp/p68-kf/{models,input,output}
           cat > /tmp/p68-kf.env <<'EOF'
-          COMFYUI_REF=1d1099bea08efa6904480cf25c54ea92646aea4f
+          COMFYUI_REF=v0.3.26
           P68_KEYFRAME_MODEL_DIR=/tmp/p68-kf/models
           P68_KEYFRAME_OUTPUT_DIR=/tmp/p68-kf/output
           P68_KEYFRAME_INPUT_DIR=/tmp/p68-kf/input
