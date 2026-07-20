@@ -1,0 +1,15 @@
+name: P68 Image Build Check
+on:
+  push:
+    branches: [fix-p68-use-verified-pytorch-image]
+  pull_request:
+    branches: [test]
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build --build-arg COMFYUI_REF=1d1099bea08efa6904480cf25c54ea92646aea4f -t p68-preview-check deploy/p68-local-keyframe-worker
