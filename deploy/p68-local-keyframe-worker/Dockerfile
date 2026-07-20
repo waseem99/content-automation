@@ -40,7 +40,9 @@ print("Verified pinned Torch after dependencies:", torch.__version__)
 PY
 
 COPY entrypoint.sh /usr/local/bin/p68-local-keyframe-entrypoint
-RUN chmod 0755 /usr/local/bin/p68-local-keyframe-entrypoint
+RUN sed -i 's/\r$//' /usr/local/bin/p68-local-keyframe-entrypoint \
+    && chmod 0755 /usr/local/bin/p68-local-keyframe-entrypoint \
+    && test "$(head -n 1 /usr/local/bin/p68-local-keyframe-entrypoint)" = '#!/usr/bin/env bash'
 
 WORKDIR /opt/ComfyUI
 EXPOSE 8188
