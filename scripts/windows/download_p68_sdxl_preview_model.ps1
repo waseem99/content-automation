@@ -37,15 +37,23 @@ if (Test-Path $modelPath) {
     }
 }
 else {
-    Write-Host "Downloading the official SDXL Base 1.0 checkpoint (approximately 6.94 GB)..." -ForegroundColor Cyan
-    & curl.exe -L --fail --retry 5 --retry-delay 5 -C - --output $partialPath $downloadUrl
+    if (Test-Path $partialPath) {
+        Write-Host "Discarding an unverified interrupted checkpoint download..." -ForegroundColor Yellow
+        Remove-Item -Force $partialPath
+    }
+
+    Write-Host "Downloading the official SDXL Base 1.0 checkpoint from the beginning (approximately 6.94 GB)..." -ForegroundColor Cyan
+    & curl.exe -L --fail --retry 5 --retry-delay 5 --output $partialPath $downloadUrl
     if ($LASTEXITCODE -ne 0) {
-        throw "Checkpoint download failed. The partial file is preserved for resume: $partialPath"
+        Remove-Item -Force $partialPath -ErrorAction SilentlyContinue
+        throw "Checkpoint download failed. The incomplete file was removed; retry the setup command when the connection is stable."
     }
 
     $downloadedHash = (Get-FileHash -Path $partialPath -Algorithm SHA256).Hash.ToLowerInvariant()
     if ($downloadedHash -ne $expectedSha256) {
-        throw "Downloaded checkpoint SHA256 did not match the reviewed manifest."
+        $downloadedSize = (Get-Item $partialPath).Length
+        Remove-Item -Force $partialPath -ErrorAction SilentlyContinue
+        throw "Downloaded checkpoint SHA256 did not match the reviewed manifest. The unverified file ($downloadedSize bytes) was removed."
     }
     Move-Item -Force $partialPath $modelPath
 }
