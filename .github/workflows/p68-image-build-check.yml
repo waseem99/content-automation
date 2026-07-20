@@ -1,7 +1,7 @@
 name: P68 Image Build Check
 on:
   push:
-    branches: [fix-p68-use-verified-pytorch-image]
+    branches: [fix-p68-pin-comfyui-v0326]
   pull_request:
     branches: [test]
 permissions:
@@ -20,7 +20,7 @@ jobs:
         run: |
           set +e
           docker build --progress=plain \
-            --build-arg COMFYUI_REF=1d1099bea08efa6904480cf25c54ea92646aea4f \
+            --build-arg COMFYUI_REF=v0.3.26 \
             -t p68-preview-check \
             deploy/p68-local-keyframe-worker > p68-image-build.log 2>&1
           status=$?
