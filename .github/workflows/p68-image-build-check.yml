@@ -1,0 +1,47 @@
+name: P68 Image Build Check
+on:
+  push:
+    branches: [fix-p68-use-verified-pytorch-image]
+  pull_request:
+    branches: [test]
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build image and capture diagnostics
+        id: image_build
+        continue-on-error: true
+        shell: bash
+        run: |
+          set +e
+          docker build --progress=plain \
+            --build-arg COMFYUI_REF=1d1099bea08efa6904480cf25c54ea92646aea4f \
+            -t p68-preview-check \
+            deploy/p68-local-keyframe-worker > p68-image-build.log 2>&1
+          status=$?
+          echo "$status" > p68-image-build.status
+          exit $status
+
+      - name: Upload build diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p68-image-build-diagnostics
+          path: |
+            p68-image-build.log
+            p68-image-build.status
+          if-no-files-found: error
+          retention-days: 3
+
+      - name: Enforce build result
+        if: always()
+        shell: bash
+        run: |
+          status=$(cat p68-image-build.status)
+          tail -n 40 p68-image-build.log
+          exit "$status"
