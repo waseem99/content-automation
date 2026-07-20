@@ -13,6 +13,7 @@ $downloadScript = Join-Path $PSScriptRoot "download_p68_sdxl_preview_model.ps1"
 $modelName = "sd_xl_base_1.0.safetensors"
 $modelPath = Join-Path (Join-Path $DataRoot "models") $modelName
 $envPath = Join-Path $DataRoot "local-keyframe-worker.env"
+$comfyUiRef = "v0.3.26"
 
 if (-not (Get-Command docker -ErrorAction SilentlyContinue)) {
     throw "Docker Desktop is required and was not found."
@@ -40,7 +41,7 @@ if (-not (Test-Path $modelPath)) {
 
 $dockerDataRoot = $DataRoot.Replace('\', '/')
 $envContent = @"
-COMFYUI_REF=1d1099bea08efa6904480cf25c54ea92646aea4f
+COMFYUI_REF=$comfyUiRef
 P68_KEYFRAME_MODEL_DIR=$dockerDataRoot/models
 P68_KEYFRAME_OUTPUT_DIR=$dockerDataRoot/output
 P68_KEYFRAME_INPUT_DIR=$dockerDataRoot/input
@@ -62,7 +63,7 @@ $envContent | Set-Content -Path $envPath -Encoding ASCII
 Push-Location $deployRoot
 try {
     if (-not $SkipImageBuild) {
-        Write-Host "Building the pinned ComfyUI preview image. The first build can take several minutes..." -ForegroundColor Cyan
+        Write-Host "Building the pinned ComfyUI $comfyUiRef preview image. The first build can take several minutes..." -ForegroundColor Cyan
         & docker compose --env-file $envPath -f compose.yaml build
         if ($LASTEXITCODE -ne 0) {
             throw "Docker image build failed."
@@ -106,6 +107,7 @@ if (-not $healthy) {
 }
 
 Write-Host "LOCAL KEYFRAME WORKER READY" -ForegroundColor Green
+Write-Host "ComfyUI: $comfyUiRef" -ForegroundColor Green
 Write-Host "Endpoint: http://127.0.0.1:8188" -ForegroundColor Green
 Write-Host "Preview canvas: 704x1280" -ForegroundColor Green
 Write-Host "Local configuration: $envPath"

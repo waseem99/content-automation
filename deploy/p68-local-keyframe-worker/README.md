@@ -16,17 +16,19 @@ This worker uses the Windows PC's NVIDIA GPU through Docker Desktop to create re
 
 ## Pinned components
 
-- ComfyUI commit: `1d1099bea08efa6904480cf25c54ea92646aea4f`
-- PyTorch: `2.6.0+cu124`
-- torchvision: `0.21.0`
-- torchaudio: `2.6.0`
+- ComfyUI release: `v0.3.26`
+- PyTorch base image: `pytorch/pytorch:2.0.1-cuda11.7-cudnn8-runtime`
+- torchvision: `0.15.2`
+- torchaudio: `2.0.2`
 - required compiled GPU architecture: `sm_61`
 - checkpoint: `stabilityai/stable-diffusion-xl-base-1.0/sd_xl_base_1.0.safetensors`
 - checkpoint revision: `a7c2bcc30a3b5489f1f1989e66cd5fe957fdb45c`
 - checkpoint SHA256: `31e35c80fc4829d14f90153f4c74cd59c90b779f6afe05a74cd6120b893f7e5b`
 - model licence: CreativeML Open RAIL++-M
 
-The Docker build verifies that its PyTorch wheel contains `sm_61`. Container startup separately verifies CUDA availability, the detected GPU capability, and compatibility with the compiled architecture list.
+ComfyUI `v0.3.26` is intentionally used because it supports the SDXL workflow required here but predates the mandatory `comfy-aimdo` and `comfy-kitchen` packages that require a newer PyTorch/CUDA generation than the GTX 1080-compatible runtime.
+
+Container startup verifies CUDA availability, the detected GPU capability, and compatibility with the compiled architecture list. The Docker build also rejects a ComfyUI ref that introduces the unsupported dynamic-VRAM packages.
 
 The setup script does not download the checkpoint unless the operator supplies `-AcceptModelLicense`. It records local licence evidence and verifies the complete checkpoint hash before starting the worker.
 
@@ -40,7 +42,7 @@ powershell -NoProfile -ExecutionPolicy Bypass `
   -AcceptModelLicense
 ```
 
-The first execution downloads approximately 6.94 GB, builds the pinned Docker image, starts ComfyUI on `127.0.0.1:8188`, and stops without generating anything.
+The first execution downloads approximately 6.94 GB if the checkpoint is absent, builds the pinned Docker image, starts ComfyUI on `127.0.0.1:8188`, and stops without generating anything.
 
 ## One bounded sample
 
