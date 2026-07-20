@@ -27,6 +27,38 @@ jobs:
           echo "$status" > p68-image-build.status
           exit $status
 
+      - name: Smoke-test ComfyUI startup and health API
+        if: steps.image_build.outcome == 'success'
+        shell: bash
+        run: |
+          set -e
+          docker run -d --name p68-preview-smoke \
+            -p 127.0.0.1:8188:8188 \
+            --entrypoint python \
+            p68-preview-check \
+            main.py --cpu --listen 0.0.0.0 --port 8188
+          cleanup() {
+            docker logs p68-preview-smoke > p68-startup.log 2>&1 || true
+            docker rm -f p68-preview-smoke >/dev/null 2>&1 || true
+          }
+          trap cleanup EXIT
+          ready=0
+          for attempt in $(seq 1 90); do
+            if curl --fail --silent http://127.0.0.1:8188/system_stats > p68-system-stats.json; then
+              ready=1
+              break
+            fi
+            if ! docker inspect -f '{{.State.Running}}' p68-preview-smoke 2>/dev/null | grep -q true; then
+              break
+            fi
+            sleep 2
+          done
+          if [ "$ready" -ne 1 ]; then
+            docker logs p68-preview-smoke
+            exit 1
+          fi
+          test -s p68-system-stats.json
+
       - name: Upload build diagnostics
         if: always()
         uses: actions/upload-artifact@v4
@@ -35,7 +67,9 @@ jobs:
           path: |
             p68-image-build.log
             p68-image-build.status
-          if-no-files-found: error
+            p68-startup.log
+            p68-system-stats.json
+          if-no-files-found: warn
           retention-days: 3
 
       - name: Enforce build result
