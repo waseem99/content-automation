@@ -20,12 +20,26 @@ assert "sm_61" in compiled_arches, compiled_arches
 print("Verified GTX 1080 base runtime:", torch.__version__, compiled_arches)
 PY
 
+RUN printf '%s\n' \
+      'torch==2.0.1' \
+      'torchvision==0.15.2' \
+      'torchaudio==2.0.2' \
+      'numpy<2' \
+      > /tmp/p68-runtime-constraints.txt
+
 RUN git clone https://github.com/Comfy-Org/ComfyUI.git "$COMFYUI_HOME" \
     && cd "$COMFYUI_HOME" \
     && git checkout "$COMFYUI_REF" \
     && grep -Ev '^(torch|torchvision|torchaudio)([<=>].*)?$' requirements.txt > /tmp/comfyui-requirements-no-torch.txt \
-    && python -m pip install -r /tmp/comfyui-requirements-no-torch.txt \
-    && python -m pip check
+    && python -m pip install -c /tmp/p68-runtime-constraints.txt -r /tmp/comfyui-requirements-no-torch.txt \
+    && python -m pip check \
+    && python - <<'PY'
+import torch
+assert torch.__version__.startswith("2.0.1"), torch.__version__
+compiled_arches = torch.cuda.get_arch_list()
+assert "sm_61" in compiled_arches, compiled_arches
+print("Verified GTX 1080 runtime after ComfyUI dependencies:", torch.__version__, compiled_arches)
+PY
 
 COPY entrypoint.sh /usr/local/bin/p68-local-keyframe-entrypoint
 RUN chmod 0755 /usr/local/bin/p68-local-keyframe-entrypoint
