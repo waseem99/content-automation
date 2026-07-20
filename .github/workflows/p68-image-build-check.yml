@@ -12,4 +12,14 @@ jobs:
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
-      - run: docker build --build-arg COMFYUI_REF=1d1099bea08efa6904480cf25c54ea92646aea4f -t p68-preview-check deploy/p68-local-keyframe-worker
+      - name: Build image and print concise diagnostics
+        shell: bash
+        run: |
+          set +e
+          docker build --progress=plain \
+            --build-arg COMFYUI_REF=1d1099bea08efa6904480cf25c54ea92646aea4f \
+            -t p68-preview-check \
+            deploy/p68-local-keyframe-worker > /tmp/p68-build.log 2>&1
+          status=$?
+          tail -n 220 /tmp/p68-build.log
+          exit $status
