@@ -28,6 +28,9 @@ RUN printf '%s\n' \
 RUN git clone https://github.com/Comfy-Org/ComfyUI.git "$COMFYUI_HOME" \
     && cd "$COMFYUI_HOME" \
     && git checkout "$COMFYUI_REF" \
+    && test "$(git describe --tags --exact-match)" = "$COMFYUI_REF" \
+    && if grep -Eq '^comfy-(aimdo|kitchen)' requirements.txt; then echo 'Unsupported modern ComfyUI dependency detected.' >&2; exit 1; fi \
+    && if grep -R -n 'comfy_aimdo' main.py execution.py comfy 2>/dev/null; then echo 'Unsupported dynamic-VRAM import detected.' >&2; exit 1; fi \
     && grep -Ev '^(torch|torchvision|torchaudio)([<=>].*)?$' requirements.txt > /tmp/comfyui-requirements-no-torch.txt \
     && python -m pip install -c /tmp/p68-runtime-constraints.txt -r /tmp/comfyui-requirements-no-torch.txt \
     && python -m pip install cmake lit \
