@@ -147,7 +147,8 @@
 
   const modules = [
     ["brand-profile-admin", "brand-profile-admin.css", "brand-profile-admin.js"],
-    ["generation-queue", "generation-queue.css", "generation-queue.js"]
+    ["generation-queue", "generation-queue.css", "generation-queue.js"],
+    ["concept-slate", "concept-slate.css", "concept-slate.js"]
   ];
   modules.forEach(([key, css, js]) => {
     if (!document.querySelector(`link[data-studio-module="${key}"]`)) {
