@@ -56,6 +56,7 @@ jobs:
             src/operator_api/generation_jobs_runtime.py \
             src/operator_api/runtime_factory.py \
             tests/unit/test_p99_operations_contracts.py \
+            tests/unit/test_p99_operations_environment_files.py \
             tests/integration/test_p99_operations_lifecycle.py \
             tests/integration/test_p99_operations_api.py
       - name: Apply and verify complete migration chain
@@ -67,6 +68,7 @@ jobs:
           set -o pipefail
           pytest -vv \
             tests/unit/test_p99_operations_contracts.py \
+            tests/unit/test_p99_operations_environment_files.py \
             tests/integration/test_p99_operations_lifecycle.py \
             tests/integration/test_p99_operations_api.py \
             tests/integration/test_p87_generation_jobs.py \
