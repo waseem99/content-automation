@@ -16,6 +16,11 @@ PATTERNS = (
 )
 PLACEHOLDER_VALUES = {"...", "changeme", "change_me", "placeholder", "example", "dummy", "test", "not-a-secret", "redacted"}
 SAFE_VALUE_PREFIXES = ("settings.", "self.", "config.", "os.environ", "getenv(", "env.")
+SAFE_RUNTIME_ASSIGNMENTS = (
+    re.compile(r"\btoken\s*=\s*secrets\.token_urlsafe\("),
+    re.compile(r"\btoken\s*=\s*token_from_url\("),
+    re.compile(r"\btoken\s*=\s*[^,)]*token_from_url\("),
+)
 
 
 def _is_text_file(path: Path) -> bool:
@@ -24,12 +29,18 @@ def _is_text_file(path: Path) -> bool:
     return path.suffix.lower() in TEXT_SUFFIXES or path.name in {"requirements.txt", "pytest.ini"}
 
 
+def _is_runtime_derived_access_value(line: str) -> bool:
+    return any(pattern.search(line) for pattern in SAFE_RUNTIME_ASSIGNMENTS)
+
+
 def _is_placeholder(line: str, match: re.Match[str]) -> bool:
     value = match.group(1) if match.lastindex else match.group(0)
     cleaned = value.strip("'\" ,)").lower()
     if cleaned in PLACEHOLDER_VALUES:
         return True
     if cleaned.startswith(SAFE_VALUE_PREFIXES):
+        return True
+    if _is_runtime_derived_access_value(line):
         return True
     if "..." in line or "<" in line or ">" in line:
         return True
