@@ -1,6 +1,11 @@
 from pathlib import Path
 
-from src.domain.production_workflow import ProductionStage
+from src.domain.production_workflow import (
+    ProductionStage,
+    WorkflowStatus,
+    WorkflowVersionStatus,
+    submit_plan,
+)
 from src.operator_api.access import AccessPermission
 from src.operator_api.production_workflow_runtime import delivery_or_production_permission
 
@@ -12,6 +17,17 @@ def test_delivery_stages_remain_separate_from_production_permissions() -> None:
     assert delivery_or_production_permission(ProductionStage.SCRIPT_DRAFT) == AccessPermission.RUN_PRODUCTION
     assert delivery_or_production_permission(ProductionStage.SCHEDULING) == AccessPermission.DELIVER_RELEASE
     assert delivery_or_production_permission(ProductionStage.PUBLICATION) == AccessPermission.DELIVER_RELEASE
+
+
+def test_spend_preparation_has_an_explicit_submission_path() -> None:
+    plan = submit_plan(
+        stage=ProductionStage.SPEND_PREPARATION,
+        workflow_status=WorkflowStatus.ACTIVE,
+        version_status=WorkflowVersionStatus.WORKING,
+        snapshot={"spend_estimate": 12.5, "spend_ceiling": 15.0},
+    )
+    assert plan.to_stage == ProductionStage.SPEND_APPROVAL
+    assert plan.version_status == WorkflowVersionStatus.IN_REVIEW
 
 
 def test_runtime_is_registered_and_enforces_assignment_and_comment_ownership() -> None:
@@ -28,6 +44,7 @@ def test_runtime_is_registered_and_enforces_assignment_and_comment_ownership() -
 def test_migration_prevents_status_reopening_partial_resolution_and_evidence_deletion() -> None:
     migration = (ROOT / "migrations" / "0031_versioned_production_workflow.sql").read_text(encoding="utf-8")
 
+    assert "spend_preparation" in migration
     assert "Invalid production workflow version status transition" in migration
     assert "resolved_comment_is_consistent" in migration
     assert "Production workflow versions are immutable evidence" in migration
