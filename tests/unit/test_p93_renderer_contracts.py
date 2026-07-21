@@ -123,3 +123,33 @@ def test_simulated_adapter_is_deterministic_and_can_fail_without_external_calls(
             submission,
             catalogue_entry=active_entry(configuration={"simulation_behavior": "fail"}),
         )
+
+
+def test_normalization_happens_before_length_and_pattern_validation() -> None:
+    normalized = RendererCatalogueCreate(
+        renderer_key="  Simulated-Normalized  ",
+        display_name="  Simulated   Normalized  ",
+        adapter_key="  SIMULATED  ",
+        operation=RendererOperation.IMAGE_TO_VIDEO,
+        output_formats=(" .MP4 ", "mp4"),
+        max_duration_seconds=10,
+        max_width=1080,
+        max_height=1920,
+        simulated=True,
+    )
+    assert normalized.renderer_key == "simulated-normalized"
+    assert normalized.display_name == "Simulated Normalized"
+    assert normalized.adapter_key == "simulated"
+    assert normalized.output_formats == ("mp4",)
+    with pytest.raises(ValueError):
+        RendererCatalogueCreate(
+            renderer_key="valid-key",
+            display_name="   ",
+            adapter_key="simulated",
+            operation=RendererOperation.IMAGE_TO_VIDEO,
+            output_formats=("   ",),
+            max_duration_seconds=10,
+            max_width=1080,
+            max_height=1920,
+            simulated=True,
+        )
