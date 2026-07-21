@@ -223,6 +223,19 @@
     mutateRevisionTask: (taskId, payload) => request(`/review/tasks/${taskId}`, {
       method: "POST",
       body: JSON.stringify(payload)
+    }),
+    currentRouting: (contentId) => request(`/routing/content/${contentId}/current`),
+    submitRouting: (planId, payload) => request(`/routing/plans/${planId}/submit`, {
+      method: "POST",
+      body: JSON.stringify(payload)
+    }),
+    decideRouting: (planId, payload) => request(`/routing/plans/${planId}/decisions`, {
+      method: "POST",
+      body: JSON.stringify(payload)
+    }),
+    enqueueManagedRoute: (planId, payload) => request(`/routing/plans/${planId}/managed-jobs`, {
+      method: "POST",
+      body: JSON.stringify(payload)
     })
   };
 
@@ -234,7 +247,8 @@
     ["audio-review", "audio-review.css", "audio-review.js"],
     ["visual-candidates", "visual-candidates.css", "visual-candidates.js"],
     ["review-workspace", "review-workspace.css", "review-workspace.js"],
-    ["review-stage-actions", "review-stage-actions.css", "review-stage-actions.js"]
+    ["review-stage-actions", "review-stage-actions.css", "review-stage-actions.js"],
+    ["routing-spend", "routing-spend.css", "routing-spend.js"]
   ];
   modules.forEach(([key, css, js]) => {
     if (!document.querySelector(`link[data-studio-module="${key}"]`)) {
