@@ -197,7 +197,7 @@ def test_shortlist_balance_approve_and_apply_is_manual_and_immutable(
     assert int(content["count"]) == 4
     assert int(content["pinned_count"]) == 4
 
-    with pytest.raises(psycopg.Error, match="Invalid concept candidate status transition"):
+    with pytest.raises(psycopg.Error, match="Terminal concept candidate status is immutable"):
         with p88_database.transaction() as conn:
             conn.execute(
                 """UPDATE football_brief.concept_candidates
