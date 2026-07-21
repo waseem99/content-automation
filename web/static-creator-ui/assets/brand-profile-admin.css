@@ -1,0 +1,128 @@
+.brand-profile-dialog {
+  width: min(1180px, 96vw);
+  max-height: 92vh;
+  border: 0;
+  border-radius: 20px;
+  padding: 1.5rem;
+  overflow: auto;
+}
+
+.brand-profile-dialog::backdrop {
+  background: rgb(8 14 24 / 72%);
+}
+
+.brand-profile-head,
+.brand-profile-version-head,
+.brand-profile-actions,
+.brand-preset-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.brand-profile-head > p {
+  max-width: 46rem;
+}
+
+.brand-profile-grid,
+.brand-preset-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.9rem;
+}
+
+.brand-profile-grid .wide {
+  grid-column: 1 / -1;
+}
+
+.brand-profile-form label,
+.brand-preset-row label {
+  display: grid;
+  gap: 0.35rem;
+  font-weight: 650;
+}
+
+.brand-profile-form input,
+.brand-profile-form select,
+.brand-profile-form textarea,
+.brand-preset-row input,
+.brand-preset-row select,
+.brand-preset-row textarea {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.brand-profile-form textarea,
+.brand-preset-row textarea {
+  min-height: 5.5rem;
+  resize: vertical;
+}
+
+.brand-preset-rows {
+  display: grid;
+  gap: 1rem;
+  margin-block: 1rem;
+}
+
+.brand-preset-row {
+  border: 1px solid #dce2ea;
+  border-radius: 14px;
+  padding: 1rem;
+}
+
+.brand-preset-row legend {
+  padding-inline: 0.35rem;
+  font-weight: 800;
+}
+
+.brand-preset-row .preset-enabled,
+.brand-preset-row .preset-default {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.brand-preset-row .preset-enabled input,
+.brand-preset-row .preset-default input {
+  width: auto;
+}
+
+.brand-profile-history {
+  border-top: 1px solid #dce2ea;
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+}
+
+#brand-profile-history-list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.brand-profile-version {
+  border: 1px solid #dce2ea;
+  border-radius: 12px;
+  padding: 0.9rem;
+}
+
+.brand-profile-version p {
+  margin-block: 0.5rem;
+}
+
+#brand-profile-message {
+  min-height: 1.5rem;
+  max-width: 42rem;
+}
+
+@media (max-width: 760px) {
+  .brand-profile-grid,
+  .brand-preset-row {
+    grid-template-columns: 1fr;
+  }
+
+  .brand-profile-head,
+  .brand-profile-actions,
+  .brand-preset-heading {
+    flex-direction: column;
+  }
+}
