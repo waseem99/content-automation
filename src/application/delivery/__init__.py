@@ -12,13 +12,23 @@ from src.application.delivery.models import (
     DeliveryClaimRequest,
     DeliveryCreateRequest,
     DeliveryExecuteRequest,
+    DeliveryMode,
     DeliveryPrivacy,
     DeliveryStatus,
     DeliveryTargetRequest,
     DeliveryTargetStatus,
     DeliveryTransport,
 )
-from src.application.delivery.service import PlatformDeliveryError, PlatformDeliveryService
+from src.application.delivery.reconciliation import (
+    DeliveryPlatformStatus,
+    DeliveryReconciliationResult,
+)
+from src.application.delivery.service import PlatformDeliveryError
+from src.application.delivery.validated_service import ValidatedPlatformDeliveryService
+
+
+PlatformDeliveryService = ValidatedPlatformDeliveryService
+
 
 __all__ = [
     "DeliveryAdapterError",
@@ -28,7 +38,10 @@ __all__ = [
     "DeliveryClaimRequest",
     "DeliveryCreateRequest",
     "DeliveryExecuteRequest",
+    "DeliveryMode",
+    "DeliveryPlatformStatus",
     "DeliveryPrivacy",
+    "DeliveryReconciliationResult",
     "DeliveryStatus",
     "DeliveryTargetRequest",
     "DeliveryTargetStatus",
@@ -38,5 +51,6 @@ __all__ = [
     "PlatformDeliveryService",
     "SimulatedFallbackDeliveryAdapter",
     "SimulatedPrimaryDeliveryAdapter",
+    "ValidatedPlatformDeliveryService",
     "default_delivery_adapters",
 ]
