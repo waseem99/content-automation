@@ -7,6 +7,7 @@ from fastapi.responses import JSONResponse
 
 from src.application.scripts.runtime_patch import install_validated_script_service
 from src.infrastructure.database.connection import Database
+from src.operations.settings import OperationsSettings, get_operations_settings
 from src.operator_api.access_runtime import install_operator_access
 from src.operator_api.audio_runtime import install_audio_routes
 from src.operator_api.auth import OperatorAuthSettings
@@ -16,6 +17,8 @@ from src.operator_api.delivery_runtime import install_delivery_routes
 from src.operator_api.generation_jobs_runtime import install_generation_job_routes
 from src.operator_api.observability import observability_contract
 from src.operator_api.app import create_app
+from src.operator_api.operations_middleware import OperationsSafetyMiddleware
+from src.operator_api.operations_validated_runtime import install_operations_routes
 from src.operator_api.performance_runtime import install_performance_routes
 from src.operator_api.production_workflow_runtime import install_production_workflow_routes
 from src.operator_api.releases_validated_runtime import install_release_routes
@@ -35,10 +38,18 @@ def create_configured_app(
     database: Database | None = None,
     auth_settings: OperatorAuthSettings | None = None,
     runtime_settings: OperatorRuntimeSettings | None = None,
+    operations_settings: OperationsSettings | None = None,
 ) -> FastAPI:
     settings = runtime_settings or get_operator_runtime_settings()
+    operations = operations_settings or get_operations_settings()
+    route_operations = operations
+    if "/" not in operations.migration_head and "\\" not in operations.migration_head:
+        route_operations = operations.model_copy(
+            update={"migration_head": str(operations.migrations_dir / operations.migration_head)}
+        )
     auth = auth_settings or OperatorAuthSettings()
     app = create_app(database=database, auth_settings=auth)
+    app.add_middleware(OperationsSafetyMiddleware, settings=operations)
     install_operator_access(app, database=database, auth_settings=auth)
     install_brand_profile_routes(app, database=database, auth_settings=auth)
     install_production_workflow_routes(app, database=database, auth_settings=auth)
@@ -54,22 +65,54 @@ def create_configured_app(
     install_release_routes(app, database=database, auth_settings=auth)
     install_delivery_routes(app, database=database, auth_settings=auth)
     install_performance_routes(app, database=database, auth_settings=auth)
+    install_operations_routes(
+        app,
+        database=database,
+        auth_settings=auth,
+        operations_settings=route_operations,
+    )
     app.state.runtime_settings = settings
+    app.state.operations_settings = operations
 
     @app.get("/runtime/config")
     def runtime_config() -> dict[str, Any]:
-        return {"ok": True, "kind": "runtime_config", "runtime": settings.public_snapshot()}
+        return {
+            "ok": True,
+            "kind": "runtime_config",
+            "runtime": settings.public_snapshot(),
+            "operations": operations.public_snapshot(),
+        }
 
     @app.get("/runtime/ready", response_model=None)
     def runtime_ready() -> Any:
         payload = _runtime_readiness_payload(database=database, settings=settings)
+        payload["release"] = {
+            "environment": operations.environment,
+            "release_key": operations.release_key,
+            "git_sha": operations.git_sha,
+            "image_digest": operations.image_digest,
+            "configuration_digest": operations.configuration_digest,
+            "migration_head": operations.migration_head,
+        }
         if payload["ok"]:
             return payload
         return JSONResponse(status_code=503, content=payload)
 
     @app.get("/runtime/observability")
     def runtime_observability() -> dict[str, Any]:
-        return observability_contract()
+        return {
+            **observability_contract(),
+            "operations": {
+                "structured_logs": operations.structured_logs,
+                "request_ids": True,
+                "worker_job_ids": True,
+                "rate_limit": {
+                    "requests_per_minute": operations.requests_per_minute,
+                    "scope": "per_instance_client_hash",
+                },
+                "max_request_body_bytes": operations.max_request_body_bytes,
+            },
+        }
 
     return app
 
