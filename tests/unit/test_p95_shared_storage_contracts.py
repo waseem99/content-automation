@@ -31,11 +31,12 @@ def test_database_stores_locators_checksums_and_token_digests_not_media_or_token
 def test_backend_abstraction_supports_local_and_s3_compatible_storage() -> None:
     providers = PROVIDERS.read_text(encoding="utf-8")
     runtime = RUNTIME.read_text(encoding="utf-8")
+    foundation = FOUNDATION.read_text(encoding="utf-8")
     assert "class SharedStorageProvider(Protocol)" in providers
     assert "class LocalSharedStorageProvider" in providers
     assert "class S3CompatibleSharedStorageProvider" in providers
     assert "VerifiedS3CompatibleSharedStorageProvider" in runtime
-    assert "credential_secret_ref" in runtime
+    assert "credential_secret_ref" in foundation
     assert "boto3.client" in runtime
 
 
