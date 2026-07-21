@@ -89,12 +89,20 @@ def seeded(database: Database) -> dict[str, UUID]:
                        'vertical_short', %s, 'octopus-arm-sensing') RETURNING id""",
             (plan["id"], "a" * 64),
         ).fetchone()
+        content_two = conn.execute(
+            """INSERT INTO football_brief.portfolio_content
+               (plan_id, scheduled_for, title, concept, format, concept_fingerprint, semantic_key)
+               VALUES (%s, DATE '2026-08-03', 'Elephant signals', 'Explain elephant seismic sensing.',
+                       'vertical_short', %s, 'elephant-seismic-sensing') RETURNING id""",
+            (plan["id"], "b" * 64),
+        ).fetchone()
     return {
         "brand": brand["id"],
         "primary": primary["id"],
         "energetic": energetic["id"],
         "pending": pending["id"],
         "content": content["id"],
+        "content_two": content_two["id"],
     }
 
 
@@ -142,7 +150,27 @@ def presets(primary: UUID, energetic: UUID) -> list[dict]:
     ]
 
 
-def test_profile_activation_selection_and_content_history_are_stable(database: Database, seeded: dict[str, UUID]) -> None:
+def one_preset(voice_id: UUID) -> list[dict]:
+    return [
+        {
+            "preset_key": "primary",
+            "display_name": "Primary Documentary",
+            "role": "primary",
+            "approved_voice_id": voice_id,
+            "language": "en-US",
+            "speed": 1.0,
+            "style": {"delivery": "warm"},
+            "pronunciation_rules": {},
+            "format_filters": [],
+            "topic_filters": [],
+            "is_default": True,
+        }
+    ]
+
+
+def test_profile_activation_selection_and_content_history_are_stable(
+    database: Database, seeded: dict[str, UUID]
+) -> None:
     service = BrandProfileService(database)
     draft = service.create_draft(
         brand_id=seeded["brand"],
@@ -230,7 +258,94 @@ def test_profile_activation_selection_and_content_history_are_stable(database: D
     assert rebinding == {"ok": False, "error": "narration_selection_already_pinned"}
 
 
-def test_unapproved_voice_cannot_enter_a_brand_profile(database: Database, seeded: dict[str, UUID]) -> None:
+def test_activated_profile_and_presets_are_immutable(
+    database: Database, seeded: dict[str, UUID]
+) -> None:
+    service = BrandProfileService(database)
+    draft = service.create_draft(
+        brand_id=seeded["brand"],
+        profile=profile_payload(),
+        presets=one_preset(seeded["primary"]),
+        actor="admin.one",
+    )
+    service.activate(
+        brand_id=seeded["brand"],
+        profile_id=draft["profile"]["id"],
+        actor="admin.one",
+    )
+    preset_id = draft["presets"][0]["id"]
+
+    with pytest.raises(Exception, match="immutable"):
+        with database.transaction() as conn:
+            conn.execute(
+                "UPDATE football_brief.brand_profiles SET tone='silently changed' WHERE id=%s",
+                (draft["profile"]["id"],),
+            )
+
+    with pytest.raises(Exception, match="immutable"):
+        with database.transaction() as conn:
+            conn.execute(
+                "UPDATE football_brief.brand_narration_presets SET speed=1.5 WHERE id=%s",
+                (preset_id,),
+            )
+
+    with database.connection() as conn:
+        profile = conn.execute(
+            "SELECT tone FROM football_brief.brand_profiles WHERE id=%s",
+            (draft["profile"]["id"],),
+        ).fetchone()
+        preset = conn.execute(
+            "SELECT speed FROM football_brief.brand_narration_presets WHERE id=%s",
+            (preset_id,),
+        ).fetchone()
+    assert profile["tone"] == profile_payload()["tone"]
+    assert float(preset["speed"]) == 1.0
+
+
+def test_voice_revocation_blocks_new_selection_and_content_pinning(
+    database: Database, seeded: dict[str, UUID]
+) -> None:
+    service = BrandProfileService(database)
+    draft = service.create_draft(
+        brand_id=seeded["brand"],
+        profile=profile_payload(),
+        presets=one_preset(seeded["primary"]),
+        actor="admin.one",
+    )
+    service.activate(
+        brand_id=seeded["brand"],
+        profile_id=draft["profile"]["id"],
+        actor="admin.one",
+    )
+    preset_id = draft["presets"][0]["id"]
+
+    with database.transaction() as conn:
+        conn.execute(
+            "UPDATE football_brief.approved_voices SET approval_status='revoked' WHERE id=%s",
+            (seeded["primary"],),
+        )
+
+    with pytest.raises(ValueError, match="no eligible narration preset"):
+        service.select(brand_id=seeded["brand"], language="en-US")
+
+    result = service.bind_content(
+        content_id=seeded["content_two"],
+        preset_id=preset_id,
+    )
+    assert result == {"ok": False, "error": "narration_preset_voice_not_eligible"}
+
+    with database.connection() as conn:
+        content = conn.execute(
+            "SELECT brand_profile_id, narration_preset_id FROM football_brief.portfolio_content WHERE id=%s",
+            (seeded["content_two"],),
+        ).fetchone()
+    assert content["brand_profile_id"] is None
+    assert content["narration_preset_id"] is None
+
+
+def test_unapproved_voice_cannot_enter_a_brand_profile(
+    database: Database, seeded: dict[str, UUID]
+) -> None:
     service = BrandProfileService(database)
     with pytest.raises(ValueError, match="currently approved voice"):
         service.create_draft(
