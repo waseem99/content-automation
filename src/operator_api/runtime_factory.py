@@ -18,6 +18,7 @@ from src.operator_api.app import create_app
 from src.operator_api.production_workflow_runtime import install_production_workflow_routes
 from src.operator_api.runtime_config import OperatorRuntimeSettings, get_operator_runtime_settings
 from src.operator_api.scripts_runtime import install_script_routes
+from src.operator_api.visuals_runtime import install_visual_routes
 
 
 install_validated_script_service()
@@ -38,6 +39,7 @@ def create_configured_app(
     install_concept_routes(app, database=database, auth_settings=auth)
     install_script_routes(app, database=database, auth_settings=auth)
     install_audio_routes(app, database=database, auth_settings=auth)
+    install_visual_routes(app, database=database, auth_settings=auth)
     app.state.runtime_settings = settings
 
     @app.get("/runtime/config")
