@@ -14,8 +14,12 @@ from src.application.releases.models import (
     RenderProfileRequest,
     TechnicalInspection,
 )
-from src.application.releases.service import FinalReleaseError, FinalReleaseService
+from src.application.releases.service import FinalReleaseError
 from src.application.releases.validated_service import ValidatedFinalReleaseService
+
+
+FinalReleaseService = ValidatedFinalReleaseService
+
 
 __all__ = [
     "AssemblyEnqueueRequest",
