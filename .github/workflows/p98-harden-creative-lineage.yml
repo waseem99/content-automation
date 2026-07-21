@@ -1,0 +1,62 @@
+name: P98 Harden Creative Lineage
+
+on:
+  push:
+    branches: [p98-performance-analytics]
+
+permissions:
+  contents: write
+
+jobs:
+  harden-lineage:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: p98-performance-analytics
+          fetch-depth: 0
+      - name: Bind pillar source and exact assembly provider
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('src/application/performance/service.py')
+          source = path.read_text(encoding='utf-8')
+          replacements = [
+              (
+                  '''                      fr.total_cost_usd,fr.release_manifest,fr.manifest_hash,\n''',
+                  '''                      fr.total_cost_usd,fr.release_manifest,fr.manifest_hash,\n                      agj.provider AS assembly_provider,agj.model_id AS assembly_model_id,\n''',
+              ),
+              (
+                  '''               JOIN football_brief.audio_mix_versions amv ON amv.id=fr.audio_mix_version_id\n''',
+                  '''               LEFT JOIN football_brief.generation_jobs agj ON agj.id=fr.assembly_job_id\n               JOIN football_brief.audio_mix_versions amv ON amv.id=fr.audio_mix_version_id\n''',
+              ),
+              (
+                  '''        pillar = (\n            content_metadata.get("content_pillar")\n            or content_metadata.get("pillar")\n            or plan_strategy.get("content_pillar")\n            or plan_strategy.get("pillar")\n        )\n''',
+                  '''        pillar_sources = (\n            (content_metadata.get("content_pillar"), "content_metadata.content_pillar"),\n            (content_metadata.get("pillar"), "content_metadata.pillar"),\n            (plan_strategy.get("content_pillar"), "plan_strategy.content_pillar"),\n            (plan_strategy.get("pillar"), "plan_strategy.pillar"),\n        )\n        pillar, pillar_source = next(\n            ((value, source) for value, source in pillar_sources if value),\n            ("unclassified", "not_declared"),\n        )\n''',
+              ),
+              (
+                  '''        if not renderers:\n            renderers = [\n                {\n                    "sequence": 1,\n                    "route": "local_visual_project",\n                    "provider": context["visual_provider"],\n                    "model_id": context["visual_model_id"],\n                }\n            ]\n''',
+                  '''        if not renderers and context["visual_provider"]:\n            renderers.append(\n                {\n                    "sequence": 1,\n                    "route": "local_visual_project",\n                    "provider": context["visual_provider"],\n                    "model_id": context["visual_model_id"],\n                }\n            )\n        renderers.append(\n            {\n                "sequence": len(renderers) + 1,\n                "route": "final_assembly",\n                "provider": context["assembly_provider"],\n                "model_id": context["assembly_model_id"],\n            }\n        )\n''',
+              ),
+              (
+                  '''            "pillar": pillar,\n''',
+                  '''            "pillar": pillar,\n            "pillar_source": pillar_source,\n''',
+              ),
+          ]
+          for old, new in replacements:
+              count = source.count(old)
+              if count != 1:
+                  raise SystemExit(f'Expected one lineage snippet, found {count}: {old[:80]!r}')
+              source = source.replace(old, new)
+          path.write_text(source, encoding='utf-8')
+          PY
+          rm .github/workflows/p98-harden-creative-lineage.yml
+      - name: Commit hardened lineage and remove helper
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/application/performance/service.py .github/workflows/p98-harden-creative-lineage.yml
+          git commit -m "P98 retain explicit pillar and assembly renderer lineage"
+          git push origin HEAD:p98-performance-analytics
