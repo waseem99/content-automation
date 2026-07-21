@@ -39,6 +39,10 @@
     return payload;
   }
 
+  function appendMany(query, name, values) {
+    (values || []).filter(Boolean).forEach((value) => query.append(name, String(value)));
+  }
+
   window.PortfolioApi = {
     configured: () => Boolean(base && operatorKey),
     configuration: () => ({ base, hasOperatorKey: Boolean(operatorKey) }),
@@ -143,6 +147,7 @@
       method: "POST",
       body: JSON.stringify({ gate, decision, rationale })
     }),
+    scriptForContent: (contentId) => request(`/scripts/content/${contentId}`),
     audioForContent: (contentId) => request(`/audio/content/${contentId}`),
     initializeAudio: (contentId, modelId = "kokoro-v1.0") => request(`/audio/content/${contentId}`, {
       method: "POST",
@@ -176,6 +181,36 @@
     decideVisualProject: (projectId, payload) => request(`/visuals/${projectId}/decisions`, {
       method: "POST",
       body: JSON.stringify(payload)
+    }),
+    reviewInbox: (filters = {}) => {
+      const query = new URLSearchParams();
+      appendMany(query, "brand_id", filters.brandIds);
+      appendMany(query, "stage", filters.stages);
+      appendMany(query, "status", filters.statuses);
+      appendMany(query, "item_type", filters.itemTypes);
+      if (filters.assigneeOperatorId) query.set("assignee_operator_id", filters.assigneeOperatorId);
+      if (filters.dueFrom) query.set("due_from", filters.dueFrom);
+      if (filters.dueTo) query.set("due_to", filters.dueTo);
+      if (filters.blocker !== undefined && filters.blocker !== null) query.set("blocker", String(filters.blocker));
+      if (filters.overdue !== undefined && filters.overdue !== null) query.set("overdue", String(filters.overdue));
+      if (filters.limit) query.set("limit", String(filters.limit));
+      return request(`/review/inbox${query.size ? `?${query}` : ""}`);
+    },
+    reviewWorkspace: (contentId) => request(`/review/content/${contentId}`),
+    compareReview: (payload) => request("/review/compare", {
+      method: "POST",
+      body: JSON.stringify(payload)
+    }),
+    createReviewComment: (payload) => request("/review/comments", {
+      method: "POST",
+      body: JSON.stringify(payload)
+    }),
+    resolveReviewComment: (commentId) => request(`/review/comments/${commentId}/resolve`, {
+      method: "POST"
+    }),
+    mutateRevisionTask: (taskId, payload) => request(`/review/tasks/${taskId}`, {
+      method: "POST",
+      body: JSON.stringify(payload)
     })
   };
 
@@ -185,7 +220,8 @@
     ["concept-slate", "concept-slate.css", "concept-slate.js"],
     ["script-review", "script-review.css", "script-review.js"],
     ["audio-review", "audio-review.css", "audio-review.js"],
-    ["visual-candidates", "visual-candidates.css", "visual-candidates.js"]
+    ["visual-candidates", "visual-candidates.css", "visual-candidates.js"],
+    ["review-workspace", "review-workspace.css", "review-workspace.js"]
   ];
   modules.forEach(([key, css, js]) => {
     if (!document.querySelector(`link[data-studio-module="${key}"]`)) {
