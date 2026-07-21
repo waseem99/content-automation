@@ -1,7 +1,10 @@
 from pathlib import Path
 
+import pytest
+
 from src.domain.production_workflow import (
     ProductionStage,
+    WorkflowRuleError,
     WorkflowStatus,
     WorkflowVersionStatus,
     submit_plan,
@@ -27,6 +30,30 @@ def test_spend_preparation_has_an_explicit_submission_path() -> None:
         snapshot={"spend_estimate": 12.5, "spend_ceiling": 15.0},
     )
     assert plan.to_stage == ProductionStage.SPEND_APPROVAL
+    assert plan.version_status == WorkflowVersionStatus.IN_REVIEW
+
+
+def test_scheduling_cannot_enter_publication_verification_without_delivery_result() -> None:
+    with pytest.raises(WorkflowRuleError) as missing:
+        submit_plan(
+            stage=ProductionStage.SCHEDULING,
+            workflow_status=WorkflowStatus.ACTIVE,
+            version_status=WorkflowVersionStatus.WORKING,
+            snapshot={"delivery_request": {"scheduled_for": "2026-08-02T12:00:00Z"}},
+        )
+    assert missing.value.code == "stage_prerequisites_missing"
+    assert missing.value.details == {"missing": ["delivery_result"]}
+
+    plan = submit_plan(
+        stage=ProductionStage.SCHEDULING,
+        workflow_status=WorkflowStatus.ACTIVE,
+        version_status=WorkflowVersionStatus.WORKING,
+        snapshot={
+            "delivery_request": {"scheduled_for": "2026-08-02T12:00:00Z"},
+            "delivery_result": {"platform_post_id": "post-1"},
+        },
+    )
+    assert plan.to_stage == ProductionStage.PUBLICATION
     assert plan.version_status == WorkflowVersionStatus.IN_REVIEW
 
 
