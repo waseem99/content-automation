@@ -4,13 +4,24 @@ BEGIN;
 
 DO $$
 DECLARE
+    table_oid oid:='football_brief.performance_experiment_variants'::regclass;
+    experiment_attnum smallint;
+    release_attnum smallint;
     constraint_name text;
 BEGIN
+    SELECT attnum INTO experiment_attnum
+      FROM pg_attribute
+     WHERE attrelid=table_oid AND attname='experiment_id' AND NOT attisdropped;
+    SELECT attnum INTO release_attnum
+      FROM pg_attribute
+     WHERE attrelid=table_oid AND attname='final_release_id' AND NOT attisdropped;
+
     SELECT conname INTO constraint_name
       FROM pg_constraint
-     WHERE conrelid='football_brief.performance_experiment_variants'::regclass
+     WHERE conrelid=table_oid
        AND contype='u'
-       AND conname LIKE 'performance_experiment_variants_experiment_id_final_release%';
+       AND conkey=ARRAY[experiment_attnum,release_attnum]::smallint[];
+
     IF constraint_name IS NULL THEN
         RAISE EXCEPTION 'Expected experiment release uniqueness constraint was not found';
     END IF;
