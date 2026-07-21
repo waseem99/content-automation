@@ -10,7 +10,10 @@ from src.application.review_workspace.models import (
     TaskMutationRequest,
     TaskType,
 )
-from src.application.review_workspace.service import ReviewWorkspaceError, ReviewWorkspaceService
+from src.application.review_workspace.service import ReviewWorkspaceError
+from src.application.review_workspace.validated_service import ValidatedReviewWorkspaceService
+
+ReviewWorkspaceService = ValidatedReviewWorkspaceService
 
 __all__ = [
     "CommentType",
@@ -25,4 +28,5 @@ __all__ = [
     "ReviewWorkspaceService",
     "TaskMutationRequest",
     "TaskType",
+    "ValidatedReviewWorkspaceService",
 ]
