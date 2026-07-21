@@ -50,6 +50,11 @@ class ValidatedPlatformDeliveryService(PlatformDeliveryService):
             ).fetchone()
             if not release:
                 raise PlatformDeliveryError("final_release_not_found")
+            if release["status"] != "approved" or not release["manifest_hash"] or not release["release_manifest"]:
+                raise PlatformDeliveryError(
+                    "delivery_release_not_approved",
+                    details={"status": release["status"]},
+                )
             if not target:
                 raise PlatformDeliveryError("delivery_target_not_found")
 
