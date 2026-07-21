@@ -174,8 +174,9 @@ CREATE TABLE football_brief.production_workflow_comments (
     resolved_by_operator_id text REFERENCES football_brief.operator_users(operator_id) ON DELETE RESTRICT,
     resolved_at timestamptz,
     created_at timestamptz NOT NULL DEFAULT now(),
-    CONSTRAINT resolved_comment_has_actor CHECK (
-        resolved_at IS NULL OR resolved_by_operator_id IS NOT NULL
+    CONSTRAINT resolved_comment_is_consistent CHECK (
+        (resolved_at IS NULL AND resolved_by_operator_id IS NULL)
+        OR (resolved_at IS NOT NULL AND resolved_by_operator_id IS NOT NULL)
     )
 );
 
@@ -238,11 +239,25 @@ CREATE TRIGGER production_workflow_decisions_immutable
 BEFORE UPDATE OR DELETE ON football_brief.production_workflow_decisions
 FOR EACH ROW EXECUTE FUNCTION football_brief.protect_workflow_evidence();
 
-CREATE OR REPLACE FUNCTION football_brief.protect_submitted_workflow_version()
+CREATE OR REPLACE FUNCTION football_brief.protect_workflow_version()
 RETURNS trigger
 LANGUAGE plpgsql
 AS $$
 BEGIN
+    IF TG_OP = 'DELETE' THEN
+        RAISE EXCEPTION 'Production workflow versions are immutable evidence';
+    END IF;
+
+    IF NEW.status IS DISTINCT FROM OLD.status THEN
+        IF OLD.status = 'working' AND NEW.status = 'in_review' THEN
+            NULL;
+        ELSIF OLD.status = 'in_review' AND NEW.status IN ('approved', 'changes_requested', 'rejected') THEN
+            NULL;
+        ELSE
+            RAISE EXCEPTION 'Invalid production workflow version status transition';
+        END IF;
+    END IF;
+
     IF OLD.status <> 'working' THEN
         IF NEW.workflow_id IS DISTINCT FROM OLD.workflow_id
            OR NEW.version IS DISTINCT FROM OLD.version
@@ -261,15 +276,18 @@ BEGIN
 END;
 $$;
 
-CREATE TRIGGER submitted_workflow_version_immutable
-BEFORE UPDATE ON football_brief.production_workflow_versions
-FOR EACH ROW EXECUTE FUNCTION football_brief.protect_submitted_workflow_version();
+CREATE TRIGGER production_workflow_version_immutable
+BEFORE UPDATE OR DELETE ON football_brief.production_workflow_versions
+FOR EACH ROW EXECUTE FUNCTION football_brief.protect_workflow_version();
 
 CREATE OR REPLACE FUNCTION football_brief.protect_workflow_assignment()
 RETURNS trigger
 LANGUAGE plpgsql
 AS $$
 BEGIN
+    IF TG_OP = 'DELETE' THEN
+        RAISE EXCEPTION 'Workflow assignments cannot be deleted';
+    END IF;
     IF NEW.workflow_id IS DISTINCT FROM OLD.workflow_id
        OR NEW.workflow_version_id IS DISTINCT FROM OLD.workflow_version_id
        OR NEW.stage IS DISTINCT FROM OLD.stage
@@ -286,7 +304,7 @@ END;
 $$;
 
 CREATE TRIGGER production_workflow_assignment_append_only
-BEFORE UPDATE ON football_brief.production_workflow_assignments
+BEFORE UPDATE OR DELETE ON football_brief.production_workflow_assignments
 FOR EACH ROW EXECUTE FUNCTION football_brief.protect_workflow_assignment();
 
 CREATE OR REPLACE FUNCTION football_brief.protect_workflow_comment()
@@ -294,6 +312,9 @@ RETURNS trigger
 LANGUAGE plpgsql
 AS $$
 BEGIN
+    IF TG_OP = 'DELETE' THEN
+        RAISE EXCEPTION 'Workflow comments cannot be deleted';
+    END IF;
     IF NEW.workflow_version_id IS DISTINCT FROM OLD.workflow_version_id
        OR NEW.stage IS DISTINCT FROM OLD.stage
        OR NEW.author_operator_id IS DISTINCT FROM OLD.author_operator_id
@@ -310,7 +331,7 @@ END;
 $$;
 
 CREATE TRIGGER production_workflow_comment_append_only
-BEFORE UPDATE ON football_brief.production_workflow_comments
+BEFORE UPDATE OR DELETE ON football_brief.production_workflow_comments
 FOR EACH ROW EXECUTE FUNCTION football_brief.protect_workflow_comment();
 
 COMMENT ON TABLE football_brief.production_workflows IS
