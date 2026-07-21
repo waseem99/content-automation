@@ -10,14 +10,16 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 
 
-def test_cli_writes_one_shot_low_vram_plan(tmp_path: Path) -> None:
+def test_cli_writes_one_shot_low_vram_plan_without_pythonpath(tmp_path: Path) -> None:
     env = dict(os.environ)
-    env["PYTHONPATH"] = str(ROOT)
+    env.pop("PYTHONPATH", None)
     result = subprocess.run(
         [
             sys.executable,
             str(ROOT / "scripts/p68_generate_keyframes.py"),
             "plan",
+            "--pilots-root",
+            str(ROOT / "p68-pilots"),
             "--pilot",
             "animal-octopus-arms",
             "--shots",
@@ -27,9 +29,9 @@ def test_cli_writes_one_shot_low_vram_plan(tmp_path: Path) -> None:
             "--height",
             "1280",
             "--artifact-root",
-            str(tmp_path),
+            str(tmp_path / "artifacts"),
         ],
-        cwd=ROOT,
+        cwd=tmp_path,
         env=env,
         capture_output=True,
         text=True,
