@@ -321,7 +321,9 @@ def test_final_release_blocks_bad_qa_then_seals_immutable_approved_manifest(
     assert release["status"] == "approved"
     assert release["manifest_hash"] is not None
     assert release["release_manifest"]["schema"] == "final-release-manifest-v1"
-    assert release["release_manifest"]["audio_mix"]["id"] == p96_ready["audio_mix_version_id"]
+    assert release["release_manifest"]["audio_mix"]["id"] == str(
+        p96_ready["audio_mix_version_id"]
+    )
     assert release["release_manifest"]["audio_mix"]["alignment_source"] == "forced_alignment"
     assert release["release_manifest"]["qa"]["outcome"] == "pass"
     assert release["release_manifest"]["playback_review"]["decision"] == "approved"
