@@ -102,15 +102,10 @@ def select_narration_preset(
             continue
         if topics and requested_topic not in topics:
             continue
-        score = 0
-        if str(row.get("language") or "").lower() == requested_language:
-            score += 4
-        if formats and requested_format in formats:
-            score += 3
-        if topics and requested_topic in topics:
-            score += 3
-        if bool(row.get("is_default")):
-            score += 1
+        score = 4 if str(row.get("language") or "").lower() == requested_language else 0
+        score += 3 if formats and requested_format in formats else 0
+        score += 3 if topics and requested_topic in topics else 0
+        score += 1 if bool(row.get("is_default")) else 0
         role_priority = {"primary": "0", "energetic": "1", "serious": "2"}.get(str(row.get("role")), "9")
         candidates.append((score, role_priority + str(row.get("preset_key") or ""), row))
     if not candidates:
@@ -126,8 +121,7 @@ class BrandProfileService:
     def list_profiles(self, brand_id: UUID) -> list[dict[str, Any]]:
         with self.database.connection() as conn:
             profiles = conn.execute(
-                """SELECT * FROM football_brief.brand_profiles
-                   WHERE brand_id=%s ORDER BY version DESC""",
+                "SELECT * FROM football_brief.brand_profiles WHERE brand_id=%s ORDER BY version DESC",
                 (brand_id,),
             ).fetchall()
             result = []
@@ -158,8 +152,7 @@ class BrandProfileService:
         platforms = sorted({str(value).strip() for value in profile.get("platforms") or [] if str(value).strip()})
         with self.database.transaction() as conn:
             brand = conn.execute(
-                "SELECT id FROM football_brief.brands WHERE id=%s FOR UPDATE",
-                (brand_id,),
+                "SELECT id FROM football_brief.brands WHERE id=%s FOR UPDATE", (brand_id,)
             ).fetchone()
             if not brand:
                 return {"ok": False, "error": "brand_not_found"}
@@ -172,9 +165,7 @@ class BrandProfileService:
             for preset in presets:
                 voice = self._approved_voice(conn, UUID(str(preset["approved_voice_id"])))
                 self._validate_voice_for_preset(
-                    voice=voice,
-                    language=str(preset["language"]),
-                    platforms=platforms,
+                    voice=voice, language=str(preset["language"]), platforms=platforms
                 )
                 voice_rows[str(voice["id"])] = dict(voice)
             created = conn.execute(
@@ -229,6 +220,11 @@ class BrandProfileService:
 
     def activate(self, *, brand_id: UUID, profile_id: UUID, actor: str) -> dict[str, Any]:
         with self.database.transaction() as conn:
+            brand = conn.execute(
+                "SELECT id FROM football_brief.brands WHERE id=%s FOR UPDATE", (brand_id,)
+            ).fetchone()
+            if not brand:
+                return {"ok": False, "error": "brand_not_found"}
             profile = conn.execute(
                 """SELECT * FROM football_brief.brand_profiles
                    WHERE id=%s AND brand_id=%s FOR UPDATE""",
@@ -245,8 +241,7 @@ class BrandProfileService:
                           v.allowed_languages, v.allowed_platforms, v.expires_at
                    FROM football_brief.brand_narration_presets p
                    JOIN football_brief.approved_voices v ON v.id=p.approved_voice_id
-                   WHERE p.brand_profile_id=%s AND p.active=true
-                   ORDER BY p.role""",
+                   WHERE p.brand_profile_id=%s AND p.active=true ORDER BY p.role""",
                 (profile_id,),
             ).fetchall()
             preset_dicts = [dict(row) for row in presets]
@@ -258,8 +253,7 @@ class BrandProfileService:
                     platforms=list(profile["platforms"] or []),
                 )
             conn.execute(
-                """UPDATE football_brief.brand_profiles
-                   SET status='retired'
+                """UPDATE football_brief.brand_profiles SET status='retired'
                    WHERE brand_id=%s AND status='active' AND id<>%s""",
                 (brand_id, profile_id),
             )
@@ -279,14 +273,15 @@ class BrandProfileService:
         format_name: str | None = None,
         topic_type: str | None = None,
     ) -> NarrationSelection:
+        requested_language: str
         with self.database.connection() as conn:
             profile = conn.execute(
-                """SELECT * FROM football_brief.brand_profiles
-                   WHERE brand_id=%s AND status='active'""",
+                "SELECT * FROM football_brief.brand_profiles WHERE brand_id=%s AND status='active'",
                 (brand_id,),
             ).fetchone()
             if not profile:
                 raise ValueError("brand has no active profile")
+            requested_language = language or str(profile["default_language"])
             rows = conn.execute(
                 """SELECT p.*, v.provider, v.provider_voice_id, v.approval_status,
                           v.allowed_languages, v.allowed_platforms, v.expires_at
@@ -297,9 +292,21 @@ class BrandProfileService:
                      AND (v.expires_at IS NULL OR v.expires_at > now())""",
                 (profile["id"],),
             ).fetchall()
+        eligible = []
+        for raw in rows:
+            row = dict(raw)
+            try:
+                self._validate_voice_for_preset(
+                    voice=row,
+                    language=str(row["language"]),
+                    platforms=list(profile["platforms"] or []),
+                )
+            except ValueError:
+                continue
+            eligible.append(row)
         selected = select_narration_preset(
-            [dict(row) for row in rows],
-            language=language or str(profile["default_language"]),
+            eligible,
+            language=requested_language,
             format_name=format_name,
             topic_type=topic_type,
         )
@@ -318,12 +325,7 @@ class BrandProfileService:
             pronunciation_rules=dict(selected.get("pronunciation_rules") or {}),
         )
 
-    def bind_content(
-        self,
-        *,
-        content_id: UUID,
-        preset_id: UUID,
-    ) -> dict[str, Any]:
+    def bind_content(self, *, content_id: UUID, preset_id: UUID) -> dict[str, Any]:
         with self.database.transaction() as conn:
             content = conn.execute(
                 """SELECT pc.*, mp.brand_id FROM football_brief.portfolio_content pc
@@ -334,9 +336,11 @@ class BrandProfileService:
             if not content:
                 return {"ok": False, "error": "content_not_found"}
             preset = conn.execute(
-                """SELECT p.*, bp.brand_id, bp.status AS profile_status
+                """SELECT p.*, bp.brand_id, bp.status AS profile_status, bp.platforms,
+                          v.approval_status, v.allowed_languages, v.allowed_platforms, v.expires_at
                    FROM football_brief.brand_narration_presets p
                    JOIN football_brief.brand_profiles bp ON bp.id=p.brand_profile_id
+                   JOIN football_brief.approved_voices v ON v.id=p.approved_voice_id
                    WHERE p.id=%s""",
                 (preset_id,),
             ).fetchone()
@@ -346,8 +350,19 @@ class BrandProfileService:
                 return {"ok": False, "error": "narration_preset_brand_mismatch"}
             if preset["profile_status"] != "active" or not preset["active"]:
                 return {"ok": False, "error": "narration_preset_not_active"}
-            if content["narration_preset_id"] is not None:
-                if str(content["narration_preset_id"]) == str(preset_id):
+            try:
+                self._validate_voice_for_preset(
+                    voice=dict(preset),
+                    language=str(preset["language"]),
+                    platforms=list(preset["platforms"] or []),
+                )
+            except ValueError:
+                return {"ok": False, "error": "narration_preset_voice_not_eligible"}
+            if content["brand_profile_id"] is not None or content["narration_preset_id"] is not None:
+                if (
+                    str(content["brand_profile_id"]) == str(preset["brand_profile_id"])
+                    and str(content["narration_preset_id"]) == str(preset_id)
+                ):
                     return {"ok": True, "item": dict(content), "already_pinned": True}
                 return {"ok": False, "error": "narration_selection_already_pinned"}
             updated = conn.execute(
@@ -372,10 +387,7 @@ class BrandProfileService:
 
     @staticmethod
     def _validate_voice_for_preset(
-        *,
-        voice: dict[str, Any],
-        language: str,
-        platforms: list[str],
+        *, voice: dict[str, Any], language: str, platforms: list[str]
     ) -> None:
         if str(voice.get("approval_status")) != "approved":
             raise ValueError("narration preset voice is not approved")
