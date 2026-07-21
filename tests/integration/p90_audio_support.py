@@ -5,7 +5,6 @@ from uuid import UUID
 
 import pytest
 
-from src.application.brand_profile_service import BrandProfileService
 from src.application.generation_jobs.models import (
     GenerationJobCompletion,
     GenerationJobType,
@@ -76,6 +75,24 @@ def source_support(expected_lock: int) -> SourceSupportUpdateRequest:
     )
 
 
+def pin_matching_legacy_preset(database, *, content_id: UUID, preset_id: UUID) -> None:
+    """Complete a legacy profile-only pin without permitting profile replacement."""
+
+    with database.transaction() as conn:
+        updated = conn.execute(
+            """UPDATE football_brief.portfolio_content pc
+               SET narration_preset_id=%s
+               FROM football_brief.brand_narration_presets bnp
+               WHERE pc.id=%s
+                 AND bnp.id=%s
+                 AND pc.brand_profile_id=bnp.brand_profile_id
+                 AND pc.narration_preset_id IS NULL
+               RETURNING pc.id""",
+            (preset_id, content_id, preset_id),
+        ).fetchone()
+    assert updated is not None
+
+
 @pytest.fixture()
 def p90_ready(p89_database, p89_seeded) -> dict[str, object]:
     with p89_database.connection() as conn:
@@ -85,11 +102,11 @@ def p90_ready(p89_database, p89_seeded) -> dict[str, object]:
                WHERE bnp.brand_profile_id=%s AND bnp.is_default=true""",
             (p89_seeded["profile_one"],),
         ).fetchone()
-    bound = BrandProfileService(p89_database).bind_content(
+    pin_matching_legacy_preset(
+        p89_database,
         content_id=p89_seeded["content_one"],
         preset_id=preset["id"],
     )
-    assert bound["ok"] is True
 
     scripts = ScriptReviewService(p89_database)
     initialized = scripts.initialize(
