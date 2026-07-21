@@ -140,11 +140,29 @@ def test_remote_reviewer_can_stream_signed_proxy_without_shared_filesystem(
 
     invalid = client.get(f"/shared-media/{access['grant_id']}?token=invalid")
     assert invalid.status_code == 403
+    with p93_database.connection() as conn:
+        invalid_events = conn.execute(
+            """SELECT event,details FROM football_brief.shared_access_events
+               WHERE grant_id=%s ORDER BY created_at,id""",
+            (access["grant_id"],),
+        ).fetchall()
+    assert [row["event"] for row in invalid_events] == ["issued", "accessed", "denied"]
+    assert invalid_events[-1]["details"]["error_code"] == "access_token_invalid"
 
     revoked = client.post(f"/storage/access/{access['grant_id']}/revoke", headers=reviewer)
     assert revoked.status_code == 200, revoked.text
     after_revoke = client.get(signed_path)
     assert after_revoke.status_code == 410
+    with p93_database.connection() as conn:
+        revoked_events = conn.execute(
+            """SELECT event,details FROM football_brief.shared_access_events
+               WHERE grant_id=%s ORDER BY created_at,id""",
+            (access["grant_id"],),
+        ).fetchall()
+    assert [row["event"] for row in revoked_events] == [
+        "issued", "accessed", "denied", "revoked", "denied"
+    ]
+    assert revoked_events[-1]["details"]["error_code"] == "access_grant_revoked"
 
     listed = client.get(
         f"/storage/artifacts?brand_id={p95_ready['brand_one']}&include_history=true",
