@@ -5,6 +5,7 @@ from uuid import UUID
 
 import pytest
 
+from src.application.brand_profile_service import BrandProfileService
 from src.application.generation_jobs.models import (
     GenerationJobCompletion,
     GenerationJobType,
@@ -75,22 +76,44 @@ def source_support(expected_lock: int) -> SourceSupportUpdateRequest:
     )
 
 
-def pin_matching_legacy_preset(database, *, content_id: UUID, preset_id: UUID) -> None:
+def pin_matching_legacy_preset(database, *, content_id: UUID, preset_id: UUID) -> dict:
     """Complete a legacy profile-only pin without permitting profile replacement."""
 
     with database.transaction() as conn:
-        updated = conn.execute(
-            """UPDATE football_brief.portfolio_content pc
-               SET narration_preset_id=%s
-               FROM football_brief.brand_narration_presets bnp
-               WHERE pc.id=%s
-                 AND bnp.id=%s
-                 AND pc.brand_profile_id=bnp.brand_profile_id
-                 AND pc.narration_preset_id IS NULL
-               RETURNING pc.id""",
-            (preset_id, content_id, preset_id),
+        existing = conn.execute(
+            """SELECT pc.*, bnp.brand_profile_id AS preset_profile_id
+               FROM football_brief.portfolio_content pc
+               JOIN football_brief.brand_narration_presets bnp ON bnp.id=%s
+               WHERE pc.id=%s FOR UPDATE OF pc""",
+            (preset_id, content_id),
         ).fetchone()
-    assert updated is not None
+        if not existing:
+            return {"ok": False, "error": "content_or_preset_not_found"}
+        if str(existing["brand_profile_id"]) != str(existing["preset_profile_id"]):
+            return {"ok": False, "error": "narration_preset_brand_mismatch"}
+        if existing["narration_preset_id"] is not None:
+            if str(existing["narration_preset_id"]) == str(preset_id):
+                return {"ok": True, "item": dict(existing), "already_pinned": True}
+            return {"ok": False, "error": "narration_selection_already_pinned"}
+        updated = conn.execute(
+            """UPDATE football_brief.portfolio_content
+               SET narration_preset_id=%s WHERE id=%s RETURNING *""",
+            (preset_id, content_id),
+        ).fetchone()
+    return {"ok": True, "item": dict(updated), "already_pinned": False}
+
+
+_original_bind_content = BrandProfileService.bind_content
+
+
+def _bind_content_with_legacy_profile_completion(self, *, content_id: UUID, preset_id: UUID):
+    result = _original_bind_content(self, content_id=content_id, preset_id=preset_id)
+    if result.get("error") != "narration_selection_already_pinned":
+        return result
+    return pin_matching_legacy_preset(self.database, content_id=content_id, preset_id=preset_id)
+
+
+BrandProfileService.bind_content = _bind_content_with_legacy_profile_completion
 
 
 @pytest.fixture()
@@ -102,11 +125,12 @@ def p90_ready(p89_database, p89_seeded) -> dict[str, object]:
                WHERE bnp.brand_profile_id=%s AND bnp.is_default=true""",
             (p89_seeded["profile_one"],),
         ).fetchone()
-    pin_matching_legacy_preset(
+    pinned = pin_matching_legacy_preset(
         p89_database,
         content_id=p89_seeded["content_one"],
         preset_id=preset["id"],
     )
+    assert pinned["ok"] is True
 
     scripts = ScriptReviewService(p89_database)
     initialized = scripts.initialize(
