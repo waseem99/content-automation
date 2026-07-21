@@ -168,6 +168,10 @@ def p94_ready(p89_database, p91_ready) -> dict[str, object]:
 
     preflights = {}
     for shot in approved["shots"]:
+        selected_candidate = next(
+            item for item in approved["candidates"]
+            if str(item["id"]) == str(shot["selected_candidate_id"])
+        )
         preflight = catalogue.preflight(
             request=RendererCapabilityRequest(
                 portfolio_content_id=p91_ready["content_one"],
@@ -178,6 +182,7 @@ def p94_ready(p89_database, p91_ready) -> dict[str, object]:
                 width=704,
                 height=1280,
                 required_capabilities=("camera_control", "character_consistency"),
+                input_asset_ids=(selected_candidate["asset_id"],),
                 renderer_catalogue_entry_id=renderer["id"],
                 request_metadata={
                     "visual_project_id": str(approved["project"]["id"]),
