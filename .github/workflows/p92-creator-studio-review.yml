@@ -47,6 +47,7 @@ jobs:
           python -m compileall -q src/application/review_workspace src/operator_api/review_workspace_runtime.py src/operator_api/runtime_factory.py tests/unit/test_p92_review_workspace_contracts.py tests/unit/test_p92_review_workspace_studio.py tests/integration/test_p92_review_workspace_lifecycle.py tests/integration/test_p92_review_workspace_api.py tests/integration/test_p92_review_workspace_edge_cases.py
           node --check web/static-creator-ui/assets/portfolio-api.js
           node --check web/static-creator-ui/assets/review-workspace.js
+          node --check web/static-creator-ui/assets/review-stage-actions.js
       - name: Apply migrations
         run: |
           set -o pipefail
