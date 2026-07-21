@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 import random
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from typing import Any, Protocol
 from urllib import error, request
 
@@ -263,7 +263,7 @@ def _local_prompt(*, context: dict[str, Any], slots: list[ConceptSlot], seed: in
         "Return JSON only. Generate one original content concept for every supplied slot. "
         "Do not copy source wording or media. Keep the exact slot order and do not change format or pillar. "
         f"Seed: {seed}. Context: {json.dumps(safe_context, sort_keys=True, default=str)}. "
-        f"Slots: {json.dumps([slot.__dict__ for slot in slots], default=str)}. "
+        f"Slots: {json.dumps([asdict(slot) for slot in slots], default=str)}. "
         f"Required response schema: {json.dumps(schema)}"
     )
 
