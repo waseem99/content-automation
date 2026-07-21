@@ -206,7 +206,7 @@ def install_operations_routes(
         operator: OperatorIdentity = Depends(authenticate),
     ) -> dict[str, Any]:
         require_admin(operator)
-        health = require_database().health_check(operations_settings.migration_head.rsplit("/", 1)[0] or "migrations")
+        health = require_database().health_check(operations_settings.migrations_dir)
         api_healthy = bool(health.database_reachable and health.schema_present and health.migrations_table_present)
         snapshot = invoke(
             lambda: require_service().snapshot(
