@@ -118,7 +118,7 @@ def p95_ready(p93_database, p93_seeded, tmp_path) -> dict[str, object]:
             display_name="Shared Test Storage",
             driver="local",
             environment="test",
-            configuration={"fixture": True},
+            configuration={"fixture": True, "root": str(shared_root)},
         ),
         actor=p93_seeded["admin"],
     )["backend"]
@@ -133,7 +133,7 @@ def p95_ready(p93_database, p93_seeded, tmp_path) -> dict[str, object]:
             display_name="Shared Restore Storage",
             driver="local",
             environment="staging",
-            configuration={"fixture": True},
+            configuration={"fixture": True, "root": str(restore_root)},
         ),
         actor=p93_seeded["admin"],
     )["backend"]
