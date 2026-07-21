@@ -6,6 +6,7 @@ from uuid import UUID
 import psycopg
 from fastapi import Depends, FastAPI, HTTPException, Query
 
+from src.application.delivery import PlatformDeliveryError, PlatformDeliveryService
 from src.application.delivery.models import (
     DeliveryCancelRequest,
     DeliveryClaimRequest,
@@ -14,7 +15,6 @@ from src.application.delivery.models import (
     DeliveryStatus,
     DeliveryTargetRequest,
 )
-from src.application.delivery.service import PlatformDeliveryError, PlatformDeliveryService
 from src.infrastructure.database.connection import Database
 from src.operator_api.access import (
     AccessPermission,
@@ -115,6 +115,9 @@ def install_delivery_routes(
             elif exc.code in {
                 "delivery_release_no_longer_approved",
                 "delivery_target_no_longer_executable",
+                "delivery_release_output_unavailable",
+                "delivery_not_ready_for_reconciliation",
+                "p97_live_reconciliation_disabled",
             }:
                 status = 422
             raise HTTPException(status_code=status, detail={"code": exc.code, **exc.details}) from exc
@@ -260,10 +263,11 @@ def install_delivery_routes(
         require_publisher(operator)
         if request.worker_id != operator.operator_id:
             raise HTTPException(status_code=403, detail="delivery_worker_identity_mismatch")
+        allowed_brand_ids = None if operator.is_admin else [UUID(item) for item in operator.brand_ids]
         result = invoke(
             lambda: require_service().claim_due(
                 request,
-                allowed_brand_ids=[UUID(item) for item in operator.brand_ids],
+                allowed_brand_ids=allowed_brand_ids,
             )
         )
         return {
@@ -286,6 +290,22 @@ def install_delivery_routes(
         return {
             "operator": operator.operator_id,
             **invoke(lambda: require_service().execute_claim(request)),
+        }
+
+    @app.post("/deliveries/{delivery_request_id}/reconcile")
+    def reconcile_delivery(
+        delivery_request_id: UUID,
+        operator: OperatorIdentity = Depends(authenticate),
+    ) -> dict[str, Any]:
+        require_publisher(operator, brand_id=delivery_brand(delivery_request_id))
+        return {
+            "operator": operator.operator_id,
+            **invoke(
+                lambda: require_service().reconcile_delivery(
+                    delivery_request_id=delivery_request_id,
+                    actor=operator.operator_id,
+                )
+            ),
         }
 
     @app.post("/deliveries/{delivery_request_id}/cancel")
