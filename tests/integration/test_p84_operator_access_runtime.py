@@ -14,6 +14,7 @@ from src.operator_api.auth import OperatorAuthSettings
 BRAND_A = "11111111-1111-1111-1111-111111111111"
 BRAND_B = "22222222-2222-2222-2222-222222222222"
 CONTENT_ID = "33333333-3333-3333-3333-333333333333"
+JOB_ID = "44444444-4444-4444-4444-444444444444"
 
 
 class Rows:
@@ -28,8 +29,14 @@ class Rows:
 
 
 class FakeConnection:
-    def __init__(self, *, artifact_creator: str = "producer.one") -> None:
+    def __init__(
+        self,
+        *,
+        artifact_creator: str = "producer.one",
+        reference_job_brand: str = BRAND_A,
+    ) -> None:
         self.artifact_creator = artifact_creator
+        self.reference_job_brand = reference_job_brand
 
     def execute(self, sql: str, params=()):
         if "SELECT mp.brand_id FROM football_brief.portfolio_content" in sql:
@@ -45,19 +52,35 @@ class FakeConnection:
             )
         if "SELECT id FROM football_brief.brands WHERE slug=" in sql:
             return Rows([{"id": BRAND_A}])
+        if "FROM football_brief.reference_ingestion_jobs rij" in sql:
+            return Rows([{"brand_id": self.reference_job_brand}])
         return Rows([])
 
 
 class FakeDatabase:
-    def __init__(self, *, artifact_creator: str = "producer.one") -> None:
-        self.connection_value = FakeConnection(artifact_creator=artifact_creator)
+    def __init__(
+        self,
+        *,
+        artifact_creator: str = "producer.one",
+        reference_job_brand: str = BRAND_A,
+    ) -> None:
+        self.connection_value = FakeConnection(
+            artifact_creator=artifact_creator,
+            reference_job_brand=reference_job_brand,
+        )
 
     @contextmanager
     def connection(self):
         yield self.connection_value
 
 
-def app_for(*, role: OperatorRole, operator_id: str, artifact_creator: str = "producer.one") -> TestClient:
+def app_for(
+    *,
+    role: OperatorRole,
+    operator_id: str,
+    artifact_creator: str = "producer.one",
+    reference_job_brand: str = BRAND_A,
+) -> TestClient:
     app = FastAPI()
 
     @app.get("/portfolio/queue")
@@ -79,6 +102,10 @@ def app_for(*, role: OperatorRole, operator_id: str, artifact_creator: str = "pr
     def approve(payload: dict[str, Any]):
         return {"ok": True, "payload": payload}
 
+    @app.post(f"/portfolio/reference-jobs/{JOB_ID}/progress")
+    def progress(payload: dict[str, Any]):
+        return {"ok": True, "payload": payload}
+
     settings = OperatorAuthSettings.for_tests(
         operator_id=operator_id,
         roles=(role,),
@@ -86,10 +113,27 @@ def app_for(*, role: OperatorRole, operator_id: str, artifact_creator: str = "pr
     )
     install_operator_access(
         app,
-        database=FakeDatabase(artifact_creator=artifact_creator),
+        database=FakeDatabase(
+            artifact_creator=artifact_creator,
+            reference_job_brand=reference_job_brand,
+        ),
         auth_settings=settings,
     )
     return TestClient(app)
+
+
+def test_current_access_exposes_role_and_brand_scope() -> None:
+    client = app_for(role=OperatorRole.REVIEWER, operator_id="reviewer.one")
+    response = client.get("/access/me", headers={"X-Operator-Key": "test-key"})
+    assert response.status_code == 200
+    assert response.json()["operator"] == {
+        "operator_id": "reviewer.one",
+        "display_name": "reviewer.one",
+        "active": True,
+        "roles": ["reviewer"],
+        "brand_ids": [BRAND_A],
+        "portfolio_wide": False,
+    }
 
 
 def test_reviewer_queue_is_filtered_to_assigned_brand() -> None:
@@ -121,6 +165,30 @@ def test_producer_is_denied_for_unassigned_brand() -> None:
     )
     assert response.status_code == 403
     assert response.json()["detail"] == "brand_access_denied"
+
+
+def test_reference_job_inherits_its_reference_brand_scope() -> None:
+    client = app_for(role=OperatorRole.PRODUCER, operator_id="producer.one")
+    payload = {"status": "running", "stage": "analysis", "progress_percent": 50}
+    response = client.post(
+        f"/portfolio/reference-jobs/{JOB_ID}/progress",
+        headers={"X-Operator-Key": "test-key"},
+        json=payload,
+    )
+    assert response.status_code == 200
+    assert response.json()["payload"] == payload
+
+    denied = app_for(
+        role=OperatorRole.PRODUCER,
+        operator_id="producer.one",
+        reference_job_brand=BRAND_B,
+    ).post(
+        f"/portfolio/reference-jobs/{JOB_ID}/progress",
+        headers={"X-Operator-Key": "test-key"},
+        json=payload,
+    )
+    assert denied.status_code == 403
+    assert denied.json()["detail"] == "brand_access_denied"
 
 
 def test_reviewer_cannot_approve_artifacts_they_created() -> None:
