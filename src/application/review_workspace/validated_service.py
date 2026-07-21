@@ -78,6 +78,17 @@ class ValidatedReviewWorkspaceService(ReviewWorkspaceService):
         return result
 
     def compare(self, *, request: CompareTarget) -> dict[str, Any]:
+        current_content_id = self.target_content_id(
+            target_type=request.target_type,
+            target_id=request.current_id,
+        )
+        if request.previous_id is not None:
+            previous_content_id = self.target_content_id(
+                target_type=request.target_type,
+                target_id=request.previous_id,
+            )
+            if previous_content_id != current_content_id:
+                raise ReviewWorkspaceError("comparison_target_content_mismatch")
         result = super().compare(request=request)
         result["current"].pop("_parent_id", None)
         if result["previous"] is not None:
