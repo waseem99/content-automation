@@ -113,6 +113,7 @@ class FinalReleaseCreate(BaseModel):
     portfolio_content_id: UUID
     content_version: int = Field(ge=1)
     render_profile_id: UUID
+    audio_mix_version_id: UUID
     routing_plan_id: UUID | None = None
     inputs: tuple[ReleaseInputRequest, ...] = Field(min_length=1, max_length=1000)
     metadata: dict[str, Any] = Field(default_factory=dict)
