@@ -167,9 +167,17 @@ def p96_ready(p89_database, tmp_path) -> dict[str, object]:
         backend_id=backend["id"],
         actor=p90_ready["admin"],
     )["backend"]
+    with p89_database.connection() as conn:
+        content_version = int(
+            conn.execute(
+                "SELECT version FROM football_brief.portfolio_content WHERE id=%s",
+                (p90_ready["content_one"],),
+            ).fetchone()["version"]
+        )
 
     return {
         **p90_ready,
+        "content_one_version": content_version,
         "audio_production_id": production_id,
         "audio_mix_version_id": audio_mix_version_id,
         "assets": {
