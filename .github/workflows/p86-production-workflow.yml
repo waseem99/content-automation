@@ -16,6 +16,7 @@ on:
       - "tests/unit/test_p86_production_workflow_runtime_contracts.py"
       - "tests/integration/test_p86_production_workflow_lifecycle.py"
       - "tests/integration/test_p86_production_workflow_guards.py"
+      - "tests/integration/test_p86_production_workflow_end_to_end.py"
   workflow_dispatch:
 
 permissions:
@@ -80,7 +81,8 @@ jobs:
             tests/unit/test_p86_production_workflow_full_path.py \
             tests/unit/test_p86_production_workflow_runtime_contracts.py \
             tests/integration/test_p86_production_workflow_lifecycle.py \
-            tests/integration/test_p86_production_workflow_guards.py
+            tests/integration/test_p86_production_workflow_guards.py \
+            tests/integration/test_p86_production_workflow_end_to_end.py
 
       - name: Apply and verify all migrations
         run: |
@@ -100,6 +102,7 @@ jobs:
             tests/unit/test_p86_production_workflow_runtime_contracts.py \
             tests/integration/test_p86_production_workflow_lifecycle.py \
             tests/integration/test_p86_production_workflow_guards.py \
+            tests/integration/test_p86_production_workflow_end_to_end.py \
             2>&1 | tee p86-tests.log
 
       - name: Upload P86 validation logs
