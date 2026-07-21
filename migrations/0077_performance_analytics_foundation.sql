@@ -22,7 +22,7 @@ CREATE TABLE football_brief.performance_import_batches (
 CREATE INDEX performance_import_batches_brand_idx
 ON football_brief.performance_import_batches(brand_id,platform,observed_to DESC);
 
-CREATE TABLE football_brief.performance_observations (
+CREATE TABLE football_brief.performance_delivery_observations (
     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     import_batch_id uuid NOT NULL
         REFERENCES football_brief.performance_import_batches(id) ON DELETE RESTRICT,
@@ -64,11 +64,11 @@ CREATE TABLE football_brief.performance_observations (
     UNIQUE (delivery_request_id,observed_at,window_seconds)
 );
 
-CREATE INDEX performance_observations_content_idx
-ON football_brief.performance_observations(brand_id,portfolio_content_id,observed_at DESC);
+CREATE INDEX performance_delivery_observations_content_idx
+ON football_brief.performance_delivery_observations(brand_id,portfolio_content_id,observed_at DESC);
 
-CREATE INDEX performance_observations_delivery_idx
-ON football_brief.performance_observations(delivery_request_id,observed_at DESC);
+CREATE INDEX performance_delivery_observations_delivery_idx
+ON football_brief.performance_delivery_observations(delivery_request_id,observed_at DESC);
 
 CREATE TABLE football_brief.performance_experiments (
     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -155,7 +155,7 @@ CREATE TABLE football_brief.performance_recommendations (
     UNIQUE (brand_id,recommendation_key,created_at)
 );
 
-CREATE OR REPLACE VIEW football_brief.performance_observation_economics AS
+CREATE OR REPLACE VIEW football_brief.performance_delivery_observation_economics AS
 SELECT po.*,
        CASE WHEN po.normalized_views>0
             THEN round((po.production_cost_usd/po.normalized_views)*1000,6)
@@ -165,9 +165,9 @@ SELECT po.*,
             ELSE NULL END AS revenue_per_thousand_views_usd,
        po.production_cost_usd AS cost_per_item_usd,
        round(po.revenue_usd-po.production_cost_usd,6) AS contribution_after_production_cost_usd
-FROM football_brief.performance_observations po;
+FROM football_brief.performance_delivery_observations po;
 
-COMMENT ON TABLE football_brief.performance_observations IS
+COMMENT ON TABLE football_brief.performance_delivery_observations IS
     'Append-only normalized platform observations tied to exact successful delivery and release lineage.';
 COMMENT ON TABLE football_brief.performance_experiment_results IS
     'Append-only controlled-variant evaluations that explicitly distinguish insufficient data, no winner, and meaningful results.';

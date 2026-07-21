@@ -13,8 +13,8 @@ CREATE TRIGGER performance_import_batches_immutable
 BEFORE UPDATE OR DELETE ON football_brief.performance_import_batches
 FOR EACH ROW EXECUTE FUNCTION football_brief.reject_performance_append_only_mutation();
 
-CREATE TRIGGER performance_observations_immutable
-BEFORE UPDATE OR DELETE ON football_brief.performance_observations
+CREATE TRIGGER performance_delivery_observations_immutable
+BEFORE UPDATE OR DELETE ON football_brief.performance_delivery_observations
 FOR EACH ROW EXECUTE FUNCTION football_brief.reject_performance_append_only_mutation();
 
 CREATE TRIGGER performance_experiment_results_immutable
@@ -122,8 +122,8 @@ BEGIN
 END;
 $$;
 
-CREATE TRIGGER performance_observations_valid
-BEFORE INSERT ON football_brief.performance_observations
+CREATE TRIGGER performance_delivery_observations_valid
+BEFORE INSERT ON football_brief.performance_delivery_observations
 FOR EACH ROW EXECUTE FUNCTION football_brief.validate_performance_observation();
 
 CREATE OR REPLACE FUNCTION football_brief.validate_performance_experiment()
@@ -259,7 +259,7 @@ BEGIN
            count(*) FILTER (WHERE po.id IS NOT NULL AND pev.id IS NULL)
       INTO evidence_match,wrong_experiment
       FROM unnest(NEW.evaluated_observation_ids) evidence_id
-      LEFT JOIN football_brief.performance_observations po ON po.id=evidence_id
+      LEFT JOIN football_brief.performance_delivery_observations po ON po.id=evidence_id
       LEFT JOIN football_brief.performance_experiment_variants pev
         ON pev.experiment_id=NEW.experiment_id
        AND pev.delivery_request_id=po.delivery_request_id;
@@ -302,7 +302,7 @@ BEGIN
            count(*) FILTER (WHERE po.id IS NOT NULL AND po.brand_id IS DISTINCT FROM NEW.brand_id)
       INTO evidence_match,wrong_brand
       FROM unnest(NEW.cited_observation_ids) evidence_id
-      LEFT JOIN football_brief.performance_observations po ON po.id=evidence_id;
+      LEFT JOIN football_brief.performance_delivery_observations po ON po.id=evidence_id;
     SELECT count(*) INTO result_wrong_brand
       FROM football_brief.performance_experiment_results per
       JOIN football_brief.performance_experiments pe ON pe.id=per.experiment_id
