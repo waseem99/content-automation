@@ -15,7 +15,11 @@ from src.application.shared_storage.models import StorageBackendRequest
 from src.application.shared_storage.providers import LocalSharedStorageProvider
 from src.application.shared_storage.runtime import SharedProviderRegistry
 from src.application.shared_storage.service import SharedArtifactService
-from tests.integration.p90_audio_support import p89_database, p89_seeded, p90_ready
+from tests.integration.p90_audio_support import (
+    p89_database,
+    p89_seeded as p89_seeded_fixture,
+    p90_ready as p90_ready_fixture,
+)
 from tests.integration.p95_shared_storage_support import register_asset, write_asset
 from tests.integration.test_p90_audio_lifecycle import initialize_and_select_takes
 
@@ -24,7 +28,9 @@ pytestmark = pytest.mark.integration
 
 
 @pytest.fixture()
-def p96_ready(p89_database, p90_ready, tmp_path) -> dict[str, object]:
+def p96_ready(p89_database, tmp_path) -> dict[str, object]:
+    seeded = p89_seeded_fixture.__wrapped__(p89_database)
+    p90_ready = p90_ready_fixture.__wrapped__(p89_database, seeded)
     source_root = tmp_path / "p96-canonical"
     shared_root = tmp_path / "p96-shared"
 
