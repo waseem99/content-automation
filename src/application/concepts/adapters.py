@@ -188,8 +188,7 @@ class LocalHttpConceptAdapter:
             method="POST",
         )
         try:
-            # nosec B310 -- endpoint is parsed and restricted to loopback HTTP in __init__.
-            with request.urlopen(http_request, timeout=self.timeout_seconds) as response:
+            with request.urlopen(http_request, timeout=self.timeout_seconds) as response:  # nosec B310 -- parsed loopback HTTP origin only.
                 raw = json.loads(response.read().decode("utf-8"))
         except (error.URLError, TimeoutError, json.JSONDecodeError) as exc:
             raise ConceptAdapterError(f"local model request failed: {type(exc).__name__}") from exc
