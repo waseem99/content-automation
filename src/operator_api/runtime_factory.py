@@ -16,7 +16,7 @@ from src.operator_api.generation_jobs_runtime import install_generation_job_rout
 from src.operator_api.observability import observability_contract
 from src.operator_api.app import create_app
 from src.operator_api.production_workflow_runtime import install_production_workflow_routes
-from src.operator_api.releases_runtime import install_release_routes
+from src.operator_api.releases_validated_runtime import install_release_routes
 from src.operator_api.renderers_validated_runtime import install_renderer_routes
 from src.operator_api.review_workspace_runtime import install_review_workspace_routes
 from src.operator_api.routing_runtime import install_routing_routes
