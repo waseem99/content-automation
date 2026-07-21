@@ -197,12 +197,9 @@ class ExperimentCreateRequest(BaseModel):
     @model_validator(mode="after")
     def unique_variants(self) -> "ExperimentCreateRequest":
         keys = [item.variant_key for item in self.variants]
-        releases = [item.final_release_id for item in self.variants]
         deliveries = [item.delivery_request_id for item in self.variants]
         if len(keys) != len(set(keys)):
             raise ValueError("variant_key values must be unique")
-        if len(releases) != len(set(releases)):
-            raise ValueError("each final release may appear only once")
         if len(deliveries) != len(set(deliveries)):
             raise ValueError("each delivery request may appear only once")
         return self
