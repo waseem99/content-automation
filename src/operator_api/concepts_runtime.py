@@ -13,8 +13,8 @@ from src.application.concepts.models import (
     SlateApplyRequest,
     SlateBuildRequest,
 )
-from src.application.concepts.safe_service import SafeConceptGenerationService
 from src.application.concepts.service import ConceptServiceError
+from src.application.concepts.validated_service import ValidatedConceptGenerationService
 from src.infrastructure.database.connection import Database
 from src.operator_api.access import (
     AccessPermission,
@@ -35,7 +35,7 @@ def install_concept_routes(
     if getattr(app.state, "concept_routes_installed", False):
         return
     app.state.concept_routes_installed = True
-    service = SafeConceptGenerationService(database) if database is not None else None
+    service = ValidatedConceptGenerationService(database) if database is not None else None
     access = OperatorAccessService(database) if database is not None else None
 
     def load_identity(operator_id: str, key_name: str) -> OperatorIdentity | None:
@@ -43,7 +43,7 @@ def install_concept_routes(
 
     authenticate = build_operator_auth(auth_settings, load_identity)
 
-    def require_service() -> SafeConceptGenerationService:
+    def require_service() -> ValidatedConceptGenerationService:
         if service is None:
             raise HTTPException(status_code=503, detail="database_not_configured")
         return service
