@@ -22,6 +22,7 @@ class OperationsSettings(BaseSettings):
     image_digest: str = Field(default="sha256:" + "0" * 64, pattern=r"^sha256:[0-9a-f]{64}$")
     configuration_digest: str = Field(default="0" * 64, pattern=r"^[0-9a-f]{64}$")
     migration_head: str = Field(default="unmigrated", min_length=8, max_length=200)
+    migrations_dir: Path = Path("migrations")
     structured_logs: bool = True
     max_request_body_bytes: int = Field(default=8 * 1024 * 1024, ge=1024, le=1024 * 1024 * 1024)
     requests_per_minute: int = Field(default=120, ge=1, le=100_000)
@@ -72,6 +73,7 @@ class OperationsSettings(BaseSettings):
             "image_digest": self.image_digest,
             "configuration_digest": self.configuration_digest,
             "migration_head": self.migration_head,
+            "migrations_dir": str(self.migrations_dir),
             "structured_logs": self.structured_logs,
             "max_request_body_bytes": self.max_request_body_bytes,
             "requests_per_minute": self.requests_per_minute,
