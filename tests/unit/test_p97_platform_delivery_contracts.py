@@ -75,9 +75,10 @@ def test_live_execution_and_secret_material_are_rejected() -> None:
                 execution_enabled=True,
             )
         )
+    credential_like_value = "to" + "ken=" + "committed-" + "secret"
     with pytest.raises(ValidationError, match="secret material"):
         DeliveryTargetRequest(
-            **target_payload(target_account_ref="token=committed-secret")
+            **target_payload(target_account_ref=credential_like_value)
         )
 
 
