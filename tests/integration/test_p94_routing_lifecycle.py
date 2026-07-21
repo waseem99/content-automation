@@ -301,7 +301,7 @@ def test_success_reconciles_actual_cost_and_records_overage(p89_database, p94_re
 
 def test_concurrent_reservations_serialize_against_monthly_hard_limit(p89_database, p94_ready) -> None:
     service = RoutingSpendService(p89_database)
-    policy = activate_policy(service, p94_ready, soft="1", hard="3", content="10")
+    policy = activate_policy(service, p94_ready, soft="1", hard="3", content="3")
     approved = create_submit_approve(
         service,
         p94_ready,
