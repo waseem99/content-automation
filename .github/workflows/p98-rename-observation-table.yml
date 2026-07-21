@@ -1,0 +1,41 @@
+name: P98 Rename Observation Table
+
+on:
+  push:
+    branches: [p98-performance-analytics]
+
+permissions:
+  contents: write
+
+jobs:
+  rename-observation-table:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: p98-performance-analytics
+          fetch-depth: 0
+      - name: Rename normalized observation table without touching legacy analytics
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          paths = [
+              Path('migrations/0077_performance_analytics_foundation.sql'),
+              Path('migrations/0078_performance_analytics_integrity.sql'),
+          ]
+          for path in paths:
+              source = path.read_text(encoding='utf-8')
+              source = source.replace('performance_observations', 'performance_delivery_observations')
+              source = source.replace('performance_observation_economics', 'performance_delivery_observation_economics')
+              path.write_text(source, encoding='utf-8')
+          PY
+          rm .github/workflows/p98-rename-observation-table.yml
+      - name: Commit transformed migrations and remove helper
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add migrations/0077_performance_analytics_foundation.sql migrations/0078_performance_analytics_integrity.sql .github/workflows/p98-rename-observation-table.yml
+          git commit -m "P98 preserve legacy observations and rename normalized analytics"
+          git push origin HEAD:p98-performance-analytics
