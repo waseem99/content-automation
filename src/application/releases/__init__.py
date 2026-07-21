@@ -15,11 +15,12 @@ from src.application.releases.models import (
     RenderProfileRequest,
     TechnicalInspection,
 )
+from src.application.releases.route_bound_service import RouteBoundFinalReleaseService
 from src.application.releases.service import FinalReleaseError
 from src.application.releases.validated_service import ValidatedFinalReleaseService
 
 
-FinalReleaseService = AudioBoundFinalReleaseService
+FinalReleaseService = RouteBoundFinalReleaseService
 
 
 __all__ = [
@@ -39,6 +40,7 @@ __all__ = [
     "ReleaseInputRole",
     "ReleaseStatus",
     "RenderProfileRequest",
+    "RouteBoundFinalReleaseService",
     "TechnicalInspection",
     "ValidatedFinalReleaseService",
 ]
