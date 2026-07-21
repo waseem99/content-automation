@@ -11,7 +11,7 @@ from src.operator_api.access import OperatorIdentity, OperatorRole
 from src.operator_api.auth import OperatorAuthSettings
 from src.operator_api.runtime_config import OperatorRuntimeSettings
 from src.operator_api.runtime_factory import create_configured_app
-from tests.integration.p95_shared_storage_support import p93_database, p93_seeded, p95_ready
+from tests.integration.p96_release_support import p89_database, p96_ready
 from tests.integration.test_p96_final_release_lifecycle import release_profile
 
 
@@ -88,10 +88,10 @@ def create_api_artifact(ready, *, key: str, kind: str, asset_key: str):
 
 
 def test_release_api_separates_admin_producer_reviewer_and_brand_access(
-    p93_database,
-    p95_ready,
+    p89_database,
+    p96_ready,
 ) -> None:
-    client = release_client(p93_database, p95_ready)
+    client = release_client(p89_database, p96_ready)
     admin = {"X-Operator-Key": "admin-key"}
     producer = {"X-Operator-Key": "producer-key"}
     reviewer = {"X-Operator-Key": "reviewer-key"}
@@ -106,22 +106,22 @@ def test_release_api_separates_admin_producer_reviewer_and_brand_access(
     assert activated.status_code == 200, activated.text
 
     narration = create_api_artifact(
-        p95_ready,
+        p96_ready,
         key="api-release/narration",
         kind="voiceover",
-        asset_key="proxy",
+        asset_key="final_mix",
     )
     visual = create_api_artifact(
-        p95_ready,
+        p96_ready,
         key="api-release/visual",
         kind="premium_clip",
-        asset_key="original",
+        asset_key="visual",
     )
     branding = create_api_artifact(
-        p95_ready,
+        p96_ready,
         key="api-release/branding",
         kind="thumbnail",
-        asset_key="thumbnail",
+        asset_key="branding",
     )
     for artifact, role in (
         (narration, "narration"),
@@ -132,7 +132,7 @@ def test_release_api_separates_admin_producer_reviewer_and_brand_access(
             "/release-input-decisions",
             headers=outsider,
             json={
-                "artifact_version_id": artifact["id"],
+                "artifact_version_id": str(artifact["id"]),
                 "role": role,
                 "decision": "approved",
                 "rationale": "Wrong brand reviewer must not approve this artifact.",
@@ -143,7 +143,7 @@ def test_release_api_separates_admin_producer_reviewer_and_brand_access(
             "/release-input-decisions",
             headers=reviewer,
             json={
-                "artifact_version_id": artifact["id"],
+                "artifact_version_id": str(artifact["id"]),
                 "role": role,
                 "decision": "approved",
                 "rationale": f"The exact {role} input is approved for API release testing.",
@@ -152,9 +152,10 @@ def test_release_api_separates_admin_producer_reviewer_and_brand_access(
         assert approved.status_code == 200, approved.text
 
     release_payload = {
-        "portfolio_content_id": str(p95_ready["content_one"]),
-        "content_version": int(p95_ready["content_one_version"]),
+        "portfolio_content_id": str(p96_ready["content_one"]),
+        "content_version": int(p96_ready["content_one_version"]),
         "render_profile_id": profile_id,
+        "audio_mix_version_id": str(p96_ready["audio_mix_version_id"]),
         "inputs": [
             {"artifact_version_id": str(narration["id"]), "role": "narration", "sequence_number": 0},
             {"artifact_version_id": str(visual["id"]), "role": "visual_shot", "sequence_number": 1},
@@ -176,8 +177,11 @@ def test_release_api_separates_admin_producer_reviewer_and_brand_access(
     enqueued = client.post(
         f"/releases/{release_id}/assembly",
         headers=producer,
-        json={"preferred_worker_id": p95_ready["producer"], "max_attempts": 2},
+        json={"preferred_worker_id": p96_ready["producer"], "max_attempts": 2},
     )
     assert enqueued.status_code == 200, enqueued.text
     assert enqueued.json()["release"]["status"] == "assembly_queued"
     assert enqueued.json()["job"]["job_type"] == "assembly"
+    assert enqueued.json()["job"]["input_payload"]["audio_mix_version_id"] == str(
+        p96_ready["audio_mix_version_id"]
+    )
