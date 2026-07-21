@@ -123,7 +123,8 @@ def test_migration_pins_profile_and_preset_history_and_reuses_voice_registry() -
     assert "/portfolio/approved-voices" in runtime
     assert "activateBrandProfile" in client
     assert "pinNarrationSelection" in client
-    assert 'import(new URL("brand-profile-admin.js", scriptBase).href)' in client
+    assert '["brand-profile-admin", "brand-profile-admin.css", "brand-profile-admin.js"]' in client
+    assert "void import(new URL(js, scriptBase).href)" in client
     assert "brand-profile-settings" in admin
     assert "document.readyState" in admin
     assert ".brand-profile-dialog" in styles
