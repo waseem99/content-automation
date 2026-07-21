@@ -47,6 +47,9 @@ class OperatorAuthSettings:
 
 def build_operator_auth(settings: OperatorAuthSettings, identity_loader: IdentityLoader | None = None):
     def authenticate(request: Request) -> OperatorIdentity:
+        injected = getattr(request.state, "operator_identity", None)
+        if isinstance(injected, OperatorIdentity):
+            return injected
         if settings.disabled:
             return OperatorIdentity(
                 operator_id=settings.disabled_operator_id,
