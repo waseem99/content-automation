@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 from pathlib import Path
 
 import typer
@@ -11,6 +12,7 @@ from src.operations.settings import OperationsSettings
 
 
 app = typer.Typer(help="Production operations backup and restore utilities.")
+_SHA256_PATTERN = re.compile(r"^[0-9a-f]{64}$")
 
 
 def _manager(environment: str, database_url: str | None) -> BackupRestoreManager:
@@ -18,6 +20,20 @@ def _manager(environment: str, database_url: str | None) -> BackupRestoreManager
     if not resolved_url:
         raise typer.BadParameter("DATABASE_URL or --database-url is required")
     return BackupRestoreManager(database_url=resolved_url, environment=environment)
+
+
+def _checksum(value: str) -> str:
+    normalized = value.strip().lower()
+    if not _SHA256_PATTERN.fullmatch(normalized):
+        raise typer.BadParameter("expected SHA-256 must contain exactly 64 lowercase hex characters")
+    return normalized
+
+
+def _migration_head(value: str) -> str:
+    normalized = value.strip()
+    if not 8 <= len(normalized) <= 200:
+        raise typer.BadParameter("expected migration head must be 8 to 200 characters")
+    return normalized
 
 
 def _emit(payload: dict) -> None:
@@ -64,8 +80,8 @@ def artifact_backup(
 @app.command("database-restore-drill")
 def database_restore_drill(
     backup: Path = typer.Option(..., exists=True, dir_okay=False, readable=True),
-    expected_sha256: str = typer.Option(..., min=64, max=64),
-    expected_migration_head: str = typer.Option(..., min=8, max=200),
+    expected_sha256: str = typer.Option(...),
+    expected_migration_head: str = typer.Option(...),
     environment: str = typer.Option("staging"),
     allow_destructive_drill: bool = typer.Option(False, "--allow-destructive-drill"),
     database_url: str | None = typer.Option(None, envvar="DATABASE_URL", hidden=True),
@@ -74,10 +90,10 @@ def database_restore_drill(
     try:
         restored = manager.restore_database_backup(
             backup,
-            expected_sha256=expected_sha256,
+            expected_sha256=_checksum(expected_sha256),
             allow_destructive_drill=allow_destructive_drill,
         )
-        verification = manager.verify_database_schema(expected_migration_head)
+        verification = manager.verify_database_schema(_migration_head(expected_migration_head))
     except BackupRestoreError as exc:
         raise typer.Exit(code=1) from exc
     _emit(
@@ -94,7 +110,7 @@ def database_restore_drill(
 def artifact_restore_drill(
     backup: Path = typer.Option(..., exists=True, dir_okay=False, readable=True),
     destination: Path = typer.Option(..., file_okay=False),
-    expected_sha256: str = typer.Option(..., min=64, max=64),
+    expected_sha256: str = typer.Option(...),
     environment: str = typer.Option("staging"),
     allow_destructive_drill: bool = typer.Option(False, "--allow-destructive-drill"),
     database_url: str | None = typer.Option(None, envvar="DATABASE_URL", hidden=True),
@@ -103,7 +119,7 @@ def artifact_restore_drill(
         result = _manager(environment, database_url).restore_artifact_backup(
             backup,
             destination,
-            expected_sha256=expected_sha256,
+            expected_sha256=_checksum(expected_sha256),
             allow_destructive_drill=allow_destructive_drill,
         )
     except BackupRestoreError as exc:
