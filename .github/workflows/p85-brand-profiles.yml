@@ -12,6 +12,7 @@ on:
       - "src/operator_api/runtime_factory.py"
       - "web/static-creator-ui/assets/portfolio-api.js"
       - "web/static-creator-ui/assets/brand-profile-admin.js"
+      - "web/static-creator-ui/assets/brand-profile-admin.css"
       - "tests/unit/test_p85_brand_profiles.py"
       - "tests/integration/test_p85_brand_profile_lifecycle.py"
   workflow_dispatch:
