@@ -1,0 +1,29 @@
+name: P96 One-Time Tree Cleanup
+
+on:
+  push:
+    branches: [p96-final-release-packages]
+
+permissions:
+  contents: write
+
+jobs:
+  restore-unrelated-file:
+    if: github.event.head_commit.message != 'P96 remove unrelated line-ending normalization'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: p96-final-release-packages
+          fetch-depth: 0
+      - name: Restore exact base blob and remove this workflow
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin test
+          git checkout origin/test -- concepts/four_hyped_players_wc2026.yaml
+          git rm .github/workflows/p96-cleanup-tree.yml
+          git commit -m "P96 remove unrelated line-ending normalization"
+          git push origin HEAD:p96-final-release-packages
