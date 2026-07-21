@@ -61,6 +61,8 @@ def install_operator_access(
             require_access(identity, permission)
             for brand_id in brand_ids:
                 require_access(identity, permission, brand_id=brand_id)
+            if permission == AccessPermission.REVIEW_CONTENT:
+                await _prevent_self_approval(request, database, identity)
         except HTTPException as exc:
             return JSONResponse(status_code=exc.status_code, content={"detail": exc.detail})
         response = await call_next(request)
@@ -173,6 +175,58 @@ async def _request_brand_ids(request: Request, database: Database | None) -> set
     return set()
 
 
+async def _prevent_self_approval(
+    request: Request,
+    database: Database | None,
+    identity: OperatorIdentity,
+) -> None:
+    if database is None or not request.url.path.startswith("/portfolio/content/"):
+        return
+    body = await _json_body(request)
+    if body.get("decision") != "approved":
+        return
+    match = re.match(r"^/portfolio/content/([0-9a-fA-F-]+)/approvals$", request.url.path)
+    if not match:
+        return
+    with database.connection() as conn:
+        item = conn.execute(
+            "SELECT stage FROM football_brief.portfolio_content WHERE id=%s::uuid",
+            (match.group(1),),
+        ).fetchone()
+        if not item:
+            return
+        stage = str(item["stage"])
+        protected_kinds = {
+            "preview": {"voiceover", "preview"},
+            "package": {"preview", "final_video", "package"},
+        }.get(stage, set())
+        if not protected_kinds:
+            return
+        artifacts = conn.execute(
+            """SELECT kind, created_by FROM football_brief.portfolio_content_artifacts
+               WHERE portfolio_content_id=%s::uuid AND review_status <> 'superseded'""",
+            (match.group(1),),
+        ).fetchall()
+    if self_review_conflict(
+        stage=stage,
+        reviewer=identity.operator_id,
+        artifacts=[dict(row) for row in artifacts],
+    ):
+        raise HTTPException(status_code=409, detail="self_review_not_allowed")
+
+
+def self_review_conflict(*, stage: str, reviewer: str, artifacts: list[dict[str, Any]]) -> bool:
+    protected_kinds = {
+        "preview": {"voiceover", "preview"},
+        "package": {"preview", "final_video", "package"},
+    }.get(stage, set())
+    return any(
+        str(artifact.get("kind")) in protected_kinds
+        and str(artifact.get("created_by")) == reviewer
+        for artifact in artifacts
+    )
+
+
 async def _json_body(request: Request) -> dict[str, Any]:
     try:
         body = await request.body()
@@ -214,7 +268,8 @@ def _package_brand_ids(database: Database, package_id: str) -> set[str]:
 def _reference_brand_ids(database: Database, source_id: str) -> set[str]:
     with database.connection() as conn:
         rows = conn.execute(
-            "SELECT brand_id FROM football_brief.reference_brand_assignments WHERE reference_source_id=%s::uuid",
+            """SELECT brand_id FROM football_brief.reference_brand_assignments
+               WHERE reference_source_id=%s::uuid AND active=true""",
             (source_id,),
         ).fetchall()
     return {str(row["brand_id"]) for row in rows}
