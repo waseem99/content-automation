@@ -56,19 +56,32 @@ class RendererCatalogueCreate(BaseModel):
     execution_enabled: bool = False
     configuration: dict[str, Any] = Field(default_factory=dict)
 
-    @field_validator("renderer_key", "adapter_key")
+    @field_validator("renderer_key", "adapter_key", mode="before")
     @classmethod
     def normalize_key(cls, value: str) -> str:
         return value.strip().lower()
 
-    @field_validator("display_name")
+    @field_validator("display_name", mode="before")
     @classmethod
     def normalize_display_name(cls, value: str) -> str:
         return " ".join(value.split())
 
-    @field_validator("output_formats", "capabilities")
+    @field_validator("output_formats", mode="before")
     @classmethod
-    def normalize_string_set(cls, values: tuple[str, ...]) -> tuple[str, ...]:
+    def normalize_output_formats(cls, values: tuple[str, ...]) -> tuple[str, ...]:
+        return tuple(
+            sorted(
+                {
+                    str(value).strip().lower().lstrip(".")
+                    for value in values
+                    if str(value).strip().lstrip(".")
+                }
+            )
+        )
+
+    @field_validator("capabilities", mode="before")
+    @classmethod
+    def normalize_capability_set(cls, values: tuple[str, ...]) -> tuple[str, ...]:
         return tuple(sorted({str(value).strip().lower() for value in values if str(value).strip()}))
 
     @model_validator(mode="after")
@@ -103,12 +116,12 @@ class RendererSupportRequest(BaseModel):
     height: int = Field(ge=64, le=16384)
     required_capabilities: tuple[str, ...] = Field(default=(), max_length=100)
 
-    @field_validator("output_format")
+    @field_validator("output_format", mode="before")
     @classmethod
     def normalize_format(cls, value: str) -> str:
         return value.strip().lower().lstrip(".")
 
-    @field_validator("required_capabilities")
+    @field_validator("required_capabilities", mode="before")
     @classmethod
     def normalize_capabilities(cls, values: tuple[str, ...]) -> tuple[str, ...]:
         return tuple(sorted({str(value).strip().lower() for value in values if str(value).strip()}))
@@ -117,7 +130,7 @@ class RendererSupportRequest(BaseModel):
 class RendererResolveRequest(RendererSupportRequest):
     renderer_key: str | None = Field(default=None, min_length=3, max_length=120)
 
-    @field_validator("renderer_key")
+    @field_validator("renderer_key", mode="before")
     @classmethod
     def normalize_optional_key(cls, value: str | None) -> str | None:
         return value.strip().lower() if value is not None else None
@@ -129,7 +142,7 @@ class RendererSubmissionRequest(BaseModel):
     request: RendererSupportRequest
     input_payload: dict[str, Any]
 
-    @field_validator("idempotency_key")
+    @field_validator("idempotency_key", mode="before")
     @classmethod
     def normalize_idempotency_key(cls, value: str) -> str:
         normalized = value.strip()
