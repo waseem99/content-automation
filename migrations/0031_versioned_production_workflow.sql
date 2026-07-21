@@ -14,6 +14,7 @@ CREATE TYPE football_brief.production_workflow_stage AS ENUM (
     'storyboard_review',
     'local_preview_generation',
     'local_preview_review',
+    'spend_preparation',
     'spend_approval',
     'premium_production',
     'final_assembly',
