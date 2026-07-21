@@ -70,6 +70,19 @@ def install_operator_access(
             return response
         return await _filter_response_for_brand_scope(response, request.url.path, identity)
 
+    def current_access(operator: OperatorIdentity = Depends(authenticate)) -> dict[str, Any]:
+        return {
+            "ok": True,
+            "operator": {
+                "operator_id": operator.operator_id,
+                "display_name": operator.display_name,
+                "active": operator.active,
+                "roles": sorted(role.value for role in operator.roles),
+                "brand_ids": sorted(operator.brand_ids),
+                "portfolio_wide": operator.is_admin,
+            },
+        }
+
     def list_operators(operator: OperatorIdentity = Depends(authenticate)) -> dict[str, Any]:
         require_access(operator, AccessPermission.MANAGE_USERS)
         if service is None:
@@ -101,18 +114,9 @@ def install_operator_access(
             raise HTTPException(status_code=422, detail=str(exc)) from exc
         return {"ok": True, "operator": operator.operator_id, "user": user}
 
-    app.add_api_route(
-        "/admin/operators",
-        list_operators,
-        methods=["GET"],
-        name="list_operators",
-    )
-    app.add_api_route(
-        "/admin/operators",
-        upsert_operator,
-        methods=["POST"],
-        name="upsert_operator",
-    )
+    app.add_api_route("/access/me", current_access, methods=["GET"], name="current_operator_access")
+    app.add_api_route("/admin/operators", list_operators, methods=["GET"], name="list_operators")
+    app.add_api_route("/admin/operators", upsert_operator, methods=["POST"], name="upsert_operator")
 
 
 def _required_permission(method: str, path: str) -> AccessPermission | None:
@@ -137,10 +141,11 @@ def _required_permission(method: str, path: str) -> AccessPermission | None:
 
 def _brand_is_required(method: str, path: str) -> bool:
     if method == "GET":
-        return bool(re.match(r"^/portfolio/content/[0-9a-fA-F-]+", path))
+        return bool(
+            re.match(r"^/portfolio/content/[0-9a-fA-F-]+", path)
+            or re.match(r"^/portfolio/references/[0-9a-fA-F-]+", path)
+        )
     if path in {"/portfolio/brands", "/portfolio/references"}:
-        return False
-    if path.startswith("/portfolio/reference-jobs/"):
         return False
     return True
 
@@ -158,12 +163,18 @@ async def _request_brand_ids(request: Request, database: Database | None) -> set
     package_match = re.match(r"^/portfolio/packages/([0-9a-fA-F-]+)", path)
     if package_match:
         return _package_brand_ids(database, package_match.group(1))
+    reference_job_match = re.match(r"^/portfolio/reference-jobs/([0-9a-fA-F-]+)", path)
+    if reference_job_match:
+        return _reference_job_brand_ids(database, reference_job_match.group(1))
     reference_match = re.match(r"^/portfolio/references/([0-9a-fA-F-]+)", path)
     if reference_match:
         body = await _json_body(request)
         if body.get("brand_id"):
             return {str(body["brand_id"])}
-        return _reference_brand_ids(database, reference_match.group(1))
+        brand_ids = _reference_brand_ids(database, reference_match.group(1))
+        if body.get("portfolio_content_id"):
+            brand_ids |= _content_brand_ids(database, str(body["portfolio_content_id"]))
+        return brand_ids
     if request.method != "GET":
         body = await _json_body(request)
         if body.get("brand_id"):
@@ -271,6 +282,18 @@ def _reference_brand_ids(database: Database, source_id: str) -> set[str]:
             """SELECT brand_id FROM football_brief.reference_brand_assignments
                WHERE reference_source_id=%s::uuid AND active=true""",
             (source_id,),
+        ).fetchall()
+    return {str(row["brand_id"]) for row in rows}
+
+
+def _reference_job_brand_ids(database: Database, job_id: str) -> set[str]:
+    with database.connection() as conn:
+        rows = conn.execute(
+            """SELECT rba.brand_id FROM football_brief.reference_ingestion_jobs rij
+               JOIN football_brief.reference_brand_assignments rba
+                 ON rba.reference_source_id=rij.reference_source_id AND rba.active=true
+               WHERE rij.id=%s::uuid""",
+            (job_id,),
         ).fetchall()
     return {str(row["brand_id"]) for row in rows}
 
