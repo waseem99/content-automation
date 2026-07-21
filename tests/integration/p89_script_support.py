@@ -7,10 +7,13 @@ from uuid import uuid4
 import pytest
 from pydantic import SecretStr
 
+from src.application.scripts.runtime_patch import install_validated_script_service
 from src.infrastructure.database.connection import Database
 from src.infrastructure.database.migrations import apply_migrations
 from src.infrastructure.database.settings import DatabaseSettings
 
+
+install_validated_script_service()
 
 ROOT = Path(__file__).resolve().parents[2]
 TEST_DSN = os.getenv("FOOTBALL_BRIEF_TEST_DATABASE_URL", "")
