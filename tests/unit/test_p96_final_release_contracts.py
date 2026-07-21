@@ -3,6 +3,7 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
+from src.application.releases import FinalReleaseService, ValidatedFinalReleaseService
 from src.application.releases.models import (
     FinalReleaseCreate,
     PlaybackReviewRequest,
@@ -15,6 +16,7 @@ ROOT = Path(__file__).resolve().parents[2]
 FOUNDATION = ROOT / "migrations/0068_final_release_foundation.sql"
 INTEGRITY = ROOT / "migrations/0069_final_release_integrity.sql"
 AVAILABILITY = ROOT / "migrations/0070_final_release_availability_and_qa_retry.sql"
+ROUTING = ROOT / "migrations/0071_final_release_routing_integrity.sql"
 SERVICE = ROOT / "src/application/releases/service.py"
 VALIDATED = ROOT / "src/application/releases/validated_service.py"
 API = ROOT / "src/operator_api/releases_runtime.py"
@@ -38,6 +40,10 @@ def profile_payload(**overrides):
     }
     payload.update(overrides)
     return payload
+
+
+def test_public_release_service_uses_validated_p87_p94_contract() -> None:
+    assert FinalReleaseService is ValidatedFinalReleaseService
 
 
 def test_profile_rejects_invalid_safe_area_and_duration_contracts() -> None:
@@ -105,6 +111,15 @@ def test_qa_retry_and_shared_object_availability_are_fail_closed() -> None:
     assert "Final approval requires current approved inputs and available shared media" in source
     assert "if outcome == \"pass\"" in validated
     assert "reused" in validated
+
+
+def test_mixed_routing_requires_complete_mapping_and_settled_managed_jobs() -> None:
+    source = ROUTING.read_text(encoding="utf-8")
+    validated = VALIDATED.read_text(encoding="utf-8")
+    assert "Every approved routing item requires one exact visual release input" in source
+    assert "Managed routing items must have reconciled successful generation jobs" in source
+    assert "final_release_routing_inputs_incomplete" in validated
+    assert "final_release_managed_routes_not_settled" in validated
 
 
 def test_release_api_keeps_configuration_admin_and_review_decisions_scoped() -> None:
