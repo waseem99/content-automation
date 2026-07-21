@@ -1,6 +1,7 @@
 (() => {
   const BASE_KEY = "content-automation.api-base";
   const TOKEN_KEY = "content-automation.operator-key";
+  const scriptBase = document.currentScript?.src || window.location.href;
 
   function normalizedBase(value) {
     return String(value || "").trim().replace(/\/+$/, "");
@@ -131,5 +132,12 @@
     })
   };
 
-  void import("./brand-profile-admin.js");
+  if (!document.querySelector('link[data-brand-profile-admin="true"]')) {
+    const style = document.createElement("link");
+    style.rel = "stylesheet";
+    style.href = new URL("brand-profile-admin.css", scriptBase).href;
+    style.dataset.brandProfileAdmin = "true";
+    document.head.appendChild(style);
+  }
+  void import(new URL("brand-profile-admin.js", scriptBase).href);
 })();
