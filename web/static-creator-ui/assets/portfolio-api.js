@@ -148,6 +148,10 @@
       body: JSON.stringify({ gate, decision, rationale })
     }),
     scriptForContent: (contentId) => request(`/scripts/content/${contentId}`),
+    decideScript: (documentId, payload) => request(`/scripts/${documentId}/decisions`, {
+      method: "POST",
+      body: JSON.stringify(payload)
+    }),
     audioForContent: (contentId) => request(`/audio/content/${contentId}`),
     initializeAudio: (contentId, modelId = "kokoro-v1.0") => request(`/audio/content/${contentId}`, {
       method: "POST",
@@ -156,6 +160,10 @@
     regenerateAudioParagraph: (productionId, paragraphId, modelId) => request(`/audio/${productionId}/paragraphs/${paragraphId}/regenerate`, {
       method: "POST",
       body: JSON.stringify({ model_id: modelId })
+    }),
+    decideAudio: (productionId, payload) => request(`/audio/${productionId}/decisions`, {
+      method: "POST",
+      body: JSON.stringify(payload)
     }),
     visualsForContent: (contentId) => request(`/visuals/content/${contentId}`),
     initializeVisuals: (contentId, payload) => request(`/visuals/content/${contentId}`, {
