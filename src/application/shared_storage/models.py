@@ -67,6 +67,24 @@ class StorageBackendRequest(BaseModel):
         return self
 
 
+class StorageQuotaRequest(BaseModel):
+    backend_id: UUID
+    hard_limit_bytes: int = Field(gt=0)
+    warning_threshold_bytes: int = Field(gt=0)
+
+    @model_validator(mode="after")
+    def validate_threshold(self) -> "StorageQuotaRequest":
+        if self.warning_threshold_bytes > self.hard_limit_bytes:
+            raise ValueError("warning_threshold_bytes cannot exceed hard_limit_bytes")
+        return self
+
+
+class ExistingAssetMigrationRequest(BaseModel):
+    backend_id: UUID
+    asset_ids: tuple[UUID, ...] = Field(min_length=1, max_length=500)
+    continue_on_error: bool = False
+
+
 class SharedObjectResult(BaseModel):
     object_key: str
     storage_uri: str
@@ -105,6 +123,12 @@ class SignedAccessRequest(BaseModel):
     expires_in_seconds: int = Field(default=900, ge=30, le=86_400)
     issued_to_operator_id: str | None = Field(default=None, max_length=200)
     access_purpose: str = Field(default="review", pattern=r"^(review|download|restore_verification)$")
+
+    @model_validator(mode="after")
+    def require_review_proxy(self) -> "SignedAccessRequest":
+        if self.access_purpose == "review" and self.role != ArtifactObjectRole.REVIEW_PROXY:
+            raise ValueError("review access requires the completed review proxy")
+        return self
 
 
 class SignedAccessResult(BaseModel):
