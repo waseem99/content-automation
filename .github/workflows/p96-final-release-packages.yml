@@ -5,6 +5,10 @@ on:
     branches: [test]
   workflow_dispatch:
 
+concurrency:
+  group: p96-final-release-packages-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
