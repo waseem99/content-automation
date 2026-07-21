@@ -74,6 +74,8 @@ The test database must be disposable because the fixtures drop and recreate the 
   research-to-idea traceability. Source media and automatic publication are prohibited.
 - `0028_portfolio_review_workspace.sql` adds versioned local review-media metadata for the
   Brand 1 script, narration, storyboard, preview, and paid-shot approval workspace.
+- `0029_operator_access_control.sql` adds named operators, least-privilege roles, and explicit
+  brand assignments. Authentication secrets remain external and inactive operators fail closed.
 
 ## Rollback
 
@@ -93,3 +95,5 @@ The application must additionally verify:
 - Publish manifests are immutable after approval.
 - Workflow and stage cost totals reconcile with cost entries.
 - Only approved voices, fonts, music, and visual assets enter publish manifests.
+- Authentication keys resolve to active named operators before protected work starts.
+- Non-admin operators can act only on brands explicitly assigned to them.
