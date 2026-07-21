@@ -634,6 +634,7 @@ class PerformanceAnalyticsService:
                       pdt.platform,pdt.target_key,
                       fr.portfolio_content_id,fr.content_version,fr.routing_plan_id,
                       fr.total_cost_usd,fr.release_manifest,fr.manifest_hash,
+                      agj.provider AS assembly_provider,agj.model_id AS assembly_model_id,
                       pc.title,pc.concept,pc.concept_fingerprint,pc.semantic_key,pc.format,
                       pc.metadata AS content_metadata,pc.brand_profile_id,pc.narration_preset_id,
                       mp.brand_id,mp.strategy AS plan_strategy,
@@ -654,6 +655,7 @@ class PerformanceAnalyticsService:
                JOIN football_brief.final_releases fr ON fr.id=pdr.final_release_id
                JOIN football_brief.portfolio_content pc ON pc.id=fr.portfolio_content_id
                JOIN football_brief.monthly_content_plans mp ON mp.id=pc.plan_id
+               LEFT JOIN football_brief.generation_jobs agj ON agj.id=fr.assembly_job_id
                JOIN football_brief.audio_mix_versions amv ON amv.id=fr.audio_mix_version_id
                JOIN football_brief.audio_productions ap ON ap.id=amv.audio_production_id
                JOIN football_brief.script_versions sv ON sv.id=ap.script_version_id
@@ -692,11 +694,15 @@ class PerformanceAnalyticsService:
     def _creative_snapshot(conn: Any, context: Mapping[str, Any]) -> dict[str, Any]:
         content_metadata = dict(context["content_metadata"] or {})
         plan_strategy = dict(context["plan_strategy"] or {})
-        pillar = (
-            content_metadata.get("content_pillar")
-            or content_metadata.get("pillar")
-            or plan_strategy.get("content_pillar")
-            or plan_strategy.get("pillar")
+        pillar_sources = (
+            (content_metadata.get("content_pillar"), "content_metadata.content_pillar"),
+            (content_metadata.get("pillar"), "content_metadata.pillar"),
+            (plan_strategy.get("content_pillar"), "plan_strategy.content_pillar"),
+            (plan_strategy.get("pillar"), "plan_strategy.pillar"),
+        )
+        pillar, pillar_source = next(
+            ((value, source) for value, source in pillar_sources if value),
+            ("unclassified", "not_declared"),
         )
         renderers: list[dict[str, Any]] = []
         if context["routing_plan_id"]:
@@ -724,15 +730,23 @@ class PerformanceAnalyticsService:
                 }
                 for row in rows
             ]
-        if not renderers:
-            renderers = [
+        if not renderers and context["visual_provider"]:
+            renderers.append(
                 {
                     "sequence": 1,
                     "route": "local_visual_project",
                     "provider": context["visual_provider"],
                     "model_id": context["visual_model_id"],
                 }
-            ]
+            )
+        renderers.append(
+            {
+                "sequence": len(renderers) + 1,
+                "route": "final_assembly",
+                "provider": context["assembly_provider"],
+                "model_id": context["assembly_model_id"],
+            }
+        )
         return {
             "concept": {
                 "text": context["concept"],
@@ -740,6 +754,7 @@ class PerformanceAnalyticsService:
                 "semantic_key": context["semantic_key"],
             },
             "pillar": pillar,
+            "pillar_source": pillar_source,
             "hook": context["hook_text"],
             "duration_seconds": str(
                 context["audio_duration_seconds"] or context["target_duration_seconds"]
