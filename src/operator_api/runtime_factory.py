@@ -12,6 +12,7 @@ from src.operator_api.audio_runtime import install_audio_routes
 from src.operator_api.auth import OperatorAuthSettings
 from src.operator_api.brand_profiles_runtime import install_brand_profile_routes
 from src.operator_api.concepts_runtime import install_concept_routes
+from src.operator_api.delivery_runtime import install_delivery_routes
 from src.operator_api.generation_jobs_runtime import install_generation_job_routes
 from src.operator_api.observability import observability_contract
 from src.operator_api.app import create_app
@@ -50,6 +51,7 @@ def create_configured_app(
     install_routing_routes(app, database=database, auth_settings=auth)
     install_routing_workspace_routes(app, database=database, auth_settings=auth)
     install_release_routes(app, database=database, auth_settings=auth)
+    install_delivery_routes(app, database=database, auth_settings=auth)
     app.state.runtime_settings = settings
 
     @app.get("/runtime/config")
