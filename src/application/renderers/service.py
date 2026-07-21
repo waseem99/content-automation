@@ -234,6 +234,7 @@ class RendererCatalogueService:
                 return {"ok": True, "renderer": dict(row), "already_active": True}
             if row["status"] != "draft":
                 raise RendererCatalogueError("only_draft_renderers_can_be_activated")
+            conn.execute("SELECT pg_advisory_xact_lock(hashtext(%s))", (row["renderer_key"],))
             previous = conn.execute(
                 """SELECT id FROM football_brief.production_renderer_catalogue
                    WHERE renderer_key=%s AND status='active' AND id<>%s FOR UPDATE""",
@@ -467,6 +468,7 @@ class RendererCatalogueService:
             adapter = self.adapters.get(str(entry["adapter_key"]))
             if adapter is None:
                 raise RendererCatalogueError("renderer_adapter_not_configured")
+            conn.execute("SELECT pg_advisory_xact_lock(hashtext(%s))", (request.idempotency_key,))
             existing = conn.execute(
                 """SELECT * FROM football_brief.production_renderer_attempts
                    WHERE idempotency_key=%s FOR UPDATE""",
