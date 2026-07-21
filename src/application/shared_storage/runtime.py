@@ -8,9 +8,11 @@ from urllib.parse import unquote, urlsplit
 from src.application.assets.storage import StorageUriResolver
 from src.application.shared_storage.providers import (
     LocalSharedStorageProvider,
-    S3CompatibleSharedStorageProvider,
     SharedStorageError,
     SharedStorageProvider,
+)
+from src.application.shared_storage.verified_providers import (
+    VerifiedS3CompatibleSharedStorageProvider,
 )
 
 
@@ -98,7 +100,7 @@ class SharedProviderRegistry:
         elif driver == "s3_compatible":
             client_factory = self.s3_client_factory or self._default_s3_client_factory
             client = client_factory(backend)
-            provider = S3CompatibleSharedStorageProvider(
+            provider = VerifiedS3CompatibleSharedStorageProvider(
                 backend_key=backend_key,
                 bucket=str(backend["bucket_name"]),
                 client=client,
