@@ -4,6 +4,7 @@ from src.application.shared_storage.models import (
     ArtifactVersionRequest,
     BackupPrepareRequest,
     DeletionRequest,
+    ExistingAssetMigrationRequest,
     LegalHoldRequest,
     RestoreVerifyRequest,
     SharedStorageDriver,
@@ -11,6 +12,7 @@ from src.application.shared_storage.models import (
     SignedAccessRequest,
     SignedAccessResult,
     StorageBackendRequest,
+    StorageQuotaRequest,
 )
 from src.application.shared_storage.providers import (
     LocalSharedStorageProvider,
@@ -32,6 +34,7 @@ __all__ = [
     "BackupPrepareRequest",
     "CanonicalAssetSourceResolver",
     "DeletionRequest",
+    "ExistingAssetMigrationRequest",
     "LegalHoldRequest",
     "LocalSharedStorageProvider",
     "RestoreVerifyRequest",
@@ -47,4 +50,5 @@ __all__ = [
     "SignedAccessRequest",
     "SignedAccessResult",
     "StorageBackendRequest",
+    "StorageQuotaRequest",
 ]
