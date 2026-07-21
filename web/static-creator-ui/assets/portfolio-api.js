@@ -53,6 +53,7 @@
       sessionStorage.removeItem(TOKEN_KEY);
     },
     health: () => request("/health"),
+    access: () => request("/access/me"),
     brands: () => request("/portfolio/brands"),
     readiness: (monthStart) => request(`/portfolio/readiness?month_start=${encodeURIComponent(monthStart)}`),
     queue: (filters = {}) => {
