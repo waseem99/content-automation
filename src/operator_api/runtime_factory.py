@@ -6,7 +6,6 @@ from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 
 from src.application.scripts.runtime_patch import install_validated_script_service
-from src.application.shared_storage.runtime import SharedProviderRegistry
 from src.infrastructure.database.connection import Database
 from src.operator_api.access_runtime import install_operator_access
 from src.operator_api.audio_runtime import install_audio_routes
@@ -31,12 +30,10 @@ def create_configured_app(
     database: Database | None = None,
     auth_settings: OperatorAuthSettings | None = None,
     runtime_settings: OperatorRuntimeSettings | None = None,
-    shared_storage_providers: SharedProviderRegistry | None = None,
 ) -> FastAPI:
     settings = runtime_settings or get_operator_runtime_settings()
     auth = auth_settings or OperatorAuthSettings()
     app = create_app(database=database, auth_settings=auth)
-    app.state.shared_storage_providers = shared_storage_providers
     install_operator_access(app, database=database, auth_settings=auth)
     install_brand_profile_routes(app, database=database, auth_settings=auth)
     install_production_workflow_routes(app, database=database, auth_settings=auth)
