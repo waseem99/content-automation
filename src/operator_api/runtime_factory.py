@@ -16,6 +16,7 @@ from src.operator_api.generation_jobs_runtime import install_generation_job_rout
 from src.operator_api.observability import observability_contract
 from src.operator_api.app import create_app
 from src.operator_api.production_workflow_runtime import install_production_workflow_routes
+from src.operator_api.renderers_runtime import install_renderer_routes
 from src.operator_api.review_workspace_runtime import install_review_workspace_routes
 from src.operator_api.runtime_config import OperatorRuntimeSettings, get_operator_runtime_settings
 from src.operator_api.scripts_runtime import install_script_routes
@@ -42,6 +43,7 @@ def create_configured_app(
     install_audio_routes(app, database=database, auth_settings=auth)
     install_visual_routes(app, database=database, auth_settings=auth)
     install_review_workspace_routes(app, database=database, auth_settings=auth)
+    install_renderer_routes(app, database=database, auth_settings=auth)
     app.state.runtime_settings = settings
 
     @app.get("/runtime/config")
@@ -77,7 +79,6 @@ def _runtime_readiness_payload(*, database: Database | None, settings: OperatorR
             },
             "runtime": settings.public_snapshot(),
         }
-
     health = database.health_check(settings.database_migrations_dir)
     schema_ready = health.schema_present and health.migrations_table_present
     migrations_ready = not health.expected_migrations or set(health.expected_migrations).issubset(health.applied_migrations)
