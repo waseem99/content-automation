@@ -91,9 +91,11 @@ def test_runtime_permission_map_separates_review_production_and_delivery() -> No
     assert _required_permission("GET", "/health") is None
 
 
-def test_brand_scope_is_required_for_mutating_existing_content() -> None:
+def test_brand_scope_is_required_for_mutating_and_detailed_resources() -> None:
     assert _brand_is_required("POST", "/portfolio/content/11111111-1111-1111-1111-111111111111/workspace")
     assert _brand_is_required("POST", "/portfolio/plans")
+    assert _brand_is_required("POST", "/portfolio/reference-jobs/11111111-1111-1111-1111-111111111111/progress")
+    assert _brand_is_required("GET", "/portfolio/references/11111111-1111-1111-1111-111111111111")
     assert not _brand_is_required("POST", "/portfolio/brands")
     assert not _brand_is_required("POST", "/portfolio/references")
 
@@ -122,6 +124,7 @@ def test_access_migration_and_runtime_wiring_are_present() -> None:
     runtime = (ROOT / "src" / "operator_api" / "runtime_factory.py").read_text(encoding="utf-8")
     entrypoint = (ROOT / "src" / "operator_api" / "entrypoint.py").read_text(encoding="utf-8")
     access_runtime = (ROOT / "src" / "operator_api" / "access_runtime.py").read_text(encoding="utf-8")
+    creator_api = (ROOT / "web" / "static-creator-ui" / "assets" / "portfolio-api.js").read_text(encoding="utf-8")
 
     assert migration.startswith("-- Football Brief")
     assert "CREATE TABLE football_brief.operator_users" in migration
@@ -133,3 +136,5 @@ def test_access_migration_and_runtime_wiring_are_present() -> None:
     assert "install_operator_access" in runtime
     assert "resolve_identities_from_database=True" in entrypoint
     assert "self_review_not_allowed" in access_runtime
+    assert '"/access/me"' in access_runtime
+    assert 'access: () => request("/access/me")' in creator_api
