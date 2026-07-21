@@ -65,6 +65,29 @@ def install_brand_profile_routes(
             raise HTTPException(status_code=503, detail="database_not_configured")
         return service
 
+    def require_database() -> Database:
+        if database is None:
+            raise HTTPException(status_code=503, detail="database_not_configured")
+        return database
+
+    @app.get("/portfolio/approved-voices")
+    def list_approved_voices(
+        operator: OperatorIdentity = Depends(authenticate),
+    ) -> dict[str, Any]:
+        require_access(operator, AccessPermission.MANAGE_BRANDS)
+        with require_database().connection() as conn:
+            rows = conn.execute(
+                """SELECT id, provider, provider_voice_id, display_name, voice_type,
+                          allowed_languages, allowed_platforms, prohibited_uses, expires_at,
+                          (consent_evidence_asset_id IS NOT NULL) AS has_consent_evidence
+                   FROM football_brief.approved_voices
+                   WHERE approval_status='approved'
+                     AND (expires_at IS NULL OR expires_at > now())
+                   ORDER BY provider, display_name"""
+            ).fetchall()
+        voices = [dict(row) for row in rows]
+        return {"ok": True, "operator": operator.operator_id, "count": len(voices), "voices": voices}
+
     @app.get("/portfolio/brands/{brand_id}/profiles")
     def list_brand_profiles(
         brand_id: UUID,
