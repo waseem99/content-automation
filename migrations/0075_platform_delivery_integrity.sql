@@ -117,7 +117,7 @@ BEGIN
            AND sso.status='available';
         SELECT count(*) INTO publisher_count
           FROM football_brief.operator_users ou
-          JOIN football_brief.operator_user_roles our ON our.operator_id=ou.operator_id
+          JOIN football_brief.operator_user_roles our ON our.operator_user_id=ou.id
          WHERE ou.operator_id=NEW.created_by
            AND ou.active=true
            AND our.role='publisher';
@@ -159,6 +159,25 @@ BEGIN
         RAISE EXCEPTION 'Platform delivery request identity is immutable';
     END IF;
 
+    IF OLD.status IN ('queued','retry_wait') AND NEW.status=OLD.status THEN
+        IF NEW.attempt_count IS DISTINCT FROM OLD.attempt_count
+           OR NEW.current_worker_id IS DISTINCT FROM OLD.current_worker_id
+           OR NEW.lease_token IS DISTINCT FROM OLD.lease_token
+           OR NEW.lease_expires_at IS DISTINCT FROM OLD.lease_expires_at
+           OR NEW.platform_reference IS DISTINCT FROM OLD.platform_reference
+           OR NEW.started_at IS DISTINCT FROM OLD.started_at
+           OR NEW.completed_at IS DISTINCT FROM OLD.completed_at
+           OR NEW.cancelled_at IS DISTINCT FROM OLD.cancelled_at
+           OR NEW.cancelled_by IS DISTINCT FROM OLD.cancelled_by
+           OR NEW.last_error_code IS DISTINCT FROM OLD.last_error_code
+           OR NEW.last_error_message IS DISTINCT FROM OLD.last_error_message
+           OR NEW.last_error_retryable IS DISTINCT FROM OLD.last_error_retryable
+           OR NEW.next_attempt_at<OLD.next_attempt_at THEN
+            RAISE EXCEPTION 'Queued delivery deferral may only move next_attempt_at forward';
+        END IF;
+        RETURN NEW;
+    END IF;
+
     IF OLD.status IN ('queued','retry_wait') AND NEW.status='processing' THEN
         SELECT * INTO release_row
           FROM football_brief.final_releases
@@ -168,7 +187,7 @@ BEGIN
          WHERE id=OLD.target_id;
         SELECT count(*) INTO publisher_count
           FROM football_brief.operator_users ou
-          JOIN football_brief.operator_user_roles our ON our.operator_id=ou.operator_id
+          JOIN football_brief.operator_user_roles our ON our.operator_user_id=ou.id
          WHERE ou.operator_id=NEW.current_worker_id
            AND ou.active=true
            AND our.role='publisher';
