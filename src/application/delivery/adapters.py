@@ -3,6 +3,10 @@ from __future__ import annotations
 from typing import Protocol
 
 from src.application.delivery.models import DeliveryAdapterRequest, DeliveryAdapterResult
+from src.application.delivery.reconciliation import (
+    DeliveryPlatformStatus,
+    DeliveryReconciliationResult,
+)
 
 
 class DeliveryAdapterError(RuntimeError):
@@ -24,8 +28,72 @@ class PlatformDeliveryAdapter(Protocol):
     ) -> DeliveryAdapterResult:
         ...
 
+    def reconcile(
+        self,
+        request: DeliveryAdapterRequest,
+        *,
+        platform_reference: str,
+        target: dict,
+    ) -> DeliveryReconciliationResult:
+        ...
 
-class SimulatedPrimaryDeliveryAdapter:
+
+class _SimulatedReconciliationMixin:
+    adapter_key: str
+
+    def reconcile(
+        self,
+        request: DeliveryAdapterRequest,
+        *,
+        platform_reference: str,
+        target: dict,
+    ) -> DeliveryReconciliationResult:
+        if not platform_reference.startswith("simulated"):
+            raise DeliveryAdapterError(
+                "simulated_reconciliation_reference_invalid",
+                "The platform reference does not belong to a simulated delivery adapter.",
+                retryable=False,
+            )
+        behavior = str((target.get("configuration") or {}).get("reconcile_behavior", "success"))
+        if behavior == "unavailable":
+            raise DeliveryAdapterError(
+                "simulated_reconciliation_unavailable",
+                "The simulated platform status endpoint is unavailable.",
+                retryable=True,
+            )
+        if behavior == "fail_terminal":
+            raise DeliveryAdapterError(
+                "simulated_reconciliation_terminal_failure",
+                "The simulated platform status endpoint returned a terminal failure.",
+                retryable=False,
+            )
+        configured_status = (target.get("configuration") or {}).get("reconcile_status")
+        default_status = (
+            DeliveryPlatformStatus.DRAFT
+            if request.metadata.get("delivery_mode") == "draft"
+            else DeliveryPlatformStatus.PUBLISHED
+        )
+        try:
+            platform_status = DeliveryPlatformStatus(configured_status or default_status)
+        except ValueError as exc:
+            raise DeliveryAdapterError(
+                "simulated_reconciliation_status_invalid",
+                "The simulated reconciliation status is not supported.",
+                retryable=False,
+            ) from exc
+        return DeliveryReconciliationResult(
+            platform_status=platform_status,
+            response_payload={
+                "adapter": self.adapter_key,
+                "simulated": True,
+                "platform_reference": platform_reference,
+                "platform_status": platform_status.value,
+                "release_manifest_hash": request.release_manifest_hash,
+            },
+        )
+
+
+class SimulatedPrimaryDeliveryAdapter(_SimulatedReconciliationMixin):
     adapter_key = "simulated-primary"
 
     def deliver(
@@ -70,13 +138,14 @@ class SimulatedPrimaryDeliveryAdapter:
                 "adapter": self.adapter_key,
                 "simulated": True,
                 "privacy": request.privacy.value,
+                "delivery_mode": request.metadata.get("delivery_mode"),
                 "release_manifest_hash": request.release_manifest_hash,
                 "platform_reference": reference,
             },
         )
 
 
-class SimulatedFallbackDeliveryAdapter:
+class SimulatedFallbackDeliveryAdapter(_SimulatedReconciliationMixin):
     adapter_key = "simulated-fallback"
 
     def deliver(
@@ -110,6 +179,7 @@ class SimulatedFallbackDeliveryAdapter:
                 "fallback": True,
                 "simulated": True,
                 "privacy": request.privacy.value,
+                "delivery_mode": request.metadata.get("delivery_mode"),
                 "release_manifest_hash": request.release_manifest_hash,
                 "platform_reference": reference,
             },
