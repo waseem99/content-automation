@@ -12,6 +12,7 @@ on:
       - "src/operator_api/production_workflow_runtime.py"
       - "src/operator_api/runtime_factory.py"
       - "tests/unit/test_p86_production_workflow.py"
+      - "tests/unit/test_p86_production_workflow_full_path.py"
       - "tests/unit/test_p86_production_workflow_runtime_contracts.py"
       - "tests/integration/test_p86_production_workflow_lifecycle.py"
       - "tests/integration/test_p86_production_workflow_guards.py"
@@ -76,6 +77,7 @@ jobs:
             src/operator_api/production_workflow_runtime.py \
             src/operator_api/runtime_factory.py \
             tests/unit/test_p86_production_workflow.py \
+            tests/unit/test_p86_production_workflow_full_path.py \
             tests/unit/test_p86_production_workflow_runtime_contracts.py \
             tests/integration/test_p86_production_workflow_lifecycle.py \
             tests/integration/test_p86_production_workflow_guards.py
@@ -94,6 +96,7 @@ jobs:
           set -o pipefail
           pytest -vv \
             tests/unit/test_p86_production_workflow.py \
+            tests/unit/test_p86_production_workflow_full_path.py \
             tests/unit/test_p86_production_workflow_runtime_contracts.py \
             tests/integration/test_p86_production_workflow_lifecycle.py \
             tests/integration/test_p86_production_workflow_guards.py \
