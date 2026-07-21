@@ -114,7 +114,7 @@ STAGE_REQUIREMENTS: dict[ProductionStage, tuple[str, ...]] = {
     ProductionStage.FINAL_REVIEW: ("final_video_artifact_id",),
     ProductionStage.PACKAGE_PREPARATION: ("package_manifest",),
     ProductionStage.PACKAGE_APPROVAL: ("package_manifest",),
-    ProductionStage.SCHEDULING: ("delivery_request",),
+    ProductionStage.SCHEDULING: ("delivery_request", "delivery_result"),
     ProductionStage.PUBLICATION: ("delivery_result",),
 }
 
