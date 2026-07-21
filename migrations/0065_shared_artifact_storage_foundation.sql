@@ -58,12 +58,13 @@ CREATE TABLE football_brief.shared_storage_objects (
     created_at timestamptz NOT NULL DEFAULT now(),
     updated_at timestamptz NOT NULL DEFAULT now(),
     deleted_at timestamptz,
-    UNIQUE (backend_id,object_key,COALESCE(object_version,'')),
     UNIQUE (asset_id,backend_id,object_key),
     CHECK (status<>'available' OR verified_at IS NOT NULL),
     CHECK (status<>'deleted' OR deleted_at IS NOT NULL)
 );
 
+CREATE UNIQUE INDEX shared_storage_object_version_idx
+ON football_brief.shared_storage_objects(backend_id,object_key,COALESCE(object_version,''));
 CREATE INDEX shared_storage_objects_asset_idx
 ON football_brief.shared_storage_objects(asset_id,status);
 CREATE INDEX shared_storage_objects_backend_idx
