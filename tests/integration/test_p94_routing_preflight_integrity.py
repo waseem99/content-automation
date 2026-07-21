@@ -10,7 +10,7 @@ from src.application.routing.models import RoutingPlanRequest
 from src.application.routing.service import RoutingSpendService
 from tests.integration.p89_script_support import p89_database, p89_seeded
 from tests.integration.p91_visual_support import p91_ready
-from tests.integration.p94_routing_lifecycle import activate_policy, mixed_inputs
+from tests.integration.test_p94_routing_lifecycle import activate_policy, mixed_inputs
 from tests.integration.p94_routing_support import p94_ready
 
 
