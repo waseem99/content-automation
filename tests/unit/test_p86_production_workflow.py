@@ -142,6 +142,7 @@ def test_stage_requirements_and_compatibility_projection_are_explicit() -> None:
 
 def test_migration_and_service_preserve_exact_review_evidence() -> None:
     migration = (ROOT / "migrations" / "0031_versioned_production_workflow.sql").read_text(encoding="utf-8")
+    domain = (ROOT / "src" / "domain" / "production_workflow.py").read_text(encoding="utf-8")
     service = (ROOT / "src" / "application" / "production_workflow_service.py").read_text(encoding="utf-8")
 
     assert "CREATE TABLE football_brief.production_workflows" in migration
@@ -154,8 +155,8 @@ def test_migration_and_service_preserve_exact_review_evidence() -> None:
     assert "Production workflow history and decisions are immutable" in migration
     assert "Submitted workflow versions are immutable" in migration
     assert "Workflow updates must increment lock_version by exactly one" in migration
-    assert "create_successor" in (ROOT / "src" / "domain" / "production_workflow.py").read_text(encoding="utf-8")
-    assert "independent_review_required" in service
+    assert "create_successor" in domain
+    assert "independent_review_required" in domain
     assert "workflow_conflict" in service
     assert "increment_content_version=True" in service
     assert migration.rstrip().endswith("COMMIT;")
