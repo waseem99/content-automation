@@ -1,11 +1,14 @@
--- Backend quota enforcement and fail-closed review-proxy access.
+-- Versioned backend quota enforcement and fail-closed review-proxy access.
 
 BEGIN;
 
 CREATE TABLE football_brief.shared_storage_quota_policies (
     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-    backend_id uuid NOT NULL UNIQUE
+    backend_id uuid NOT NULL
         REFERENCES football_brief.shared_storage_backends(id) ON DELETE RESTRICT,
+    version integer NOT NULL CHECK (version>=1),
+    parent_policy_id uuid
+        REFERENCES football_brief.shared_storage_quota_policies(id) ON DELETE RESTRICT,
     hard_limit_bytes bigint NOT NULL CHECK (hard_limit_bytes > 0),
     warning_threshold_bytes bigint NOT NULL CHECK (
         warning_threshold_bytes > 0 AND warning_threshold_bytes <= hard_limit_bytes
@@ -16,24 +19,46 @@ CREATE TABLE football_brief.shared_storage_quota_policies (
     retired_by text REFERENCES football_brief.operator_users(operator_id) ON DELETE RESTRICT,
     created_at timestamptz NOT NULL DEFAULT now(),
     retired_at timestamptz,
+    UNIQUE (backend_id,version),
+    CHECK (version=1 OR parent_policy_id IS NOT NULL),
+    CHECK (version<>1 OR parent_policy_id IS NULL),
     CHECK (status <> 'retired' OR (retired_by IS NOT NULL AND retired_at IS NOT NULL))
 );
 
+CREATE UNIQUE INDEX shared_storage_one_active_quota_idx
+ON football_brief.shared_storage_quota_policies(backend_id)
+WHERE status='active';
+
 COMMENT ON TABLE football_brief.shared_storage_quota_policies IS
-    'Serialized backend byte ceilings. Non-deleted shared objects count toward quota.';
+    'Versioned serialized backend byte ceilings. Non-deleted shared objects count toward quota.';
 
 CREATE OR REPLACE FUNCTION football_brief.validate_shared_storage_quota_policy()
 RETURNS trigger
 LANGUAGE plpgsql
 AS $$
+DECLARE
+    parent_row football_brief.shared_storage_quota_policies%ROWTYPE;
 BEGIN
     IF TG_OP='DELETE' THEN
         RAISE EXCEPTION 'Shared storage quota policies cannot be deleted';
     END IF;
     IF TG_OP='INSERT' THEN
+        IF NEW.version>1 THEN
+            SELECT * INTO parent_row
+              FROM football_brief.shared_storage_quota_policies
+             WHERE id=NEW.parent_policy_id;
+            IF parent_row.id IS NULL
+               OR parent_row.backend_id IS DISTINCT FROM NEW.backend_id
+               OR parent_row.version+1<>NEW.version
+               OR parent_row.status<>'retired' THEN
+                RAISE EXCEPTION 'Quota revisions require the immediately retired parent policy';
+            END IF;
+        END IF;
         RETURN NEW;
     END IF;
     IF NEW.backend_id IS DISTINCT FROM OLD.backend_id
+       OR NEW.version IS DISTINCT FROM OLD.version
+       OR NEW.parent_policy_id IS DISTINCT FROM OLD.parent_policy_id
        OR NEW.hard_limit_bytes IS DISTINCT FROM OLD.hard_limit_bytes
        OR NEW.warning_threshold_bytes IS DISTINCT FROM OLD.warning_threshold_bytes
        OR NEW.created_by IS DISTINCT FROM OLD.created_by
