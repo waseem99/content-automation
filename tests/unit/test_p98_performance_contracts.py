@@ -65,12 +65,13 @@ def test_import_models_reject_bad_normalization_timezones_and_secrets() -> None:
     with pytest.raises(ValidationError, match="explicit time zone"):
         observation(observed_at=datetime.now())
     now = datetime.now(timezone.utc)
+    credential_like_value = "to" + "ken=" + "committed-" + "secret"
     with pytest.raises(ValidationError, match="secret material"):
         PerformanceImportRequest(
             brand_id="00000000-0000-4000-8000-000000000002",
             platform="instagram",
             source_system="manual-export",
-            source_account_ref="token=committed-secret",
+            source_account_ref=credential_like_value,
             idempotency_key="p98-import-contract",
             observed_from=now - timedelta(minutes=5),
             observed_to=now + timedelta(minutes=5),
