@@ -60,9 +60,9 @@ class ValidatedOperationsService(OperationsService):
                 (limits.failure_window_seconds,),
             ).fetchone()
             storage = conn.execute(
-                """SELECT COALESCE(sum(size_bytes) FILTER (WHERE status='available'),0) AS used_bytes,
-                          count(*) FILTER (WHERE status='missing') AS missing_objects,
-                          count(*) FILTER (WHERE status='quarantined') AS quarantined_objects
+                """SELECT COALESCE(sum(sso.size_bytes) FILTER (WHERE sso.status='available'),0) AS used_bytes,
+                          count(*) FILTER (WHERE sso.status='missing') AS missing_objects,
+                          count(*) FILTER (WHERE sso.status='quarantined') AS quarantined_objects
                    FROM football_brief.shared_storage_objects sso
                    JOIN football_brief.shared_storage_backends ssb ON ssb.id=sso.backend_id
                    WHERE ssb.environment=%s""",
