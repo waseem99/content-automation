@@ -76,6 +76,9 @@ The test database must be disposable because the fixtures drop and recreate the 
   Brand 1 script, narration, storyboard, preview, and paid-shot approval workspace.
 - `0029_operator_access_control.sql` adds named operators, least-privilege roles, and explicit
   brand assignments. Authentication secrets remain external and inactive operators fail closed.
+- `0030_brand_profiles_and_narration_presets.sql` adds immutable-on-activation brand operating
+  profiles, one to three fixed narration presets linked to the canonical approved-voice registry,
+  and profile/preset pins on content items so later brand changes do not rewrite production history.
 
 ## Rollback
 
@@ -97,3 +100,7 @@ The application must additionally verify:
 - Only approved voices, fonts, music, and visual assets enter publish manifests.
 - Authentication keys resolve to active named operators before protected work starts.
 - Non-admin operators can act only on brands explicitly assigned to them.
+- A brand profile can be edited only while it is a draft; activation creates an immutable production version.
+- Narration presets can be changed only while their profile is a draft and exactly one active preset is the default.
+- Voice approval, expiry, language coverage, and platform coverage are checked again when a preset is selected or pinned for production; later rights revocation blocks new work without deleting historical records.
+- Once a content item is pinned to a brand-profile and narration-preset version, a different version cannot silently replace it.
