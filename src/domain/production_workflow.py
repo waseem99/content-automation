@@ -148,6 +148,7 @@ class TransitionPlan:
     workflow_status: WorkflowStatus
     version_status: WorkflowVersionStatus
     create_revision: bool = False
+    create_successor: bool = False
     complete_workflow: bool = False
 
 
@@ -232,7 +233,8 @@ def review_plan(
             from_stage=current,
             to_stage=target,
             workflow_status=WorkflowStatus.COMPLETED if completed else WorkflowStatus.ACTIVE,
-            version_status=WorkflowVersionStatus.APPROVED if completed else WorkflowVersionStatus.WORKING,
+            version_status=WorkflowVersionStatus.APPROVED,
+            create_successor=not completed,
             complete_workflow=completed,
         )
     if selected == ReviewDecision.CHANGES_REQUESTED:
