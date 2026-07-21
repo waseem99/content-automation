@@ -9,6 +9,7 @@ from src.infrastructure.database.connection import Database
 from src.operator_api.access_runtime import install_operator_access
 from src.operator_api.auth import OperatorAuthSettings
 from src.operator_api.brand_profiles_runtime import install_brand_profile_routes
+from src.operator_api.generation_jobs_runtime import install_generation_job_routes
 from src.operator_api.observability import observability_contract
 from src.operator_api.app import create_app
 from src.operator_api.production_workflow_runtime import install_production_workflow_routes
@@ -26,6 +27,7 @@ def create_configured_app(
     install_operator_access(app, database=database, auth_settings=auth)
     install_brand_profile_routes(app, database=database, auth_settings=auth)
     install_production_workflow_routes(app, database=database, auth_settings=auth)
+    install_generation_job_routes(app, database=database, auth_settings=auth)
     app.state.runtime_settings = settings
 
     @app.get("/runtime/config")
