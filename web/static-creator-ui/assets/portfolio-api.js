@@ -151,6 +151,31 @@
     regenerateAudioParagraph: (productionId, paragraphId, modelId) => request(`/audio/${productionId}/paragraphs/${paragraphId}/regenerate`, {
       method: "POST",
       body: JSON.stringify({ model_id: modelId })
+    }),
+    visualsForContent: (contentId) => request(`/visuals/content/${contentId}`),
+    initializeVisuals: (contentId, payload) => request(`/visuals/content/${contentId}`, {
+      method: "POST",
+      body: JSON.stringify(payload)
+    }),
+    decideVisualCandidate: (projectId, shotId, versionId, candidateId, payload) => request(`/visuals/${projectId}/shots/${shotId}/versions/${versionId}/candidates/${candidateId}/decisions`, {
+      method: "POST",
+      body: JSON.stringify(payload)
+    }),
+    decideVisualShot: (projectId, shotId, versionId, payload) => request(`/visuals/${projectId}/shots/${shotId}/versions/${versionId}/decisions`, {
+      method: "POST",
+      body: JSON.stringify(payload)
+    }),
+    reviseVisualShot: (projectId, shotId, payload) => request(`/visuals/${projectId}/shots/${shotId}/revise`, {
+      method: "POST",
+      body: JSON.stringify(payload)
+    }),
+    submitVisualProject: (projectId, payload) => request(`/visuals/${projectId}/submit`, {
+      method: "POST",
+      body: JSON.stringify(payload)
+    }),
+    decideVisualProject: (projectId, payload) => request(`/visuals/${projectId}/decisions`, {
+      method: "POST",
+      body: JSON.stringify(payload)
     })
   };
 
@@ -159,7 +184,8 @@
     ["generation-queue", "generation-queue.css", "generation-queue.js"],
     ["concept-slate", "concept-slate.css", "concept-slate.js"],
     ["script-review", "script-review.css", "script-review.js"],
-    ["audio-review", "audio-review.css", "audio-review.js"]
+    ["audio-review", "audio-review.css", "audio-review.js"],
+    ["visual-candidates", "visual-candidates.css", "visual-candidates.js"]
   ];
   modules.forEach(([key, css, js]) => {
     if (!document.querySelector(`link[data-studio-module="${key}"]`)) {
