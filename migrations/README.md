@@ -79,6 +79,10 @@ The test database must be disposable because the fixtures drop and recreate the 
 - `0030_brand_profiles_and_narration_presets.sql` adds immutable-on-activation brand operating
   profiles, one to three fixed narration presets linked to the canonical approved-voice registry,
   and profile/preset pins on content items so later brand changes do not rewrite production history.
+- `0031_versioned_production_workflow.sql` adds explicit production stages, optimistic locking,
+  exact reviewed-version decisions, child revisions, assignments, due dates, comments, blocked
+  reopening, and append-only evidence. It keeps `portfolio_content.stage` only as a compatibility
+  projection and does not enable automatic approval, paid generation, scheduling, or publication.
 
 ## Rollback
 
@@ -104,3 +108,8 @@ The application must additionally verify:
 - Narration presets can be changed only while their profile is a draft and exactly one active preset is the default.
 - Voice approval, expiry, language coverage, and platform coverage are checked again when a preset is selected or pinned for production; later rights revocation blocks new work without deleting historical records.
 - Once a content item is pinned to a brand-profile and narration-preset version, a different version cannot silently replace it.
+- Every production mutation must use the current workflow lock version; stale clients fail rather than overwrite newer work.
+- A review decision applies only to the exact submitted workflow version and must be made by someone other than its last editor.
+- Approved, changes-requested, and rejected versions cannot return to a working state; a new child version is required.
+- When an active stage assignment exists, only that assignee or an administrator may mutate or decide the stage.
+- Rejected workflows remain blocked until an administrator records a reasoned reopen action.
