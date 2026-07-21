@@ -1,0 +1,105 @@
+name: P99 Apply Security Fixes
+
+on:
+  push:
+    branches: [p99-production-operations]
+
+permissions:
+  contents: write
+
+jobs:
+  apply-security-fixes:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: p99-production-operations
+          fetch-depth: 0
+      - name: Apply strict loopback and deterministic staging patches
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          replacements = {
+              Path('src/application/concepts/adapters.py'): [
+                  (
+                      'from src.application.concepts.models import CandidateDraft, ProductionRoute, RiskLevel\n',
+                      'from src.application.concepts.models import CandidateDraft, ProductionRoute, RiskLevel\n'
+                      'from src.infrastructure.http.local_endpoint import LocalEndpointError, validate_local_http_endpoint\n',
+                  ),
+                  (
+                      '        normalized = endpoint.strip().rstrip("/")\n'
+                      '        if not normalized.lower().startswith(("http://127.0.0.1", "http://localhost", "http://[::1]")):\n'
+                      '            raise ConceptAdapterError("local model endpoint must resolve to localhost")\n'
+                      '        self.endpoint = normalized\n'
+                      '        self.model_id = model_id.strip()\n',
+                      '        try:\n'
+                      '            self.endpoint = validate_local_http_endpoint(endpoint)\n'
+                      '        except LocalEndpointError as exc:\n'
+                      '            raise ConceptAdapterError(str(exc)) from exc\n'
+                      '        if not model_id.strip():\n'
+                      '            raise ConceptAdapterError("local model ID is required")\n'
+                      '        self.model_id = model_id.strip()\n',
+                  ),
+                  (
+                      '            with request.urlopen(http_request, timeout=self.timeout_seconds) as response:\n',
+                      '            # nosec B310 -- endpoint is parsed and restricted to loopback HTTP in __init__.\n'
+                      '            with request.urlopen(http_request, timeout=self.timeout_seconds) as response:\n',
+                  ),
+              ],
+              Path('src/application/scripts/adapters.py'): [
+                  (
+                      'from src.application.scripts.models import (\n',
+                      'from src.infrastructure.http.local_endpoint import LocalEndpointError, validate_local_http_endpoint\n'
+                      'from src.application.scripts.models import (\n',
+                  ),
+                  (
+                      '        normalized = endpoint.strip().rstrip("/")\n'
+                      '        if not normalized.lower().startswith(("http://127.0.0.1", "http://localhost", "http://[::1]")):\n'
+                      '            raise ScriptAdapterError("local script model endpoint must resolve to localhost")\n'
+                      '        if not model_id.strip():\n'
+                      '            raise ScriptAdapterError("local script model ID is required")\n'
+                      '        self.endpoint = normalized\n',
+                      '        try:\n'
+                      '            self.endpoint = validate_local_http_endpoint(endpoint)\n'
+                      '        except LocalEndpointError as exc:\n'
+                      '            raise ScriptAdapterError(str(exc)) from exc\n'
+                      '        if not model_id.strip():\n'
+                      '            raise ScriptAdapterError("local script model ID is required")\n',
+                  ),
+                  (
+                      '            with request.urlopen(http_request, timeout=self.timeout_seconds) as response:\n',
+                      '            # nosec B310 -- endpoint is parsed and restricted to loopback HTTP in __init__.\n'
+                      '            with request.urlopen(http_request, timeout=self.timeout_seconds) as response:\n',
+                  ),
+              ],
+              Path('.github/workflows/p99-production-operations.yml'): [
+                  (
+                      '          docker compose --env-file config/staging.env.example -f compose.staging.yml up -d --build\n'
+                      '          ready=0\n'
+                      '          for _ in $(seq 1 36); do\n',
+                      '          docker compose --env-file config/staging.env.example -f compose.staging.yml build api migrate\n'
+                      '          docker compose --env-file config/staging.env.example -f compose.staging.yml up -d postgres\n'
+                      '          docker compose --env-file config/staging.env.example -f compose.staging.yml up --no-log-prefix migrate\n'
+                      '          docker compose --env-file config/staging.env.example -f compose.staging.yml up -d --no-deps api\n'
+                      '          ready=0\n'
+                      '          for _ in $(seq 1 60); do\n',
+                  ),
+              ],
+          }
+
+          for path, changes in replacements.items():
+              text = path.read_text(encoding='utf-8')
+              for old, new in changes:
+                  if old not in text:
+                      raise SystemExit(f'expected patch context not found in {path}: {old[:80]!r}')
+                  text = text.replace(old, new, 1)
+              path.write_text(text, encoding='utf-8')
+          PY
+          git rm .github/workflows/p99-apply-security-fixes.yml
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add src/application/concepts/adapters.py src/application/scripts/adapters.py .github/workflows/p99-production-operations.yml
+          git commit -m "P99 secure local adapters and stage migrations deterministically"
+          git push origin HEAD:p99-production-operations
