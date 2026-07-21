@@ -55,6 +55,25 @@
     health: () => request("/health"),
     access: () => request("/access/me"),
     brands: () => request("/portfolio/brands"),
+    brandProfiles: (brandId) => request(`/portfolio/brands/${brandId}/profiles`),
+    createBrandProfile: (brandId, payload) => request(`/portfolio/brands/${brandId}/profiles`, {
+      method: "POST",
+      body: JSON.stringify(payload)
+    }),
+    activateBrandProfile: (brandId, profileId) => request(`/portfolio/brands/${brandId}/profiles/${profileId}/activate`, {
+      method: "POST"
+    }),
+    narrationSelection: (brandId, filters = {}) => {
+      const query = new URLSearchParams();
+      if (filters.language) query.set("language", filters.language);
+      if (filters.formatName) query.set("format_name", filters.formatName);
+      if (filters.topicType) query.set("topic_type", filters.topicType);
+      return request(`/portfolio/brands/${brandId}/narration-selection${query.size ? `?${query}` : ""}`);
+    },
+    pinNarrationSelection: (contentId, presetId) => request(`/portfolio/content/${contentId}/narration-selection`, {
+      method: "POST",
+      body: JSON.stringify({ preset_id: presetId })
+    }),
     readiness: (monthStart) => request(`/portfolio/readiness?month_start=${encodeURIComponent(monthStart)}`),
     queue: (filters = {}) => {
       const query = new URLSearchParams();
