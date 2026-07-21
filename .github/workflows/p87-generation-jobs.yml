@@ -44,7 +44,7 @@ jobs:
           python -m pip install "fastapi>=0.111" "httpx>=0.27" "pydantic>=2.7" "pydantic-settings>=2.3" "pytest>=8" "psycopg[binary]>=3.2,<4" "psycopg-pool>=3.2,<4" "typer>=0.12"
       - name: Compile modules and tests
         run: |
-          python -m compileall -q src/application/generation_jobs src/operator_api/generation_jobs_runtime.py src/operator_api/runtime_factory.py tests/unit/test_p87_generation_job_contracts.py tests/integration/test_p87_generation_jobs.py tests/integration/test_p87_generation_job_api.py
+          python -m compileall -q src/application/generation_jobs src/operator_api/generation_jobs_runtime.py src/operator_api/runtime_factory.py tests/unit/test_p87_generation_job_contracts.py tests/integration/test_p87_generation_jobs.py tests/integration/test_p87_generation_job_api.py tests/integration/test_p87_generation_job_idempotency_race.py
       - name: Apply migrations
         run: |
           set -o pipefail
@@ -52,7 +52,7 @@ jobs:
       - name: Run focused tests
         run: |
           set -o pipefail
-          pytest -vv tests/unit/test_p87_generation_job_contracts.py tests/integration/test_p87_generation_jobs.py tests/integration/test_p87_generation_job_api.py 2>&1 | tee p87-tests.log
+          pytest -vv tests/unit/test_p87_generation_job_contracts.py tests/integration/test_p87_generation_jobs.py tests/integration/test_p87_generation_job_api.py tests/integration/test_p87_generation_job_idempotency_race.py 2>&1 | tee p87-tests.log
       - name: Upload logs
         if: always()
         uses: actions/upload-artifact@v4
