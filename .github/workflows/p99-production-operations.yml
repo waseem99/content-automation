@@ -184,8 +184,29 @@ jobs:
           python -m pip install "bandit>=1.7.9" "pip-audit>=2.7.3"
           bandit -q -r src -ll -iii -s B603,B607
           pip-audit -r requirements.txt --progress-spinner off
-      - name: Build local image without publishing
-        run: docker build --pull --tag content-automation:p99-local .
+      - name: Recreate and smoke-test disposable staging
+        run: |
+          set -euo pipefail
+          cleanup() {
+            docker compose --env-file config/staging.env.example -f compose.staging.yml logs --no-color > /tmp/p99-staging.log 2>&1 || true
+            docker compose --env-file config/staging.env.example -f compose.staging.yml down -v --remove-orphans || true
+          }
+          trap cleanup EXIT
+          docker compose --env-file config/staging.env.example -f compose.staging.yml up -d --build
+          ready=0
+          for _ in $(seq 1 36); do
+            if curl --fail --silent --show-error http://127.0.0.1:8000/runtime/ready > /tmp/p99-readiness.json; then
+              ready=1
+              break
+            fi
+            sleep 5
+          done
+          if [ "$ready" -ne 1 ]; then
+            docker compose --env-file config/staging.env.example -f compose.staging.yml ps
+            exit 1
+          fi
+          grep -q '"ok":true' /tmp/p99-readiness.json
+          docker image inspect content-automation:p99-local > /tmp/p99-image-inspect.json
       - name: Scan local container image
         uses: aquasecurity/trivy-action@v0.36.0
         with:
@@ -201,10 +222,15 @@ jobs:
             .github/workflows/p99-production-operations.yml \
             compose.staging.yml \
             docs/operations/P99_RUNBOOKS.md
-      - name: Upload rendered staging configuration
+      - name: Upload staging and security evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: p99-staging-config
+          name: p99-staging-security-evidence
           retention-days: 7
-          path: /tmp/p99-compose-rendered.yml
+          if-no-files-found: ignore
+          path: |
+            /tmp/p99-compose-rendered.yml
+            /tmp/p99-readiness.json
+            /tmp/p99-image-inspect.json
+            /tmp/p99-staging.log
