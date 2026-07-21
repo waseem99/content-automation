@@ -6,8 +6,17 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import sys
 from decimal import Decimal
 from pathlib import Path
+
+# Direct execution (for example, ``python C:\repo\scripts\p68_generate_keyframes.py``)
+# places only the scripts directory on sys.path. Add the repository root before
+# importing the application package so Windows PowerShell does not need a
+# separately configured PYTHONPATH.
+REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
 
 from src.p68_keyframe_generator import KeyframeGenerationController, build_keyframe_requests
 from src.p68_keyframe_provider import ComfyUIKeyframeProvider
