@@ -94,7 +94,7 @@ def plan_payload(ready, policy_id) -> dict:
             shots.append(
                 {
                     "visual_shot_id": str(shot["id"]),
-                    "renderer_preflight_id": ready["preflights"][str(shot["id"])]["id"],
+                    "renderer_preflight_id": str(ready["preflights"][str(shot["id"])]["id"]),
                     "hero_importance": "90",
                     "realism_requirement": "85",
                     "motion_complexity": "80",
@@ -170,6 +170,12 @@ def test_routing_api_enforces_roles_brand_scope_and_approval_sequence(
 
     assert client.get(f"/routing/plans/{plan_id}", headers=outsider).status_code == 403
     assert client.get(f"/routing/plans/{plan_id}", headers=reviewer).status_code == 200
+    current = client.get(
+        f"/routing/content/{p94_ready['content_one']}/current",
+        headers=reviewer,
+    )
+    assert current.status_code == 200, current.text
+    assert current.json()["plan"]["id"] == plan_id
 
     submitted_response = client.post(
         f"/routing/plans/{plan_id}/submit",
