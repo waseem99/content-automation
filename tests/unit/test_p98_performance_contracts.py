@@ -110,7 +110,9 @@ def test_experiment_allows_delivery_variants_of_same_release() -> None:
         ),
     )
     assert request.variants[0].final_release_id == request.variants[1].final_release_id
-    assert "DROP CONSTRAINT performance_experiment_variants_experiment_id_final_release_id_key" in FLEXIBILITY.read_text(encoding="utf-8")
+    flexibility = FLEXIBILITY.read_text(encoding="utf-8")
+    assert "FROM pg_constraint" in flexibility
+    assert "performance_experiment_variants_experiment_id_final_release%" in flexibility
 
 
 def test_recommendations_cannot_authorize_automatic_actions() -> None:
