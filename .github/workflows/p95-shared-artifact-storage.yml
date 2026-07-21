@@ -47,11 +47,14 @@ jobs:
           python -m compileall -q \
             src/application/shared_storage \
             src/operator_api/shared_storage_runtime.py \
+            src/operator_api/shared_storage_validated_runtime.py \
+            src/operator_api/shared_storage_management_runtime.py \
             src/operator_api/runtime_factory.py \
             tests/unit/test_p95_shared_storage_contracts.py \
             tests/unit/test_p95_shared_storage_providers.py \
             tests/integration/p95_shared_storage_support.py \
             tests/integration/test_p95_shared_storage_lifecycle.py \
+            tests/integration/test_p95_shared_storage_quota_migration.py \
             tests/integration/test_p95_shared_storage_api.py
       - name: Apply migrations
         run: |
@@ -64,6 +67,7 @@ jobs:
             tests/unit/test_p95_shared_storage_contracts.py \
             tests/unit/test_p95_shared_storage_providers.py \
             tests/integration/test_p95_shared_storage_lifecycle.py \
+            tests/integration/test_p95_shared_storage_quota_migration.py \
             tests/integration/test_p95_shared_storage_api.py \
             2>&1 | tee p95-tests.log
       - name: Upload logs
