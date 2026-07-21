@@ -22,9 +22,17 @@ BEGIN
         RAISE EXCEPTION 'Final release audio mix identity is immutable';
     END IF;
 
+    IF TG_OP='UPDATE'
+       AND NOT (
+           (OLD.status='draft' AND NEW.status='assembly_queued')
+           OR (OLD.status='in_review' AND NEW.status='approved')
+       ) THEN
+        RETURN NEW;
+    END IF;
+
     SELECT * INTO mix_row
       FROM football_brief.audio_mix_versions
-     WHERE id=COALESCE(NEW.audio_mix_version_id,OLD.audio_mix_version_id);
+     WHERE id=NEW.audio_mix_version_id;
     SELECT * INTO production_row
       FROM football_brief.audio_productions
      WHERE id=mix_row.audio_production_id;
@@ -39,8 +47,8 @@ BEGIN
        OR production_row.id IS NULL
        OR production_row.current_mix_version_id IS DISTINCT FROM mix_row.id
        OR production_row.status<>'approved'
-       OR production_row.portfolio_content_id IS DISTINCT FROM COALESCE(NEW.portfolio_content_id,OLD.portfolio_content_id)
-       OR production_row.content_version IS DISTINCT FROM COALESCE(NEW.content_version,OLD.content_version)
+       OR production_row.portfolio_content_id IS DISTINCT FROM NEW.portfolio_content_id
+       OR production_row.content_version IS DISTINCT FROM NEW.content_version
        OR final_asset_row.id IS NULL
        OR final_asset_row.asset_type<>'audio'
        OR final_asset_row.lifecycle_status<>'approved' THEN
