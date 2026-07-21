@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
-from src.application.releases import AudioBoundFinalReleaseService, FinalReleaseService
+from src.application.releases import FinalReleaseService, RouteBoundFinalReleaseService
 from src.application.releases.models import (
     FinalReleaseCreate,
     PlaybackReviewRequest,
@@ -18,9 +18,11 @@ INTEGRITY = ROOT / "migrations/0069_final_release_integrity.sql"
 AVAILABILITY = ROOT / "migrations/0070_final_release_availability_and_qa_retry.sql"
 ROUTING = ROOT / "migrations/0071_final_release_routing_integrity.sql"
 AUDIO = ROOT / "migrations/0072_final_release_audio_mix_integrity.sql"
+ROUTE_OUTPUTS = ROOT / "migrations/0073_final_release_exact_route_outputs.sql"
 SERVICE = ROOT / "src/application/releases/service.py"
 VALIDATED = ROOT / "src/application/releases/validated_service.py"
 AUDIO_SERVICE = ROOT / "src/application/releases/audio_bound_service.py"
+ROUTE_SERVICE = ROOT / "src/application/releases/route_bound_service.py"
 API = ROOT / "src/operator_api/releases_runtime.py"
 
 
@@ -44,8 +46,8 @@ def profile_payload(**overrides):
     return payload
 
 
-def test_public_release_service_uses_audio_bound_p87_p94_contract() -> None:
-    assert FinalReleaseService is AudioBoundFinalReleaseService
+def test_public_release_service_uses_route_and_audio_bound_contract() -> None:
+    assert FinalReleaseService is RouteBoundFinalReleaseService
 
 
 def test_profile_rejects_invalid_safe_area_and_duration_contracts() -> None:
@@ -135,6 +137,16 @@ def test_mixed_routing_requires_complete_mapping_and_settled_managed_jobs() -> N
     assert "final_release_managed_routes_not_settled" in validated
 
 
+def test_route_outputs_bind_selected_candidate_or_managed_shared_artifact() -> None:
+    source = ROUTE_OUTPUTS.read_text(encoding="utf-8")
+    route_service = ROUTE_SERVICE.read_text(encoding="utf-8")
+    assert "final_release_one_visual_per_routing_item_idx" in source
+    assert "Local visual input must use the exact selected routing candidate asset" in source
+    assert "Managed visual input must be the exact reconciled successful job output artifact" in source
+    assert "managed_artifact_version_id" in route_service
+    assert "final_release_route_outputs_mismatch" in route_service
+
+
 def test_release_api_keeps_configuration_admin_and_review_decisions_scoped() -> None:
     source = API.read_text(encoding="utf-8")
     assert '@app.post("/release-profiles")' in source
@@ -148,7 +160,7 @@ def test_release_api_keeps_configuration_admin_and_review_decisions_scoped() -> 
 def test_no_automatic_publication_or_live_provider_controls_are_added() -> None:
     combined = "\n".join(
         path.read_text(encoding="utf-8")
-        for path in (SERVICE, VALIDATED, AUDIO_SERVICE, API)
+        for path in (SERVICE, VALIDATED, AUDIO_SERVICE, ROUTE_SERVICE, API)
     ).lower()
     assert "youtube" not in combined
     assert "facebook" not in combined
