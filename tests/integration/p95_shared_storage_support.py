@@ -23,7 +23,7 @@ def register_asset(database, *, path: Path, asset_type: str, created_by: str) ->
             """INSERT INTO football_brief.assets
                (asset_type,source_type,lifecycle_status,original_filename,storage_uri,
                 sha256,mime_type,size_bytes,metadata,created_by)
-               VALUES (%s,'uploaded','approved',%s,%s,%s,%s,%s,%s::jsonb,%s)
+               VALUES (%s,'client_supplied','approved',%s,%s,%s,%s,%s,%s::jsonb,%s)
                RETURNING id""",
             (
                 asset_type,
