@@ -19,6 +19,7 @@ from src.operator_api.production_workflow_runtime import install_production_work
 from src.operator_api.renderers_validated_runtime import install_renderer_routes
 from src.operator_api.review_workspace_runtime import install_review_workspace_routes
 from src.operator_api.routing_runtime import install_routing_routes
+from src.operator_api.routing_workspace_runtime import install_routing_workspace_routes
 from src.operator_api.runtime_config import OperatorRuntimeSettings, get_operator_runtime_settings
 from src.operator_api.scripts_runtime import install_script_routes
 from src.operator_api.visuals_runtime import install_visual_routes
@@ -46,6 +47,7 @@ def create_configured_app(
     install_review_workspace_routes(app, database=database, auth_settings=auth)
     install_renderer_routes(app, database=database, auth_settings=auth)
     install_routing_routes(app, database=database, auth_settings=auth)
+    install_routing_workspace_routes(app, database=database, auth_settings=auth)
     app.state.runtime_settings = settings
 
     @app.get("/runtime/config")
