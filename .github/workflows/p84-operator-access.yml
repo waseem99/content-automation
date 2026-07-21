@@ -14,6 +14,7 @@ on:
       - "src/operator_api/runtime_factory.py"
       - "tests/unit/test_p84_operator_access.py"
       - "tests/integration/test_p84_operator_access_runtime.py"
+      - "web/static-creator-ui/assets/portfolio-api.js"
   workflow_dispatch:
 
 permissions:
@@ -76,6 +77,7 @@ jobs:
             src/operator_api/runtime_factory.py \
             tests/unit/test_p84_operator_access.py \
             tests/integration/test_p84_operator_access_runtime.py
+          node --check web/static-creator-ui/assets/portfolio-api.js
 
       - name: Apply all migrations
         run: |
