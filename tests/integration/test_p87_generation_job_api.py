@@ -204,7 +204,7 @@ def test_claim_identity_and_lease_token_cannot_be_reused_by_another_operator(
         headers=producer,
         json=enqueue_payload(
             seeded,
-            job_type="preview",
+            job_type="keyframe",
             key="p87:api:claim-owner",
         ),
     )
@@ -214,7 +214,7 @@ def test_claim_identity_and_lease_token_cannot_be_reused_by_another_operator(
     claimed = client.post(
         "/generation/jobs/claim",
         headers=producer,
-        json={"job_types": ["preview"], "lease_seconds": 120},
+        json={"job_types": ["keyframe"], "lease_seconds": 120},
     )
     assert claimed.status_code == 200, claimed.text
     claim = claimed.json()["claim"]
@@ -237,7 +237,7 @@ def test_claim_identity_and_lease_token_cannot_be_reused_by_another_operator(
         json={
             "attempt_id": claim["attempt"]["id"],
             "lease_token": claim["lease_token"],
-            "output_payload": {"asset_id": "preview-asset-1"},
+            "output_payload": {"asset_id": "keyframe-asset-1"},
         },
     )
     assert completed.status_code == 200, completed.text
