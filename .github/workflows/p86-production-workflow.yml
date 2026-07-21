@@ -1,0 +1,117 @@
+name: P86 Production Workflow
+
+on:
+  pull_request:
+    branches: [test]
+    paths:
+      - ".github/workflows/p86-production-workflow.yml"
+      - "migrations/0031_versioned_production_workflow.sql"
+      - "migrations/README.md"
+      - "src/domain/production_workflow.py"
+      - "src/application/production_workflow_service.py"
+      - "src/operator_api/production_workflow_runtime.py"
+      - "src/operator_api/runtime_factory.py"
+      - "tests/unit/test_p86_production_workflow.py"
+      - "tests/unit/test_p86_production_workflow_full_path.py"
+      - "tests/unit/test_p86_production_workflow_runtime_contracts.py"
+      - "tests/integration/test_p86_production_workflow_lifecycle.py"
+      - "tests/integration/test_p86_production_workflow_guards.py"
+      - "tests/integration/test_p86_production_workflow_end_to_end.py"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  production-workflow:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: football_brief_test
+          POSTGRES_USER: postgres
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d football_brief_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql://postgres@localhost:5432/football_brief_test
+      FOOTBALL_BRIEF_TEST_DATABASE_URL: postgresql://postgres@localhost:5432/football_brief_test
+      DATABASE_REQUIRE_SCHEMA: "false"
+      DATABASE_MIGRATIONS_DIR: migrations
+      PYTHONUNBUFFERED: "1"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install focused dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install \
+            "fastapi>=0.111" \
+            "httpx>=0.27" \
+            "pydantic>=2.7" \
+            "pydantic-settings>=2.3" \
+            "pytest>=8" \
+            "psycopg[binary]>=3.2,<4" \
+            "psycopg-pool>=3.2,<4" \
+            "typer>=0.12"
+
+      - name: Compile workflow modules and tests
+        run: |
+          python -m compileall -q \
+            src/domain/production_workflow.py \
+            src/application/production_workflow_service.py \
+            src/operator_api/production_workflow_runtime.py \
+            src/operator_api/runtime_factory.py \
+            tests/unit/test_p86_production_workflow.py \
+            tests/unit/test_p86_production_workflow_full_path.py \
+            tests/unit/test_p86_production_workflow_runtime_contracts.py \
+            tests/integration/test_p86_production_workflow_lifecycle.py \
+            tests/integration/test_p86_production_workflow_guards.py \
+            tests/integration/test_p86_production_workflow_end_to_end.py
+
+      - name: Apply and verify all migrations
+        run: |
+          set -o pipefail
+          {
+            python -m src.infrastructure.database.cli migrate
+            python -m src.infrastructure.database.cli status
+            python -m src.infrastructure.database.cli health --json
+          } 2>&1 | tee p86-migrations.log
+
+      - name: Run P86 contracts and PostgreSQL lifecycle tests
+        run: |
+          set -o pipefail
+          pytest -vv \
+            tests/unit/test_p86_production_workflow.py \
+            tests/unit/test_p86_production_workflow_full_path.py \
+            tests/unit/test_p86_production_workflow_runtime_contracts.py \
+            tests/integration/test_p86_production_workflow_lifecycle.py \
+            tests/integration/test_p86_production_workflow_guards.py \
+            tests/integration/test_p86_production_workflow_end_to_end.py \
+            2>&1 | tee p86-tests.log
+
+      - name: Upload P86 validation logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p86-production-workflow-logs
+          if-no-files-found: ignore
+          retention-days: 7
+          path: |
+            p86-migrations.log
+            p86-tests.log
