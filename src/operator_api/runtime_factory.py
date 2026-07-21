@@ -6,6 +6,7 @@ from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 
 from src.infrastructure.database.connection import Database
+from src.operator_api.access_runtime import install_operator_access
 from src.operator_api.auth import OperatorAuthSettings
 from src.operator_api.observability import observability_contract
 from src.operator_api.app import create_app
@@ -18,7 +19,9 @@ def create_configured_app(
     runtime_settings: OperatorRuntimeSettings | None = None,
 ) -> FastAPI:
     settings = runtime_settings or get_operator_runtime_settings()
-    app = create_app(database=database, auth_settings=auth_settings)
+    auth = auth_settings or OperatorAuthSettings()
+    app = create_app(database=database, auth_settings=auth)
+    install_operator_access(app, database=database, auth_settings=auth)
     app.state.runtime_settings = settings
 
     @app.get("/runtime/config")

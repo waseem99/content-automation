@@ -51,7 +51,7 @@ def _operator_auth_from_environment() -> OperatorAuthSettings:
         for key, operator in value.items()
     ):
         raise RuntimeError("OPERATOR_API_KEYS_JSON must map non-empty keys to operator IDs")
-    return OperatorAuthSettings(api_keys=value)
+    return OperatorAuthSettings(api_keys=value, resolve_identities_from_database=True)
 
 
 app = create_runtime_app()
