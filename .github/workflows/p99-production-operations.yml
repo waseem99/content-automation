@@ -50,6 +50,9 @@ jobs:
         run: |
           python -m compileall -q \
             src/operations \
+            src/infrastructure/http \
+            src/application/concepts/adapters.py \
+            src/application/scripts/adapters.py \
             src/operator_api/operations_middleware.py \
             src/operator_api/operations_runtime.py \
             src/operator_api/operations_validated_runtime.py \
@@ -57,6 +60,7 @@ jobs:
             src/operator_api/runtime_factory.py \
             tests/unit/test_p99_operations_contracts.py \
             tests/unit/test_p99_operations_environment_files.py \
+            tests/unit/test_p99_local_http_security.py \
             tests/integration/test_p99_operations_lifecycle.py \
             tests/integration/test_p99_operations_api.py
       - name: Apply and verify complete migration chain
@@ -69,6 +73,7 @@ jobs:
           pytest -vv \
             tests/unit/test_p99_operations_contracts.py \
             tests/unit/test_p99_operations_environment_files.py \
+            tests/unit/test_p99_local_http_security.py \
             tests/integration/test_p99_operations_lifecycle.py \
             tests/integration/test_p99_operations_api.py \
             tests/integration/test_p87_generation_jobs.py \
@@ -202,9 +207,12 @@ jobs:
             docker compose --env-file config/staging.env.example -f compose.staging.yml down -v --remove-orphans || true
           }
           trap cleanup EXIT
-          docker compose --env-file config/staging.env.example -f compose.staging.yml up -d --build
+          docker compose --env-file config/staging.env.example -f compose.staging.yml build api migrate
+          docker compose --env-file config/staging.env.example -f compose.staging.yml up -d postgres
+          docker compose --env-file config/staging.env.example -f compose.staging.yml up --no-log-prefix migrate
+          docker compose --env-file config/staging.env.example -f compose.staging.yml up -d --no-deps api
           ready=0
-          for _ in $(seq 1 36); do
+          for _ in $(seq 1 60); do
             if curl --fail --silent --show-error http://127.0.0.1:8000/runtime/ready > /tmp/p99-readiness.json; then
               ready=1
               break
