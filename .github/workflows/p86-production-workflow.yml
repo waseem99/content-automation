@@ -82,14 +82,30 @@ jobs:
 
       - name: Apply and verify all migrations
         run: |
-          python -m src.infrastructure.database.cli migrate
-          python -m src.infrastructure.database.cli status
-          python -m src.infrastructure.database.cli health --json
+          set -o pipefail
+          {
+            python -m src.infrastructure.database.cli migrate
+            python -m src.infrastructure.database.cli status
+            python -m src.infrastructure.database.cli health --json
+          } 2>&1 | tee p86-migrations.log
 
       - name: Run P86 contracts and PostgreSQL lifecycle tests
         run: |
-          pytest -q \
+          set -o pipefail
+          pytest -vv \
             tests/unit/test_p86_production_workflow.py \
             tests/unit/test_p86_production_workflow_runtime_contracts.py \
             tests/integration/test_p86_production_workflow_lifecycle.py \
-            tests/integration/test_p86_production_workflow_guards.py
+            tests/integration/test_p86_production_workflow_guards.py \
+            2>&1 | tee p86-tests.log
+
+      - name: Upload P86 validation logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p86-production-workflow-logs
+          if-no-files-found: ignore
+          retention-days: 7
+          path: |
+            p86-migrations.log
+            p86-tests.log
