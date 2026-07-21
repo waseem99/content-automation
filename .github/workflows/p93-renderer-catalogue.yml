@@ -47,10 +47,12 @@ jobs:
           python -m compileall -q \
             src/application/renderers \
             src/operator_api/renderers_runtime.py \
+            src/operator_api/renderers_validated_runtime.py \
             src/operator_api/runtime_factory.py \
             tests/unit/test_p93_renderer_contracts.py \
             tests/integration/p93_renderer_support.py \
             tests/integration/test_p93_renderer_lifecycle.py \
+            tests/integration/test_p93_renderer_managed_reprice.py \
             tests/integration/test_p93_renderer_api.py
       - name: Apply migrations
         run: |
@@ -62,6 +64,7 @@ jobs:
           pytest -vv \
             tests/unit/test_p93_renderer_contracts.py \
             tests/integration/test_p93_renderer_lifecycle.py \
+            tests/integration/test_p93_renderer_managed_reprice.py \
             tests/integration/test_p93_renderer_api.py \
             2>&1 | tee p93-tests.log
       - name: Upload logs
