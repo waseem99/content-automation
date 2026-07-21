@@ -1,3 +1,0 @@
-from src.application.scripts.runtime_patch import install_validated_script_service
-
-install_validated_script_service()
