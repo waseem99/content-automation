@@ -16,6 +16,7 @@ PATTERNS = (
 )
 PLACEHOLDER_VALUES = {"...", "changeme", "change_me", "placeholder", "example", "dummy", "test", "not-a-secret", "redacted"}
 SAFE_VALUE_PREFIXES = ("settings.", "self.", "config.", "os.environ", "getenv(", "env.")
+RUNTIME_CALL = re.compile(r"^[A-Za-z_][A-Za-z0-9_.]*\(")
 
 
 def _is_text_file(path: Path) -> bool:
@@ -30,6 +31,8 @@ def _is_placeholder(line: str, match: re.Match[str]) -> bool:
     if cleaned in PLACEHOLDER_VALUES:
         return True
     if cleaned.startswith(SAFE_VALUE_PREFIXES):
+        return True
+    if RUNTIME_CALL.match(value.strip("'\" ")):
         return True
     if "..." in line or "<" in line or ">" in line:
         return True
