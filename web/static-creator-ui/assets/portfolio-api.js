@@ -147,6 +147,10 @@
       method: "POST",
       body: JSON.stringify({ gate, decision, rationale })
     }),
+    decideWorkflowStage: (workflowId, payload) => request(`/production/workflows/${workflowId}/decisions`, {
+      method: "POST",
+      body: JSON.stringify(payload)
+    }),
     scriptForContent: (contentId) => request(`/scripts/content/${contentId}`),
     decideScript: (documentId, payload) => request(`/scripts/${documentId}/decisions`, {
       method: "POST",
@@ -229,7 +233,8 @@
     ["script-review", "script-review.css", "script-review.js"],
     ["audio-review", "audio-review.css", "audio-review.js"],
     ["visual-candidates", "visual-candidates.css", "visual-candidates.js"],
-    ["review-workspace", "review-workspace.css", "review-workspace.js"]
+    ["review-workspace", "review-workspace.css", "review-workspace.js"],
+    ["review-stage-actions", "review-stage-actions.css", "review-stage-actions.js"]
   ];
   modules.forEach(([key, css, js]) => {
     if (!document.querySelector(`link[data-studio-module="${key}"]`)) {
