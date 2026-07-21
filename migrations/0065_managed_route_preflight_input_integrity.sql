@@ -1,5 +1,5 @@
 -- Bind every managed route to the exact approved local candidate asset used by its P93 quote.
--- Managed routing also requires a known positive external fee; zero-fee work belongs on local routes.
+-- Managed routing also requires a known positive USD fee; zero-fee work belongs on local routes.
 
 BEGIN;
 
@@ -9,6 +9,7 @@ LANGUAGE plpgsql
 AS $$
 DECLARE
     plan_row football_brief.shot_routing_plans%ROWTYPE;
+    policy_row football_brief.production_budget_policies%ROWTYPE;
     candidate_row football_brief.visual_candidates%ROWTYPE;
     preflight_row football_brief.renderer_preflight_records%ROWTYPE;
     quoted_project_id text;
@@ -23,6 +24,9 @@ BEGIN
     SELECT * INTO plan_row
       FROM football_brief.shot_routing_plans
      WHERE id = NEW.routing_plan_id;
+    SELECT * INTO policy_row
+      FROM football_brief.production_budget_policies
+     WHERE id = plan_row.budget_policy_id;
     SELECT * INTO candidate_row
       FROM football_brief.visual_candidates
      WHERE id = NEW.selected_candidate_id;
@@ -31,6 +35,7 @@ BEGIN
      WHERE id = NEW.renderer_preflight_id;
 
     IF plan_row.id IS NULL
+       OR policy_row.id IS NULL
        OR candidate_row.id IS NULL
        OR candidate_row.asset_id IS NULL
        OR preflight_row.id IS NULL
@@ -58,6 +63,12 @@ BEGIN
     IF preflight_row.external_fee_possible = false
        OR preflight_row.estimated_cost <= 0 THEN
         RAISE EXCEPTION 'Managed renderer preflight requires a known positive external fee';
+    END IF;
+
+    IF policy_row.currency <> 'USD'
+       OR preflight_row.pricing_currency <> 'USD'
+       OR preflight_row.pricing_currency IS DISTINCT FROM policy_row.currency THEN
+        RAISE EXCEPTION 'Managed renderer quote and budget policy must use USD';
     END IF;
 
     RETURN NEW;
