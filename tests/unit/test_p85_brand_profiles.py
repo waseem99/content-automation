@@ -107,6 +107,8 @@ def test_migration_pins_profile_and_preset_history_and_reuses_voice_registry() -
     service = (ROOT / "src" / "application" / "brand_profile_service.py").read_text(encoding="utf-8")
     runtime = (ROOT / "src" / "operator_api" / "brand_profiles_runtime.py").read_text(encoding="utf-8")
     client = (ROOT / "web" / "static-creator-ui" / "assets" / "portfolio-api.js").read_text(encoding="utf-8")
+    admin = (ROOT / "web" / "static-creator-ui" / "assets" / "brand-profile-admin.js").read_text(encoding="utf-8")
+    styles = (ROOT / "web" / "static-creator-ui" / "assets" / "brand-profile-admin.css").read_text(encoding="utf-8")
 
     assert migration.startswith("-- Football Brief")
     assert "CREATE TABLE football_brief.brand_profiles" in migration
@@ -118,5 +120,10 @@ def test_migration_pins_profile_and_preset_history_and_reuses_voice_registry() -
     assert migration.rstrip().endswith("COMMIT;")
     assert "narration_selection_already_pinned" in service
     assert "/portfolio/brands/{brand_id}/profiles" in runtime
+    assert "/portfolio/approved-voices" in runtime
     assert "activateBrandProfile" in client
     assert "pinNarrationSelection" in client
+    assert 'import(new URL("brand-profile-admin.js", scriptBase).href)' in client
+    assert "brand-profile-settings" in admin
+    assert "document.readyState" in admin
+    assert ".brand-profile-dialog" in styles
