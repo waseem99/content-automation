@@ -115,7 +115,7 @@ BEGIN
     ) THEN
         RAISE EXCEPTION 'Observation creative snapshot must cite concept, pillar, hook, duration, narration, visual style, renderers, and format';
     END IF;
-    IF NEW.normalized_views>NEW.views AND NEW.views>0 THEN
+    IF NEW.normalized_views>NEW.views THEN
         RAISE EXCEPTION 'Normalized views cannot exceed source views';
     END IF;
     RETURN NEW;
@@ -248,23 +248,29 @@ DECLARE
     experiment_row football_brief.performance_experiments%ROWTYPE;
     evidence_total integer;
     evidence_match integer;
+    wrong_experiment integer;
     winner_match integer;
 BEGIN
     SELECT * INTO experiment_row
       FROM football_brief.performance_experiments
      WHERE id=NEW.experiment_id;
-    SELECT cardinality(NEW.evaluated_observation_ids),count(DISTINCT po.id)
-      INTO evidence_total,evidence_match
+    evidence_total:=cardinality(NEW.evaluated_observation_ids);
+    SELECT count(DISTINCT po.id),
+           count(*) FILTER (WHERE po.id IS NOT NULL AND pev.id IS NULL)
+      INTO evidence_match,wrong_experiment
       FROM unnest(NEW.evaluated_observation_ids) evidence_id
-      LEFT JOIN football_brief.performance_observations po ON po.id=evidence_id;
+      LEFT JOIN football_brief.performance_observations po ON po.id=evidence_id
+      LEFT JOIN football_brief.performance_experiment_variants pev
+        ON pev.experiment_id=NEW.experiment_id
+       AND pev.delivery_request_id=po.delivery_request_id;
     SELECT count(*) INTO winner_match
       FROM football_brief.performance_experiment_variants pev
      WHERE pev.id=NEW.winner_variant_id AND pev.experiment_id=NEW.experiment_id;
     IF experiment_row.id IS NULL OR experiment_row.status NOT IN ('active','completed') THEN
         RAISE EXCEPTION 'Experiment results require an active or completed experiment';
     END IF;
-    IF evidence_total<>evidence_match THEN
-        RAISE EXCEPTION 'Experiment results must cite existing unique observations';
+    IF evidence_total<>evidence_match OR wrong_experiment<>0 THEN
+        RAISE EXCEPTION 'Experiment results must cite unique observations from declared experiment variants';
     END IF;
     IF NEW.result_status='meaningful_result' AND winner_match<>1 THEN
         RAISE EXCEPTION 'Meaningful experiment result winner must belong to the experiment';
@@ -289,14 +295,21 @@ DECLARE
     evidence_total integer;
     evidence_match integer;
     wrong_brand integer;
+    result_wrong_brand integer;
 BEGIN
-    SELECT cardinality(NEW.cited_observation_ids),count(DISTINCT po.id),
-           count(*) FILTER (WHERE po.brand_id IS DISTINCT FROM NEW.brand_id)
-      INTO evidence_total,evidence_match,wrong_brand
+    evidence_total:=cardinality(NEW.cited_observation_ids);
+    SELECT count(DISTINCT po.id),
+           count(*) FILTER (WHERE po.id IS NOT NULL AND po.brand_id IS DISTINCT FROM NEW.brand_id)
+      INTO evidence_match,wrong_brand
       FROM unnest(NEW.cited_observation_ids) evidence_id
       LEFT JOIN football_brief.performance_observations po ON po.id=evidence_id;
-    IF evidence_total<>evidence_match OR wrong_brand<>0 THEN
-        RAISE EXCEPTION 'Performance recommendations must cite existing observations for the same brand';
+    SELECT count(*) INTO result_wrong_brand
+      FROM football_brief.performance_experiment_results per
+      JOIN football_brief.performance_experiments pe ON pe.id=per.experiment_id
+     WHERE per.id=NEW.experiment_result_id
+       AND pe.brand_id IS DISTINCT FROM NEW.brand_id;
+    IF evidence_total<>evidence_match OR wrong_brand<>0 OR result_wrong_brand<>0 THEN
+        RAISE EXCEPTION 'Performance recommendations must cite existing observations and results for the same brand';
     END IF;
     IF jsonb_array_length(NEW.metric_citations)=0 THEN
         RAISE EXCEPTION 'Performance recommendations require metric citations';
