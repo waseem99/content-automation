@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
-from src.application.releases import FinalReleaseService, ValidatedFinalReleaseService
+from src.application.releases import AudioBoundFinalReleaseService, FinalReleaseService
 from src.application.releases.models import (
     FinalReleaseCreate,
     PlaybackReviewRequest,
@@ -17,8 +17,10 @@ FOUNDATION = ROOT / "migrations/0068_final_release_foundation.sql"
 INTEGRITY = ROOT / "migrations/0069_final_release_integrity.sql"
 AVAILABILITY = ROOT / "migrations/0070_final_release_availability_and_qa_retry.sql"
 ROUTING = ROOT / "migrations/0071_final_release_routing_integrity.sql"
+AUDIO = ROOT / "migrations/0072_final_release_audio_mix_integrity.sql"
 SERVICE = ROOT / "src/application/releases/service.py"
 VALIDATED = ROOT / "src/application/releases/validated_service.py"
+AUDIO_SERVICE = ROOT / "src/application/releases/audio_bound_service.py"
 API = ROOT / "src/operator_api/releases_runtime.py"
 
 
@@ -42,8 +44,8 @@ def profile_payload(**overrides):
     return payload
 
 
-def test_public_release_service_uses_validated_p87_p94_contract() -> None:
-    assert FinalReleaseService is ValidatedFinalReleaseService
+def test_public_release_service_uses_audio_bound_p87_p94_contract() -> None:
+    assert FinalReleaseService is AudioBoundFinalReleaseService
 
 
 def test_profile_rejects_invalid_safe_area_and_duration_contracts() -> None:
@@ -57,12 +59,13 @@ def test_profile_rejects_invalid_safe_area_and_duration_contracts() -> None:
         RenderProfileRequest(**profile_payload(min_duration_seconds=91, max_duration_seconds=90))
 
 
-def test_release_requires_narration_visual_and_branding_inputs() -> None:
+def test_release_requires_audio_mix_narration_visual_and_branding_inputs() -> None:
     with pytest.raises(ValidationError, match="required release roles"):
         FinalReleaseCreate(
             portfolio_content_id="00000000-0000-0000-0000-000000000001",
             content_version=1,
             render_profile_id="00000000-0000-0000-0000-000000000002",
+            audio_mix_version_id="00000000-0000-0000-0000-000000000004",
             inputs=(
                 ReleaseInputRequest(
                     artifact_version_id="00000000-0000-0000-0000-000000000003",
@@ -102,6 +105,16 @@ def test_database_binds_exact_inputs_job_qa_playback_and_manifest() -> None:
     assert "Approved and superseded final releases are immutable" in source
 
 
+def test_release_requires_exact_current_approved_p90_audio_mix() -> None:
+    source = AUDIO.read_text(encoding="utf-8")
+    audio_service = AUDIO_SERVICE.read_text(encoding="utf-8")
+    assert "audio_mix_version_id" in source
+    assert "current approved QC-passing forced-alignment audio mix" in source
+    assert "Narration release input must be the exact approved final-mix asset" in source
+    assert '"audio_mix_version_id": str(release["audio_mix_version_id"])' in audio_service
+    assert 'manifest["audio_mix"]' in audio_service
+
+
 def test_qa_retry_and_shared_object_availability_are_fail_closed() -> None:
     source = AVAILABILITY.read_text(encoding="utf-8")
     validated = VALIDATED.read_text(encoding="utf-8")
@@ -132,13 +145,14 @@ def test_release_api_keeps_configuration_admin_and_review_decisions_scoped() -> 
     assert "AccessPermission.REVIEW_CONTENT" in source
 
 
-def test_no_publication_or_live_provider_controls_are_added() -> None:
+def test_no_automatic_publication_or_live_provider_controls_are_added() -> None:
     combined = "\n".join(
         path.read_text(encoding="utf-8")
-        for path in (SERVICE, VALIDATED, API)
+        for path in (SERVICE, VALIDATED, AUDIO_SERVICE, API)
     ).lower()
     assert "youtube" not in combined
     assert "facebook" not in combined
-    assert "publish" not in combined
+    assert '@app.post("/publish' not in combined
+    assert 'def publish' not in combined
     assert "aws_secret" not in combined
     assert "api_key" not in combined
