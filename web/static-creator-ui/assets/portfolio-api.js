@@ -142,6 +142,15 @@
     approve: (contentId, gate, decision, rationale) => request(`/portfolio/content/${contentId}/approvals`, {
       method: "POST",
       body: JSON.stringify({ gate, decision, rationale })
+    }),
+    audioForContent: (contentId) => request(`/audio/content/${contentId}`),
+    initializeAudio: (contentId, modelId = "kokoro-v1.0") => request(`/audio/content/${contentId}`, {
+      method: "POST",
+      body: JSON.stringify({ model_id: modelId })
+    }),
+    regenerateAudioParagraph: (productionId, paragraphId, modelId) => request(`/audio/${productionId}/paragraphs/${paragraphId}/regenerate`, {
+      method: "POST",
+      body: JSON.stringify({ model_id: modelId })
     })
   };
 
@@ -149,7 +158,8 @@
     ["brand-profile-admin", "brand-profile-admin.css", "brand-profile-admin.js"],
     ["generation-queue", "generation-queue.css", "generation-queue.js"],
     ["concept-slate", "concept-slate.css", "concept-slate.js"],
-    ["script-review", "script-review.css", "script-review.js"]
+    ["script-review", "script-review.css", "script-review.js"],
+    ["audio-review", "audio-review.css", "audio-review.js"]
   ];
   modules.forEach(([key, css, js]) => {
     if (!document.querySelector(`link[data-studio-module="${key}"]`)) {

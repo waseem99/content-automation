@@ -8,6 +8,7 @@ from fastapi.responses import JSONResponse
 from src.application.scripts.runtime_patch import install_validated_script_service
 from src.infrastructure.database.connection import Database
 from src.operator_api.access_runtime import install_operator_access
+from src.operator_api.audio_runtime import install_audio_routes
 from src.operator_api.auth import OperatorAuthSettings
 from src.operator_api.brand_profiles_runtime import install_brand_profile_routes
 from src.operator_api.concepts_runtime import install_concept_routes
@@ -36,6 +37,7 @@ def create_configured_app(
     install_generation_job_routes(app, database=database, auth_settings=auth)
     install_concept_routes(app, database=database, auth_settings=auth)
     install_script_routes(app, database=database, auth_settings=auth)
+    install_audio_routes(app, database=database, auth_settings=auth)
     app.state.runtime_settings = settings
 
     @app.get("/runtime/config")
