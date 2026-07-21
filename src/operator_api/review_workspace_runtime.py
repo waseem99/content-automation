@@ -70,10 +70,13 @@ def install_review_workspace_routes(
         return str(row["brand_id"])
 
     def target_brand_id(target_type: ReviewTarget, target_id: UUID) -> str:
-        content_id = require_service().target_content_id(
-            target_type=target_type,
-            target_id=target_id,
-        )
+        try:
+            content_id = require_service().target_content_id(
+                target_type=target_type,
+                target_id=target_id,
+            )
+        except ReviewWorkspaceError as exc:
+            raise_review_workspace_error(exc)
         return content_brand_id(content_id)
 
     def invoke(call: Callable[[], dict[str, Any]]) -> dict[str, Any]:
@@ -143,14 +146,15 @@ def install_review_workspace_routes(
         request: CompareTarget,
         operator: OperatorIdentity = Depends(authenticate),
     ) -> dict[str, Any]:
+        current_brand = target_brand_id(request.target_type, request.current_id)
         require_access(
             operator,
             AccessPermission.READ_PORTFOLIO,
-            brand_id=target_brand_id(request.target_type, request.current_id),
+            brand_id=current_brand,
         )
         if request.previous_id is not None:
             previous_brand = target_brand_id(request.target_type, request.previous_id)
-            if previous_brand != target_brand_id(request.target_type, request.current_id):
+            if previous_brand != current_brand:
                 raise HTTPException(status_code=422, detail="comparison_target_brand_mismatch")
         result = invoke(lambda: require_service().compare(request=request))
         return {"operator": operator.operator_id, **result}
