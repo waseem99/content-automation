@@ -14,6 +14,7 @@ from src.application.delivery import (
     PlatformDeliveryService,
 )
 from src.application.delivery.models import (
+    DeliveryCancelRequest,
     DeliveryClaimRequest,
     DeliveryCreateRequest,
     DeliveryExecuteRequest,
@@ -202,7 +203,9 @@ def test_fallback_scheduled_cancel_and_content_rules(p89_database, p97_ready) ->
     assert claim(service, p97_ready, target) is None
     cancelled = service.cancel_delivery(
         delivery_request_id=scheduled["id"],
-        request={"rationale": "The controlled schedule changed before delivery."},
+        request=DeliveryCancelRequest(
+            rationale="The controlled schedule changed before delivery."
+        ),
         actor=p97_ready["publisher"],
     )
     assert cancelled["delivery"]["status"] == "cancelled"
