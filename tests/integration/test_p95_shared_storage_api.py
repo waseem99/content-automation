@@ -72,7 +72,6 @@ def shared_storage_client(database, ready) -> TestClient:
             database=database,
             auth_settings=auth,
             runtime_settings=runtime,
-            shared_storage_providers=ready["registry"],
         )
     )
 
