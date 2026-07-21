@@ -180,13 +180,21 @@ jobs:
           docker compose --env-file config/staging.env.example -f compose.staging.yml config > /tmp/p99-compose-rendered.yml
           grep -q "read_only: true" /tmp/p99-compose-rendered.yml
           grep -q "service_completed_successfully" /tmp/p99-compose-rendered.yml
-      - name: Repository and dependency security scans
+      - name: Install security scanners
         run: |
           python -m pip install --upgrade pip
           python -m pip install "bandit>=1.7.9" "pip-audit>=2.7.3"
-          bandit -q -r src -ll -iii -s B603,B607
-          pip-audit -r requirements.txt --progress-spinner off
+      - name: Bandit repository scan
+        id: bandit
+        continue-on-error: true
+        run: bandit -r src -ll -iii -s B603,B607 -f json -o /tmp/p99-bandit.json
+      - name: Dependency audit
+        id: pip_audit
+        continue-on-error: true
+        run: pip-audit -r requirements.txt --progress-spinner off --format json --output /tmp/p99-pip-audit.json
       - name: Recreate and smoke-test disposable staging
+        id: staging
+        continue-on-error: true
         run: |
           set -euo pipefail
           cleanup() {
@@ -210,15 +218,20 @@ jobs:
           grep -q '"ok":true' /tmp/p99-readiness.json
           docker image inspect content-automation:p99-local > /tmp/p99-image-inspect.json
       - name: Scan local container image
+        id: trivy
+        continue-on-error: true
         uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: content-automation:p99-local
-          format: table
+          format: json
+          output: /tmp/p99-trivy.json
           exit-code: "1"
           ignore-unfixed: true
           severity: HIGH,CRITICAL
           scanners: vuln,secret,misconfig
       - name: Prove no deployment workflow is introduced
+        id: deployment_boundary
+        continue-on-error: true
         run: |
           ! grep -R -n -E "vercel deploy|vercel --prod|kubectl apply|docker push|gh release create" \
             .github/workflows/p99-production-operations.yml \
@@ -233,6 +246,25 @@ jobs:
           if-no-files-found: ignore
           path: |
             /tmp/p99-compose-rendered.yml
+            /tmp/p99-bandit.json
+            /tmp/p99-pip-audit.json
             /tmp/p99-readiness.json
             /tmp/p99-image-inspect.json
             /tmp/p99-staging.log
+            /tmp/p99-trivy.json
+      - name: Enforce staging and security results
+        if: always()
+        env:
+          BANDIT_OUTCOME: ${{ steps.bandit.outcome }}
+          PIP_AUDIT_OUTCOME: ${{ steps.pip_audit.outcome }}
+          STAGING_OUTCOME: ${{ steps.staging.outcome }}
+          TRIVY_OUTCOME: ${{ steps.trivy.outcome }}
+          DEPLOYMENT_BOUNDARY_OUTCOME: ${{ steps.deployment_boundary.outcome }}
+        run: |
+          printf 'bandit=%s pip_audit=%s staging=%s trivy=%s deployment_boundary=%s\n' \
+            "$BANDIT_OUTCOME" "$PIP_AUDIT_OUTCOME" "$STAGING_OUTCOME" "$TRIVY_OUTCOME" "$DEPLOYMENT_BOUNDARY_OUTCOME"
+          test "$BANDIT_OUTCOME" = success
+          test "$PIP_AUDIT_OUTCOME" = success
+          test "$STAGING_OUTCOME" = success
+          test "$TRIVY_OUTCOME" = success
+          test "$DEPLOYMENT_BOUNDARY_OUTCOME" = success
