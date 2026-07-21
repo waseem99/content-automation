@@ -5,11 +5,14 @@ ROOT = Path(__file__).resolve().parents[2]
 API = ROOT / "web/static-creator-ui/assets/portfolio-api.js"
 MODULE = ROOT / "web/static-creator-ui/assets/review-workspace.js"
 STYLE = ROOT / "web/static-creator-ui/assets/review-workspace.css"
+STAGE_MODULE = ROOT / "web/static-creator-ui/assets/review-stage-actions.js"
+STAGE_STYLE = ROOT / "web/static-creator-ui/assets/review-stage-actions.css"
 
 
 def test_review_workspace_module_is_loaded_and_uses_scoped_clients() -> None:
     api = API.read_text(encoding="utf-8")
     assert '["review-workspace", "review-workspace.css", "review-workspace.js"]' in api
+    assert '["review-stage-actions", "review-stage-actions.css", "review-stage-actions.js"]' in api
     for method in (
         "reviewInbox",
         "reviewWorkspace",
@@ -17,6 +20,7 @@ def test_review_workspace_module_is_loaded_and_uses_scoped_clients() -> None:
         "createReviewComment",
         "resolveReviewComment",
         "mutateRevisionTask",
+        "decideWorkflowStage",
         "decideScript",
         "decideAudio",
         "decideVisualCandidate",
@@ -58,6 +62,25 @@ def test_review_workspace_contains_required_evidence_and_forms() -> None:
     assert "expected_lock_version" in source
 
 
+def test_canonical_stage_actions_use_p86_and_exclude_publication() -> None:
+    source = STAGE_MODULE.read_text(encoding="utf-8")
+    assert "Canonical workflow stage decision" in source
+    assert "existing P86 workflow decision" in source
+    assert "decideWorkflowStage" in source
+    assert "expected_lock_version" in source
+    assert '"publication"' in source
+    assert '"published"' in source
+    assert "EXCLUDED_STAGES.has" in source
+    assert "Approve stage" in source
+    assert "Request stage changes" in source
+    assert "Reject stage" in source
+    lower = source.lower()
+    assert "x-operator-key" not in lower
+    assert "upload" not in lower
+    assert "preferred_worker" not in lower
+    assert "/publication" not in lower
+
+
 def test_review_workspace_has_no_raw_or_execution_controls() -> None:
     source = MODULE.read_text(encoding="utf-8").lower()
     assert "json.parse" not in source
@@ -73,6 +96,7 @@ def test_review_workspace_has_no_raw_or_execution_controls() -> None:
 
 def test_review_workspace_styles_are_responsive_and_accessible() -> None:
     style = STYLE.read_text(encoding="utf-8")
+    stage_style = STAGE_STYLE.read_text(encoding="utf-8")
     assert ".review-workspace-layout" in style
     assert ".review-inbox-panel" in style
     assert ".review-evidence-grid" in style
@@ -83,3 +107,5 @@ def test_review_workspace_styles_are_responsive_and_accessible() -> None:
     assert "@media(max-width:820px)" in style
     assert "@media(max-width:560px)" in style
     assert ':focus-visible' in style
+    assert ".review-stage-actions" in stage_style
+    assert "@media(max-width:760px)" in stage_style
