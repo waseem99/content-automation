@@ -54,6 +54,7 @@ jobs:
             tests/integration/p94_routing_support.py \
             tests/integration/test_p94_routing_lifecycle.py \
             tests/integration/test_p94_routing_preflight_integrity.py \
+            tests/integration/test_p94_routing_retry_costs.py \
             tests/integration/test_p94_routing_api.py \
             tests/integration/test_p93_renderer_lifecycle.py
           node --check web/static-creator-ui/assets/portfolio-api.js
@@ -70,6 +71,7 @@ jobs:
             tests/unit/test_p94_routing_studio.py \
             tests/integration/test_p94_routing_lifecycle.py \
             tests/integration/test_p94_routing_preflight_integrity.py \
+            tests/integration/test_p94_routing_retry_costs.py \
             tests/integration/test_p94_routing_api.py \
             tests/integration/test_p93_renderer_lifecycle.py \
             2>&1 | tee p94-tests.log
