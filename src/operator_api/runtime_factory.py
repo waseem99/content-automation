@@ -15,6 +15,7 @@ from src.operator_api.observability import observability_contract
 from src.operator_api.app import create_app
 from src.operator_api.production_workflow_runtime import install_production_workflow_routes
 from src.operator_api.runtime_config import OperatorRuntimeSettings, get_operator_runtime_settings
+from src.operator_api.scripts_runtime import install_script_routes
 
 
 def create_configured_app(
@@ -30,6 +31,7 @@ def create_configured_app(
     install_production_workflow_routes(app, database=database, auth_settings=auth)
     install_generation_job_routes(app, database=database, auth_settings=auth)
     install_concept_routes(app, database=database, auth_settings=auth)
+    install_script_routes(app, database=database, auth_settings=auth)
     app.state.runtime_settings = settings
 
     @app.get("/runtime/config")
