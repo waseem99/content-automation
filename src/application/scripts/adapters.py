@@ -255,7 +255,7 @@ def generate_with_fallback(
     configuration: ScriptGenerateRequest,
 ) -> tuple[ScriptDraft, dict[str, Any]]:
     try:
-        draft = primary.generate(context=context, slots=None, seed=None) if False else primary.generate(context=context, configuration=configuration)
+        draft = primary.generate(context=context, configuration=configuration)
         return draft, {"adapter": primary.name, "fallback_used": False}
     except ScriptAdapterError as exc:
         draft = fallback.generate(context=context, configuration=configuration)
