@@ -117,6 +117,34 @@ def install_production_workflow_routes(
         require_access(operator, permission, brand_id=str(detail["workflow"]["brand_id"]))
         return detail
 
+    def require_current_assignment(detail: dict[str, Any], operator: OperatorIdentity) -> None:
+        if operator.is_admin:
+            return
+        workflow = detail["workflow"]
+        for assignment in detail.get("assignments", []):
+            if not assignment.get("active"):
+                continue
+            if str(assignment.get("workflow_version_id")) != str(workflow["current_version_id"]):
+                continue
+            if str(assignment.get("stage")) != str(workflow["current_stage"]):
+                continue
+            if str(assignment.get("assignee_operator_id")) != operator.operator_id:
+                raise HTTPException(status_code=403, detail="workflow_assigned_to_another_operator")
+            return
+
+    def require_comment_in_workflow(workflow_id: UUID, comment_id: UUID) -> None:
+        with require_database().connection() as conn:
+            row = conn.execute(
+                """SELECT v.workflow_id
+                   FROM football_brief.production_workflow_comments c
+                   JOIN football_brief.production_workflow_versions v
+                     ON v.id=c.workflow_version_id
+                   WHERE c.id=%s""",
+                (comment_id,),
+            ).fetchone()
+        if not row or str(row["workflow_id"]) != str(workflow_id):
+            raise HTTPException(status_code=404, detail="comment_not_found")
+
     @app.post("/production/content/{content_id}/workflow")
     def initialize_workflow(
         content_id: UUID,
@@ -187,6 +215,7 @@ def install_production_workflow_routes(
         stage = ProductionStage(detail["workflow"]["current_stage"])
         permission = delivery_or_production_permission(stage)
         require_access(operator, permission, brand_id=str(detail["workflow"]["brand_id"]))
+        require_current_assignment(detail, operator)
         try:
             result = require_service().update_snapshot(
                 workflow_id=workflow_id,
@@ -208,6 +237,7 @@ def install_production_workflow_routes(
         stage = ProductionStage(detail["workflow"]["current_stage"])
         permission = delivery_or_production_permission(stage)
         require_access(operator, permission, brand_id=str(detail["workflow"]["brand_id"]))
+        require_current_assignment(detail, operator)
         try:
             result = require_service().submit(
                 workflow_id=workflow_id,
@@ -229,6 +259,7 @@ def install_production_workflow_routes(
         stage = ProductionStage(detail["workflow"]["current_stage"])
         permission = AccessPermission.DELIVER_RELEASE if stage == ProductionStage.PUBLICATION else AccessPermission.REVIEW_CONTENT
         require_access(operator, permission, brand_id=str(detail["workflow"]["brand_id"]))
+        require_current_assignment(detail, operator)
         try:
             result = require_service().decide(
                 workflow_id=workflow_id,
@@ -310,6 +341,7 @@ def install_production_workflow_routes(
         operator: OperatorIdentity = Depends(authenticate),
     ) -> dict[str, Any]:
         require_workflow_access(workflow_id, operator, AccessPermission.READ_PORTFOLIO)
+        require_comment_in_workflow(workflow_id, comment_id)
         if not operator.is_admin and not (
             {OperatorRole.REVIEWER, OperatorRole.PRODUCER} & operator.roles
         ):
