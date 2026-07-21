@@ -5,6 +5,7 @@ from typing import Any
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 
+from src.application.scripts.runtime_patch import install_validated_script_service
 from src.infrastructure.database.connection import Database
 from src.operator_api.access_runtime import install_operator_access
 from src.operator_api.auth import OperatorAuthSettings
@@ -16,6 +17,9 @@ from src.operator_api.app import create_app
 from src.operator_api.production_workflow_runtime import install_production_workflow_routes
 from src.operator_api.runtime_config import OperatorRuntimeSettings, get_operator_runtime_settings
 from src.operator_api.scripts_runtime import install_script_routes
+
+
+install_validated_script_service()
 
 
 def create_configured_app(
