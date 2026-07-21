@@ -130,4 +130,6 @@
       body: JSON.stringify({ gate, decision, rationale })
     })
   };
+
+  void import("./brand-profile-admin.js");
 })();
