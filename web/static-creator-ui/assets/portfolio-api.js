@@ -55,6 +55,7 @@
     health: () => request("/health"),
     access: () => request("/access/me"),
     brands: () => request("/portfolio/brands"),
+    approvedVoices: () => request("/portfolio/approved-voices"),
     brandProfiles: (brandId) => request(`/portfolio/brands/${brandId}/profiles`),
     createBrandProfile: (brandId, payload) => request(`/portfolio/brands/${brandId}/profiles`, {
       method: "POST",
