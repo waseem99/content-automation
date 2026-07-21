@@ -1,0 +1,42 @@
+name: P99 Wire Worker Logging
+
+on:
+  push:
+    branches: [p99-production-operations]
+
+permissions:
+  contents: write
+
+jobs:
+  wire-worker-logging:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: p99-production-operations
+          fetch-depth: 0
+      - name: Use observed generation job service and remove helper
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('src/operator_api/generation_jobs_runtime.py')
+          source = path.read_text(encoding='utf-8')
+          old = 'from src.application.generation_jobs.service import GenerationJobError, GenerationJobService\n'
+          new = (
+              'from src.application.generation_jobs.service import GenerationJobError\n'
+              'from src.operations.job_logging import ObservedGenerationJobService as GenerationJobService\n'
+          )
+          if source.count(old) != 1:
+              raise SystemExit('Expected one generation service import')
+          path.write_text(source.replace(old, new), encoding='utf-8')
+          PY
+          rm .github/workflows/p99-wire-worker-logging.yml
+      - name: Commit runtime logging integration and remove helper
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/operator_api/generation_jobs_runtime.py .github/workflows/p99-wire-worker-logging.yml
+          git commit -m "P99 use structured worker job logging"
+          git push origin HEAD:p99-production-operations
