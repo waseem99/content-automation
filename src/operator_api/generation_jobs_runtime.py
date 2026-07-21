@@ -16,7 +16,8 @@ from src.application.generation_jobs.models import (
     GenerationJobType,
     LegacyGenerationRecord,
 )
-from src.application.generation_jobs.service import GenerationJobError, GenerationJobService
+from src.application.generation_jobs.service import GenerationJobError
+from src.operations.job_logging import ObservedGenerationJobService as GenerationJobService
 from src.infrastructure.database.connection import Database
 from src.operator_api.access import (
     AccessPermission,
