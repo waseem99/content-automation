@@ -15,8 +15,23 @@ from src.application.concepts.scoring import (
 from src.application.concepts.service import _json
 
 
+class HistoricalConceptSnapshot(list[dict[str, Any]]):
+    """A transaction-start history snapshot.
+
+    Approved candidates in the same slate have already passed the higher same-batch
+    duplicate threshold. They must not become historical matches for one another
+    merely because application inserts them sequentially in one transaction.
+    """
+
+    def append(self, item: dict[str, Any]) -> None:
+        return None
+
+
 class ValidatedConceptGenerationService(SafeConceptGenerationService):
     """Final P88 service with distinct historical and same-batch duplicate policy."""
+
+    def _historical_content(self, conn, brand_id: UUID) -> list[dict[str, Any]]:
+        return HistoricalConceptSnapshot(super()._historical_content(conn, brand_id))
 
     def _insert_candidate(
         self,
