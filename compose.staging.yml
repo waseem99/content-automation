@@ -18,6 +18,7 @@ services:
     networks: [staging]
 
   migrate:
+    image: content-automation:p99-local
     build:
       context: .
       dockerfile: Dockerfile
@@ -36,6 +37,7 @@ services:
     networks: [staging]
 
   api:
+    image: content-automation:p99-local
     build:
       context: .
       dockerfile: Dockerfile
