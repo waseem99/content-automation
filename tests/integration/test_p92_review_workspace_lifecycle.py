@@ -25,7 +25,7 @@ from src.application.visuals.models import (
 )
 from src.application.visuals.review_service import VisualReviewService
 from src.application.visuals.validated_service import ValidatedVisualProjectService
-from tests.integration.p89_script_support import p89_database
+from tests.integration.p89_script_support import p89_database, p89_seeded
 from tests.integration.p90_audio_support import p90_ready
 from tests.integration.p91_visual_support import p91_ready, project_request
 from tests.integration.test_p90_audio_lifecycle import (
