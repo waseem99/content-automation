@@ -7,7 +7,7 @@ from src.operator_api.access import OperatorIdentity, OperatorRole
 from src.operator_api.auth import OperatorAuthSettings
 from src.operator_api.runtime_config import OperatorRuntimeSettings
 from src.operator_api.runtime_factory import create_configured_app
-from tests.integration.p90_audio_support import p89_database, p90_ready
+from tests.integration.p90_audio_support import p89_database, p89_seeded, p90_ready
 
 
 pytestmark = pytest.mark.integration
