@@ -8,7 +8,7 @@ from src.operator_api.auth import OperatorAuthSettings
 from src.operator_api.runtime_config import OperatorRuntimeSettings
 from src.operator_api.runtime_factory import create_configured_app
 from tests.integration.p89_script_support import p89_database, p89_seeded
-from tests.integration.p91_visual_support import p91_ready, project_request
+from tests.integration.p91_visual_support import candidate_checks, p91_ready, project_request
 
 
 pytestmark = pytest.mark.integration
@@ -146,31 +146,26 @@ def test_visual_api_enforces_roles_brand_scope_and_local_defaults(p89_database, 
         if item["visual_shot_version_id"] == first_shot["current_version_id"]
     )
     candidate_id = first_candidate["id"]
+    valid_result = {
+        "asset_id": str(p91_ready["reference_asset_id"]),
+        "width": 704,
+        "height": 1280,
+        "mime_type": "image/png",
+        "provenance": {"local": True, "external_fee_incurred": False},
+        "checks": [item.model_dump(mode="json") for item in candidate_checks()],
+    }
 
-    assert client.post(
+    reviewer_result = client.post(
         f"/visuals/candidates/{candidate_id}/result",
         headers=reviewer,
-        json={
-            "asset_id": p91_ready["reference_asset_id"],
-            "width": 704,
-            "height": 1280,
-            "mime_type": "image/png",
-            "provenance": {"local": True},
-            "checks": [],
-        },
-    ).status_code == 422
+        json=valid_result,
+    )
+    assert reviewer_result.status_code == 403
 
     outsider_result = client.post(
         f"/visuals/candidates/{candidate_id}/result",
         headers=outsider,
-        json={
-            "asset_id": p91_ready["reference_asset_id"],
-            "width": 704,
-            "height": 1280,
-            "mime_type": "image/png",
-            "provenance": {"local": True},
-            "checks": [],
-        },
+        json=valid_result,
     )
     assert outsider_result.status_code == 403
 
