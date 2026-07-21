@@ -83,6 +83,14 @@ The test database must be disposable because the fixtures drop and recreate the 
   exact reviewed-version decisions, child revisions, assignments, due dates, comments, blocked
   reopening, and append-only evidence. It keeps `portfolio_content.stage` only as a compatibility
   projection and does not enable automatic approval, paid generation, scheduling, or publication.
+- `0032_unified_generation_jobs.sql` adds one content-version-bound queue for generation,
+  packaging, and delivery work with global idempotency, exclusive leased claims, heartbeats,
+  retained attempts, dependencies, costs, bounded retries, cancellation, dead-letter state,
+  and append-only lifecycle events. It stores structured metadata only; provider secrets and
+  media bytes remain outside PostgreSQL.
+- `0033_generation_job_queue_hardening.sql` binds workflow-version references to their parent
+  workflow and permits stale queued content versions to be moved directly into dead-letter state
+  without making terminal jobs editable again.
 
 ## Rollback
 
@@ -113,3 +121,17 @@ The application must additionally verify:
 - Approved, changes-requested, and rejected versions cannot return to a working state; a new child version is required.
 - When an active stage assignment exists, only that assignee or an administrator may mutate or decide the stage.
 - Rejected workflows remain blocked until an administrator records a reasoned reopen action.
+- Generation job idempotency reuses an existing record only when its content item, content version,
+  job type, provider, model, and canonical input fingerprint are identical; a conflicting reuse fails.
+- Workers may claim only job types allowed by their named role and only brands assigned to them.
+- Every worker claim receives a unique lease token; heartbeat, completion, and failure must match
+  the current worker, current attempt, unexpired lease, and token.
+- A cancelled or otherwise terminal generation job cannot later register output or be silently reopened.
+- Expired leases retain the timed-out attempt and either requeue the job or dead-letter it when the
+  bounded attempt limit is exhausted.
+- A queued, failed, or running job whose content version is no longer current is dead-lettered before
+  new output can enter the production workflow.
+- Dependencies must belong to the same content item and content version, and a child job cannot be
+  claimed until all parent jobs have succeeded.
+- Legacy P68 and file-ledger imports preserve source IDs, statuses, costs, paths, and attempt evidence
+  as metadata only; interrupted work is recovered to the queue and terminal imports are idempotent.

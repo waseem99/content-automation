@@ -32,7 +32,9 @@
     });
     const payload = await response.json().catch(() => ({}));
     if (!response.ok || payload.ok === false) {
-      throw new Error(payload.error || payload.detail || `API request failed (${response.status})`);
+      const detail = payload.detail;
+      const message = typeof detail === "object" && detail ? detail.code : detail;
+      throw new Error(payload.error || message || `API request failed (${response.status})`);
     }
     return payload;
   }
@@ -83,6 +85,17 @@
       if (filters.stage) query.set("stage", filters.stage);
       return request(`/portfolio/queue${query.size ? `?${query}` : ""}`);
     },
+    generationJobs: (filters = {}) => {
+      const query = new URLSearchParams();
+      if (filters.brandId) query.set("brand_id", filters.brandId);
+      if (filters.status) query.append("status", filters.status);
+      if (filters.jobType) query.append("job_type", filters.jobType);
+      if (filters.workerId) query.set("worker_id", filters.workerId);
+      if (filters.contentId) query.set("content_id", filters.contentId);
+      if (filters.limit) query.set("limit", String(filters.limit));
+      return request(`/generation/jobs${query.size ? `?${query}` : ""}`);
+    },
+    generationJob: (jobId) => request(`/generation/jobs/${jobId}`),
     content: (contentId) => request(`/portfolio/content/${contentId}`),
     updateWorkspace: (contentId, payload) => request(`/portfolio/content/${contentId}/workspace`, {
       method: "POST",
@@ -132,12 +145,18 @@
     })
   };
 
-  if (!document.querySelector('link[data-brand-profile-admin="true"]')) {
-    const style = document.createElement("link");
-    style.rel = "stylesheet";
-    style.href = new URL("brand-profile-admin.css", scriptBase).href;
-    style.dataset.brandProfileAdmin = "true";
-    document.head.appendChild(style);
-  }
-  void import(new URL("brand-profile-admin.js", scriptBase).href);
+  const modules = [
+    ["brand-profile-admin", "brand-profile-admin.css", "brand-profile-admin.js"],
+    ["generation-queue", "generation-queue.css", "generation-queue.js"]
+  ];
+  modules.forEach(([key, css, js]) => {
+    if (!document.querySelector(`link[data-studio-module="${key}"]`)) {
+      const style = document.createElement("link");
+      style.rel = "stylesheet";
+      style.href = new URL(css, scriptBase).href;
+      style.dataset.studioModule = key;
+      document.head.appendChild(style);
+    }
+    void import(new URL(js, scriptBase).href);
+  });
 })();

@@ -1,0 +1,209 @@
+.generation-queue-section {
+  margin-top: 2rem;
+  padding: clamp(1rem, 2vw, 1.75rem);
+  border: 1px solid rgba(20, 30, 43, 0.12);
+  border-radius: 1.25rem;
+  background: rgba(255, 255, 255, 0.84);
+  box-shadow: 0 1rem 2.5rem rgba(20, 30, 43, 0.06);
+}
+
+.generation-queue-heading,
+.generation-queue-filters,
+.generation-detail-summary {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.generation-queue-heading h3,
+.generation-job-detail h2 {
+  margin: 0.2rem 0 0.4rem;
+}
+
+.generation-queue-heading p:last-child {
+  max-width: 58rem;
+  margin: 0;
+}
+
+.generation-queue-metrics {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin: 1.2rem 0;
+}
+
+.generation-metric {
+  display: grid;
+  gap: 0.2rem;
+  min-width: 0;
+  padding: 0.85rem;
+  border: 1px solid rgba(20, 30, 43, 0.1);
+  border-radius: 0.9rem;
+  background: #fff;
+}
+
+.generation-metric span,
+.generation-metric small {
+  color: #5d6877;
+}
+
+.generation-metric strong {
+  overflow-wrap: anywhere;
+  font-size: 1.15rem;
+}
+
+.generation-queue-filters {
+  justify-content: flex-start;
+  align-items: end;
+  margin-bottom: 0.8rem;
+}
+
+.generation-filter {
+  display: grid;
+  gap: 0.35rem;
+  min-width: 10rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.generation-filter select,
+.generation-filter input {
+  min-height: 2.65rem;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid rgba(20, 30, 43, 0.16);
+  border-radius: 0.7rem;
+  background: #fff;
+}
+
+.generation-queue-status {
+  min-height: 1.4rem;
+  margin: 0.5rem 0;
+  color: #5d6877;
+  font-size: 0.9rem;
+}
+
+.generation-table td {
+  vertical-align: top;
+}
+
+.generation-table td strong,
+.generation-table td span,
+.generation-table td small {
+  display: block;
+}
+
+.generation-job-type {
+  margin: 0.2rem 0;
+  text-transform: capitalize;
+}
+
+.generation-status {
+  display: inline-flex !important;
+  width: max-content;
+  padding: 0.24rem 0.55rem;
+  border-radius: 999px;
+  text-transform: capitalize;
+  font-size: 0.75rem;
+  font-weight: 800;
+  background: #eef1f5;
+}
+
+.generation-status-running { background: #e7f1ff; color: #0b5db5; }
+.generation-status-succeeded { background: #e5f7ec; color: #176b3b; }
+.generation-status-failed,
+.generation-status-dead_letter { background: #ffe7e7; color: #9d2424; }
+.generation-status-cancelled { background: #f1edf8; color: #62507b; }
+.generation-status-queued { background: #fff5d8; color: #795b00; }
+
+.generation-error-code {
+  margin-top: 0.35rem;
+  color: #9d2424;
+  overflow-wrap: anywhere;
+}
+
+.generation-empty {
+  padding: 1.5rem !important;
+  text-align: center;
+  color: #5d6877;
+}
+
+.generation-job-dialog {
+  width: min(72rem, calc(100vw - 2rem));
+  max-height: calc(100vh - 2rem);
+  padding: 1.2rem;
+  border: 0;
+  border-radius: 1.2rem;
+  box-shadow: 0 2rem 5rem rgba(0, 0, 0, 0.24);
+}
+
+.generation-job-dialog::backdrop {
+  background: rgba(8, 14, 24, 0.66);
+}
+
+.generation-detail-summary {
+  align-items: stretch;
+  justify-content: flex-start;
+  margin: 1rem 0;
+}
+
+.generation-detail-summary .generation-metric {
+  flex: 1 1 9rem;
+}
+
+.generation-detail-error {
+  padding: 0.9rem;
+  margin: 1rem 0;
+  border: 1px solid rgba(157, 36, 36, 0.25);
+  border-radius: 0.8rem;
+  background: #fff2f2;
+  color: #7a1e1e;
+}
+
+.generation-detail-error p {
+  margin-bottom: 0;
+}
+
+.generation-detail-block {
+  margin-top: 1rem;
+}
+
+.generation-detail-block h4 {
+  margin-bottom: 0.4rem;
+}
+
+.generation-detail-block pre {
+  max-height: 22rem;
+  overflow: auto;
+  padding: 0.85rem;
+  border-radius: 0.8rem;
+  background: #111923;
+  color: #eaf0f7;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+@media (max-width: 960px) {
+  .generation-queue-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .generation-queue-metrics {
+    grid-template-columns: 1fr;
+  }
+
+  .generation-filter {
+    width: 100%;
+  }
+
+  .generation-table-wrap {
+    overflow-x: auto;
+  }
+
+  .generation-table {
+    min-width: 64rem;
+  }
+}
