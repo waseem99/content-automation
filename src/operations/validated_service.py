@@ -50,13 +50,13 @@ class ValidatedOperationsService(OperationsService):
                        count(*) FILTER (
                            WHERE status IN ('failed','superseded') AND finished_at IS NOT NULL
                        ) AS failed,
-                       COALESCE(avg(extract(epoch FROM (finished_at-started_at)))
+                       COALESCE(avg(extract(epoch FROM (finished_at-claimed_at)))
                            FILTER (WHERE finished_at IS NOT NULL),0) AS average_duration_seconds,
                        COALESCE(percentile_cont(0.95) WITHIN GROUP (
-                           ORDER BY extract(epoch FROM (finished_at-started_at))
+                           ORDER BY extract(epoch FROM (finished_at-claimed_at))
                        ) FILTER (WHERE finished_at IS NOT NULL),0) AS p95_duration_seconds
                    FROM football_brief.generation_job_attempts
-                   WHERE started_at>=now()-(%s*interval '1 second')""",
+                   WHERE claimed_at>=now()-(%s*interval '1 second')""",
                 (limits.failure_window_seconds,),
             ).fetchone()
             storage = conn.execute(
