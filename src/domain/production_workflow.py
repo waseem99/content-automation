@@ -18,6 +18,7 @@ class ProductionStage(StrEnum):
     STORYBOARD_REVIEW = "storyboard_review"
     LOCAL_PREVIEW_GENERATION = "local_preview_generation"
     LOCAL_PREVIEW_REVIEW = "local_preview_review"
+    SPEND_PREPARATION = "spend_preparation"
     SPEND_APPROVAL = "spend_approval"
     PREMIUM_PRODUCTION = "premium_production"
     FINAL_ASSEMBLY = "final_assembly"
@@ -64,6 +65,7 @@ WORK_SUBMIT_TARGET: dict[ProductionStage, ProductionStage] = {
     ProductionStage.NARRATION_GENERATION: ProductionStage.NARRATION_REVIEW,
     ProductionStage.STORYBOARD_GENERATION: ProductionStage.STORYBOARD_REVIEW,
     ProductionStage.LOCAL_PREVIEW_GENERATION: ProductionStage.LOCAL_PREVIEW_REVIEW,
+    ProductionStage.SPEND_PREPARATION: ProductionStage.SPEND_APPROVAL,
     ProductionStage.PREMIUM_PRODUCTION: ProductionStage.FINAL_ASSEMBLY,
     ProductionStage.FINAL_ASSEMBLY: ProductionStage.FINAL_REVIEW,
     ProductionStage.PACKAGE_PREPARATION: ProductionStage.PACKAGE_APPROVAL,
@@ -75,7 +77,7 @@ REVIEW_APPROVAL_TARGET: dict[ProductionStage, ProductionStage] = {
     ProductionStage.SCRIPT_REVIEW: ProductionStage.NARRATION_GENERATION,
     ProductionStage.NARRATION_REVIEW: ProductionStage.STORYBOARD_GENERATION,
     ProductionStage.STORYBOARD_REVIEW: ProductionStage.LOCAL_PREVIEW_GENERATION,
-    ProductionStage.LOCAL_PREVIEW_REVIEW: ProductionStage.SPEND_APPROVAL,
+    ProductionStage.LOCAL_PREVIEW_REVIEW: ProductionStage.SPEND_PREPARATION,
     ProductionStage.SPEND_APPROVAL: ProductionStage.PREMIUM_PRODUCTION,
     ProductionStage.FINAL_REVIEW: ProductionStage.PACKAGE_PREPARATION,
     ProductionStage.PACKAGE_APPROVAL: ProductionStage.SCHEDULING,
@@ -88,7 +90,7 @@ REVIEW_REVISION_TARGET: dict[ProductionStage, ProductionStage] = {
     ProductionStage.NARRATION_REVIEW: ProductionStage.NARRATION_GENERATION,
     ProductionStage.STORYBOARD_REVIEW: ProductionStage.STORYBOARD_GENERATION,
     ProductionStage.LOCAL_PREVIEW_REVIEW: ProductionStage.LOCAL_PREVIEW_GENERATION,
-    ProductionStage.SPEND_APPROVAL: ProductionStage.LOCAL_PREVIEW_GENERATION,
+    ProductionStage.SPEND_APPROVAL: ProductionStage.SPEND_PREPARATION,
     ProductionStage.FINAL_REVIEW: ProductionStage.FINAL_ASSEMBLY,
     ProductionStage.PACKAGE_APPROVAL: ProductionStage.PACKAGE_PREPARATION,
     ProductionStage.PUBLICATION: ProductionStage.SCHEDULING,
@@ -105,6 +107,7 @@ STAGE_REQUIREMENTS: dict[ProductionStage, tuple[str, ...]] = {
     ProductionStage.STORYBOARD_REVIEW: ("storyboard",),
     ProductionStage.LOCAL_PREVIEW_GENERATION: ("preview_artifact_ids",),
     ProductionStage.LOCAL_PREVIEW_REVIEW: ("preview_artifact_ids",),
+    ProductionStage.SPEND_PREPARATION: ("spend_estimate", "spend_ceiling"),
     ProductionStage.SPEND_APPROVAL: ("spend_estimate", "spend_ceiling"),
     ProductionStage.PREMIUM_PRODUCTION: ("premium_artifact_ids",),
     ProductionStage.FINAL_ASSEMBLY: ("final_video_artifact_id",),
@@ -129,6 +132,7 @@ COMPATIBILITY_STAGE: dict[ProductionStage, str] = {
     ProductionStage.STORYBOARD_REVIEW: "preview",
     ProductionStage.LOCAL_PREVIEW_GENERATION: "preview",
     ProductionStage.LOCAL_PREVIEW_REVIEW: "preview",
+    ProductionStage.SPEND_PREPARATION: "premium",
     ProductionStage.SPEND_APPROVAL: "premium",
     ProductionStage.PREMIUM_PRODUCTION: "premium",
     ProductionStage.FINAL_ASSEMBLY: "package",
