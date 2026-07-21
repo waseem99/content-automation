@@ -113,7 +113,7 @@ class CandidateResult(BaseModel):
     provenance: dict[str, Any]
     duplicate_candidate_id: UUID | None = None
     duplicate_similarity: float | None = Field(default=None, ge=0, le=1)
-    checks: list[CandidateCheck] = Field(min_length=10, max_length=10)
+    checks: list[CandidateCheck]
 
     @model_validator(mode="after")
     def all_required_checks_once(self) -> "CandidateResult":
