@@ -10,7 +10,11 @@ from src.operator_api.access import (
     require_access,
     visible_brand_ids,
 )
-from src.operator_api.access_runtime import _brand_is_required, _required_permission
+from src.operator_api.access_runtime import (
+    _brand_is_required,
+    _required_permission,
+    self_review_conflict,
+)
 from src.operator_api.auth import OperatorAuthSettings
 
 
@@ -94,10 +98,30 @@ def test_brand_scope_is_required_for_mutating_existing_content() -> None:
     assert not _brand_is_required("POST", "/portfolio/references")
 
 
+def test_reviewer_cannot_approve_own_preview_or_final_artifact() -> None:
+    own_preview = [
+        {"kind": "voiceover", "created_by": "person.one"},
+        {"kind": "preview", "created_by": "other.person"},
+    ]
+    assert self_review_conflict(stage="preview", reviewer="person.one", artifacts=own_preview)
+    assert not self_review_conflict(stage="preview", reviewer="independent.reviewer", artifacts=own_preview)
+    assert self_review_conflict(
+        stage="package",
+        reviewer="person.one",
+        artifacts=[{"kind": "final_video", "created_by": "person.one"}],
+    )
+    assert not self_review_conflict(
+        stage="script",
+        reviewer="person.one",
+        artifacts=[{"kind": "preview", "created_by": "person.one"}],
+    )
+
+
 def test_access_migration_and_runtime_wiring_are_present() -> None:
     migration = (ROOT / "migrations" / "0029_operator_access_control.sql").read_text(encoding="utf-8")
     runtime = (ROOT / "src" / "operator_api" / "runtime_factory.py").read_text(encoding="utf-8")
     entrypoint = (ROOT / "src" / "operator_api" / "entrypoint.py").read_text(encoding="utf-8")
+    access_runtime = (ROOT / "src" / "operator_api" / "access_runtime.py").read_text(encoding="utf-8")
 
     assert migration.startswith("-- Football Brief")
     assert "CREATE TABLE football_brief.operator_users" in migration
@@ -108,3 +132,4 @@ def test_access_migration_and_runtime_wiring_are_present() -> None:
     assert migration.rstrip().endswith("COMMIT;")
     assert "install_operator_access" in runtime
     assert "resolve_identities_from_database=True" in entrypoint
+    assert "self_review_not_allowed" in access_runtime
