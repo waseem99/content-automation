@@ -47,8 +47,10 @@ jobs:
           python -m compileall -q \
             src/application/releases \
             src/operator_api/releases_runtime.py \
+            src/operator_api/releases_validated_runtime.py \
             src/operator_api/runtime_factory.py \
             tests/unit/test_p96_final_release_contracts.py \
+            tests/integration/p96_release_support.py \
             tests/integration/test_p96_final_release_lifecycle.py \
             tests/integration/test_p96_final_release_api.py
       - name: Apply migrations
