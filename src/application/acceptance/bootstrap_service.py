@@ -138,6 +138,13 @@ class AcceptanceBootstrapService(ValidatedAcceptancePilotService):
                         },
                     )
 
+                # Bootstrap is rare and bounded. Serializing acceptance-item writers here
+                # closes the preflight-to-insert race with the existing manual add-item path
+                # while leaving read-only candidate/readiness traffic unblocked.
+                conn.execute(
+                    "LOCK TABLE football_brief.acceptance_pilot_items "
+                    "IN SHARE ROW EXCLUSIVE MODE"
+                )
                 bindings = conn.execute(
                     """SELECT api.portfolio_content_id,api.content_version,
                               ap.id AS pilot_id,ap.pilot_key,ap.version AS pilot_version,
