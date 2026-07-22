@@ -23,6 +23,12 @@ def test_ai_video_animation_social_request_is_genuine() -> None:
     )
     assert result.disposition is OpportunityDisposition.NEEDS_RESEARCH
     assert result.status_label == GENUINE_LABEL
+    assert result.status == "Genuine / needs research"
+    assert result.service == "branding_marketing"
+    assert result.intent == "direct_requirement"
+    assert result.priority == "C"
+    assert result.owner == "Waseem"
+    assert result.win_potential == "Unverified"
     assert set(result.matched_services) == {
         "digital_marketing",
         "social_media",
