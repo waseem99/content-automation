@@ -33,6 +33,7 @@ class OperationsDrillKind(StrEnum):
     WORKER_FAILURE_ALERT = "worker_failure_alert"
     LOW_STORAGE_ALERT = "low_storage_alert"
     SECURITY_SCAN = "security_scan"
+    RUNBOOK_VALIDATION = "runbook_validation"
 
 
 class OperationsDrillStatus(StrEnum):
