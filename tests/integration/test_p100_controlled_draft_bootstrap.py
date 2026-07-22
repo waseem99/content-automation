@@ -70,6 +70,7 @@ def script_request(seed: int) -> ScriptGenerateRequest:
 
 
 def source_request(*, expected_lock: int, suffix: str) -> SourceSupportUpdateRequest:
+    digest_character = "a" if suffix.startswith("animal-x") else "b"
     source = SourceDraft(
         source_key="source-primary",
         source_type=SourceType.ACADEMIC,
@@ -79,7 +80,7 @@ def source_request(*, expected_lock: int, suffix: str) -> SourceSupportUpdateReq
         quality_score=95,
         rights_declaration=SourceRightsDeclaration.PUBLICLY_ACCESSIBLE,
         permitted_use="Factual verification and paraphrased educational explanation",
-        evidence_digest=(suffix[0] if suffix else "a") * 64,
+        evidence_digest=digest_character * 64,
         notes="No source wording or media is copied into the output.",
     )
     return SourceSupportUpdateRequest(
@@ -205,11 +206,11 @@ def seed_selectable_contents(database, seeded) -> dict[str, object]:
                     """INSERT INTO football_brief.portfolio_content
                        (plan_id,scheduled_for,title,concept,format,concept_fingerprint,
                         semantic_key,brand_profile_id,narration_preset_id)
-                       VALUES (%s,DATE '2026-12-0' || %s,%s,%s,'vertical_short',%s,%s,%s,%s)
+                       VALUES (%s,DATE '2026-12-01' + %s,%s,%s,'vertical_short',%s,%s,%s,%s)
                        RETURNING id,version""",
                     (
                         plan["id"],
-                        ordinal + 1,
+                        ordinal,
                         f"{name} controlled pilot {ordinal}",
                         f"Explain an original {name} mechanism for controlled pilot item {ordinal}.",
                         (marker + str(ordinal)) * 32,
