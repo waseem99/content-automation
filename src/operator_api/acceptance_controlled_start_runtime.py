@@ -5,6 +5,7 @@ from uuid import UUID
 
 import psycopg
 from fastapi import Depends, FastAPI, HTTPException
+from fastapi.encoders import jsonable_encoder
 
 from src.application.acceptance.controlled_start_models import (
     PilotControlledStartRequest,
@@ -76,7 +77,7 @@ def install_acceptance_controlled_start_routes(
                 status = 409
             raise HTTPException(
                 status_code=status,
-                detail={"code": exc.code, **exc.details},
+                detail=jsonable_encoder({"code": exc.code, **exc.details}),
             ) from exc
         except psycopg.Error as exc:
             raise HTTPException(
