@@ -1,0 +1,58 @@
+name: P101 P103 Local Operator Runtime
+
+on:
+  pull_request:
+    branches: [test]
+    paths:
+      - "src/operator_api/**"
+      - "src/operations/local_*"
+      - "web/static-creator-ui/**"
+      - "compose.local.yml"
+      - "config/local.env.example"
+      - "config/ngrok.local.example.yml"
+      - "scripts/local_golden_path_smoke.py"
+      - "scripts/windows/start_local_production.ps1"
+      - "scripts/windows/stop_local_production.ps1"
+      - "docs/operations/LOCAL_PRODUCTION_RUNBOOK.md"
+      - "README.md"
+      - "tests/unit/test_p101_*"
+      - "tests/unit/test_p103_*"
+      - ".github/workflows/p101-p103-local-operator-runtime.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: p101-p103-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  contracts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: python -m pip install -r requirements.txt
+      - name: Compile application
+        run: python -m compileall -q src tests scripts/local_golden_path_smoke.py
+      - name: JavaScript syntax
+        run: |
+          node --check web/static-creator-ui/assets/portfolio-api.js
+          node --check web/static-creator-ui/assets/p100-api-compat.js
+          node --check web/static-creator-ui/assets/production-console.js
+      - name: Focused contracts
+        run: >
+          python -m pytest -q
+          tests/unit/test_p101_p103_local_runtime_contracts.py
+          tests/unit/test_p103_local_onboarding_contracts.py
+      - name: No deployment or live publishing
+        shell: bash
+        run: |
+          ! grep -R -n -E "vercel deploy|vercel --prod|live[_ -]publish|automatic[_ -]publish" \
+            src/operations/local_* scripts/windows/start_local_production.ps1 \
+            compose.local.yml config/local.env.example

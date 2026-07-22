@@ -9,6 +9,9 @@ __pycache__/
 .venv-kokoro/
 
 .env
+.env.local
+config/*.local.env
+config/ngrok.local.yml
 
 data/output/**/*
 !data/output/.gitkeep
