@@ -12,7 +12,7 @@ UPDATE football_brief.acceptance_pilots ap
        (
            SELECT ape.actor
              FROM football_brief.acceptance_pilot_events ape
-            WHERE ape.pilot_id=ap.id AND ape.event_type='pilot_started'
+            WHERE ape.pilot_id=ap.id AND ape.event='pilot_started'
             ORDER BY ape.created_at,ape.id
             LIMIT 1
        ),
