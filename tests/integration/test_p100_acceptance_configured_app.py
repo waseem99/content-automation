@@ -57,7 +57,7 @@ def acceptance_client(database, ready) -> TestClient:
             git_sha="1" * 40,
             image_digest="sha256:" + "2" * 64,
             configuration_digest="3" * 64,
-            migration_head="0088_acceptance_release_tag_and_runbook.sql",
+            migration_head="0089_acceptance_runbook_drill.sql",
             requests_per_minute=1000,
             storage_capacity_bytes=1024 * 1024,
         ),
@@ -118,6 +118,10 @@ def test_configured_app_installs_acceptance_routes_and_keeps_live_execution_abse
         json=accept_payload,
     )
     assert denied_accept.status_code == 403
+
+    started = client.post(f"/acceptance/pilots/{pilot['id']}/start", headers=admin)
+    assert started.status_code == 200, started.text
+    assert started.json()["pilot"]["status"] == "running"
 
     premature_accept = client.post(
         f"/acceptance/pilots/{pilot['id']}/accept",
