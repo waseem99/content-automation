@@ -75,7 +75,7 @@ jobs:
       - name: Prove candidate inventory is read only and deployment neutral
         run: |
           ! grep -n -E '@app\.(post|put|patch|delete)' src/operator_api/acceptance_candidates_runtime.py
-          ! grep -R -n -E "provider\.submit|enqueue|reserve_spend|execute_live_deliver[y]|submit_live_deliver[y]|vercel depl[o]y|vercel --pr[o]d|docker pus[h]|kubectl appl[y]|gh release creat[e]" \
+          ! grep -R -n -E "provider\.submi[t]|enqueu[e]|reserve_spen[d]|execute_live_deliver[y]|submit_live_deliver[y]|vercel depl[o]y|vercel --pr[o]d|docker pus[h]|kubectl appl[y]|gh release creat[e]" \
             src/application/acceptance/candidate_service.py \
             src/operator_api/acceptance_candidates_runtime.py \
             tests/integration/test_p100_pilot_candidate_discovery.py \
