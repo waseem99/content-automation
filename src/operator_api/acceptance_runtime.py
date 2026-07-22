@@ -11,6 +11,7 @@ from src.application.acceptance.models import (
     DefectResolveRequest,
     LiveDeliveryEvidenceRequest,
     OperationsEvidenceRequest,
+    PilotAcceptRequest,
     PilotCreateRequest,
     PilotItemRequest,
     SignoffRequest,
@@ -195,7 +196,15 @@ def install_acceptance_routes(
     @app.post("/acceptance/pilots/{pilot_id}/accept")
     def accept_pilot(
         pilot_id: UUID,
+        request: PilotAcceptRequest,
         operator: OperatorIdentity = Depends(authenticate),
     ) -> dict[str, Any]:
         require_admin(operator)
-        return {"operator": operator.operator_id, **invoke(lambda: require_service().accept(pilot_id=pilot_id, actor=operator.operator_id))}
+        return {
+            "operator": operator.operator_id,
+            **invoke(lambda: require_service().accept(
+                pilot_id=pilot_id,
+                request=request,
+                actor=operator.operator_id,
+            )),
+        }
