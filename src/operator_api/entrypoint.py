@@ -38,9 +38,31 @@ def _open_runtime_database(settings: OperatorRuntimeSettings) -> Database | None
     return database
 
 
+def _environment_flag(name: str, *, default: bool) -> bool:
+    raw = os.getenv(name, "").strip().lower()
+    if not raw:
+        return default
+    if raw in {"1", "true", "yes", "on"}:
+        return True
+    if raw in {"0", "false", "no", "off"}:
+        return False
+    raise RuntimeError(f"{name} must be true or false")
+
+
 def _operator_auth_from_environment() -> OperatorAuthSettings:
+    environment = os.getenv("OPS_ENVIRONMENT", "development").strip().lower()
+    enabled = _environment_flag("OPERATOR_AUTH_ENABLED", default=True)
+    if not enabled:
+        if environment == "production":
+            raise RuntimeError("OPERATOR_AUTH_ENABLED cannot be false in production")
+        return OperatorAuthSettings.disabled_for_local_tests(
+            operator_id="staging-local-operator"
+        )
+
     raw = os.getenv("OPERATOR_API_KEYS_JSON", "").strip()
     if not raw:
+        if environment == "production":
+            raise RuntimeError("OPERATOR_API_KEYS_JSON is required in production")
         return OperatorAuthSettings()
     try:
         value = json.loads(raw)
