@@ -192,22 +192,22 @@ jobs:
       - name: Bandit repository scan
         id: bandit
         continue-on-error: true
-        run: bandit -r src -ll -iii -s B603,B607 -f json -o /tmp/p99-bandit.json
-      - name: Dependency audit
-        id: pip_audit
-        continue-on-error: true
-        run: pip-audit -r requirements.txt --progress-spinner off --format json --output /tmp/p99-pip-audit.json
+        run: |
+          bandit -r src -ll -iii -s B603,B607 -f json -o /tmp/p99-bandit.json \
+            2> >(tee /tmp/p99-bandit.stderr >&2)
       - name: Recreate and smoke-test disposable staging
         id: staging
         continue-on-error: true
+        shell: bash
         run: |
           set -euo pipefail
+          exec > >(tee /tmp/p99-staging-command.log) 2>&1
           cleanup() {
             docker compose --env-file config/staging.env.example -f compose.staging.yml logs --no-color > /tmp/p99-staging.log 2>&1 || true
             docker compose --env-file config/staging.env.example -f compose.staging.yml down -v --remove-orphans || true
           }
           trap cleanup EXIT
-          docker compose --env-file config/staging.env.example -f compose.staging.yml build api migrate
+          docker compose --env-file config/staging.env.example -f compose.staging.yml build --progress plain api migrate
           docker compose --env-file config/staging.env.example -f compose.staging.yml up -d postgres
           docker compose --env-file config/staging.env.example -f compose.staging.yml up --no-log-prefix migrate
           docker compose --env-file config/staging.env.example -f compose.staging.yml up -d --no-deps api
@@ -225,6 +225,16 @@ jobs:
           fi
           grep -q '"ok":true' /tmp/p99-readiness.json
           docker image inspect content-automation:p99-local > /tmp/p99-image-inspect.json
+          docker run --rm --entrypoint python content-automation:p99-local -m pip freeze --all \
+            > /tmp/p99-image-requirements.txt
+          test -s /tmp/p99-image-requirements.txt
+      - name: Audit exact resolved image dependencies
+        id: pip_audit
+        continue-on-error: true
+        run: |
+          pip-audit -r /tmp/p99-image-requirements.txt --no-deps --progress-spinner off \
+            --format json --output /tmp/p99-pip-audit.json \
+            2> >(tee /tmp/p99-pip-audit.stderr >&2)
       - name: Scan local container image
         id: trivy
         continue-on-error: true
@@ -255,10 +265,14 @@ jobs:
           path: |
             /tmp/p99-compose-rendered.yml
             /tmp/p99-bandit.json
-            /tmp/p99-pip-audit.json
+            /tmp/p99-bandit.stderr
+            /tmp/p99-staging-command.log
+            /tmp/p99-staging.log
             /tmp/p99-readiness.json
             /tmp/p99-image-inspect.json
-            /tmp/p99-staging.log
+            /tmp/p99-image-requirements.txt
+            /tmp/p99-pip-audit.json
+            /tmp/p99-pip-audit.stderr
             /tmp/p99-trivy.json
       - name: Enforce staging and security results
         if: always()
@@ -276,3 +290,8 @@ jobs:
           test "$STAGING_OUTCOME" = success
           test "$TRIVY_OUTCOME" = success
           test "$DEPLOYMENT_BOUNDARY_OUTCOME" = success
+          test -s /tmp/p99-bandit.json
+          test -s /tmp/p99-pip-audit.json
+          test -s /tmp/p99-readiness.json
+          test -s /tmp/p99-image-inspect.json
+          test -s /tmp/p99-trivy.json
