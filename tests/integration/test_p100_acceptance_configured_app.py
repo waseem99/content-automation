@@ -5,6 +5,7 @@ from uuid import uuid4
 from fastapi.testclient import TestClient
 import pytest
 
+from src.application.acceptance.validated_service import p100_runbook_sha256
 from src.operations.settings import OperationsSettings
 from src.operator_api.access import OperatorIdentity, OperatorRole
 from src.operator_api.auth import OperatorAuthSettings
@@ -56,7 +57,7 @@ def acceptance_client(database, ready) -> TestClient:
             git_sha="1" * 40,
             image_digest="sha256:" + "2" * 64,
             configuration_digest="3" * 64,
-            migration_head="0087_acceptance_aggregate_evidence_integrity.sql",
+            migration_head="0088_acceptance_release_tag_and_runbook.sql",
             requests_per_minute=1000,
             storage_capacity_bytes=1024 * 1024,
         ),
@@ -74,6 +75,7 @@ def test_configured_app_installs_acceptance_routes_and_keeps_live_execution_abse
 
     registered_paths = {route.path for route in client.app.routes}
     assert "/acceptance/pilots" in registered_paths
+    assert "/acceptance/pilots/{pilot_id}/accept" in registered_paths
     assert "/acceptance/pilots/{pilot_id}/live-delivery-evidence" in registered_paths
     assert not any(
         "execute-live" in path or "submit-live" in path
@@ -92,8 +94,38 @@ def test_configured_app_installs_acceptance_routes_and_keeps_live_execution_abse
 
     created = client.post("/acceptance/pilots", headers=admin, json=payload)
     assert created.status_code == 200, created.text
-    assert created.json()["pilot"]["status"] == "draft"
-    assert created.json()["pilot"]["scope"]["total_items"] == 4
+    pilot = created.json()["pilot"]
+    assert pilot["status"] == "draft"
+    assert pilot["scope"]["total_items"] == 4
+
+    missing_body = client.post(f"/acceptance/pilots/{pilot['id']}/accept", headers=admin)
+    assert missing_body.status_code == 422
+
+    malformed = client.post(
+        f"/acceptance/pilots/{pilot['id']}/accept",
+        headers=admin,
+        json={"production_release_tag": "release-1", "runbook_sha256": "bad"},
+    )
+    assert malformed.status_code == 422
+
+    accept_payload = {
+        "production_release_tag": "prod-p100-configured-app-01",
+        "runbook_sha256": p100_runbook_sha256(),
+    }
+    denied_accept = client.post(
+        f"/acceptance/pilots/{pilot['id']}/accept",
+        headers=producer,
+        json=accept_payload,
+    )
+    assert denied_accept.status_code == 403
+
+    premature_accept = client.post(
+        f"/acceptance/pilots/{pilot['id']}/accept",
+        headers=admin,
+        json=accept_payload,
+    )
+    assert premature_accept.status_code == 422
+    assert premature_accept.json()["detail"]["code"] == "acceptance_pilot_integrity_violation"
 
     nonexistent_execution = client.post(
         f"/acceptance/pilots/{uuid4()}/execute-live-delivery",
