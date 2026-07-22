@@ -100,6 +100,20 @@ class PilotRetireRequest(BaseModel):
     reason: str = Field(min_length=3, max_length=3000)
 
 
+class PilotAcceptRequest(BaseModel):
+    production_release_tag: str = Field(
+        min_length=8,
+        max_length=160,
+        pattern=r"^prod-[a-z0-9][a-z0-9._-]{3,154}$",
+    )
+    runbook_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+
+    @field_validator("production_release_tag", mode="before")
+    @classmethod
+    def normalize_release_tag(cls, value: str) -> str:
+        return value.strip().lower()
+
+
 class PilotItemRequest(BaseModel):
     portfolio_content_id: UUID
     content_version: int = Field(ge=1)
