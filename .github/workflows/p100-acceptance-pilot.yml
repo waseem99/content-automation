@@ -4,7 +4,7 @@ on:
   push:
     branches: [p100-acceptance-pilot]
   pull_request:
-    branches: [test, p99-production-operations]
+    branches: [test]
   workflow_dispatch:
 
 concurrency:
@@ -58,7 +58,8 @@ jobs:
             src/operator_api/runtime_factory.py \
             tests/unit/test_p100_acceptance_contracts.py \
             tests/integration/test_p100_acceptance_foundation.py \
-            tests/integration/test_p100_acceptance_configured_app.py
+            tests/integration/test_p100_acceptance_configured_app.py \
+            tests/integration/test_p100_acceptance_role_scope.py
       - name: Apply and verify complete migration chain
         run: |
           set -o pipefail
@@ -70,6 +71,7 @@ jobs:
             tests/unit/test_p100_acceptance_contracts.py \
             tests/integration/test_p100_acceptance_foundation.py \
             tests/integration/test_p100_acceptance_configured_app.py \
+            tests/integration/test_p100_acceptance_role_scope.py \
             2>&1 | tee p100-tests.log
       - name: Prove no live delivery or deployment action exists
         run: |
