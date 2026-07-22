@@ -3,7 +3,7 @@ from __future__ import annotations
 import psycopg
 import pytest
 
-from src.application.acceptance import AcceptancePilotService
+from src.application.acceptance import AcceptancePilotError, AcceptancePilotService
 from src.application.acceptance.models import (
     PilotAcceptRequest,
     PilotCreateRequest,
@@ -170,7 +170,7 @@ def test_pilot_scope_blocks_direct_pass_and_revises_through_retirement(
             actor=p89_seeded["admin"],
         )
 
-    with pytest.raises(psycopg.Error, match="four passed items"):
+    with pytest.raises(AcceptancePilotError) as premature:
         service.accept(
             pilot_id=pilot_id,
             request=PilotAcceptRequest(
@@ -179,6 +179,12 @@ def test_pilot_scope_blocks_direct_pass_and_revises_through_retirement(
             ),
             actor=p89_seeded["admin"],
         )
+    assert premature.value.code == "pilot_not_ready_for_acceptance"
+    blocker_codes = {entry["code"] for entry in premature.value.details["blockers"]}
+    assert "pilot_item_canonical_evidence_incomplete" in blocker_codes
+    assert "pilot_operations_evidence_missing" in blocker_codes
+    assert "pilot_signoffs_incomplete" in blocker_codes
+    assert "pilot_live_result_missing" in blocker_codes
 
     with p89_database.connection() as conn:
         unchanged = conn.execute(
