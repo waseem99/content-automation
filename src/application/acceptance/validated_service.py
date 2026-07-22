@@ -7,6 +7,7 @@ from uuid import UUID
 
 from src.application.acceptance.models import (
     EvidenceCategory,
+    OperationsEvidenceRequest,
     PilotAcceptRequest,
     PilotRetireRequest,
 )
@@ -114,6 +115,33 @@ class ValidatedAcceptancePilotService(AcceptancePilotService):
                 },
             )
         return {"ok": True, "pilot": dict(pilot)}
+
+    def _resolve_operations_evidence(
+        self,
+        conn: Any,
+        request: OperationsEvidenceRequest,
+    ) -> dict[str, Any]:
+        if request.category is not EvidenceCategory.RUNBOOK_VALIDATION:
+            return super()._resolve_operations_evidence(conn, request)
+        try:
+            subject_uuid = UUID(request.subject_id)
+        except ValueError as exc:
+            raise AcceptancePilotError("operations_subject_id_must_be_uuid") from exc
+        runbook_sha256 = p100_runbook_sha256()
+        row = conn.execute(
+            """SELECT * FROM football_brief.operations_drill_runs
+               WHERE id=%s
+                 AND environment='staging'
+                 AND drill_kind='runbook_validation'
+                 AND status='passed'
+                 AND evidence->>'runbook_path'=%s
+                 AND evidence->>'runbook_sha256'=%s
+                 AND evidence->>'operator_profile'='non_developer'
+                 AND evidence->>'checklist_completed'='true'
+                 AND nullif(btrim(evidence->>'completed_by'),'') IS NOT NULL""",
+            (subject_uuid, P100_RUNBOOK_RELATIVE_PATH, runbook_sha256),
+        ).fetchone()
+        return self._result(row, request.subject_type, row)
 
     def _system_checks(self, conn: Any, context: Any) -> dict[EvidenceCategory, dict[str, Any]]:
         checks = super()._system_checks(conn, context)
