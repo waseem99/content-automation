@@ -6,6 +6,7 @@ from uuid import UUID
 import psycopg
 from fastapi import Depends, FastAPI, HTTPException
 
+from src.application.acceptance import AcceptancePilotService
 from src.application.acceptance.models import (
     DefectOpenRequest,
     DefectResolveRequest,
@@ -16,7 +17,7 @@ from src.application.acceptance.models import (
     PilotItemRequest,
     SignoffRequest,
 )
-from src.application.acceptance.service import AcceptancePilotError, AcceptancePilotService
+from src.application.acceptance.service import AcceptancePilotError
 from src.infrastructure.database.connection import Database
 from src.operator_api.access import (
     AccessPermission,
