@@ -7,7 +7,11 @@ from typing import Final
 
 
 GENUINE_LABEL: Final = "Genuine opportunity — win potential unverified"
+GENUINE_STATUS: Final = "Genuine / needs research"
 DEFAULT_OWNER: Final = "Waseem"
+DEFAULT_PRIORITY: Final = "C"
+UNVERIFIED_WIN_POTENTIAL: Final = "Unverified"
+SERVICE_GROUP: Final = "branding_marketing"
 LOCAL_QUEUE: Final = "local_only"
 
 
@@ -30,6 +34,11 @@ class LinkedInPostSignal:
 class LinkedInOpportunityDecision:
     disposition: OpportunityDisposition
     status_label: str
+    status: str
+    service: str | None
+    intent: str
+    priority: str | None
+    win_potential: str | None
     queue: str
     owner: str
     is_genuine_opportunity: bool
@@ -232,12 +241,27 @@ def classify_linkedin_opportunity(
     if is_genuine:
         disposition = OpportunityDisposition.NEEDS_RESEARCH
         status_label = GENUINE_LABEL
+        status = GENUINE_STATUS
+        service = SERVICE_GROUP
+        intent = "direct_requirement"
+        priority = DEFAULT_PRIORITY
+        win_potential = UNVERIFIED_WIN_POTENTIAL
     elif is_job_vacancy:
         disposition = OpportunityDisposition.INDIVIDUAL_HIRING
         status_label = "Not an agency opportunity — individual hiring"
+        status = "Not agency opportunity"
+        service = None
+        intent = "individual_hiring"
+        priority = None
+        win_potential = None
     else:
         disposition = OpportunityDisposition.NOT_OPPORTUNITY
         status_label = "Not qualified as an agency opportunity"
+        status = "Not qualified"
+        service = None
+        intent = "unclear"
+        priority = None
+        win_potential = None
         if not services:
             reason_codes.append("no_supported_service")
         if not has_buyer_intent:
@@ -246,6 +270,11 @@ def classify_linkedin_opportunity(
     return LinkedInOpportunityDecision(
         disposition=disposition,
         status_label=status_label,
+        status=status,
+        service=service,
+        intent=intent,
+        priority=priority,
+        win_potential=win_potential,
         queue=LOCAL_QUEUE,
         owner=owner,
         is_genuine_opportunity=is_genuine,
