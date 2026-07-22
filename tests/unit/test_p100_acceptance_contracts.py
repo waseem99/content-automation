@@ -13,6 +13,9 @@ from src.application.acceptance.models import (
     PilotItemRequest,
 )
 from src.application.acceptance.service import AcceptancePilotError
+from src.application.acceptance.start_guarded_service import (
+    StartGuardedAcceptancePilotService,
+)
 from src.application.acceptance.validated_service import (
     P100_RUNBOOK_RELATIVE_PATH,
     ValidatedAcceptancePilotService,
@@ -63,8 +66,12 @@ def test_manual_subject_binding_is_limited_to_operations_evidence() -> None:
     assert accepted.category is EvidenceCategory.WORKER_RESTART
 
 
-def test_public_service_uses_stable_aggregate_evidence_subjects() -> None:
-    assert AcceptancePilotService is ValidatedAcceptancePilotService
+def test_public_service_uses_start_guard_and_stable_aggregate_subjects() -> None:
+    assert AcceptancePilotService is StartGuardedAcceptancePilotService
+    assert issubclass(
+        StartGuardedAcceptancePilotService,
+        ValidatedAcceptancePilotService,
+    )
     result = AcceptancePilotService._result(
         True,
         "operator_brand_assignments",
@@ -158,11 +165,12 @@ def test_p100_contains_no_live_delivery_execution_surface() -> None:
     assert "does not enable live delivery adapters" in foundation.lower()
 
 
-def test_database_gates_require_modes_evidence_signoffs_and_release_output() -> None:
+def test_database_gates_require_modes_evidence_signoffs_release_and_start_actor() -> None:
     integrity = (ROOT / "migrations/0084_acceptance_pilot_integrity.sql").read_text(encoding="utf-8")
     hardening = (ROOT / "migrations/0085_acceptance_pilot_evidence_hardening.sql").read_text(encoding="utf-8")
     subject_integrity = (ROOT / "migrations/0086_acceptance_signoff_and_subject_integrity.sql").read_text(encoding="utf-8")
     release_output = (ROOT / "migrations/0088_acceptance_release_tag_and_runbook.sql").read_text(encoding="utf-8")
+    start_actor = (ROOT / "migrations/0090_acceptance_start_actor.sql").read_text(encoding="utf-8")
     assert "exactly one local-only and one managed-render item" in hardening
     assert "Admin, Reviewer, and Publisher approval are required" in integrity
     assert "Pilot item pass requires all content evidence" in hardening
@@ -172,3 +180,6 @@ def test_database_gates_require_modes_evidence_signoffs_and_release_output() -> 
     assert "production_release_tag" in release_output
     assert P100_RUNBOOK_RELATIVE_PATH in release_output
     assert "Release tag and runbook binding are forbidden before acceptance" in release_output
+    assert "started_by" in start_actor
+    assert "Acceptance pilot start actor is immutable" in start_actor
+    assert "Acceptance pilot start requires actor and timestamp" in start_actor
