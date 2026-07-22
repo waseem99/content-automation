@@ -1,0 +1,48 @@
+name: LinkedIn Opportunity Qualification
+
+on:
+  pull_request:
+    branches: [test]
+    paths:
+      - "workers/acquisition/**"
+      - "tests/acquisition/**"
+      - ".github/workflows/linkedin-opportunity-qualification.yml"
+  push:
+    branches:
+      - "agent/linkedin-agency-opportunity-qualification"
+    paths:
+      - "workers/acquisition/**"
+      - "tests/acquisition/**"
+      - ".github/workflows/linkedin-opportunity-qualification.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: linkedin-opportunity-qualification-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install focused test dependency
+        run: python -m pip install "pytest>=8"
+      - name: Compile local acquisition worker
+        run: python -m compileall -q workers tests/acquisition
+      - name: Run LinkedIn qualification tests
+        run: python -m pytest -q tests/acquisition
+      - name: Confirm local-only safety boundary
+        shell: bash
+        run: |
+          ! grep -R -n -E \
+            "^import (requests|httpx|socket|subprocess)|^from (requests|httpx|socket|subprocess)|vercel deploy|vercel --prod|send_message\(|publish\(" \
+            workers/acquisition \
+            --exclude-dir=__pycache__
