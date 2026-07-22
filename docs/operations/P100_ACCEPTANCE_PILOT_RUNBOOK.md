@@ -129,7 +129,19 @@ An Admin binds verified evidence for:
 - a successful worker restart/resume drill;
 - validation that this runbook was followed by a non-developer operator.
 
-Use canonical P99 drill identifiers. Do not enter arbitrary labels or secret values.
+For the runbook evidence, use the normal Admin operations-drill controls:
+
+1. Start a drill with environment `staging` and drill kind `runbook_validation`. Do not attach a release or backup record.
+2. Have a non-developer operator follow this runbook and complete the checklist and stop-condition review.
+3. Complete the drill with status `passed` and an evidence object containing exactly these required values:
+   - `runbook_path`: `docs/operations/P100_ACCEPTANCE_PILOT_RUNBOOK.md`;
+   - `runbook_sha256`: the lowercase SHA-256 of this packaged file;
+   - `operator_profile`: `non_developer`;
+   - `checklist_completed`: `true`.
+4. Include a brief non-secret validation note. The operations service adds the completing Admin and completion time.
+5. Bind the resulting canonical drill ID to the pilot as category `runbook_validation` and subject type `operations_drill_run`.
+
+The system rejects production-environment runbook drills, attached release or backup IDs, incomplete evidence, a stale runbook digest, and unrelated staging or security drills. Use canonical P99/P100 evidence identifiers only. Do not enter arbitrary labels or secret values.
 
 ## Step 8 — Manage defects
 
