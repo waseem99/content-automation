@@ -1,4 +1,4 @@
--- Require independent role signers and validate passed content evidence against canonical records.
+-- Require independent, brand-scoped role signers and validate passed content evidence against canonical records.
 
 BEGIN;
 
@@ -13,6 +13,7 @@ DECLARE
     blocking_defects integer;
     missing_operations integer;
     prior_operator_count integer;
+    missing_brand_assignments integer:=0;
 BEGIN
     IF TG_OP<>'INSERT' THEN RAISE EXCEPTION 'Acceptance sign-offs are append-only'; END IF;
     SELECT EXISTS (
@@ -26,6 +27,26 @@ BEGIN
      WHERE pilot_id=NEW.pilot_id AND operator_id=NEW.operator_id;
     IF prior_operator_count<>0 THEN
         RAISE EXCEPTION 'Admin, Reviewer, and Publisher sign-offs require distinct operators';
+    END IF;
+    IF NEW.signoff_role<>'admin' THEN
+        SELECT count(*) INTO missing_brand_assignments
+          FROM (
+              SELECT DISTINCT brand_id
+                FROM football_brief.acceptance_pilot_items
+               WHERE pilot_id=NEW.pilot_id
+          ) pilot_brand
+         WHERE NOT EXISTS (
+             SELECT 1
+               FROM football_brief.operator_users ou
+               JOIN football_brief.operator_brand_assignments oba
+                 ON oba.operator_user_id=ou.id
+              WHERE ou.operator_id=NEW.operator_id
+                AND ou.active
+                AND oba.brand_id=pilot_brand.brand_id
+         );
+        IF missing_brand_assignments<>0 THEN
+            RAISE EXCEPTION 'Reviewer and Publisher sign-offs require assignment to every pilot brand';
+        END IF;
     END IF;
     SELECT count(*),count(*) FILTER (WHERE status='passed') INTO item_count,passed_count
       FROM football_brief.acceptance_pilot_items WHERE pilot_id=NEW.pilot_id;
@@ -43,6 +64,50 @@ BEGIN
      );
     IF item_count<>4 OR passed_count<>4 OR blocking_defects<>0 OR missing_operations<>0 THEN
         RAISE EXCEPTION 'Sign-off requires four passed items, operations evidence, and no blocking defect';
+    END IF;
+    RETURN NEW;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION football_brief.validate_acceptance_live_evidence()
+RETURNS trigger
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    item_row football_brief.acceptance_pilot_items%ROWTYPE;
+    release_row football_brief.final_releases%ROWTYPE;
+    signoff_count integer;
+    is_publisher boolean;
+    assigned_to_brand boolean;
+    blocking_defects integer;
+BEGIN
+    IF TG_OP<>'INSERT' THEN RAISE EXCEPTION 'Live delivery evidence is append-only'; END IF;
+    SELECT * INTO item_row FROM football_brief.acceptance_pilot_items WHERE id=NEW.pilot_item_id;
+    SELECT * INTO release_row FROM football_brief.final_releases WHERE id=NEW.final_release_id;
+    SELECT count(*) INTO signoff_count FROM football_brief.acceptance_pilot_signoffs
+     WHERE pilot_id=NEW.pilot_id AND decision='approved';
+    SELECT EXISTS (
+        SELECT 1 FROM football_brief.operator_users ou
+        JOIN football_brief.operator_user_roles our ON our.operator_user_id=ou.id
+         WHERE ou.operator_id=NEW.recorded_by AND ou.active AND our.role='publisher'
+    ) INTO is_publisher;
+    SELECT EXISTS (
+        SELECT 1
+          FROM football_brief.operator_users ou
+          JOIN football_brief.operator_brand_assignments oba ON oba.operator_user_id=ou.id
+         WHERE ou.operator_id=NEW.recorded_by
+           AND ou.active
+           AND oba.brand_id=item_row.brand_id
+    ) INTO assigned_to_brand;
+    SELECT count(*) INTO blocking_defects FROM football_brief.acceptance_pilot_defects
+     WHERE pilot_id=NEW.pilot_id AND severity IN ('major','critical') AND status='open';
+    IF item_row.id IS NULL OR item_row.pilot_id IS DISTINCT FROM NEW.pilot_id
+       OR NOT item_row.live_delivery_evidence_required
+       OR release_row.id IS NULL OR release_row.status<>'approved'
+       OR release_row.portfolio_content_id IS DISTINCT FROM item_row.portfolio_content_id
+       OR release_row.content_version IS DISTINCT FROM item_row.content_version
+       OR signoff_count<>3 OR NOT is_publisher OR NOT assigned_to_brand OR blocking_defects<>0 THEN
+        RAISE EXCEPTION 'Live result evidence requires exact approved release, three sign-offs, assigned Publisher, and no blocking defects';
     END IF;
     RETURN NEW;
 END;
