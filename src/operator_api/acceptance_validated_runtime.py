@@ -2,7 +2,9 @@ from __future__ import annotations
 
 from fastapi import FastAPI
 
-from src.application.acceptance.validated_service import ValidatedAcceptancePilotService
+from src.application.acceptance.start_guarded_service import (
+    StartGuardedAcceptancePilotService,
+)
 from src.infrastructure.database.connection import Database
 from src.operator_api import acceptance_runtime as base_runtime
 from src.operator_api.acceptance_revision_runtime import install_acceptance_revision_routes
@@ -15,7 +17,7 @@ def install_acceptance_routes(
     database: Database | None,
     auth_settings: OperatorAuthSettings,
 ) -> None:
-    base_runtime.AcceptancePilotService = ValidatedAcceptancePilotService
+    base_runtime.AcceptancePilotService = StartGuardedAcceptancePilotService
     base_runtime.install_acceptance_routes(
         app,
         database=database,

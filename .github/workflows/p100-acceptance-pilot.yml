@@ -65,8 +65,8 @@ jobs:
             tests/integration/test_p100_runbook_validation_drill.py
       - name: Verify current environment schema identity
         run: |
-          grep -q '^OPS_MIGRATION_HEAD=0089_acceptance_runbook_drill.sql$' config/staging.env.example
-          grep -q '^OPS_MIGRATION_HEAD=0089_acceptance_runbook_drill.sql$' config/production.env.example
+          grep -q '^OPS_MIGRATION_HEAD=0090_acceptance_start_actor.sql$' config/staging.env.example
+          grep -q '^OPS_MIGRATION_HEAD=0090_acceptance_start_actor.sql$' config/production.env.example
       - name: Apply and verify complete migration chain
         run: |
           set -o pipefail
