@@ -5,6 +5,7 @@ import pytest
 
 from src.application.acceptance import AcceptancePilotService
 from src.application.acceptance.models import (
+    PilotAcceptRequest,
     PilotCreateRequest,
     PilotItemRequest,
     PilotRetireRequest,
@@ -13,6 +14,7 @@ from src.application.acceptance.models import (
     SignoffRequest,
     SignoffRole,
 )
+from src.application.acceptance.validated_service import p100_runbook_sha256
 from tests.integration.p89_script_support import p89_database, p89_seeded
 
 
@@ -167,6 +169,30 @@ def test_pilot_scope_blocks_direct_pass_and_revises_through_retirement(
             ),
             actor=p89_seeded["admin"],
         )
+
+    with pytest.raises(psycopg.Error, match="four passed items"):
+        service.accept(
+            pilot_id=pilot_id,
+            request=PilotAcceptRequest(
+                production_release_tag="prod-p100-premature-01",
+                runbook_sha256=p100_runbook_sha256(),
+            ),
+            actor=p89_seeded["admin"],
+        )
+
+    with p89_database.connection() as conn:
+        unchanged = conn.execute(
+            """SELECT status,production_release_tag,release_tagged_by,release_tagged_at,
+                      runbook_path,runbook_sha256
+                 FROM football_brief.acceptance_pilots WHERE id=%s""",
+            (pilot_id,),
+        ).fetchone()
+    assert unchanged["status"] == "running"
+    assert unchanged["production_release_tag"] is None
+    assert unchanged["release_tagged_by"] is None
+    assert unchanged["release_tagged_at"] is None
+    assert unchanged["runbook_path"] is None
+    assert unchanged["runbook_sha256"] is None
 
     retired = service.retire(
         pilot_id=pilot_id,
