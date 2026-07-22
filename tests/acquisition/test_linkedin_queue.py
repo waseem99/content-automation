@@ -31,7 +31,10 @@ def test_qualify_record_preserves_capture_fields() -> None:
 
 
 def test_qualify_record_rejects_missing_text() -> None:
-    with pytest.raises(LinkedInQueueInputError, match="text must be a string"):
+    with pytest.raises(
+        LinkedInQueueInputError,
+        match="one of text, post_text, content, raw_signal_summary must be a string",
+    ):
         qualify_record({"capture_id": "capture-1"})
 
 
@@ -119,3 +122,25 @@ def test_cli_fails_closed_for_invalid_input(tmp_path: Path) -> None:
     with pytest.raises(SystemExit, match="qualification failed"):
         main(["--input", str(input_path), "--output", str(output_path)])
     assert not output_path.exists()
+
+
+def test_v310_alias_fields_are_supported() -> None:
+    output = qualify_record(
+        {
+            "raw_signal_summary": "Looking for a digital agency for AI-powered videos",
+            "person_name": "Saad Rasheed",
+            "wrapper_actor": "Nidhal Shaikh commented",
+            "source_link": "https://www.linkedin.com/feed/update/urn:li:activity:123",
+        }
+    )
+    assert output["qualification"]["service"] == "branding_marketing"
+    assert output["qualification"]["intent"] == "direct_requirement"
+    assert output["qualification"]["status"] == "Genuine / needs research"
+    assert output["qualification"]["priority"] == "C"
+    assert output["qualification"]["owner"] == "Waseem"
+    assert output["qualification"]["win_potential"] == "Unverified"
+
+
+def test_alias_text_type_fails_closed() -> None:
+    with pytest.raises(LinkedInQueueInputError, match="raw_signal_summary"):
+        qualify_record({"raw_signal_summary": ["not", "text"]})
