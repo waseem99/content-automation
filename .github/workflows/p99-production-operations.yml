@@ -53,6 +53,7 @@ jobs:
             src/infrastructure/http \
             src/application/concepts/adapters.py \
             src/application/scripts/adapters.py \
+            src/operator_api/entrypoint.py \
             src/operator_api/operations_middleware.py \
             src/operator_api/operations_runtime.py \
             src/operator_api/operations_validated_runtime.py \
@@ -185,6 +186,7 @@ jobs:
           docker compose --env-file config/staging.env.example -f compose.staging.yml config > /tmp/p99-compose-rendered.yml
           grep -q "read_only: true" /tmp/p99-compose-rendered.yml
           grep -q "service_completed_successfully" /tmp/p99-compose-rendered.yml
+          grep -q "OPERATOR_RUNTIME_AUTO_CONNECT_DATABASE:.*true" /tmp/p99-compose-rendered.yml
       - name: Install security scanners
         run: |
           python -m pip install --upgrade pip
@@ -213,17 +215,18 @@ jobs:
           docker compose --env-file config/staging.env.example -f compose.staging.yml up -d --no-deps api
           ready=0
           for _ in $(seq 1 60); do
-            if curl --fail --silent --show-error http://127.0.0.1:8000/runtime/ready > /tmp/p99-readiness.json; then
+            http_status="$(curl --silent --show-error --output /tmp/p99-readiness.json --write-out '%{http_code}' http://127.0.0.1:8000/runtime/ready || true)"
+            if [ "$http_status" = "200" ] && grep -q '"ok":true' /tmp/p99-readiness.json; then
               ready=1
               break
             fi
             sleep 5
           done
           if [ "$ready" -ne 1 ]; then
+            cat /tmp/p99-readiness.json || true
             docker compose --env-file config/staging.env.example -f compose.staging.yml ps
             exit 1
           fi
-          grep -q '"ok":true' /tmp/p99-readiness.json
           docker image inspect content-automation:p99-local > /tmp/p99-image-inspect.json
           docker run --rm --entrypoint python content-automation:p99-local -m pip freeze --all \
             > /tmp/p99-image-requirements.txt
@@ -251,7 +254,7 @@ jobs:
         id: deployment_boundary
         continue-on-error: true
         run: |
-          ! grep -R -n -E "vercel deploy|vercel --prod|kubectl apply|docker push|gh release create" \
+          ! grep -R -n -E "vercel depl[o]y|vercel --pr[o]d|kubectl appl[y]|docker pus[h]|gh release creat[e]" \
             .github/workflows/p99-production-operations.yml \
             compose.staging.yml \
             docs/operations/P99_RUNBOOKS.md
