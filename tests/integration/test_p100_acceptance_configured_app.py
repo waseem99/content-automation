@@ -76,6 +76,7 @@ def test_configured_app_installs_acceptance_routes_and_keeps_live_execution_abse
     registered_paths = {route.path for route in client.app.routes}
     assert "/acceptance/pilots" in registered_paths
     assert "/acceptance/pilots/{pilot_id}/accept" in registered_paths
+    assert "/acceptance/pilots/{pilot_id}/readiness" in registered_paths
     assert "/acceptance/pilots/{pilot_id}/live-delivery-evidence" in registered_paths
     assert not any(
         "execute-live" in path or "submit-live" in path
@@ -129,7 +130,9 @@ def test_configured_app_installs_acceptance_routes_and_keeps_live_execution_abse
         json=accept_payload,
     )
     assert premature_accept.status_code == 422
-    assert premature_accept.json()["detail"]["code"] == "acceptance_pilot_integrity_violation"
+    detail = premature_accept.json()["detail"]
+    assert detail["code"] == "pilot_not_ready_for_acceptance"
+    assert any(blocker["code"] == "pilot_scope_incomplete" for blocker in detail["blockers"])
 
     nonexistent_execution = client.post(
         f"/acceptance/pilots/{uuid4()}/execute-live-delivery",
