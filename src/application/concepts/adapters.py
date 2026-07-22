@@ -7,6 +7,7 @@ from typing import Any, Protocol
 from urllib import error, request
 
 from src.application.concepts.models import CandidateDraft, ProductionRoute, RiskLevel
+from src.infrastructure.http.local_endpoint import LocalEndpointError, validate_local_http_endpoint
 
 
 class ConceptAdapterError(RuntimeError):
@@ -157,10 +158,12 @@ class LocalHttpConceptAdapter:
     name = "local_model"
 
     def __init__(self, *, endpoint: str, model_id: str, timeout_seconds: int = 20) -> None:
-        normalized = endpoint.strip().rstrip("/")
-        if not normalized.lower().startswith(("http://127.0.0.1", "http://localhost", "http://[::1]")):
-            raise ConceptAdapterError("local model endpoint must resolve to localhost")
-        self.endpoint = normalized
+        try:
+            self.endpoint = validate_local_http_endpoint(endpoint)
+        except LocalEndpointError as exc:
+            raise ConceptAdapterError(str(exc)) from exc
+        if not model_id.strip():
+            raise ConceptAdapterError("local model ID is required")
         self.model_id = model_id.strip()
         self.timeout_seconds = timeout_seconds
 
@@ -185,7 +188,7 @@ class LocalHttpConceptAdapter:
             method="POST",
         )
         try:
-            with request.urlopen(http_request, timeout=self.timeout_seconds) as response:
+            with request.urlopen(http_request, timeout=self.timeout_seconds) as response:  # nosec B310 -- parsed loopback HTTP origin only.
                 raw = json.loads(response.read().decode("utf-8"))
         except (error.URLError, TimeoutError, json.JSONDecodeError) as exc:
             raise ConceptAdapterError(f"local model request failed: {type(exc).__name__}") from exc

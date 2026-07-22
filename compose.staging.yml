@@ -1,0 +1,87 @@
+name: ${COMPOSE_PROJECT_NAME:-content-automation-staging}
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-football_brief_staging}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_HOST_AUTH_METHOD: ${POSTGRES_HOST_AUTH_METHOD:-trust}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-football_brief_staging}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    volumes:
+      - staging-postgres-data:/var/lib/postgresql/data
+    networks: [staging]
+
+  migrate:
+    image: content-automation:p99-local
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: "no"
+    env_file:
+      - path: ${STAGING_ENV_FILE:-config/staging.env.example}
+        required: true
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql://postgres@postgres:5432/football_brief_staging}
+      DATABASE_REQUIRE_SCHEMA: "false"
+      DATABASE_MIGRATIONS_DIR: migrations
+    command: ["python", "-m", "src.infrastructure.database.cli", "migrate"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks: [staging]
+
+  api:
+    image: content-automation:p99-local
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    init: true
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m,mode=1777
+    env_file:
+      - path: ${STAGING_ENV_FILE:-config/staging.env.example}
+        required: true
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql://postgres@postgres:5432/football_brief_staging}
+      DATABASE_REQUIRE_SCHEMA: "true"
+      DATABASE_MIGRATIONS_DIR: migrations
+    ports:
+      - "${STAGING_API_PORT:-8000}:8000"
+    volumes:
+      - staging-artifacts:/runtime/artifacts
+      - staging-backups:/runtime/backups
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/runtime/ready', timeout=3).read()",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 18
+      start_period: 15s
+    networks: [staging]
+
+networks:
+  staging:
+    driver: bridge
+
+volumes:
+  staging-postgres-data:
+  staging-artifacts:
+  staging-backups:

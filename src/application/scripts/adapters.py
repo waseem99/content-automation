@@ -6,6 +6,7 @@ import re
 from typing import Any, Protocol
 from urllib import error, request
 
+from src.infrastructure.http.local_endpoint import LocalEndpointError, validate_local_http_endpoint
 from src.application.scripts.models import (
     ClaimDraft,
     ClaimSensitivity,
@@ -188,12 +189,12 @@ class LocalHttpScriptAdapter:
     name = "local_model"
 
     def __init__(self, *, endpoint: str, model_id: str, timeout_seconds: int = 20) -> None:
-        normalized = endpoint.strip().rstrip("/")
-        if not normalized.lower().startswith(("http://127.0.0.1", "http://localhost", "http://[::1]")):
-            raise ScriptAdapterError("local script model endpoint must resolve to localhost")
+        try:
+            self.endpoint = validate_local_http_endpoint(endpoint)
+        except LocalEndpointError as exc:
+            raise ScriptAdapterError(str(exc)) from exc
         if not model_id.strip():
             raise ScriptAdapterError("local script model ID is required")
-        self.endpoint = normalized
         self.model_id = model_id.strip()
         self.timeout_seconds = timeout_seconds
 
@@ -217,7 +218,7 @@ class LocalHttpScriptAdapter:
             method="POST",
         )
         try:
-            with request.urlopen(http_request, timeout=self.timeout_seconds) as response:
+            with request.urlopen(http_request, timeout=self.timeout_seconds) as response:  # nosec B310 -- parsed loopback HTTP origin only.
                 raw = json.loads(response.read().decode("utf-8"))
         except (error.URLError, TimeoutError, json.JSONDecodeError) as exc:
             raise ScriptAdapterError(f"local script model request failed: {type(exc).__name__}") from exc
