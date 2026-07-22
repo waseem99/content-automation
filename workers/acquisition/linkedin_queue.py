@@ -30,13 +30,22 @@ class QualificationBatchStats:
     not_opportunity: int = 0
 
 
-def _optional_string(record: Mapping[str, Any], key: str) -> str | None:
-    value = record.get(key)
-    if value is None:
-        return None
-    if not isinstance(value, str):
-        raise LinkedInQueueInputError(f"{key} must be a string or null")
-    return value
+def _first_string(
+    record: Mapping[str, Any],
+    keys: tuple[str, ...],
+    *,
+    required: bool = False,
+) -> str | None:
+    for key in keys:
+        if key not in record or record.get(key) is None:
+            continue
+        value = record[key]
+        if not isinstance(value, str):
+            raise LinkedInQueueInputError(f"{key} must be a string or null")
+        return value
+    if required:
+        raise LinkedInQueueInputError(f"one of {', '.join(keys)} must be a string")
+    return None
 
 
 def qualify_record(
@@ -44,16 +53,29 @@ def qualify_record(
     *,
     owner: str = DEFAULT_OWNER,
 ) -> dict[str, Any]:
-    text = record.get("text")
-    if not isinstance(text, str):
-        raise LinkedInQueueInputError("text must be a string")
+    text = _first_string(
+        record,
+        ("text", "post_text", "content", "raw_signal_summary"),
+        required=True,
+    )
+    assert text is not None
 
+    canonical_post_url = _first_string(
+        record,
+        ("canonical_post_url", "original_post_url", "source_link"),
+    )
+    source_url = _first_string(
+        record,
+        ("source_url", "capture_url", "source_link"),
+    )
     signal = LinkedInPostSignal(
         text=text,
-        original_author=_optional_string(record, "original_author"),
-        interaction_actor=_optional_string(record, "interaction_actor"),
-        canonical_post_url=_optional_string(record, "canonical_post_url"),
-        source_url=_optional_string(record, "source_url"),
+        original_author=_first_string(record, ("original_author", "person_name")),
+        interaction_actor=_first_string(
+            record, ("interaction_actor", "wrapper_actor")
+        ),
+        canonical_post_url=canonical_post_url,
+        source_url=source_url,
     )
     decision = classify_linkedin_opportunity(signal, owner=owner)
     return {
@@ -61,6 +83,11 @@ def qualify_record(
         "qualification": {
             "disposition": decision.disposition.value,
             "status_label": decision.status_label,
+            "status": decision.status,
+            "service": decision.service,
+            "intent": decision.intent,
+            "priority": decision.priority,
+            "win_potential": decision.win_potential,
             "queue": decision.queue,
             "owner": decision.owner,
             "is_genuine_opportunity": decision.is_genuine_opportunity,
@@ -111,7 +138,12 @@ def read_jsonl(path: Path) -> list[dict[str, Any]]:
                 raise LinkedInQueueInputError(
                     "record must be a JSON object", line_number=line_number
                 )
-            records.append(dict(value))
+            try:
+                records.append(dict(value))
+            except (TypeError, ValueError) as exc:
+                raise LinkedInQueueInputError(
+                    "record cannot be converted to an object", line_number=line_number
+                ) from exc
     return records
 
 
