@@ -8,6 +8,7 @@ from fastapi.responses import JSONResponse
 from src.application.scripts.runtime_patch import install_validated_script_service
 from src.infrastructure.database.connection import Database
 from src.operations.settings import OperationsSettings, get_operations_settings
+from src.operator_api.acceptance_candidates_runtime import install_acceptance_candidate_routes
 from src.operator_api.acceptance_readiness_runtime import install_acceptance_readiness_routes
 from src.operator_api.acceptance_validated_runtime import install_acceptance_routes
 from src.operator_api.access_runtime import install_operator_access
@@ -75,6 +76,7 @@ def create_configured_app(
     )
     install_acceptance_routes(app, database=database, auth_settings=auth)
     install_acceptance_readiness_routes(app, database=database, auth_settings=auth)
+    install_acceptance_candidate_routes(app, database=database, auth_settings=auth)
     app.state.runtime_settings = settings
     app.state.operations_settings = operations
 
