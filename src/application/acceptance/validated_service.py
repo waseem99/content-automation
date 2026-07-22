@@ -1,10 +1,33 @@
 from __future__ import annotations
 
+import hashlib
+from pathlib import Path
 from typing import Any
 from uuid import UUID
 
-from src.application.acceptance.models import EvidenceCategory, PilotRetireRequest
+from src.application.acceptance.models import (
+    EvidenceCategory,
+    PilotAcceptRequest,
+    PilotRetireRequest,
+)
 from src.application.acceptance.service import AcceptancePilotError, AcceptancePilotService, _digest
+
+
+P100_RUNBOOK_RELATIVE_PATH = "docs/operations/P100_ACCEPTANCE_PILOT_RUNBOOK.md"
+
+
+def p100_runbook_path() -> Path:
+    return Path(__file__).resolve().parents[3] / P100_RUNBOOK_RELATIVE_PATH
+
+
+def p100_runbook_sha256() -> str:
+    path = p100_runbook_path()
+    if not path.is_file():
+        raise AcceptancePilotError(
+            "pilot_runbook_missing",
+            details={"runbook_path": P100_RUNBOOK_RELATIVE_PATH},
+        )
+    return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
 class ValidatedAcceptancePilotService(AcceptancePilotService):
@@ -34,6 +57,61 @@ class ValidatedAcceptancePilotService(AcceptancePilotService):
                 "pilot_retired",
                 actor,
                 {"reason": request.reason},
+            )
+        return {"ok": True, "pilot": dict(pilot)}
+
+    def accept(
+        self,
+        *,
+        pilot_id: UUID,
+        request: PilotAcceptRequest,
+        actor: str,
+    ) -> dict[str, Any]:
+        actual_runbook_sha256 = p100_runbook_sha256()
+        if request.runbook_sha256 != actual_runbook_sha256:
+            raise AcceptancePilotError(
+                "pilot_runbook_digest_mismatch",
+                details={
+                    "runbook_path": P100_RUNBOOK_RELATIVE_PATH,
+                    "expected_sha256": actual_runbook_sha256,
+                },
+            )
+        with self.database.transaction() as conn:
+            self._require_role(conn, actor, "admin")
+            pilot = conn.execute(
+                """UPDATE football_brief.acceptance_pilots
+                   SET status='accepted',
+                       accepted_by=%s,
+                       accepted_at=now(),
+                       production_release_tag=%s,
+                       release_tagged_by=%s,
+                       release_tagged_at=now(),
+                       runbook_path=%s,
+                       runbook_sha256=%s
+                   WHERE id=%s AND status IN ('running','blocked')
+                   RETURNING *""",
+                (
+                    actor,
+                    request.production_release_tag,
+                    actor,
+                    P100_RUNBOOK_RELATIVE_PATH,
+                    actual_runbook_sha256,
+                    pilot_id,
+                ),
+            ).fetchone()
+            if not pilot:
+                raise AcceptancePilotError("pilot_not_acceptable")
+            self._event(
+                conn,
+                pilot_id,
+                None,
+                "pilot_accepted",
+                actor,
+                {
+                    "production_release_tag": request.production_release_tag,
+                    "runbook_path": P100_RUNBOOK_RELATIVE_PATH,
+                    "runbook_sha256": actual_runbook_sha256,
+                },
             )
         return {"ok": True, "pilot": dict(pilot)}
 
