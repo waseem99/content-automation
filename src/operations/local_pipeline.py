@@ -3,13 +3,13 @@ from __future__ import annotations
 import hashlib
 import json
 import os
-
-import httpx
 from datetime import datetime, timezone
 from decimal import Decimal
 from pathlib import Path
 from typing import Any, Iterable
 from uuid import UUID
+
+import httpx
 
 from src.application.audio.models import AudioInitializeRequest
 from src.application.audio.service import AudioProductionError, AudioProductionService
@@ -49,6 +49,7 @@ class LocalPipelineService:
         self.ollama_model = os.getenv("OLLAMA_MODEL", "qwen2.5:7b")
         self.kokoro_model = os.getenv("KOKORO_MODEL_ID", "hexgrad/Kokoro-82M")
         self.visual_model = os.getenv("LOCAL_VISUAL_MODEL_ID", "sdxl-base-1.0")
+        self.preview_model = os.getenv("LOCAL_PREVIEW_MODEL_ID", "ffmpeg-slideshow-v1")
 
     def status(self, *, brand_ids: Iterable[UUID] | None = None) -> dict[str, Any]:
         scoped = self._normalize_brands(brand_ids)
@@ -83,6 +84,25 @@ class LocalPipelineService:
                     WHERE sv.status='approved' {brand_sql}""",
                 tuple(brand_values),
             ).fetchone()
+            preview_ready = conn.execute(
+                f"""SELECT count(*) AS count
+                    FROM football_brief.portfolio_content pc
+                    JOIN football_brief.monthly_content_plans mp ON mp.id=pc.plan_id
+                    JOIN football_brief.audio_productions ap
+                      ON ap.portfolio_content_id=pc.id AND ap.status='approved'
+                    JOIN football_brief.audio_mix_versions amv
+                      ON amv.id=ap.current_mix_version_id AND amv.status='approved'
+                    JOIN football_brief.visual_projects vp
+                      ON vp.portfolio_content_id=pc.id AND vp.status='approved'
+                    WHERE NOT EXISTS (
+                        SELECT 1 FROM football_brief.generation_jobs gj
+                        WHERE gj.portfolio_content_id=pc.id
+                          AND gj.content_version=pc.version
+                          AND gj.job_type='preview'
+                          AND gj.status IN ('queued','running','succeeded','failed')
+                    ) {brand_sql}""",
+                tuple(brand_values),
+            ).fetchone()["count"]
             jobs = conn.execute(
                 f"""SELECT job_type,status,count(*) AS count
                     FROM football_brief.generation_jobs gj
@@ -96,6 +116,7 @@ class LocalPipelineService:
                         GenerationJobType.SCRIPT.value,
                         GenerationJobType.NARRATION.value,
                         GenerationJobType.KEYFRAME.value,
+                        GenerationJobType.PREVIEW.value,
                     ],
                     ["queued", "running", "failed", "dead_letter"],
                     *brand_values,
@@ -109,12 +130,15 @@ class LocalPipelineService:
                 "audio": int(approved["audio_count"] or 0),
                 "visuals": int(approved["visual_count"] or 0),
                 "visuals_blocked_by_preset": int(approved["visual_blocked_count"] or 0),
+                "previews": int(preview_ready or 0),
             },
             "capabilities": {
                 "ollama_model": self.ollama_model,
                 "kokoro_model": self.kokoro_model,
                 "visual_model": self.visual_model,
+                "preview_model": self.preview_model,
                 "comfyui_configured": self._comfyui_configured(),
+                "ffmpeg_configured": self._ffmpeg_configured(),
                 "managed_renderer": False,
                 "automatic_approval": False,
                 "live_publishing": False,
@@ -214,133 +238,265 @@ class LocalPipelineService:
         brand_ids: Iterable[UUID] | None = None,
         include_audio: bool = True,
         include_visuals: bool = True,
+        include_previews: bool = True,
     ) -> dict[str, Any]:
         limit = self._bounded_limit(limit)
-        if not include_audio and not include_visuals:
+        if not include_audio and not include_visuals and not include_previews:
             return self._empty_continuation()
         scoped = self._normalize_brands(brand_ids)
         brand_sql, brand_values = self._brand_filter(scoped, column="mp.brand_id")
-        missing_conditions: list[str] = []
-        if include_audio:
-            missing_conditions.append("ap.id IS NULL")
-        if include_visuals:
-            missing_conditions.append("vp.id IS NULL")
-        missing_sql = " OR ".join(missing_conditions)
-        with self.database.connection() as conn:
-            rows = conn.execute(
-                f"""SELECT pc.id,pc.version,sv.id AS script_version_id,
-                           ap.id AS audio_id,vp.id AS visual_id,bvp.id AS visual_preset_id
-                    FROM football_brief.script_documents sd
-                    JOIN football_brief.script_versions sv ON sv.id=sd.current_version_id
-                    JOIN football_brief.portfolio_content pc ON pc.id=sd.portfolio_content_id
-                    JOIN football_brief.monthly_content_plans mp ON mp.id=pc.plan_id
-                    LEFT JOIN football_brief.audio_productions ap
-                      ON ap.portfolio_content_id=pc.id AND ap.script_version_id=sv.id
-                    LEFT JOIN football_brief.visual_projects vp
-                      ON vp.portfolio_content_id=pc.id AND vp.script_version_id=sv.id
-                    LEFT JOIN football_brief.brand_visual_presets bvp
-                      ON bvp.brand_profile_id=pc.brand_profile_id
-                     AND bvp.preset_key='local-default' AND bvp.status='active'
-                    WHERE sv.status='approved' AND ({missing_sql}) {brand_sql}
-                    ORDER BY pc.scheduled_for NULLS LAST,pc.created_at,pc.id
-                    LIMIT %s""",
-                (*brand_values, limit),
-            ).fetchall()
         audio: list[dict[str, Any]] = []
         visuals: list[dict[str, Any]] = []
         blocked: list[dict[str, Any]] = []
-        comfy_ready = self._comfyui_configured()
-        for row in rows:
-            content_id = row["id"]
-            if include_audio and row["audio_id"] is None:
+
+        if include_audio or include_visuals:
+            missing_conditions: list[str] = []
+            if include_audio:
+                missing_conditions.append("ap.id IS NULL")
+            if include_visuals:
+                missing_conditions.append("vp.id IS NULL")
+            missing_sql = " OR ".join(missing_conditions)
+            with self.database.connection() as conn:
+                rows = conn.execute(
+                    f"""SELECT pc.id,pc.version,sv.id AS script_version_id,
+                               ap.id AS audio_id,vp.id AS visual_id,bvp.id AS visual_preset_id
+                        FROM football_brief.script_documents sd
+                        JOIN football_brief.script_versions sv ON sv.id=sd.current_version_id
+                        JOIN football_brief.portfolio_content pc ON pc.id=sd.portfolio_content_id
+                        JOIN football_brief.monthly_content_plans mp ON mp.id=pc.plan_id
+                        LEFT JOIN football_brief.audio_productions ap
+                          ON ap.portfolio_content_id=pc.id AND ap.script_version_id=sv.id
+                        LEFT JOIN football_brief.visual_projects vp
+                          ON vp.portfolio_content_id=pc.id AND vp.script_version_id=sv.id
+                        LEFT JOIN football_brief.brand_visual_presets bvp
+                          ON bvp.brand_profile_id=pc.brand_profile_id
+                         AND bvp.preset_key='local-default' AND bvp.status='active'
+                        WHERE sv.status='approved' AND ({missing_sql}) {brand_sql}
+                        ORDER BY pc.scheduled_for NULLS LAST,pc.created_at,pc.id
+                        LIMIT %s""",
+                    (*brand_values, limit),
+                ).fetchall()
+            comfy_ready = self._comfyui_configured()
+            for row in rows:
+                content_id = row["id"]
+                if include_audio and row["audio_id"] is None:
+                    try:
+                        result = self.audio.initialize(
+                            content_id=content_id,
+                            request=AudioInitializeRequest(
+                                model_id=self.kokoro_model,
+                                preferred_worker_id=self.worker_id,
+                                timeout_seconds=900,
+                                max_attempts=3,
+                            ),
+                            actor=actor,
+                        )
+                        audio.append(
+                            {
+                                "content_id": str(content_id),
+                                "production_id": str(result["production"]["id"]),
+                            }
+                        )
+                    except AudioProductionError as exc:
+                        blocked.append(
+                            {
+                                "content_id": str(content_id),
+                                "stage": "audio",
+                                "code": exc.code,
+                                "details": exc.details,
+                            }
+                        )
+                if not include_visuals or row["visual_id"] is not None:
+                    continue
+                if row["visual_preset_id"] is None:
+                    blocked.append(
+                        {
+                            "content_id": str(content_id),
+                            "stage": "visual",
+                            "code": "active_local_visual_preset_required",
+                        }
+                    )
+                    continue
+                if not comfy_ready:
+                    blocked.append(
+                        {
+                            "content_id": str(content_id),
+                            "stage": "visual",
+                            "code": "comfyui_not_configured",
+                        }
+                    )
+                    continue
                 try:
-                    result = self.audio.initialize(
+                    result = self.visuals.initialize(
                         content_id=content_id,
-                        request=AudioInitializeRequest(
-                            model_id=self.kokoro_model,
+                        request=VisualProjectInitializeRequest(
+                            visual_preset_id=row["visual_preset_id"],
+                            provider="comfyui-sdxl-local",
+                            model_id=self.visual_model,
+                            candidate_count=int(os.getenv("LOCAL_VISUAL_CANDIDATE_COUNT", "3")),
+                            width=int(os.getenv("LOCAL_VISUAL_WIDTH", "704")),
+                            height=int(os.getenv("LOCAL_VISUAL_HEIGHT", "1280")),
+                            base_seed=_seed(content_id, row["version"], self.visual_model),
                             preferred_worker_id=self.worker_id,
-                            timeout_seconds=900,
+                            timeout_seconds=1800,
                             max_attempts=3,
                         ),
                         actor=actor,
                     )
-                    audio.append(
+                    visuals.append(
                         {
                             "content_id": str(content_id),
-                            "production_id": str(result["production"]["id"]),
+                            "project_id": str(result["project"]["id"]),
                         }
                     )
-                except AudioProductionError as exc:
+                except VisualProjectError as exc:
                     blocked.append(
                         {
                             "content_id": str(content_id),
-                            "stage": "audio",
+                            "stage": "visual",
                             "code": exc.code,
                             "details": exc.details,
                         }
                     )
-            if not include_visuals or row["visual_id"] is not None:
-                continue
-            if row["visual_preset_id"] is None:
-                blocked.append(
-                    {
-                        "content_id": str(content_id),
-                        "stage": "visual",
-                        "code": "active_local_visual_preset_required",
-                    }
-                )
-                continue
-            if not comfy_ready:
-                blocked.append(
-                    {
-                        "content_id": str(content_id),
-                        "stage": "visual",
-                        "code": "comfyui_not_configured",
-                    }
-                )
-                continue
-            try:
-                result = self.visuals.initialize(
-                    content_id=content_id,
-                    request=VisualProjectInitializeRequest(
-                        visual_preset_id=row["visual_preset_id"],
-                        provider="comfyui-sdxl-local",
-                        model_id=self.visual_model,
-                        candidate_count=int(os.getenv("LOCAL_VISUAL_CANDIDATE_COUNT", "3")),
-                        width=int(os.getenv("LOCAL_VISUAL_WIDTH", "704")),
-                        height=int(os.getenv("LOCAL_VISUAL_HEIGHT", "1280")),
-                        base_seed=_seed(content_id, row["version"], self.visual_model),
-                        preferred_worker_id=self.worker_id,
-                        timeout_seconds=1800,
-                        max_attempts=3,
-                    ),
-                    actor=actor,
-                )
-                visuals.append(
-                    {
-                        "content_id": str(content_id),
-                        "project_id": str(result["project"]["id"]),
-                    }
-                )
-            except VisualProjectError as exc:
-                blocked.append(
-                    {
-                        "content_id": str(content_id),
-                        "stage": "visual",
-                        "code": exc.code,
-                        "details": exc.details,
-                    }
-                )
+
+        previews: list[dict[str, Any]] = []
+        if include_previews:
+            preview_result = self._enqueue_previews(limit=limit, actor=actor, brand_ids=scoped)
+            previews.extend(preview_result["enqueued"])
+            blocked.extend(preview_result["blocked"])
+
         return {
             "ok": True,
             "kind": "local_approved_continuation",
-            "processed": len(rows),
             "audio_initialized": audio,
             "visuals_initialized": visuals,
+            "previews_enqueued": previews,
             "blocked": blocked,
             "automatic_approval": False,
             "live_publishing": False,
         }
+
+    def _enqueue_previews(
+        self,
+        *,
+        limit: int,
+        actor: str,
+        brand_ids: list[UUID] | None,
+    ) -> dict[str, Any]:
+        if not self._ffmpeg_configured():
+            return {"enqueued": [], "blocked": [{"stage": "preview", "code": "ffmpeg_not_configured"}]}
+        brand_sql, brand_values = self._brand_filter(brand_ids, column="mp.brand_id")
+        with self.database.connection() as conn:
+            rows = conn.execute(
+                f"""SELECT pc.id,pc.version,ap.id AS audio_production_id,
+                           ap.current_mix_version_id,vp.id AS visual_project_id
+                    FROM football_brief.portfolio_content pc
+                    JOIN football_brief.monthly_content_plans mp ON mp.id=pc.plan_id
+                    JOIN football_brief.audio_productions ap
+                      ON ap.portfolio_content_id=pc.id AND ap.status='approved'
+                    JOIN football_brief.audio_mix_versions amv
+                      ON amv.id=ap.current_mix_version_id AND amv.status='approved'
+                    JOIN football_brief.visual_projects vp
+                      ON vp.portfolio_content_id=pc.id AND vp.status='approved'
+                    WHERE NOT EXISTS (
+                        SELECT 1 FROM football_brief.generation_jobs gj
+                        WHERE gj.portfolio_content_id=pc.id
+                          AND gj.content_version=pc.version
+                          AND gj.job_type='preview'
+                          AND gj.status IN ('queued','running','succeeded','failed')
+                    ) {brand_sql}
+                    ORDER BY pc.scheduled_for NULLS LAST,pc.created_at,pc.id
+                    LIMIT %s""",
+                (*brand_values, limit),
+            ).fetchall()
+        enqueued: list[dict[str, Any]] = []
+        blocked: list[dict[str, Any]] = []
+        for row in rows:
+            with self.database.connection() as conn:
+                audio_jobs = conn.execute(
+                    """SELECT ast.generation_job_id
+                       FROM football_brief.audio_segment_takes ast
+                       JOIN football_brief.audio_paragraphs apar ON apar.id=ast.paragraph_id
+                       JOIN football_brief.generation_jobs gj ON gj.id=ast.generation_job_id
+                       WHERE ast.audio_production_id=%s AND ast.status='selected'
+                         AND gj.status='succeeded'
+                       ORDER BY apar.sequence""",
+                    (row["audio_production_id"],),
+                ).fetchall()
+                scenes = conn.execute(
+                    """SELECT vc.generation_job_id,vs.sequence,spe.target_duration_seconds
+                       FROM football_brief.visual_shots vs
+                       JOIN football_brief.visual_candidates vc ON vc.id=vs.selected_candidate_id
+                       JOIN football_brief.generation_jobs gj ON gj.id=vc.generation_job_id
+                       JOIN football_brief.script_scene_plan_entries spe ON spe.id=vs.scene_plan_entry_id
+                       WHERE vs.visual_project_id=%s AND vs.status='approved'
+                         AND vc.status='selected' AND gj.status='succeeded'
+                       ORDER BY vs.sequence""",
+                    (row["visual_project_id"],),
+                ).fetchall()
+            if not audio_jobs or not scenes:
+                blocked.append(
+                    {
+                        "content_id": str(row["id"]),
+                        "stage": "preview",
+                        "code": "approved_audio_and_selected_visuals_required",
+                    }
+                )
+                continue
+            request = GenerationJobEnqueue(
+                portfolio_content_id=row["id"],
+                content_version=int(row["version"]),
+                job_type=GenerationJobType.PREVIEW,
+                provider="ffmpeg-local",
+                model_id=self.preview_model,
+                preferred_worker_id=self.worker_id,
+                priority=20,
+                idempotency_key=(
+                    f"local-preview:{row['id']}:v{row['version']}:"
+                    f"{row['current_mix_version_id']}:{row['visual_project_id']}"
+                ),
+                input_payload={
+                    "audio_production_id": str(row["audio_production_id"]),
+                    "audio_mix_version_id": str(row["current_mix_version_id"]),
+                    "visual_project_id": str(row["visual_project_id"]),
+                    "audio_job_ids": [str(item["generation_job_id"]) for item in audio_jobs],
+                    "scenes": [
+                        {
+                            "sequence": int(item["sequence"]),
+                            "generation_job_id": str(item["generation_job_id"]),
+                            "duration_seconds": float(item["target_duration_seconds"]),
+                        }
+                        for item in scenes
+                    ],
+                    "width": int(os.getenv("LOCAL_PREVIEW_WIDTH", "704")),
+                    "height": int(os.getenv("LOCAL_PREVIEW_HEIGHT", "1280")),
+                    "fps": int(os.getenv("LOCAL_PREVIEW_FPS", "30")),
+                },
+                timeout_seconds=int(os.getenv("LOCAL_PREVIEW_TIMEOUT_SECONDS", "1800")),
+                max_attempts=3,
+                estimated_cost_usd=Decimal("0"),
+                reserved_cost_usd=Decimal("0"),
+                legacy_source={"local_pipeline": True, "deterministic_preview": True},
+            )
+            try:
+                job = self.jobs.enqueue(request, actor=actor)
+                enqueued.append(
+                    {
+                        "id": str(job["id"]),
+                        "content_id": str(row["id"]),
+                        "reused": bool(job.get("reused")),
+                    }
+                )
+            except GenerationJobError as exc:
+                blocked.append(
+                    {
+                        "content_id": str(row["id"]),
+                        "stage": "preview",
+                        "code": exc.code,
+                        "details": exc.details,
+                    }
+                )
+        return {"enqueued": enqueued, "blocked": blocked}
 
     def _supervisor_status(self) -> dict[str, Any]:
         runtime_root = Path(os.getenv("LOCAL_RUNTIME_ROOT", ".runtime"))
@@ -382,13 +538,20 @@ class LocalPipelineService:
             return False
 
     @staticmethod
+    def _ffmpeg_configured() -> bool:
+        from shutil import which
+
+        configured = os.getenv("LOCAL_FFMPEG_PATH", "ffmpeg").strip() or "ffmpeg"
+        return bool(Path(configured).is_file() or which(configured))
+
+    @staticmethod
     def _empty_continuation() -> dict[str, Any]:
         return {
             "ok": True,
             "kind": "local_approved_continuation",
-            "processed": 0,
             "audio_initialized": [],
             "visuals_initialized": [],
+            "previews_enqueued": [],
             "blocked": [],
             "automatic_approval": False,
             "live_publishing": False,
