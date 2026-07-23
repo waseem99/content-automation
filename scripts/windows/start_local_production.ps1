@@ -20,7 +20,8 @@ New-Item -ItemType Directory -Force -Path $Runtime, (Join-Path $Runtime "logs"),
 
 function New-Secret([int]$Bytes = 32) {
   $buffer = New-Object byte[] $Bytes
-  [Security.Cryptography.RandomNumberGenerator]::Fill($buffer)
+  $generator = [Security.Cryptography.RandomNumberGenerator]::Create()
+  try { $generator.GetBytes($buffer) } finally { $generator.Dispose() }
   return ([Convert]::ToBase64String($buffer)).TrimEnd("=").Replace("+", "-").Replace("/", "_")
 }
 
@@ -37,7 +38,7 @@ function Read-DotEnv([string]$Path) {
 
 function Write-DotEnv([System.Collections.IDictionary]$Values, [string]$Path) {
   $content = foreach ($key in $Values.Keys) { "$key=$($Values[$key])" }
-  [IO.File]::WriteAllLines($Path, $content, [Text.UTF8Encoding]::new($false))
+  [IO.File]::WriteAllLines($Path, $content, (New-Object Text.UTF8Encoding($false)))
 }
 
 if (-not (Test-Path $EnvPath)) {
@@ -64,6 +65,8 @@ if (-not (Test-Path $EnvPath)) {
 $envValues = Read-DotEnv $EnvPath
 $envValues["POSTGRES_PORT"] = [string]$PostgresPort
 $envValues["LOCAL_API_PORT"] = [string]$ApiPort
+if ($ExposeWithNgrok) { $envValues["LOCAL_NGROK_ENABLED"] = "true" }
+Write-DotEnv $envValues $EnvPath
 foreach ($entry in $envValues.GetEnumerator()) {
   [Environment]::SetEnvironmentVariable($entry.Key, [string]$entry.Value, "Process")
 }
@@ -79,6 +82,7 @@ Push-Location $Root
 try {
   docker compose --env-file $EnvPath -f compose.local.yml up -d postgres
   $deadline = (Get-Date).AddMinutes(3)
+  $ready = $false
   do {
     Start-Sleep -Seconds 2
     docker compose --env-file $EnvPath -f compose.local.yml exec -T postgres pg_isready -U postgres -d content_automation *> $null
@@ -86,9 +90,7 @@ try {
   } until ($ready -or (Get-Date) -gt $deadline)
   if (-not $ready) { throw "PostgreSQL did not become ready." }
 
-  if (-not (Test-Path $Python)) {
-    python -m venv .venv
-  }
+  if (-not (Test-Path $Python)) { python -m venv .venv }
   if (-not $SkipInstall) {
     & $Python -m pip install --upgrade pip
     & $Pip install -r requirements.txt
@@ -118,7 +120,7 @@ try {
 
   & $Python -m src.infrastructure.database.cli migrate
   if ($LASTEXITCODE -ne 0) { throw "Database migration failed." }
-  & $Python -m src.operations.local_onboarding
+  & $Python -m src.operations.local_onboarding_v2
   if ($LASTEXITCODE -ne 0) { throw "Local onboarding failed." }
 
   $apiPid = Join-Path $Runtime "api.pid"
@@ -143,11 +145,12 @@ try {
   $workerLog = Join-Path $Runtime "logs\worker.log"
   $workerError = Join-Path $Runtime "logs\worker.error.log"
   $worker = Start-Process -FilePath $Python `
-    -ArgumentList @("-m", "src.operations.local_worker", "--poll-seconds", "3") `
+    -ArgumentList @("-m", "src.operations.local_worker_v2", "--poll-seconds", "3") `
     -WorkingDirectory $Root -RedirectStandardOutput $workerLog -RedirectStandardError $workerError -PassThru
   Set-Content -LiteralPath $workerPid -Value $worker.Id -Encoding ascii
 
   $deadline = (Get-Date).AddMinutes(2)
+  $apiReady = $false
   do {
     Start-Sleep -Seconds 2
     try {
