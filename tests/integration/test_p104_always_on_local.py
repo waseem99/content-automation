@@ -3,7 +3,7 @@ from __future__ import annotations
 import shutil
 from decimal import Decimal
 from pathlib import Path
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 import numpy as np
 import pytest
@@ -17,9 +17,20 @@ from src.application.generation_jobs.models import (
 )
 from src.application.generation_jobs.service import GenerationJobService
 from src.application.production_workflow_service import ProductionWorkflowService
+from src.application.scripts.models import (
+    ClaimSourceDraft,
+    ClaimSupportType,
+    ScriptDecision,
+    ScriptGenerateRequest,
+    SourceDraft,
+    SourceRightsDeclaration,
+    SourceSupportUpdateRequest,
+    SourceType,
+)
+from src.application.scripts.service import ScriptReviewService
 from src.domain.production_workflow import ReviewDecision
 from src.infrastructure.database.connection import Database
-from src.operations.local_pipeline import LocalPipelineService
+from src.operations.always_on_pipeline import AlwaysOnLocalPipelineService
 from src.operations.local_worker_v2 import AlwaysOnLocalGenerationWorker
 from tests.integration.test_p86_production_workflow_lifecycle import database, seeded
 
@@ -27,11 +38,7 @@ __all__ = ["database", "seeded"]
 pytestmark = pytest.mark.integration
 
 
-def test_bounded_script_batch_is_durable_zero_cost_and_idempotent(
-    database: Database,
-    seeded: dict[str, object],
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
+def _approve_concept_workflow(database: Database, seeded: dict[str, object]) -> dict[str, object]:
     workflow = ProductionWorkflowService(database)
     created = workflow.initialize(content_id=seeded["content_id"], actor=seeded["producer"])
     submitted = workflow.submit(
@@ -44,18 +51,96 @@ def test_bounded_script_batch_is_durable_zero_cost_and_idempotent(
         expected_lock_version=submitted["workflow"]["lock_version"],
         reviewer=seeded["reviewer"],
         decision=ReviewDecision.APPROVED,
-        rationale="Concept is approved for bounded local script generation",
+        rationale="Concept is approved for bounded local production",
     )
     assert approved["workflow"]["current_stage"] == "script_draft"
+    return approved
 
+
+def _approve_script(database: Database, seeded: dict[str, object]) -> UUID:
+    _approve_concept_workflow(database, seeded)
+    service = ScriptReviewService(database)
+    initialized = service.initialize(
+        content_id=seeded["content_id"],
+        request=ScriptGenerateRequest(
+            platform="facebook",
+            format="vertical_short",
+            language="en-US",
+            target_duration_seconds=45,
+            words_per_minute=150,
+            duration_tolerance_percent=10,
+            seed=104,
+        ),
+        actor=seeded["producer"],
+    )
+    document_id = initialized["document"]["id"]
+    version_id = initialized["document"]["current_version_id"]
+    claims = [
+        claim for claim in initialized["claims"]
+        if str(claim["script_version_id"]) == str(version_id)
+    ]
+    assert claims
+    source = SourceDraft(
+        source_key="p104-primary-source",
+        source_type=SourceType.ACADEMIC,
+        title="Reviewed evidence for the local production fixture",
+        publisher="P104 Evidence Journal",
+        canonical_url="https://example.org/p104/local-production-evidence",
+        quality_score=95,
+        rights_declaration=SourceRightsDeclaration.PUBLICLY_ACCESSIBLE,
+        permitted_use="Factual verification and paraphrased educational explanation",
+        evidence_digest="c" * 64,
+        notes="The fixture copies no source wording or protected media.",
+    )
+    supported = service.update_source_support(
+        document_id=document_id,
+        request=SourceSupportUpdateRequest(
+            expected_lock_version=1,
+            sources=[source],
+            claim_sources=[
+                ClaimSourceDraft(
+                    claim_key=claim["claim_key"],
+                    source_key=source.source_key,
+                    support_type=ClaimSupportType.DIRECT,
+                    locator="Reviewed fixture evidence",
+                    support_note="Directly supports this factual fixture claim for the integration proof.",
+                )
+                for claim in claims
+            ],
+            supported_claim_keys=[claim["claim_key"] for claim in claims],
+        ),
+        actor=seeded["producer"],
+    )
+    submitted = service.submit(
+        document_id=document_id,
+        expected_lock_version=supported["document"]["lock_version"],
+        actor=seeded["producer"],
+    )
+    approved = service.decide(
+        document_id=document_id,
+        expected_lock_version=submitted["document"]["lock_version"],
+        decision=ScriptDecision.APPROVED,
+        rationale="Claims, sources, scene plan, timing, and wording are approved.",
+        reviewer=seeded["reviewer"],
+    )
+    assert approved["document"]["current_version_status"] == "approved"
+    return UUID(str(approved["document"]["current_version_id"]))
+
+
+def test_bounded_script_batch_is_durable_zero_cost_and_idempotent(
+    database: Database,
+    seeded: dict[str, object],
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _approve_concept_workflow(database, seeded)
     monkeypatch.setenv("LOCAL_PRODUCER_OPERATOR_ID", str(seeded["producer"]))
-    pipeline = LocalPipelineService(database)
+    pipeline = AlwaysOnLocalPipelineService(database)
     first = pipeline.enqueue_scripts(
         limit=5,
         actor=str(seeded["producer"]),
         brand_ids=[seeded["brand_id"]],
     )
-    assert first["ok"] is True
+    assert first["ok"] is True, first
     assert len(first["enqueued"]) == 1
     assert first["enqueued"][0]["reused"] is False
 
@@ -99,6 +184,8 @@ def _complete_dependency(
     database: Database,
     *,
     seeded: dict[str, object],
+    script_version_id: UUID,
+    content_version: int,
     job_type: GenerationJobType,
     output_payload: dict[str, object],
 ) -> str:
@@ -106,13 +193,13 @@ def _complete_dependency(
     enqueued = jobs.enqueue(
         GenerationJobEnqueue(
             portfolio_content_id=seeded["content_id"],
-            content_version=1,
+            content_version=content_version,
             job_type=job_type,
             provider="fixture-local",
             model_id="fixture-model",
             preferred_worker_id=str(seeded["producer"]),
             idempotency_key=f"p104-fixture:{job_type.value}:{uuid4()}",
-            input_payload={"fixture": True},
+            input_payload={"fixture": True, "script_version_id": str(script_version_id)},
             timeout_seconds=120,
             max_attempts=1,
             estimated_cost_usd=Decimal("0"),
@@ -149,6 +236,13 @@ def test_ffmpeg_preview_creates_reviewable_mp4_and_approved_local_asset(
     tmp_path: Path,
 ) -> None:
     assert shutil.which("ffmpeg"), "P104 CI must install FFmpeg"
+    script_version_id = _approve_script(database, seeded)
+    with database.connection() as conn:
+        content_version = int(conn.execute(
+            "SELECT version FROM football_brief.portfolio_content WHERE id=%s",
+            (seeded["content_id"],),
+        ).fetchone()["version"])
+
     artifact_root = tmp_path / "artifacts"
     source_root = artifact_root / "fixtures"
     source_root.mkdir(parents=True)
@@ -166,6 +260,8 @@ def test_ffmpeg_preview_creates_reviewable_mp4_and_approved_local_asset(
     audio_job_id = _complete_dependency(
         database,
         seeded=seeded,
+        script_version_id=script_version_id,
+        content_version=content_version,
         job_type=GenerationJobType.NARRATION,
         output_payload={
             "kind": "local_kokoro_narration",
@@ -181,6 +277,8 @@ def test_ffmpeg_preview_creates_reviewable_mp4_and_approved_local_asset(
     image_job_id = _complete_dependency(
         database,
         seeded=seeded,
+        script_version_id=script_version_id,
+        content_version=content_version,
         job_type=GenerationJobType.KEYFRAME,
         output_payload={
             "kind": "local_comfyui_keyframe",
@@ -194,20 +292,15 @@ def test_ffmpeg_preview_creates_reviewable_mp4_and_approved_local_asset(
         },
     )
 
-    with database.connection() as conn:
-        content_version = conn.execute(
-            "SELECT version FROM football_brief.portfolio_content WHERE id=%s",
-            (seeded["content_id"],),
-        ).fetchone()["version"]
-
     worker = AlwaysOnLocalGenerationWorker(database, allowed_job_types=[GenerationJobType.PREVIEW])
     preview_job = {
         "id": uuid4(),
         "portfolio_content_id": seeded["content_id"],
-        "content_version": int(content_version),
+        "content_version": content_version,
         "model_id": "ffmpeg-slideshow-v1",
         "timeout_seconds": 180,
         "input_payload": {
+            "script_version_id": str(script_version_id),
             "audio_job_ids": [audio_job_id],
             "scenes": [
                 {"sequence": 1, "generation_job_id": image_job_id, "duration_seconds": 1.0}
