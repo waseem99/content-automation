@@ -7,7 +7,7 @@ param(
 $ErrorActionPreference = "Stop"
 $Root = (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path
 $Runtime = Join-Path $Root ".runtime"
-$Supervisor = Join-Path $PSScriptRoot "supervise_local_production.ps1"
+$Supervisor = Join-Path $PSScriptRoot "supervise_always_on_local_production.ps1"
 if (-not (Test-Path (Join-Path $Root ".env.local"))) {
   throw "Run deploy_always_on_local_production.ps1 to create the local environment first."
 }
