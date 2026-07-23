@@ -5,6 +5,7 @@ on:
     branches: [test]
     paths:
       - "src/operations/local_pipeline.py"
+      - "src/operations/always_on_*.py"
       - "src/operations/local_onboarding_v2.py"
       - "src/operations/local_worker_v2.py"
       - "src/operator_api/local_pipeline_runtime.py"
@@ -85,5 +86,7 @@ jobs:
         shell: bash
         run: |
           ! grep -R -n -E "vercel[[:space:]]+deploy|vercel[[:space:]]+--prod|live[ -]publish|automatic[ -]publish|higgsfield" \
-            src/operations/local_pipeline.py src/operations/local_worker_v2.py \
-            src/operator_api/local_pipeline_runtime.py scripts/windows/supervise_local_production.ps1
+            src/operations/local_pipeline.py src/operations/always_on_pipeline.py \
+            src/operations/always_on_continuation.py src/operations/local_worker_v2.py \
+            src/operator_api/local_pipeline_runtime.py scripts/windows/supervise_local_production.ps1 \
+            scripts/windows/supervise_always_on_local_production.ps1
