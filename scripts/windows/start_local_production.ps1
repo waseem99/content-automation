@@ -41,6 +41,12 @@ function Write-DotEnv([System.Collections.IDictionary]$Values, [string]$Path) {
   [IO.File]::WriteAllLines($Path, $content, (New-Object Text.UTF8Encoding($false)))
 }
 
+function Refresh-ProcessPath {
+  $machine = [Environment]::GetEnvironmentVariable("Path", "Machine")
+  $user = [Environment]::GetEnvironmentVariable("Path", "User")
+  $env:Path = "$machine;$user"
+}
+
 if (-not (Test-Path $EnvPath)) {
   $values = Read-DotEnv $TemplatePath
   $values["POSTGRES_PORT"] = [string]$PostgresPort
@@ -77,6 +83,22 @@ foreach ($command in "docker", "python") {
   }
 }
 docker info | Out-Null
+
+if (-not (Get-Command ffmpeg -ErrorAction SilentlyContinue)) {
+  if ($SkipInstall) {
+    throw "FFmpeg is required for local MP4 previews and was not found on PATH."
+  }
+  if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
+    throw "FFmpeg is required. Install the Gyan.FFmpeg package or place ffmpeg on PATH, then rerun."
+  }
+  Write-Host "Installing FFmpeg for deterministic local MP4 previews..." -ForegroundColor Cyan
+  & winget install --id Gyan.FFmpeg --exact --silent --accept-package-agreements --accept-source-agreements
+  if ($LASTEXITCODE -ne 0) { throw "FFmpeg installation failed." }
+  Refresh-ProcessPath
+  if (-not (Get-Command ffmpeg -ErrorAction SilentlyContinue)) {
+    throw "FFmpeg installed but is not visible in this shell. Open a new elevated PowerShell and rerun."
+  }
+}
 
 Push-Location $Root
 try {
