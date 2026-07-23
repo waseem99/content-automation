@@ -8,6 +8,7 @@ from fastapi import FastAPI
 
 from src.infrastructure.database.connection import Database
 from src.operator_api.auth import OperatorAuthSettings
+from src.operator_api.local_pipeline_runtime import install_local_pipeline_routes
 from src.operator_api.runtime_config import OperatorRuntimeSettings, get_operator_runtime_settings
 from src.operator_api.runtime_factory import create_configured_app
 from src.operator_api.studio_runtime import install_studio_routes
@@ -19,11 +20,13 @@ FACTORY_IMPORT_PATH = "src.operator_api.entrypoint:create_runtime_app"
 def create_runtime_app() -> FastAPI:
     settings = get_operator_runtime_settings()
     database = _open_runtime_database(settings)
+    auth_settings = _operator_auth_from_environment()
     application = create_configured_app(
         database=database,
-        auth_settings=_operator_auth_from_environment(),
+        auth_settings=auth_settings,
         runtime_settings=settings,
     )
+    install_local_pipeline_routes(application, database=database, auth_settings=auth_settings)
     install_studio_routes(application)
     if database is not None:
         @application.on_event("shutdown")
