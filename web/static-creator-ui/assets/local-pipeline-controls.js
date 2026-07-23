@@ -39,7 +39,8 @@
     const active = jobs.reduce((sum, row) => sum + Number(row.count || 0), 0);
     const supervisor = payload.supervisor || {};
     const supervisorText = supervisor.healthy ? `Supervisor healthy · heartbeat ${escapeHtml(supervisor.age_seconds || 0)}s ago` : `Supervisor ${escapeHtml(supervisor.reason || "not healthy")}`;
-    target.innerHTML = `${message ? `<div class="notice good">${escapeHtml(message)}</div>` : ""}<div class="compact-item"><strong>${escapeHtml(eligible.scripts || 0)} script draft(s) ready to queue</strong><span>${escapeHtml(eligible.audio || 0)} approved script(s) need audio · ${escapeHtml(eligible.visuals || 0)} need local visuals</span><small>${escapeHtml(active)} active/recoverable local queue item(s) · ComfyUI ${payload.capabilities?.comfyui_configured ? "configured" : "not configured"} · ${supervisorText}</small></div>`;
+    const mediaText = `ComfyUI ${payload.capabilities?.comfyui_configured ? "ready" : "not ready"} · FFmpeg ${payload.capabilities?.ffmpeg_configured ? "ready" : "not ready"}`;
+    target.innerHTML = `${message ? `<div class="notice good">${escapeHtml(message)}</div>` : ""}<div class="compact-item"><strong>${escapeHtml(eligible.scripts || 0)} script draft(s) ready to queue</strong><span>${escapeHtml(eligible.audio || 0)} need local audio · ${escapeHtml(eligible.visuals || 0)} need local visuals · ${escapeHtml(eligible.previews || 0)} approved package(s) can become MP4 previews</span><small>${escapeHtml(active)} active/recoverable local queue item(s) · ${mediaText} · ${supervisorText}</small></div>`;
   }
 
   async function refresh() {
@@ -63,9 +64,9 @@
         await refresh();
         render(await request("/local-production/status"), `${result.enqueued?.length || 0} script job(s) queued. Existing jobs were reused safely.`);
       } else {
-        result = await request("/local-production/continue-approved", { method: "POST", body: JSON.stringify({ ...payload, include_audio: true, include_visuals: true }) });
+        result = await request("/local-production/continue-approved", { method: "POST", body: JSON.stringify({ ...payload, include_audio: true, include_visuals: true, include_previews: true }) });
         await refresh();
-        render(await request("/local-production/status"), `${result.audio_initialized?.length || 0} audio production(s) and ${result.visuals_initialized?.length || 0} visual project(s) queued. ${result.blocked?.length || 0} item(s) remain blocked.`);
+        render(await request("/local-production/status"), `${result.audio_initialized?.length || 0} audio production(s), ${result.visuals_initialized?.length || 0} visual project(s), and ${result.previews_enqueued?.length || 0} MP4 preview(s) queued. ${result.blocked?.length || 0} item(s) remain blocked.`);
       }
       $("refresh-console")?.click();
     } catch (error) {
