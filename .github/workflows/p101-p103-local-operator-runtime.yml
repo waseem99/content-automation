@@ -44,11 +44,13 @@ jobs:
         run: |
           node --check web/static-creator-ui/assets/portfolio-api.js
           node --check web/static-creator-ui/assets/p100-api-compat.js
+          node --check web/static-creator-ui/assets/role-aware-api.js
           node --check web/static-creator-ui/assets/production-console.js
       - name: Focused contracts
         run: >
           python -m pytest -q
           tests/unit/test_p101_p103_local_runtime_contracts.py
+          tests/unit/test_p101_role_aware_studio_signin.py
           tests/unit/test_p103_local_onboarding_contracts.py
       - name: No deployment or live publishing
         shell: bash
