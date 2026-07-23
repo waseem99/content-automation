@@ -1,0 +1,52 @@
+name: P104 Always-on Local Workstation
+
+on:
+  pull_request:
+    branches: [test]
+    paths:
+      - "src/operations/local_pipeline.py"
+      - "src/operations/local_onboarding_v2.py"
+      - "src/operations/local_worker_v2.py"
+      - "src/operator_api/local_pipeline_runtime.py"
+      - "src/operator_api/entrypoint.py"
+      - "web/static-creator-ui/**"
+      - "config/local.env.example"
+      - "scripts/windows/*local_production*.ps1"
+      - "docs/operations/ALWAYS_ON_LOCAL_WORKSTATION.md"
+      - "tests/unit/test_p104_always_on_local_contracts.py"
+      - ".github/workflows/p104-always-on-local.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: p104-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  contracts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: python -m pip install -r requirements.txt
+      - name: Compile Python
+        run: python -m compileall -q src tests
+      - name: JavaScript syntax
+        run: |
+          node --check web/static-creator-ui/assets/local-pipeline-controls.js
+          node --check web/static-creator-ui/assets/portfolio-api.js
+          node --check web/static-creator-ui/assets/production-console.js
+      - name: Focused contracts
+        run: python -m pytest -q tests/unit/test_p104_always_on_local_contracts.py
+      - name: Safety boundary
+        shell: bash
+        run: |
+          ! grep -R -n -E "vercel[[:space:]]+deploy|vercel[[:space:]]+--prod|live[ -]publish|automatic[ -]publish|higgsfield" \
+            src/operations/local_pipeline.py src/operations/local_worker_v2.py \
+            src/operator_api/local_pipeline_runtime.py scripts/windows/supervise_local_production.ps1
