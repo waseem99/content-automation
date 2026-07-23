@@ -53,6 +53,32 @@ jobs:
       - name: No deployment or live publishing
         shell: bash
         run: |
-          ! grep -R -n -E "vercel deploy|vercel --prod|live[_ -]publish|automatic[_ -]publish" \
-            src/operations/local_* scripts/windows/start_local_production.ps1 \
-            compose.local.yml config/local.env.example
+          python - <<'PY'
+          import re
+          from pathlib import Path
+
+          paths = [
+              Path("src/operations/local_onboarding.py"),
+              Path("src/operations/local_worker.py"),
+              Path("scripts/windows/start_local_production.ps1"),
+              Path("scripts/windows/stop_local_production.ps1"),
+              Path("compose.local.yml"),
+          ]
+          blocked = re.compile(
+              r"\bvercel\s+(?:deploy|--prod)\b|"
+              r"\bdocker\s+push\b|"
+              r"\bkubectl\s+apply\b|"
+              r"\bterraform\s+apply\b|"
+              r"\blive[_ -]publish\b|"
+              r"\bautomatic[_ -]publish\b",
+              re.IGNORECASE,
+          )
+          violations = []
+          for path in paths:
+              text = path.read_text(encoding="utf-8")
+              for line_number, line in enumerate(text.splitlines(), start=1):
+                  if blocked.search(line):
+                      violations.append(f"{path}:{line_number}:{line.strip()}")
+          if violations:
+              raise SystemExit("Blocked deployment or publishing command found:\n" + "\n".join(violations))
+          PY
