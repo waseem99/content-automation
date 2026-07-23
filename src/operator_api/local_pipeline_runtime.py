@@ -26,6 +26,7 @@ class LocalBatchRequest(BaseModel):
 class ContinueApprovedRequest(LocalBatchRequest):
     include_audio: bool = True
     include_visuals: bool = True
+    include_previews: bool = True
 
 
 def install_local_pipeline_routes(
@@ -94,6 +95,7 @@ def install_local_pipeline_routes(
                 brand_ids=scope(operator, request.brand_id, AccessPermission.RUN_PRODUCTION),
                 include_audio=request.include_audio,
                 include_visuals=request.include_visuals,
+                include_previews=request.include_previews,
             )
         except LocalPipelineError as exc:
             raise HTTPException(status_code=422, detail={"code": exc.code, "details": exc.details}) from exc
