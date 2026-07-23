@@ -4,401 +4,174 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Content Engine Studio</title>
-  <meta name="description" content="Interactive architecture map and static creator studio for the content automation engine.">
+  <meta name="description" content="Multi-brand local-first content production, review, and release workspace.">
+  <meta name="content-api-mode" content="same-origin">
   <meta name="content-api-base" content="">
   <meta name="content-plan-month" content="2026-08-01">
+  <meta name="content-local-model-id" content="qwen2.5:7b">
   <link rel="stylesheet" href="assets/styles.css">
+  <link rel="stylesheet" href="assets/production-console.css">
 </head>
-<body>
-  <header class="hero">
+<body class="production-studio">
+  <header class="studio-topbar">
     <div>
-      <p class="eyebrow">Content Automation Engine</p>
-      <h1>Plan, govern, produce, review, and monetize content through one controlled workflow.</h1>
-      <p class="hero-copy">Explore the implemented codebase, understand every tool and decision gate, then create a browser-based first-pass video pack.</p>
-      <nav class="hero-actions" aria-label="Page sections">
-        <a class="button-link" href="#engine-map">Explore Engine Map</a>
-        <a class="button-link secondary-link" href="#creator-studio">Open Creator Studio</a>
-      </nav>
+      <p class="eyebrow">Content Automation Platform</p>
+      <h1>Production Creator Studio</h1>
+      <p class="studio-subtitle">Multi-brand planning, local generation, human review, controlled rendering, release, and pilot evidence.</p>
     </div>
-    <div class="hero-card">
-      <strong>Current deployment</strong>
-      <span>Vercel static UI</span>
-      <small>Interactive architecture + browser planning pack</small>
+    <div class="studio-session">
+      <div id="session-summary" class="session-summary" aria-live="polite">
+        <strong>Not signed in</strong>
+        <span>Enter your assigned operator key.</span>
+      </div>
+      <button id="connect-api" type="button">Sign in</button>
+      <button id="logout-api" class="secondary" type="button" hidden>Sign out</button>
     </div>
   </header>
 
   <main>
+    <section class="runtime-strip" aria-labelledby="runtime-heading">
+      <div>
+        <p class="eyebrow dark-eyebrow">Runtime</p>
+        <h2 id="runtime-heading">Local production readiness</h2>
+      </div>
+      <div id="runtime-cards" class="runtime-cards" aria-live="polite">
+        <article><strong>Disconnected</strong><span>API</span></article>
+        <article><strong>Unknown</strong><span>Database</span></article>
+        <article><strong>Unknown</strong><span>Queue</span></article>
+        <article><strong>Human-controlled</strong><span>Publishing</span></article>
+      </div>
+    </section>
+
+    <nav class="studio-nav" aria-label="Creator Studio sections">
+      <a href="#portfolio-studio">Portfolio</a>
+      <a href="#team-work">Team work</a>
+      <a href="#release-operations">Release & delivery</a>
+      <a href="#p100-console">P100 pilot</a>
+    </nav>
+
     <section id="portfolio-studio" class="portfolio-section" aria-labelledby="portfolio-heading">
       <div class="portfolio-head">
         <div>
-          <p class="eyebrow dark-eyebrow">30-Day Content Portfolio</p>
-          <h2 id="portfolio-heading">Operate every brand one month ahead</h2>
-          <p class="section-copy">A Facebook-first command center for planning original master videos, approving scripts and previews, routing only high-value shots to paid generation, and exporting complete platform packages.</p>
+          <p class="eyebrow dark-eyebrow">Multi-brand command center</p>
+          <h2 id="portfolio-heading">Operate real content records</h2>
+          <p class="section-copy">Production mode never falls back to demo content. Every item shown here comes from the connected PostgreSQL runtime.</p>
         </div>
-        <div class="horizon-card"><strong>Target buffer</strong><span>30 approved publishing days</span><small>Publishing always remains human-controlled</small></div>
+        <div id="operator-badge" class="operator-badge"><strong>Sign in required</strong><span>No data loaded</span></div>
       </div>
 
-      <div id="portfolio-metrics" class="portfolio-metrics" aria-label="Portfolio production metrics"></div>
+      <div id="portfolio-metrics" class="portfolio-metrics" aria-label="Portfolio metrics"></div>
 
       <div class="portfolio-toolbar">
         <label for="brand-filter">Brand</label>
-        <select id="brand-filter"></select>
+        <select id="brand-filter" disabled><option value="all">All assigned brands</option></select>
         <label for="status-filter">Workflow stage</label>
-        <select id="status-filter">
+        <select id="status-filter" disabled>
           <option value="all">All stages</option>
-          <option value="idea">Idea review</option>
-          <option value="script">Script review</option>
-          <option value="preview">Preview review</option>
-          <option value="premium">Premium render</option>
-          <option value="package">Package review</option>
-          <option value="ready">Ready to publish</option>
+          <option value="idea">Idea</option>
+          <option value="script">Script</option>
+          <option value="preview">Preview</option>
+          <option value="premium">Managed render</option>
+          <option value="package">Package</option>
+          <option value="ready">Ready</option>
+          <option value="blocked">Blocked</option>
         </select>
-        <button id="export-calendar" type="button">Export 30-Day Plan</button>
-        <button id="connect-api" class="secondary" type="button">Connect Data</button>
-        <span id="data-mode" class="data-mode demo">Demo data</span>
+        <button id="refresh-console" class="secondary" type="button" disabled>Refresh</button>
+        <span id="data-mode" class="data-mode demo">Disconnected</span>
       </div>
 
       <div class="portfolio-layout">
-        <aside id="brand-summary" class="brand-summary" aria-live="polite"></aside>
+        <aside id="brand-summary" class="brand-summary"><p>Sign in to load assigned brands.</p></aside>
         <section class="calendar-panel" aria-labelledby="queue-heading">
           <div class="queue-title">
-            <div><p class="eyebrow dark-eyebrow">Production Queue</p><h3 id="queue-heading">Monthly content inventory</h3></div>
-            <span class="queue-note">One original master → Facebook, YouTube Shorts, TikTok exports</span>
+            <div><p class="eyebrow dark-eyebrow">Production queue</p><h3 id="queue-heading">Current content inventory</h3></div>
+            <span class="queue-note">Human approval remains mandatory</span>
           </div>
           <div class="table-wrap">
             <table class="content-table">
-              <thead><tr><th>Date</th><th>Brand & concept</th><th>Format</th><th>Stage</th><th>Assets</th><th>Action</th></tr></thead>
-              <tbody id="content-queue"></tbody>
+              <thead><tr><th>Date</th><th>Brand & content</th><th>Format</th><th>Stage</th><th>Evidence</th><th>Action</th></tr></thead>
+              <tbody id="content-queue"><tr><td colspan="6" class="empty-row">Sign in to load content.</td></tr></tbody>
             </table>
           </div>
         </section>
       </div>
 
-      <dialog id="content-review" class="content-review">
-        <form method="dialog" class="review-close-row"><button class="review-close" aria-label="Close idea review" title="Close idea review"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button></form>
-        <div id="content-review-body" aria-live="polite"></div>
-      </dialog>
-
-      <section class="workflow-policy" aria-labelledby="workflow-policy-heading">
-        <div><p class="eyebrow dark-eyebrow">Approval Economics</p><h3 id="workflow-policy-heading">Spend after the idea proves itself</h3></div>
-        <ol>
-          <li><strong>Research:</strong> evidence, trend signal and duplicate check.</li>
-          <li><strong>Approve idea:</strong> hook, angle and monetization role.</li>
-          <li><strong>Approve script:</strong> narration, claims and scene plan.</li>
-          <li><strong>Free preview:</strong> timing, captions, VO and rough motion.</li>
-          <li><strong>Premium shots:</strong> realism-critical clips only.</li>
-          <li><strong>Package:</strong> platform exports, thumbnail, caption, hashtags and provenance.</li>
-        </ol>
+      <section id="team-work" class="console-grid" aria-label="Team work">
+        <article class="console-panel">
+          <div class="panel-title"><div><p class="eyebrow dark-eyebrow">Review</p><h3>Assigned review tasks</h3></div><span id="review-count">0</span></div>
+          <div id="review-inbox-summary" class="compact-list"><p>No review tasks loaded.</p></div>
+        </article>
+        <article class="console-panel">
+          <div class="panel-title"><div><p class="eyebrow dark-eyebrow">Workers</p><h3>Generation queue</h3></div><span id="job-count">0</span></div>
+          <div id="job-summary" class="compact-list"><p>No generation jobs loaded.</p></div>
+        </article>
       </section>
 
-      <section id="reference-intelligence" class="reference-intelligence" aria-labelledby="reference-heading">
-        <div class="reference-heading-row">
-          <div><p class="eyebrow dark-eyebrow">Reference Intelligence</p><h3 id="reference-heading">Research evidence ready for human review</h3></div>
-          <p>Heavy media processing and source files stay in the local workspace. This surface receives sanitized metadata and review-safe artifact fingerprints only; it cannot process or publish content.</p>
-        </div>
-        <div id="reference-metrics" class="reference-metrics" aria-label="Reference queue metrics"></div>
-        <div class="reference-toolbar">
-          <label for="reference-brand-filter">Brand</label><select id="reference-brand-filter"><option value="">All brands</option></select>
-          <label for="reference-platform-filter">Platform</label><select id="reference-platform-filter"><option value="">All platforms</option><option>facebook</option><option>instagram</option><option>youtube</option><option>tiktok</option><option>x</option><option>snapchat</option><option>local</option></select>
-          <label for="reference-status-filter">Status</label><select id="reference-status-filter"><option value="">All statuses</option><option value="queued">Queued</option><option value="processing">Processing</option><option value="partial">Partial</option><option value="ready_for_review">Ready for review</option><option value="failed">Failed</option><option value="blocked">Blocked</option></select>
-        </div>
-        <div class="reference-layout">
-          <div class="table-wrap"><table class="content-table"><thead><tr><th>Reference</th><th>Platform</th><th>Status</th><th>Progress</th><th>Evidence</th><th>Action</th></tr></thead><tbody id="reference-queue"></tbody></table></div>
-          <aside id="reference-detail" class="reference-detail" aria-live="polite"><h4>Select a reference</h4><p>Connect the operator API to inspect artifacts, brand assignments, approval gates, and research-to-idea links.</p></aside>
-        </div>
-      </section>
-    </section>
-
-    <section id="engine-map" class="engine-section" aria-labelledby="engine-heading">
-      <div class="engine-heading-row">
-        <div>
-          <p class="eyebrow dark-eyebrow">Architecture Map</p>
-          <h2 id="engine-heading">How the complete content engine works</h2>
-          <p class="section-copy">The system separates content creation, quality assurance, policy governance, monetization planning, production handoff, and human approval. Click a stage to inspect its modules, tools, outputs, and control gates.</p>
-        </div>
-        <div class="architecture-status">
-          <span class="status-dot"></span>
-          <div>
-            <strong>Implemented foundation</strong>
-            <small>Local Python engine + deployed static review UI</small>
-          </div>
-        </div>
-      </div>
-
-      <div class="objective-grid" aria-label="Core objectives">
-        <button class="objective-card engagement active" type="button" data-objective="engagement" aria-pressed="true">
-          <span class="objective-index">01</span>
-          <strong>Engagement</strong>
-          <small>Hooks, retention beats, platform format, creative QA</small>
-        </button>
-        <button class="objective-card compliance active" type="button" data-objective="compliance" aria-pressed="true">
-          <span class="objective-index">02</span>
-          <strong>Policy & Rights</strong>
-          <small>Claims, copyright, source notes, asset provenance, human gate</small>
-        </button>
-        <button class="objective-card monetization active" type="button" data-objective="monetization" aria-pressed="true">
-          <span class="objective-index">03</span>
-          <strong>Monetization</strong>
-          <small>CTA alignment, platform fit, lead path, production readiness</small>
-        </button>
-      </div>
-
-      <div class="map-toolbar">
-        <div class="filter-group" aria-label="Filter workflow stages">
-          <button class="filter-chip selected" type="button" data-filter="all">All stages</button>
-          <button class="filter-chip" type="button" data-filter="engagement">Engagement</button>
-          <button class="filter-chip" type="button" data-filter="compliance">Policy</button>
-          <button class="filter-chip" type="button" data-filter="monetization">Monetization</button>
-        </div>
-        <div class="legend compact-legend" aria-label="Implementation status legend">
-          <span><i class="legend-dot static-dot"></i>Deployed static</span>
-          <span><i class="legend-dot local-dot"></i>Implemented local</span>
-          <span><i class="legend-dot human-dot"></i>Human-controlled</span>
-          <span><i class="legend-dot planned-dot"></i>Planned next</span>
-        </div>
-      </div>
-
-      <div class="engine-layout">
-        <div>
-          <div class="runtime-label">End-to-end implemented workflow</div>
-          <div id="engine-pipeline" class="engine-pipeline" aria-label="Content engine workflow stages"></div>
-        </div>
-
-        <aside id="engine-detail" class="engine-detail" aria-live="polite">
-          <p class="eyebrow dark-eyebrow">Selected Stage</p>
-          <h3 id="detail-title">Brief Intake & Normalization</h3>
-          <p id="detail-purpose" class="detail-purpose"></p>
-          <div class="detail-block">
-            <span class="detail-label">Code modules</span>
-            <div id="detail-modules" class="module-list"></div>
-          </div>
-          <div class="detail-block">
-            <span class="detail-label">Tools and runtime</span>
-            <div id="detail-tools" class="tool-list"></div>
-          </div>
-          <div class="detail-block">
-            <span class="detail-label">Produced artifacts</span>
-            <ul id="detail-outputs"></ul>
-          </div>
-          <div class="detail-block">
-            <span class="detail-label">Decision / quality gate</span>
-            <p id="detail-gate"></p>
-          </div>
-          <div id="detail-objectives" class="detail-objectives"></div>
-        </aside>
-      </div>
-
-      <section class="runtime-section" aria-labelledby="runtime-heading">
-        <div class="section-title">
-          <p class="eyebrow dark-eyebrow">Runtime Lanes</p>
-          <h3 id="runtime-heading">Where each tool operates</h3>
-        </div>
-        <div class="runtime-lanes">
-          <article class="runtime-lane">
-            <div class="lane-head">
-              <span class="lane-number">A</span>
-              <div><strong>Browser / Vercel Layer</strong><small>User interaction and review presentation</small></div>
-            </div>
-            <div class="lane-flow">
-              <span>HTML brief form</span><b>→</b><span>JavaScript pack preview</span><b>→</b><span>JSON / Markdown exports</span>
-            </div>
-            <p>Tools: HTML5, CSS, vanilla JavaScript, Vercel static hosting. No API key or server runtime in the current deployed UI.</p>
-          </article>
-          <article class="runtime-lane">
-            <div class="lane-head">
-              <span class="lane-number">B</span>
-              <div><strong>Local Python Engine</strong><small>Full P40–P61 orchestration and artifact generation</small></div>
-            </div>
-            <div class="lane-flow">
-              <span>Brief JSON</span><b>→</b><span>Python modules</span><b>→</b><span>Content, QA, revision, comparison packs</span>
-            </div>
-            <p>Tools: Python runners, deterministic templates, JSON schemas, Markdown reports, local HTML workspaces, file-based manifests.</p>
-          </article>
-          <article class="runtime-lane">
-            <div class="lane-head">
-              <span class="lane-number">C</span>
-              <div><strong>Human Governance Layer</strong><small>Approval, revision, rejection, and production accountability</small></div>
-            </div>
-            <div class="lane-flow">
-              <span>Review workspace</span><b>→</b><span>Approve / revise / reject</span><b>→</b><span>Regenerate and compare</span>
-            </div>
-            <p>Tools: feedback JSON, revision queue, before/after comparator, reviewer notes, explicit human approval before production or publishing.</p>
-          </article>
-          <article class="runtime-lane future-lane">
-            <div class="lane-head">
-              <span class="lane-number">D</span>
-              <div><strong>Planned AI Generation Layer</strong><small>Not connected to the deployed static UI yet</small></div>
-            </div>
-            <div class="lane-flow">
-              <span>Secure Vercel API</span><b>→</b><span>OpenAI / Gemini / Claude</span><b>→</b><span>Structured validated output</span>
-            </div>
-            <p>Planned tools: Vercel serverless function, model adapter, environment secrets, structured JSON validation, usage controls, fallback and error handling.</p>
-          </article>
-        </div>
+      <section id="release-operations" class="console-grid" aria-label="Release operations">
+        <article class="console-panel">
+          <div class="panel-title"><div><p class="eyebrow dark-eyebrow">Release</p><h3>Final QA and packages</h3></div><span id="release-count">0</span></div>
+          <div id="release-summary" class="compact-list"><p>No releases loaded.</p></div>
+        </article>
+        <article class="console-panel">
+          <div class="panel-title"><div><p class="eyebrow dark-eyebrow">Publisher</p><h3>Simulated delivery</h3></div><span id="delivery-count">0</span></div>
+          <div id="delivery-summary" class="compact-list"><p>No delivery requests loaded.</p></div>
+        </article>
+        <article class="console-panel">
+          <div class="panel-title"><div><p class="eyebrow dark-eyebrow">Learning</p><h3>Analytics readiness</h3></div><span id="analytics-status">—</span></div>
+          <div id="analytics-summary" class="compact-list"><p>Select a brand after sign-in.</p></div>
+        </article>
+        <article class="console-panel">
+          <div class="panel-title"><div><p class="eyebrow dark-eyebrow">Operations</p><h3>Recovery and observability</h3></div><span id="ops-status">—</span></div>
+          <div id="operations-summary" class="compact-list"><p>Runtime checks not loaded.</p></div>
+        </article>
       </section>
 
-      <section class="assurance-section" aria-labelledby="assurance-heading">
-        <div class="section-title">
-          <p class="eyebrow dark-eyebrow">Quality Assurance</p>
-          <h3 id="assurance-heading">How output is controlled against the three objectives</h3>
+      <section id="p100-console" class="p100-console" aria-labelledby="p100-heading">
+        <div class="p100-head">
+          <div><p class="eyebrow dark-eyebrow">Controlled rollout</p><h3 id="p100-heading">P100 four-item acceptance pilot</h3><p>Select one local and one managed item for each pilot brand. Managed selection remains blocked until the real renderer is connected.</p></div>
+          <button id="refresh-p100" class="secondary" type="button" disabled>Refresh candidates</button>
         </div>
-        <div class="assurance-grid">
-          <article class="assurance-card engagement-border">
-            <h4>Engagement assurance</h4>
-            <ol>
-              <li>Platform and audience are captured before generation.</li>
-              <li>Hook, title options, retention beats, pacing, and storyboard are produced as separate reviewable artifacts.</li>
-              <li>Creative QA checks specificity, clarity, first-seconds strength, and production feasibility.</li>
-              <li>Human feedback triggers revision and before/after comparison.</li>
-            </ol>
-            <strong class="assurance-proof">Evidence: P42, P50, P51, P52, P53</strong>
-          </article>
-          <article class="assurance-card compliance-border">
-            <h4>Policy and rights assurance</h4>
-            <ol>
-              <li>Brief captures avoid rules and source notes.</li>
-              <li>Rights engine generates copyright, likeness, logo, music, asset, and claims cautions.</li>
-              <li>QA confirms owned or licensed production inputs.</li>
-              <li>No final approval or publishing occurs automatically.</li>
-            </ol>
-            <strong class="assurance-proof">Evidence: P41, P50, P56, human approval gate</strong>
-          </article>
-          <article class="assurance-card monetization-border">
-            <h4>Monetization assurance</h4>
-            <ol>
-              <li>Monetization objective is captured at brief stage.</li>
-              <li>CTA, format, duration, platform notes, and conversion path are aligned.</li>
-              <li>Producer exports make execution consistent and measurable.</li>
-              <li>No revenue, views, savings, or conversion outcomes are guaranteed.</li>
-            </ol>
-            <strong class="assurance-proof">Evidence: P44, P46, P48, P49</strong>
-          </article>
+        <div id="p100-status" class="notice">Sign in to inspect pilot candidates.</div>
+        <div id="p100-candidates" class="p100-candidates"></div>
+        <div class="p100-actions">
+          <label>Pilot key <input id="p100-key" value="p100-local-team-pilot"></label>
+          <button id="bootstrap-p100" type="button" disabled>Create controlled draft</button>
+          <button id="start-p100" type="button" disabled>Start controlled pilot</button>
         </div>
+        <div id="p100-readiness" class="compact-list"></div>
       </section>
-
-      <section class="proof-loop" aria-labelledby="proof-heading">
-        <div>
-          <p class="eyebrow dark-eyebrow">Traceability Loop</p>
-          <h3 id="proof-heading">How the engine proves what happened</h3>
-          <p>Each run leaves an auditable chain rather than only a final script.</p>
-        </div>
-        <div class="proof-flow" aria-label="Traceability artifact chain">
-          <span>Input brief</span><b>→</b><span>Generated pack</span><b>→</b><span>QA findings</span><b>→</b><span>Reviewer feedback</span><b>→</b><span>Revision plan</span><b>→</b><span>Revised pack</span><b>→</b><span>Before / after comparison</span>
-        </div>
-      </section>
-    </section>
-
-    <section id="creator-studio" class="studio-section" aria-labelledby="studio-heading">
-      <div class="studio-intro">
-        <p class="eyebrow dark-eyebrow">Browser MVP</p>
-        <h2 id="studio-heading">Create and inspect a first-pass video pack</h2>
-        <p>This deployed interface demonstrates the brief-to-review flow. The full local Python engine adds deeper orchestration, review queues, regeneration, comparison, and workspace outputs.</p>
-      </div>
-
-      <section class="grid two-col">
-        <form id="brief-form" class="panel" autocomplete="off">
-          <div class="section-title">
-            <p class="eyebrow">01</p>
-            <h2>Create Brief</h2>
-          </div>
-
-          <label for="topic">Topic</label>
-          <input id="topic" name="topic" value="AI operations audit for service businesses">
-
-          <label for="platform">Platform</label>
-          <select id="platform" name="platform">
-            <option value="youtube_shorts">YouTube Shorts</option>
-            <option value="instagram_reels">Instagram Reels</option>
-            <option value="tiktok">TikTok</option>
-            <option value="youtube_long">YouTube Longform</option>
-            <option value="linkedin_video">LinkedIn Video</option>
-          </select>
-
-          <label for="audience">Audience</label>
-          <textarea id="audience" name="audience">Agency founders and service business owners with manual operations</textarea>
-
-          <label for="tone">Tone</label>
-          <input id="tone" name="tone" value="practical, confident, high-trust, founder-led">
-
-          <div class="split">
-            <div>
-              <label for="duration_seconds">Duration seconds</label>
-              <input id="duration_seconds" name="duration_seconds" type="number" min="15" max="900" value="45">
-            </div>
-            <div>
-              <label for="content_format">Format</label>
-              <input id="content_format" name="content_format" value="vertical_short">
-            </div>
-          </div>
-
-          <label for="monetization_goal">Monetization goal</label>
-          <textarea id="monetization_goal" name="monetization_goal">Generate qualified leads for a paid AI operations audit.</textarea>
-
-          <label for="must_use_points">Must-use points <span class="hint">one per line</span></label>
-          <textarea id="must_use_points" name="must_use_points">Open with the hidden cost of manual follow-ups and scattered tools.
-Show a simple before/after workflow from lead capture to follow-up.
-End with a soft CTA to request an operations audit checklist.</textarea>
-
-          <label for="avoid">Avoid <span class="hint">one per line</span></label>
-          <textarea id="avoid" name="avoid">Do not promise guaranteed revenue, savings, or automation success.
-Do not use celebrity likeness, copied music, third-party clips, or brand logos.</textarea>
-
-          <label for="source_notes">Source notes <span class="hint">one per line</span></label>
-          <textarea id="source_notes" name="source_notes">Use original narration, owned diagrams, simple UI mockups, and licensed or owned assets only.</textarea>
-
-          <div class="actions">
-            <button type="submit">Generate Review Pack</button>
-            <button type="button" class="secondary" id="load-sample">Load Sample</button>
-            <button type="button" class="secondary" id="clear-form">Clear</button>
-          </div>
-        </form>
-
-        <section class="panel output-panel">
-          <div class="section-title">
-            <p class="eyebrow">02</p>
-            <h2>Review Output</h2>
-          </div>
-          <div id="quality-banner" class="notice">Generate a pack to review hook, script, storyboard, rights notes, monetization notes, QA, and exports.</div>
-          <div id="review-output" class="review-output"></div>
-        </section>
-      </section>
-
-      <section class="panel exports">
-        <div class="section-title">
-          <p class="eyebrow">03</p>
-          <h2>Exports</h2>
-        </div>
-        <div class="actions wrap">
-          <button type="button" id="copy-brief">Copy Brief JSON</button>
-          <button type="button" id="download-brief">Download Brief JSON</button>
-          <button type="button" id="copy-pack">Copy Review Pack JSON</button>
-          <button type="button" id="download-pack">Download Review Pack JSON</button>
-          <button type="button" id="download-markdown">Download Producer Brief MD</button>
-          <button type="button" id="download-script">Download Script TXT</button>
-          <button type="button" id="download-qa">Download QA Checklist MD</button>
-        </div>
-        <pre id="json-preview" aria-live="polite">Generate a review pack to preview JSON.</pre>
-      </section>
-
-      <section class="panel guardrails">
-        <h2>Current Product Position</h2>
-        <ul>
-          <li>Deployed Vercel interface is static and browser-only.</li>
-          <li>Full P40–P61 processing is implemented as local Python modules and runners.</li>
-          <li>No database, automatic publishing, final approval, or external AI call is active in this static deployment.</li>
-          <li>Browser output is a first-pass planning pack, not a final video and not a monetization guarantee.</li>
-          <li>Human review remains required before production.</li>
-        </ul>
-      </section>
+      <details id="advanced-tools" class="advanced-tools">
+        <summary>Advanced production tools</summary>
+        <p>Brand setup, concept slates, narration, visual candidates, queue controls, and routing tools are available here for Admins and Producers. Reviewers can use the normal queue and script review flow above.</p>
+        <div id="advanced-tools-mount"></div>
+      </details>
     </section>
   </main>
 
-  <footer>
-    <span>Content Automation Engine</span>
-    <span>Architecture map · Static Creator Studio · Human-controlled workflow</span>
+  <dialog id="script-review-dialog" class="script-dialog">
+    <form method="dialog" class="dialog-close"><button aria-label="Close script review">&times;</button></form>
+    <div id="script-dialog-body"><p>Select a content item to review its script.</p></div>
+  </dialog>
+
+  <dialog id="operator-login" class="operator-login">
+    <form id="operator-login-form">
+      <p class="eyebrow dark-eyebrow">Secure local access</p>
+      <h2>Sign in to Creator Studio</h2>
+      <p>Use the operator key assigned to your role. The key is stored only for this browser tab.</p>
+      <label for="operator-key">Operator key</label>
+      <input id="operator-key" type="password" autocomplete="current-password" required>
+      <p id="login-error" class="form-error" role="alert"></p>
+      <div class="actions"><button type="submit">Sign in</button><button id="cancel-login" class="secondary" type="button">Cancel</button></div>
+    </form>
+  </dialog>
+
+  <footer class="studio-footer">
+    <span>Content Engine Studio</span>
+    <span>Local-first generation · role-based review · no automatic publishing</span>
   </footer>
 
   <script src="assets/portfolio-api.js" defer></script>
-  <script src="assets/app.js" defer></script>
+  <script src="assets/p100-api-compat.js" defer></script>
+  <script src="assets/production-console.js" defer></script>
 </body>
 </html>

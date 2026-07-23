@@ -14,6 +14,8 @@ RUN python -m pip install --no-cache-dir --upgrade \
 
 COPY src ./src
 COPY migrations ./migrations
+COPY web ./web
+COPY docs/operations/P100_ACCEPTANCE_PILOT_RUNBOOK.md ./docs/operations/P100_ACCEPTANCE_PILOT_RUNBOOK.md
 
 RUN useradd --create-home --shell /usr/sbin/nologin appuser
 USER appuser
