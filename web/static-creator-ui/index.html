@@ -11,6 +11,7 @@
   <meta name="content-local-model-id" content="qwen2.5:7b">
   <link rel="stylesheet" href="assets/styles.css">
   <link rel="stylesheet" href="assets/production-console.css">
+  <link rel="stylesheet" href="assets/local-pipeline-controls.css">
 </head>
 <body class="production-studio">
   <header class="studio-topbar">
@@ -45,6 +46,7 @@
 
     <nav class="studio-nav" aria-label="Creator Studio sections">
       <a href="#portfolio-studio">Portfolio</a>
+      <a href="#local-pipeline">Local pipeline</a>
       <a href="#team-work">Team work</a>
       <a href="#release-operations">Release & delivery</a>
       <a href="#p100-console">P100 pilot</a>
@@ -79,6 +81,17 @@
         <button id="refresh-console" class="secondary" type="button" disabled>Refresh</button>
         <span id="data-mode" class="data-mode demo">Disconnected</span>
       </div>
+
+      <section id="local-pipeline" class="console-panel local-pipeline-panel" aria-labelledby="local-pipeline-heading">
+        <div class="panel-title"><div><p class="eyebrow dark-eyebrow">Always-on workstation</p><h3 id="local-pipeline-heading">Bounded local production queue</h3></div><button id="refresh-local-pipeline" class="secondary" type="button">Refresh</button></div>
+        <div class="pipeline-actions">
+          <label>Batch size<input id="local-batch-limit" type="number" min="1" max="20" value="5"></label>
+          <button id="queue-more-scripts" type="button">Generate more scripts</button>
+          <button id="continue-approved-local" class="secondary" type="button">Continue approved locally</button>
+        </div>
+        <p class="secondary-note">Only eligible script-stage items are queued. Audio and ComfyUI visuals start only after exact script approval. Nothing is automatically approved or published.</p>
+        <div id="local-pipeline-status" class="compact-list"><p>Sign in to inspect the local production queue.</p></div>
+      </section>
 
       <div class="portfolio-layout">
         <aside id="brand-summary" class="brand-summary"><p>Sign in to load assigned brands.</p></aside>
@@ -173,5 +186,6 @@
   <script src="assets/portfolio-api.js" defer></script>
   <script src="assets/p100-api-compat.js" defer></script>
   <script src="assets/production-console.js" defer></script>
+  <script src="assets/local-pipeline-controls.js" defer></script>
 </body>
 </html>
