@@ -28,7 +28,7 @@ concurrency:
 jobs:
   contracts:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     services:
       postgres:
         image: postgres:16-alpine
@@ -54,7 +54,11 @@ jobs:
         with:
           python-version: "3.12"
           cache: pip
-      - run: python -m pip install -r requirements.txt
+      - name: Install FFmpeg and Python dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg
+          python -m pip install -r requirements.txt
       - name: Compile Python
         run: python -m compileall -q src tests
       - name: JavaScript syntax
@@ -64,7 +68,7 @@ jobs:
           node --check web/static-creator-ui/assets/production-console.js
       - name: Focused contracts
         run: python -m pytest -q tests/unit/test_p104_always_on_local_contracts.py
-      - name: PostgreSQL queue proof
+      - name: PostgreSQL queue and MP4 proof
         shell: bash
         run: |
           set -o pipefail
