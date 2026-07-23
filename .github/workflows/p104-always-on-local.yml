@@ -1,0 +1,92 @@
+name: P104 Always-on Local Workstation
+
+on:
+  pull_request:
+    branches: [test]
+    paths:
+      - "src/operations/local_pipeline.py"
+      - "src/operations/always_on_*.py"
+      - "src/operations/local_onboarding_v2.py"
+      - "src/operations/local_worker_v2.py"
+      - "src/operator_api/local_pipeline_runtime.py"
+      - "src/operator_api/entrypoint.py"
+      - "web/static-creator-ui/**"
+      - "config/local.env.example"
+      - "scripts/windows/*local_production*.ps1"
+      - "docs/operations/ALWAYS_ON_LOCAL_WORKSTATION.md"
+      - "tests/unit/test_p104_always_on_local_contracts.py"
+      - "tests/integration/test_p104_always_on_local.py"
+      - ".github/workflows/p104-always-on-local.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: p104-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  contracts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: football_brief_test
+          POSTGRES_USER: postgres
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d football_brief_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://postgres@localhost:5432/football_brief_test
+      DATABASE_REQUIRE_SCHEMA: "false"
+      DATABASE_MIGRATIONS_DIR: migrations
+      FOOTBALL_BRIEF_TEST_DATABASE_URL: postgresql://postgres@localhost:5432/football_brief_test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install FFmpeg and Python dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg
+          python -m pip install -r requirements.txt
+      - name: Compile Python
+        run: python -m compileall -q src tests
+      - name: JavaScript syntax
+        run: |
+          node --check web/static-creator-ui/assets/local-pipeline-controls.js
+          node --check web/static-creator-ui/assets/portfolio-api.js
+          node --check web/static-creator-ui/assets/production-console.js
+      - name: Focused contracts
+        run: python -m pytest -q tests/unit/test_p104_always_on_local_contracts.py
+      - name: PostgreSQL queue and MP4 proof
+        shell: bash
+        run: |
+          set -o pipefail
+          python -m pytest -vv tests/integration/test_p104_always_on_local.py 2>&1 | tee p104-postgres.log
+      - name: Upload focused evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p104-always-on-local-evidence
+          retention-days: 7
+          if-no-files-found: ignore
+          path: p104-postgres.log
+      - name: Safety boundary
+        shell: bash
+        run: |
+          ! grep -R -n -E "vercel[[:space:]]+deploy|vercel[[:space:]]+--prod|live[ -]publish|automatic[ -]publish|higgsfield" \
+            src/operations/local_pipeline.py src/operations/always_on_pipeline.py \
+            src/operations/always_on_continuation.py src/operations/local_worker_v2.py \
+            src/operator_api/local_pipeline_runtime.py scripts/windows/supervise_local_production.ps1 \
+            scripts/windows/supervise_always_on_local_production.ps1
