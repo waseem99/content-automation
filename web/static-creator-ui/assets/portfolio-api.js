@@ -177,7 +177,7 @@
     pilot: (pilotId) => request(`/acceptance/pilots/${pilotId}`),
     pilotReadiness: (pilotId) => request(`/acceptance/pilots/${pilotId}/readiness`),
     pilotStartReadiness: (pilotId) => request(`/acceptance/pilots/${pilotId}/start-readiness`),
-    controlledStartPilot: (pilotId, payload) => request(`/acceptance/pilots/${pilotId}/controlled-start`, { method: "POST", body: JSON.stringify(payload) })
+    controlledStartPilot: (pilotId, payload) => request(`/acceptance/pilots/${pilotId}/start-controlled`, { method: "POST", body: JSON.stringify(payload) })
   };
 
   window.PortfolioApi = api;
@@ -186,6 +186,7 @@
     ["brand-profile-admin", "brand-profile-admin.css", "brand-profile-admin.js"],
     ["generation-queue", "generation-queue.css", "generation-queue.js"],
     ["concept-slate", "concept-slate.css", "concept-slate.js"],
+    ["script-review", "script-review.css", "script-review.js"],
     ["audio-review", "audio-review.css", "audio-review.js"],
     ["visual-candidates", "visual-candidates.css", "visual-candidates.js"],
     ["review-workspace", "review-workspace.css", "review-workspace.js"],
