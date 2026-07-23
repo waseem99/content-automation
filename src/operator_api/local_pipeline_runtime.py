@@ -7,7 +7,8 @@ from fastapi import Depends, FastAPI, HTTPException
 from pydantic import BaseModel, Field
 
 from src.infrastructure.database.connection import Database
-from src.operations.local_pipeline import LocalPipelineError, LocalPipelineService
+from src.operations.always_on_pipeline import AlwaysOnLocalPipelineService
+from src.operations.local_pipeline import LocalPipelineError
 from src.operator_api.access import (
     AccessPermission,
     OperatorAccessService,
@@ -38,7 +39,7 @@ def install_local_pipeline_routes(
     if getattr(app.state, "local_pipeline_routes_installed", False):
         return
     app.state.local_pipeline_routes_installed = True
-    service = LocalPipelineService(database) if database is not None else None
+    service = AlwaysOnLocalPipelineService(database) if database is not None else None
     access = OperatorAccessService(database) if database is not None else None
 
     def load_identity(operator_id: str, key_name: str) -> OperatorIdentity | None:
@@ -46,7 +47,7 @@ def install_local_pipeline_routes(
 
     authenticate = build_operator_auth(auth_settings, load_identity)
 
-    def require_service() -> LocalPipelineService:
+    def require_service() -> AlwaysOnLocalPipelineService:
         if service is None:
             raise HTTPException(status_code=503, detail="database_not_configured")
         return service
