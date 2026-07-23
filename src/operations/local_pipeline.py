@@ -3,6 +3,8 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+
+import httpx
 from datetime import datetime, timezone
 from decimal import Decimal
 from pathlib import Path
@@ -99,7 +101,6 @@ class LocalPipelineService:
                     *brand_values,
                 ),
             ).fetchall()
-        workflow_path = os.getenv("P68_COMFYUI_WORKFLOW_PATH", "").strip()
         return {
             "ok": True,
             "kind": "local_pipeline_status",
@@ -113,7 +114,7 @@ class LocalPipelineService:
                 "ollama_model": self.ollama_model,
                 "kokoro_model": self.kokoro_model,
                 "visual_model": self.visual_model,
-                "comfyui_configured": bool(workflow_path and Path(workflow_path).exists()),
+                "comfyui_configured": self._comfyui_configured(),
                 "managed_renderer": False,
                 "automatic_approval": False,
                 "live_publishing": False,
@@ -369,7 +370,16 @@ class LocalPipelineService:
     def _comfyui_configured(self) -> bool:
         workflow = os.getenv("P68_COMFYUI_WORKFLOW_PATH", "").strip()
         checkpoint = os.getenv("P68_COMFYUI_CHECKPOINT", "").strip()
-        return bool(workflow and checkpoint and Path(workflow).exists())
+        if not (workflow and checkpoint and Path(workflow).exists()):
+            return False
+        base_url = os.getenv("P68_COMFYUI_BASE_URL", "http://127.0.0.1:8188").rstrip("/")
+        try:
+            with httpx.Client(base_url=base_url, timeout=2.0, trust_env=False) as client:
+                response = client.get("/system_stats")
+                response.raise_for_status()
+            return True
+        except httpx.HTTPError:
+            return False
 
     @staticmethod
     def _empty_continuation() -> dict[str, Any]:
