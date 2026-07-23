@@ -14,6 +14,109 @@ from src.operations.local_pipeline import LocalPipelineService, _seed
 class AlwaysOnLocalPipelineService(LocalPipelineService):
     """P104 queue service with pinned workflow/profile and script lineage."""
 
+    def status(self, *, brand_ids: Iterable[UUID] | None = None) -> dict[str, Any]:
+        scoped = self._normalize_brands(brand_ids)
+        brand_sql, brand_values = self._brand_filter(scoped, column="mp.brand_id")
+        with self.database.connection() as conn:
+            eligible_scripts = conn.execute(
+                f"""SELECT count(*) AS count
+                    FROM football_brief.portfolio_content pc
+                    JOIN football_brief.monthly_content_plans mp ON mp.id=pc.plan_id
+                    JOIN football_brief.production_workflows pw ON pw.portfolio_content_id=pc.id
+                    LEFT JOIN football_brief.script_documents sd ON sd.portfolio_content_id=pc.id
+                    WHERE pw.status='active' AND pw.current_stage='script_draft'
+                      AND sd.id IS NULL {brand_sql}""",
+                tuple(brand_values),
+            ).fetchone()["count"]
+            approved = conn.execute(
+                f"""SELECT
+                       count(*) FILTER (WHERE ap.id IS NULL) AS audio_count,
+                       count(*) FILTER (WHERE vp.id IS NULL AND bvp.id IS NOT NULL) AS visual_count,
+                       count(*) FILTER (WHERE vp.id IS NULL AND bvp.id IS NULL) AS visual_blocked_count
+                    FROM football_brief.script_documents sd
+                    JOIN football_brief.script_versions sv ON sv.id=sd.current_version_id
+                    JOIN football_brief.portfolio_content pc ON pc.id=sd.portfolio_content_id
+                    JOIN football_brief.monthly_content_plans mp ON mp.id=pc.plan_id
+                    LEFT JOIN football_brief.audio_productions ap
+                      ON ap.portfolio_content_id=pc.id AND ap.script_version_id=sv.id
+                    LEFT JOIN football_brief.visual_projects vp
+                      ON vp.portfolio_content_id=pc.id AND vp.script_version_id=sv.id
+                    LEFT JOIN football_brief.production_workflows pw
+                      ON pw.portfolio_content_id=pc.id
+                    LEFT JOIN football_brief.production_workflow_versions pwv
+                      ON pwv.id=pw.current_version_id
+                    LEFT JOIN football_brief.brand_visual_presets bvp
+                      ON bvp.brand_profile_id=COALESCE(
+                           pc.brand_profile_id,
+                           NULLIF(pwv.snapshot->>'brand_profile_id','')::uuid
+                         )
+                     AND bvp.preset_key='local-default' AND bvp.status='active'
+                    WHERE sv.status='approved' {brand_sql}""",
+                tuple(brand_values),
+            ).fetchone()
+            preview_ready = conn.execute(
+                f"""SELECT count(*) AS count
+                    FROM football_brief.portfolio_content pc
+                    JOIN football_brief.monthly_content_plans mp ON mp.id=pc.plan_id
+                    JOIN football_brief.audio_productions ap
+                      ON ap.portfolio_content_id=pc.id AND ap.status='approved'
+                    JOIN football_brief.audio_mix_versions amv
+                      ON amv.id=ap.current_mix_version_id AND amv.status='approved'
+                    JOIN football_brief.visual_projects vp
+                      ON vp.portfolio_content_id=pc.id AND vp.status='approved'
+                    WHERE NOT EXISTS (
+                        SELECT 1 FROM football_brief.generation_jobs gj
+                        WHERE gj.portfolio_content_id=pc.id
+                          AND gj.content_version=pc.version
+                          AND gj.job_type='preview'
+                          AND gj.status IN ('queued','running','succeeded','failed')
+                    ) {brand_sql}""",
+                tuple(brand_values),
+            ).fetchone()["count"]
+            jobs = conn.execute(
+                f"""SELECT gj.job_type,gj.status,count(*) AS count
+                    FROM football_brief.generation_jobs gj
+                    JOIN football_brief.portfolio_content pc ON pc.id=gj.portfolio_content_id
+                    JOIN football_brief.monthly_content_plans mp ON mp.id=pc.plan_id
+                    WHERE gj.job_type = ANY(%s::text[])
+                      AND gj.status = ANY(%s::text[]) {brand_sql}
+                    GROUP BY gj.job_type,gj.status ORDER BY gj.job_type,gj.status""",
+                (
+                    [
+                        GenerationJobType.SCRIPT.value,
+                        GenerationJobType.NARRATION.value,
+                        GenerationJobType.KEYFRAME.value,
+                        GenerationJobType.PREVIEW.value,
+                    ],
+                    ["queued", "running", "failed", "dead_letter"],
+                    *brand_values,
+                ),
+            ).fetchall()
+        return {
+            "ok": True,
+            "kind": "local_pipeline_status",
+            "eligible": {
+                "scripts": int(eligible_scripts),
+                "audio": int(approved["audio_count"] or 0),
+                "visuals": int(approved["visual_count"] or 0),
+                "visuals_blocked_by_preset": int(approved["visual_blocked_count"] or 0),
+                "previews": int(preview_ready or 0),
+            },
+            "capabilities": {
+                "ollama_model": self.ollama_model,
+                "kokoro_model": self.kokoro_model,
+                "visual_model": self.visual_model,
+                "preview_model": self.preview_model,
+                "comfyui_configured": self._comfyui_configured(),
+                "ffmpeg_configured": self._ffmpeg_configured(),
+                "managed_renderer": False,
+                "automatic_approval": False,
+                "live_publishing": False,
+            },
+            "supervisor": self._supervisor_status(),
+            "jobs": [dict(row) for row in jobs],
+        }
+
     def enqueue_scripts(
         self,
         *,
