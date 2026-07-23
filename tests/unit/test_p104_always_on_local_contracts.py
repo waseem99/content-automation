@@ -30,6 +30,7 @@ def test_worker_type_partition_is_explicit() -> None:
         GenerationJobType.NARRATION,
     }
     assert _parse_types("keyframe") == {GenerationJobType.KEYFRAME}
+    assert _parse_types("preview") == {GenerationJobType.PREVIEW}
     with pytest.raises(Exception):
         _parse_types("publishing")
 
@@ -39,6 +40,8 @@ def test_supervisor_restarts_all_local_processes_without_publishers() -> None:
     assert '"api"' in script
     assert '"text-audio-worker"' in script
     assert '"visual-worker"' in script
+    assert '"preview-worker"' in script
+    assert '"--job-types", "preview"' in script
     assert "Ensure-ManagedProcess" in script
     assert "forcing restart" in script
     assert "supervisor-heartbeat.json" in script
@@ -62,10 +65,14 @@ def test_windows_secret_generation_supports_windows_powershell_51() -> None:
     assert ".GetBytes($buffer)" in script
 
 
-def test_local_comfyui_workflow_is_configured_from_tracked_reviewed_file() -> None:
+def test_local_comfyui_and_ffmpeg_are_explicitly_configured() -> None:
     env = read("config/local.env.example")
+    launcher = read("scripts/windows/start_local_production.ps1")
     assert "P68_COMFYUI_WORKFLOW_PATH=deploy/p68-rn-worker/workflows/sdxl-keyframe-api.json" in env
     assert (ROOT / "deploy/p68-rn-worker/workflows/sdxl-keyframe-api.json").exists()
+    assert "PORTFOLIO_MEDIA_ROOT=.runtime/artifacts" in env
+    assert "LOCAL_FFMPEG_PATH=ffmpeg" in env
+    assert "Gyan.FFmpeg" in launcher
 
 
 def test_creator_studio_exposes_bounded_local_queue_controls() -> None:
@@ -76,6 +83,8 @@ def test_creator_studio_exposes_bounded_local_queue_controls() -> None:
     assert 'max="20"' in html
     assert "/local-production/enqueue-scripts" in client
     assert "/local-production/continue-approved" in client
+    assert "include_previews: true" in client
+    assert "MP4 preview" in client
     assert "setInterval" in client
     assert "automatic" not in html.lower() or "no automatic publishing" in html.lower()
 
@@ -86,7 +95,23 @@ def test_pipeline_routes_are_installed_in_runtime() -> None:
     assert "install_local_pipeline_routes" in entrypoint
     assert '@app.post("/local-production/enqueue-scripts")' in routes
     assert '@app.post("/local-production/continue-approved")' in routes
+    assert "include_previews" in routes
     assert "RUN_PRODUCTION" in routes
+
+
+def test_ffmpeg_preview_is_safe_zero_fee_and_reviewable() -> None:
+    worker = read("src/operations/local_worker_v2.py")
+    pipeline = read("src/operations/local_pipeline.py")
+    assert "GenerationJobType.PREVIEW" in worker
+    assert "ffmpeg-slideshow-v1" in pipeline
+    assert "subprocess.run(" in worker
+    assert "shell=False" in worker
+    assert "capture_output=True" in worker
+    assert '"human_review_required": True' in worker
+    assert "portfolio_content_artifacts" in worker
+    assert "'preview'" in worker
+    assert "lifecycle_status,original_filename" in worker
+    assert "'approved'" in worker
 
 
 def test_no_paid_or_live_execution_is_introduced() -> None:
