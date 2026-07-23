@@ -56,6 +56,7 @@ function Wait-ForInfrastructure {
     try {
       if (-not (Get-Command docker -ErrorAction SilentlyContinue)) { throw "docker is not available" }
       if (-not (Test-Path $Python)) { throw "local virtual environment is not installed" }
+      if (-not (Get-Command ffmpeg -ErrorAction SilentlyContinue)) { throw "FFmpeg is not available" }
       docker info *> $null
       if ($LASTEXITCODE -ne 0) { throw "Docker Desktop is not ready" }
       Push-Location $Root
@@ -160,6 +161,7 @@ Wait-ForInfrastructure
 $api = New-ManagedState "api" $Python @("-m", "uvicorn", "src.operator_api.entrypoint:app", "--host", "127.0.0.1", "--port", [string]$ApiPort)
 $textWorker = New-ManagedState "text-audio-worker" $Python @("-m", "src.operations.local_worker_v2", "--job-types", "script,narration", "--poll-seconds", "3")
 $visualWorker = New-ManagedState "visual-worker" $Python @("-m", "src.operations.local_worker_v2", "--job-types", "keyframe", "--poll-seconds", "3")
+$previewWorker = New-ManagedState "preview-worker" $Python @("-m", "src.operations.local_worker_v2", "--job-types", "preview", "--poll-seconds", "3")
 $ngrok = New-ManagedState "ngrok" "ngrok" @("http", [string]$ApiPort)
 $ngrokEnabled = $ExposeWithNgrok -or ($env:LOCAL_NGROK_ENABLED -match '^(1|true|yes|on)$')
 $apiNotReadyChecks = 0
@@ -169,6 +171,7 @@ try {
     Ensure-ManagedProcess $api
     Ensure-ManagedProcess $textWorker
     Ensure-ManagedProcess $visualWorker
+    Ensure-ManagedProcess $previewWorker
 
     if ($ngrokEnabled) {
       if (Get-Command ngrok -ErrorAction SilentlyContinue) {
@@ -200,6 +203,7 @@ try {
         api = Process-Snapshot $api
         text_audio_worker = Process-Snapshot $textWorker
         visual_worker = Process-Snapshot $visualWorker
+        preview_worker = Process-Snapshot $previewWorker
       }
       ngrok = [ordered]@{
         enabled = [bool]$ngrokEnabled
@@ -213,6 +217,7 @@ try {
   }
 } finally {
   Stop-ManagedProcess $ngrok
+  Stop-ManagedProcess $previewWorker
   Stop-ManagedProcess $visualWorker
   Stop-ManagedProcess $textWorker
   Stop-ManagedProcess $api
