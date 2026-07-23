@@ -5,7 +5,8 @@ from pathlib import Path
 import pytest
 
 from src.application.generation_jobs.models import GenerationJobType
-from src.operations.local_pipeline import LocalPipelineError, LocalPipelineService
+from src.operations.always_on_pipeline import AlwaysOnLocalPipelineService
+from src.operations.local_pipeline import LocalPipelineError
 from src.operations.local_worker_v2 import _parse_types
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -16,12 +17,12 @@ def read(path: str) -> str:
 
 
 def test_local_batch_is_bounded() -> None:
-    assert LocalPipelineService._bounded_limit(1) == 1
-    assert LocalPipelineService._bounded_limit(20) == 20
+    assert AlwaysOnLocalPipelineService._bounded_limit(1) == 1
+    assert AlwaysOnLocalPipelineService._bounded_limit(20) == 20
     with pytest.raises(LocalPipelineError):
-        LocalPipelineService._bounded_limit(0)
+        AlwaysOnLocalPipelineService._bounded_limit(0)
     with pytest.raises(LocalPipelineError):
-        LocalPipelineService._bounded_limit(21)
+        AlwaysOnLocalPipelineService._bounded_limit(21)
 
 
 def test_worker_type_partition_is_explicit() -> None:
@@ -37,6 +38,8 @@ def test_worker_type_partition_is_explicit() -> None:
 
 def test_supervisor_restarts_all_local_processes_without_publishers() -> None:
     script = read("scripts/windows/supervise_local_production.ps1")
+    wrapper = read("scripts/windows/supervise_always_on_local_production.ps1")
+    continuation = read("src/operations/always_on_continuation.py")
     assert '"api"' in script
     assert '"text-audio-worker"' in script
     assert '"visual-worker"' in script
@@ -45,13 +48,17 @@ def test_supervisor_restarts_all_local_processes_without_publishers() -> None:
     assert "Ensure-ManagedProcess" in script
     assert "forcing restart" in script
     assert "supervisor-heartbeat.json" in script
-    lowered = script.lower()
+    assert "always_on_continuation" in wrapper
+    assert "continuation.error.log" in wrapper
+    assert "AlwaysOnLocalPipelineService" in continuation
+    lowered = "\n".join((script, wrapper, continuation)).lower()
     assert "publish(" not in lowered
     assert "vercel deploy" not in lowered
 
 
 def test_task_scheduler_starts_at_logon_and_restarts_failures() -> None:
     script = read("scripts/windows/install_local_production_service.ps1")
+    assert "supervise_always_on_local_production.ps1" in script
     assert "New-ScheduledTaskTrigger -AtLogOn" in script
     assert "-RestartCount 999" in script
     assert "-StartWhenAvailable" in script
@@ -89,21 +96,25 @@ def test_creator_studio_exposes_bounded_local_queue_controls() -> None:
     assert "automatic" not in html.lower() or "no automatic publishing" in html.lower()
 
 
-def test_pipeline_routes_are_installed_in_runtime() -> None:
+def test_pipeline_routes_are_installed_with_pinned_lineage_service() -> None:
     entrypoint = read("src/operator_api/entrypoint.py")
     routes = read("src/operator_api/local_pipeline_runtime.py")
+    pipeline = read("src/operations/always_on_pipeline.py")
     assert "install_local_pipeline_routes" in entrypoint
+    assert "AlwaysOnLocalPipelineService" in routes
     assert '@app.post("/local-production/enqueue-scripts")' in routes
     assert '@app.post("/local-production/continue-approved")' in routes
     assert "include_previews" in routes
     assert "RUN_PRODUCTION" in routes
+    assert "production_workflow_versions" in pipeline
+    assert '"script_version_id": str(row["script_version_id"])' in pipeline
 
 
 def test_ffmpeg_preview_is_safe_zero_fee_and_reviewable() -> None:
     worker = read("src/operations/local_worker_v2.py")
-    pipeline = read("src/operations/local_pipeline.py")
+    pipeline = read("src/operations/always_on_pipeline.py")
     assert "GenerationJobType.PREVIEW" in worker
-    assert "ffmpeg-slideshow-v1" in pipeline
+    assert "ffmpeg-local" in pipeline
     assert "subprocess.run(" in worker
     assert "shell=False" in worker
     assert "capture_output=True" in worker
@@ -119,9 +130,12 @@ def test_no_paid_or_live_execution_is_introduced() -> None:
         read(path)
         for path in (
             "src/operations/local_pipeline.py",
+            "src/operations/always_on_pipeline.py",
+            "src/operations/always_on_continuation.py",
             "src/operations/local_worker_v2.py",
             "src/operator_api/local_pipeline_runtime.py",
             "scripts/windows/supervise_local_production.ps1",
+            "scripts/windows/supervise_always_on_local_production.ps1",
         )
     ).lower()
     assert "estimated_cost_usd=decimal(\"0\")" in inspected
