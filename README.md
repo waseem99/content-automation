@@ -8,19 +8,40 @@ The current production line is P84–P100. Earlier football clip-extraction and 
 
 ```text
 brand setup
-→ local concept generation
-→ human concept review
+→ guided content brief or approved idea
 → local script generation
 → source and claim review
-→ local Kokoro narration
+→ local Kokoro narration with local Whisper word alignment
 → local ComfyUI keyframes and deterministic motion
-→ human visual review and revision
+→ human narration and visual review
 → optional managed-shot routing
 → final assembly and technical QA
 → package approval
 → simulated delivery / external result evidence
 → analytics and production economics
 ```
+
+## Creator Studio v2
+
+The production browser application is a routed, role-aware workspace rather than one technical page.
+
+```text
+/app/dashboard                 attention, reviews, active jobs, and failures
+/app/content                   searchable content library
+/app/content/new               guided Create Content workflow
+/app/content/{id}/script       script evidence and exact-version review
+/app/content/{id}/production   local generation jobs, progress, and retry
+/app/content/{id}/media        narration, visual, and MP4 review
+/app/reviews                   Reviewer inbox
+/app/publishing                Publisher release and delivery workspace
+/app/team                      Admin team and role-key management
+/app/settings                  brand, voice, model, idea, and renderer settings
+/app/operations                runtime recovery, releases, delivery, and P100
+```
+
+Normal production does not ask for raw UUIDs, JSON payloads, fixed seeds, or PowerShell commands. The browser displays the real workflow status, permitted next action, human-readable blocker, and background job state for every content item.
+
+Producers also have a bounded **Local production queue** panel. It can enqueue 1–20 eligible scripts or continue already approved audio, visual, and MP4 work. It never creates an unbounded generator and never approves or publishes content.
 
 ## Implemented
 
@@ -29,13 +50,16 @@ brand setup
 - Versioned brand profiles, approved voices, and narration presets.
 - Local Ollama-compatible concept and script adapters with deterministic fallback.
 - P87 restart-safe generation queue.
-- Local Kokoro narration jobs.
+- Local Kokoro narration jobs with local `faster-whisper` script-anchored word alignment.
+- Preview-only timing fallback that cannot satisfy final narration approval.
+- Local FFmpeg narration mixes and deterministic MP4 previews.
 - Local ComfyUI keyframe candidates.
 - Human comments, change requests, comparisons, approvals, and preserved revisions.
 - Renderer catalogue, quotes, spend reservations, and cost reconciliation.
 - Shared artifact storage, immutable release manifests, final technical QA.
 - Simulated delivery and external live-result evidence.
 - Operations, backup/restore evidence, readiness, and the bounded P100 pilot.
+- Secure authenticated playback for local audio, image, narration-mix, and MP4 outputs.
 
 ## Deliberately disabled
 
@@ -64,10 +88,12 @@ powershell -NoProfile -ExecutionPolicy Bypass `
   -File .\scripts\windows\start_local_production.ps1
 ```
 
+The launcher installs the repository dependencies, Kokoro, and local Whisper alignment dependencies in `.venv`. The default alignment profile uses the open-source Whisper `tiny` model on CPU with `int8` compute. A failed or low-coverage alignment remains preview-only and visibly blocks final narration approval.
+
 Creator Studio opens at:
 
 ```text
-http://127.0.0.1:8000/
+http://127.0.0.1:8000/app/dashboard
 ```
 
 Role-specific keys are generated outside Git at:
@@ -75,6 +101,8 @@ Role-specific keys are generated outside Git at:
 ```text
 .runtime/operator-keys.json
 ```
+
+Admin users can copy Producer, Reviewer, and Publisher keys from **Team & access**. The browser never reveals the Admin key.
 
 Start with remote team review:
 
@@ -86,7 +114,25 @@ powershell -NoProfile -ExecutionPolicy Bypass `
 
 Only the authenticated Creator Studio/API port is exposed. PostgreSQL, Ollama, ComfyUI, artifacts, and worker ports remain local.
 
-See [Local Production Runtime](docs/operations/LOCAL_PRODUCTION_RUNBOOK.md).
+See [Local Production Runtime](docs/operations/LOCAL_PRODUCTION_RUNBOOK.md) and [Creator Studio v2](docs/operations/CREATOR_STUDIO_V2.md).
+
+## Browser golden path
+
+```text
+Login
+→ Create content
+→ Generate local script
+→ Submit for review
+→ Reviewer approves exact version
+→ Start local narration and visuals
+→ Play and select one passing narration take per paragraph
+→ Build the local narration mix
+→ Submit and approve narration and visuals
+→ Generate MP4 preview
+→ Play or export preview
+```
+
+Every model operation returns a background job immediately. Queued, running, succeeded, failed, cancelled, and retried states remain visible after browser refresh.
 
 ## Local smoke
 
@@ -95,15 +141,15 @@ $env:LOCAL_ADMIN_OPERATOR_KEY = "<admin-key>"
 .\.venv\Scripts\python.exe .\scripts\local_golden_path_smoke.py
 ```
 
-The smoke exercises the real API, PostgreSQL, brand profile, local Ollama adapter, workflow initialization, and queue state. It stops at the human concept-review gate and creates no approval, paid spend, delivery, or publication evidence.
+The smoke exercises the real API, PostgreSQL, brand profile, local Ollama adapter, workflow initialization, and queue state. It creates no approval, paid spend, delivery, or publication evidence.
 
 ## Repository map
 
 ```text
 src/application/          domain services for concepts, scripts, audio, visuals, routing, releases, delivery, analytics, acceptance
 src/operator_api/         authenticated FastAPI routes and production Creator Studio serving
-src/operations/           local onboarding, queue worker, operations and recovery
-web/static-creator-ui/    role-aware browser workspace
+src/operations/           local onboarding, queue workers, alignment, operations and recovery
+web/static-creator-ui/    routed role-aware browser application
 migrations/               append-only PostgreSQL schema migrations
 scripts/windows/          local workstation launch/stop and P68 GPU setup
 deploy/                   local/managed worker packaging

@@ -203,9 +203,9 @@ Write-SupervisorLog "Supervisor started PID $PID"
 Wait-ForInfrastructure
 
 $api = New-ManagedState "api" $Python @("-m", "uvicorn", "src.operator_api.entrypoint:app", "--host", "127.0.0.1", "--port", [string]$ApiPort)
-$textWorker = New-ManagedState "text-audio-worker" $Python @("-m", "src.operations.local_worker_v2", "--job-types", "script,narration", "--poll-seconds", "3")
-$visualWorker = New-ManagedState "visual-worker" $Python @("-m", "src.operations.local_worker_v2", "--job-types", "keyframe", "--poll-seconds", "3")
-$previewWorker = New-ManagedState "preview-worker" $Python @("-m", "src.operations.local_worker_v2", "--job-types", "preview", "--poll-seconds", "3")
+$textWorker = New-ManagedState "text-audio-worker" $Python @("-m", "src.operations.local_worker_aligned", "--job-types", "script,narration", "--poll-seconds", "3")
+$visualWorker = New-ManagedState "visual-worker" $Python @("-m", "src.operations.local_worker_aligned", "--job-types", "keyframe", "--poll-seconds", "3")
+$previewWorker = New-ManagedState "preview-worker" $Python @("-m", "src.operations.local_worker_aligned", "--job-types", "preview", "--poll-seconds", "3")
 $ngrok = New-ManagedState "ngrok" "ngrok" @("http", [string]$ApiPort)
 $ngrokEnabled = $ExposeWithNgrok -or ($env:LOCAL_NGROK_ENABLED -match '^(1|true|yes|on)$')
 $apiNotReadyChecks = 0

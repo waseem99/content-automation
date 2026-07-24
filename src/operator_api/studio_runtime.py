@@ -43,16 +43,31 @@ def install_studio_routes(app: FastAPI, *, studio_root: Path | None = None) -> N
     def studio_alias() -> FileResponse:
         return studio_response()
 
+    @app.get("/app/{route_path:path}", include_in_schema=False)
+    def studio_application_route(route_path: str) -> FileResponse:
+        # The browser application owns navigation below /app. API routes remain
+        # separate, and refreshing a nested screen always returns the same shell.
+        return studio_response()
+
     @app.get("/studio/status")
     def studio_status() -> dict[str, Any]:
         if not index.is_file():
             raise HTTPException(status_code=503, detail="production_studio_unavailable")
         return {
             "ok": True,
-            "kind": "production_creator_studio",
+            "kind": "production_creator_studio_v2",
             "same_origin_api": True,
             "authentication": "operator_key",
             "demo_fallback": False,
+            "routes": [
+                "/app/dashboard",
+                "/app/content",
+                "/app/content/new",
+                "/app/reviews",
+                "/app/team",
+                "/app/settings",
+                "/app/operations",
+            ],
         }
 
     app.state.production_studio_available = True

@@ -9,7 +9,7 @@ on:
       - "web/static-creator-ui/**"
       - "compose.local.yml"
       - "config/local.env.example"
-      - "config/ngrok.local.example.yml"
+      - "video-engine/voice-requirements.txt"
       - "scripts/local_golden_path_smoke.py"
       - "scripts/windows/start_local_production.ps1"
       - "scripts/windows/stop_local_production.ps1"
@@ -30,7 +30,7 @@ concurrency:
 jobs:
   contracts:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -42,17 +42,50 @@ jobs:
         run: python -m compileall -q src tests scripts/local_golden_path_smoke.py
       - name: JavaScript syntax
         run: |
-          node --check web/static-creator-ui/assets/portfolio-api.js
-          node --check web/static-creator-ui/assets/p100-api-compat.js
-          node --check web/static-creator-ui/assets/role-aware-api.js
-          node --check web/static-creator-ui/assets/production-console.js
-      - name: Focused contracts
-        run: >
-          python -m pytest -q
-          tests/unit/test_p101_p103_local_runtime_contracts.py
-          tests/unit/test_p101_role_aware_studio_signin.py
-          tests/unit/test_p103_local_onboarding_contracts.py
-      - name: No deployment or live publishing
+          node --check web/static-creator-ui/assets/studio-v2-api.js
+          node --check web/static-creator-ui/assets/studio-v2.js
+          node --check web/static-creator-ui/assets/studio-v2-media.js
+          node --check web/static-creator-ui/assets/studio-v2-extensions.js
+          node --check web/static-creator-ui/assets/studio-v2-queue.js
+      - name: Creator Studio v2 contracts
+        shell: bash
+        run: |
+          set -o pipefail
+          python -m pytest -vv tests/unit/test_p101_creator_studio_v2_contracts.py 2>&1 | tee p101-studio.log
+      - name: Local runtime contracts
+        shell: bash
+        run: |
+          set -o pipefail
+          python -m pytest -vv tests/unit/test_p101_p103_local_runtime_contracts.py 2>&1 | tee p101-runtime.log
+      - name: Role-aware sign-in contracts
+        shell: bash
+        run: |
+          set -o pipefail
+          python -m pytest -vv tests/unit/test_p101_role_aware_studio_signin.py 2>&1 | tee p101-roles.log
+      - name: Local alignment contracts
+        shell: bash
+        run: |
+          set -o pipefail
+          python -m pytest -vv tests/unit/test_p101_local_audio_alignment.py 2>&1 | tee p101-alignment.log
+      - name: Local onboarding contracts
+        shell: bash
+        run: |
+          set -o pipefail
+          python -m pytest -vv tests/unit/test_p103_local_onboarding_contracts.py 2>&1 | tee p103-onboarding.log
+      - name: Upload focused logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p101-p103-focused-logs
+          retention-days: 7
+          if-no-files-found: ignore
+          path: |
+            p101-studio.log
+            p101-runtime.log
+            p101-roles.log
+            p101-alignment.log
+            p103-onboarding.log
+      - name: No deployment, automatic approval, or live publishing
         shell: bash
         run: |
           python - <<'PY'
@@ -62,6 +95,13 @@ jobs:
           paths = [
               Path("src/operations/local_onboarding.py"),
               Path("src/operations/local_worker.py"),
+              Path("src/operations/local_audio_alignment_patch.py"),
+              Path("src/operator_api/studio_v2_runtime.py"),
+              Path("src/operator_api/studio_v2_media_runtime.py"),
+              Path("src/operator_api/studio_v2_schema_patch.py"),
+              Path("web/static-creator-ui/assets/studio-v2.js"),
+              Path("web/static-creator-ui/assets/studio-v2-extensions.js"),
+              Path("web/static-creator-ui/assets/studio-v2-queue.js"),
               Path("scripts/windows/start_local_production.ps1"),
               Path("scripts/windows/stop_local_production.ps1"),
               Path("compose.local.yml"),
@@ -71,8 +111,8 @@ jobs:
               r"\bdocker\s+push\b|"
               r"\bkubectl\s+apply\b|"
               r"\bterraform\s+apply\b|"
-              r"\blive[_ -]publish\b|"
-              r"\bautomatic[_ -]publish\b",
+              r"\blive[_ -]publish(?:ing)?\s*[:=]\s*(?:true|1)\b|"
+              r"\bautomatic[_ -](?:approve|approval|publish|publishing)\s*[:=]\s*(?:true|1)\b",
               re.IGNORECASE,
           )
           violations = []

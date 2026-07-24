@@ -6,13 +6,43 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 
 
-def test_non_publisher_signin_skips_publisher_only_delivery_endpoint() -> None:
-    index = (ROOT / "web/static-creator-ui/index.html").read_text(encoding="utf-8")
-    compat = (ROOT / "web/static-creator-ui/assets/role-aware-api.js").read_text(encoding="utf-8")
+def read(path: str) -> str:
+    return (ROOT / path).read_text(encoding="utf-8")
 
-    assert 'src="assets/role-aware-api.js"' in index
-    assert index.index('src="assets/role-aware-api.js"') < index.index('src="assets/production-console.js"')
-    assert 'authenticatedRoles.includes("publisher")' in compat
-    assert 'required_role: "publisher"' in compat
-    assert "return originalDeliveries(...args);" in compat
-    assert "api.access = async" in compat
+
+def test_role_aware_signin_and_navigation_use_the_routed_studio() -> None:
+    index = read("web/static-creator-ui/index.html")
+    core = read("web/static-creator-ui/assets/studio-v2.js")
+    extensions = read("web/static-creator-ui/assets/studio-v2-extensions.js")
+
+    assert index.index('src="/assets/studio-v2-api.js"') < index.index('src="/assets/studio-v2.js"')
+    assert index.index('src="/assets/studio-v2.js"') < index.index('src="/assets/studio-v2-extensions.js"')
+    assert 'show: hasRole("producer")' in core
+    assert 'show: hasRole("reviewer")' in core
+    assert 'show: isAdmin()' in core
+    assert 'hasRole("reviewer") && !hasRole("producer")' in core
+    assert 'const landing = hasRole("reviewer")' in core
+    assert 'if (!nav || !hasRole("publisher")' in extensions
+    assert 'if (!hasRole("publisher")) return' in extensions
+
+
+def test_non_publishers_do_not_call_publisher_delivery_apis_during_signin() -> None:
+    core = read("web/static-creator-ui/assets/studio-v2.js")
+    extensions = read("web/static-creator-ui/assets/studio-v2-extensions.js")
+
+    sign_in = core.split("async function authenticateSavedSession", 1)[1].split(
+        "function showLogin", 1
+    )[0]
+    assert "StudioApi.deliveries(" not in sign_in
+
+    operations = core.split("async function renderOperations", 1)[1].split(
+        "function renderNotFound", 1
+    )[0]
+    admin_guard = operations.index('if (!isAdmin()) return navigate("/app/dashboard"')
+    admin_delivery_call = operations.index("StudioApi.deliveries()")
+    assert admin_guard < admin_delivery_call
+
+    publisher_guard = extensions.index('if (!hasRole("publisher")) return')
+    publisher_delivery_call = extensions.index("window.StudioApi.deliveries()")
+    assert publisher_guard < publisher_delivery_call
+    assert 'window.location.pathname === "/app/publishing"' in extensions
