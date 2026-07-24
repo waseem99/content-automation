@@ -24,14 +24,19 @@ def test_service_installer_replaces_an_existing_runtime_before_starting() -> Non
     assert "Stop-ScheduledTask -TaskName $TaskName" in installer
     assert 'New-Item -ItemType File -Force -Path $StopMarker' in installer
     assert 'taskkill.exe /PID $process.ProcessId /T /F' in installer
+    assert 'src\\.operator_api\\.entrypoint:app' in installer
+    assert 'src\\.operations\\.local_worker_aligned' in installer
+    assert 'src\\.operations\\.always_on_continuation' in installer
     assert installer.index("Stop-ExistingLocalRuntime") < installer.index("Register-ScheduledTask")
     assert "-MultipleInstances IgnoreNew" in installer
 
 
-def test_always_on_wrapper_holds_an_exclusive_runtime_lock() -> None:
+def test_always_on_wrapper_holds_a_lock_and_waits_for_core_cleanup() -> None:
     always_on = ALWAYS_ON.read_text(encoding="utf-8")
 
     assert 'always-on-supervisor.lock' in always_on
     assert "[System.IO.FileShare]::None" in always_on
     assert "Another always-on Content Automation supervisor already owns this runtime." in always_on
+    assert "The core supervisor watches the same marker" in always_on
+    assert "continue" in always_on
     assert "$lockStream.Dispose()" in always_on
