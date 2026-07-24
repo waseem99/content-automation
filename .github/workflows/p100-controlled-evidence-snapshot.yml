@@ -55,6 +55,7 @@ jobs:
             src/operator_api/acceptance_controlled_snapshot_runtime.py \
             src/operator_api/acceptance_controlled_start_runtime.py \
             src/operator_api/runtime_factory.py \
+            tests/unit/test_p100_controlled_snapshot_studio_contracts.py \
             tests/integration/test_p100_controlled_evidence_snapshot.py \
             tests/integration/test_p100_controlled_pilot_start.py \
             tests/integration/test_p100_controlled_draft_bootstrap.py \
@@ -62,6 +63,7 @@ jobs:
             tests/integration/test_p100_execution_readiness.py \
             tests/integration/test_p100_acceptance_configured_app.py \
             tests/integration/test_p100_acceptance_foundation.py
+          node --check web/static-creator-ui/assets/studio-v2-p100-snapshot.js
       - name: Verify current environment schema identity
         run: |
           grep -q '^OPS_MIGRATION_HEAD=0090_acceptance_start_actor.sql$' config/staging.env.example
@@ -74,6 +76,7 @@ jobs:
         run: |
           set -o pipefail
           pytest -vv \
+            tests/unit/test_p100_controlled_snapshot_studio_contracts.py \
             tests/integration/test_p100_controlled_evidence_snapshot.py \
             tests/integration/test_p100_controlled_pilot_start.py \
             tests/integration/test_p100_controlled_draft_bootstrap.py \
@@ -88,6 +91,7 @@ jobs:
             src/application/acceptance/controlled_snapshot_models.py \
             src/application/acceptance/controlled_snapshot_service.py \
             src/operator_api/acceptance_controlled_snapshot_runtime.py \
+            web/static-creator-ui/assets/studio-v2-p100-snapshot.js \
             tests/integration/test_p100_controlled_evidence_snapshot.py \
             .github/workflows/p100-controlled-evidence-snapshot.yml
           grep -q "snapshot_kind.*controlled_batch" src/application/acceptance/controlled_snapshot_service.py
