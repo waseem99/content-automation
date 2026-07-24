@@ -55,6 +55,25 @@ The same authenticated application can later be exposed through the reviewed ngr
 8. The always-on continuation worker queues the FFmpeg MP4 preview.
 9. Play or export the resulting preview from **Media review**.
 
+## P100 controlled pilot sequence
+
+The P100 controls are under **Operations** and remain Admin-only in the normal browser workflow.
+
+1. Select exactly one local and one managed item for Rawr Nation.
+2. Select exactly one local and one managed item for Animal X.
+3. Confirm that all four content records are unique.
+4. Choose the single item that requires external live-result evidence.
+5. Select **Create controlled draft**.
+6. Review controlled-start readiness. The start button remains disabled while any canonical blocker exists.
+7. Select **Start controlled pilot** only after every start check passes.
+8. The **Four-item evidence snapshot** panel appears when the pilot is `running` or `blocked`.
+9. Select **Refresh evidence** to re-evaluate every current content-evidence category directly from PostgreSQL.
+10. Select **Record exact snapshot**. The browser sends the exact bootstrap, controlled-start, runbook, snapshot, and start-time identities returned by the preview; no hashes or pass/fail values are entered manually.
+11. A passing snapshot records all four items atomically. A partial snapshot records canonical failures and keeps the pilot blocked until the underlying evidence is corrected.
+12. Repeating the same canonical snapshot verifies and reuses the existing evidence without duplicate events.
+
+The snapshot does not create media, invoke providers, reserve spend, approve releases, publish content, record operations drills, or complete final P100 acceptance. Those remain separate controlled steps.
+
 ## Status and blockers
 
 The browser does not independently guess eligibility. The Studio v2 orchestration API returns:
@@ -90,6 +109,7 @@ Keys and local configuration remain outside Git.
 - No managed-render call until the renderer is explicitly connected.
 - Job media can be read only after operator authentication and brand-scope authorization.
 - Local media paths are restricted to `LOCAL_ARTIFACT_ROOT`.
+- P100 evidence snapshots use canonical backend checks and exact identity matching; the browser cannot submit operator-supplied pass flags.
 
 ## Routed URLs
 
