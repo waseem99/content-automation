@@ -49,7 +49,17 @@ $nextContinuationStart = Get-Date
 try {
   $core = Start-CoreSupervisor
   while (-not $core.HasExited) {
-    if (Test-Path $StopMarker) { break }
+    if (Test-Path $StopMarker) {
+      if ($null -ne $continuation -and -not $continuation.HasExited) {
+        Stop-Process -Id $continuation.Id -Force -ErrorAction SilentlyContinue
+        $continuation = $null
+      }
+      # The core supervisor watches the same marker and owns orderly shutdown
+      # of the API and all worker children. Wait for it instead of force-killing
+      # the PowerShell parent and orphaning those children.
+      Start-Sleep -Seconds 1
+      continue
+    }
     if (($null -eq $continuation -or $continuation.HasExited) -and (Get-Date) -ge $nextContinuationStart) {
       $continuation = Start-Continuation
       $nextContinuationStart = (Get-Date).AddSeconds(10)
