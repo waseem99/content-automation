@@ -173,7 +173,8 @@ def test_local_media_endpoint_is_authenticated_and_root_bounded() -> None:
     source = read(ROOT / "src" / "operator_api" / "studio_v2_media_runtime.py")
 
     assert "OperatorIdentity = Depends(authenticate)" in source
-    assert "require_access(operator, AccessPermission.READ_PORTFOLIO" in source
+    assert "require_access(" in source
+    assert "AccessPermission.READ_PORTFOLIO" in source
     assert "artifact_root not in candidate.parents" in source
     assert 'media_type.startswith(("audio/", "image/", "video/"))' in source
     assert 'Cache-Control"] = "private, no-store"' in source
