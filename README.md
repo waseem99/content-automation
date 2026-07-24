@@ -11,9 +11,9 @@ brand setup
 → guided content brief or approved idea
 → local script generation
 → source and claim review
-→ local Kokoro narration
+→ local Kokoro narration with local Whisper word alignment
 → local ComfyUI keyframes and deterministic motion
-→ human visual review and revision
+→ human narration and visual review
 → optional managed-shot routing
 → final assembly and technical QA
 → package approval
@@ -41,6 +41,8 @@ The production browser application is a routed, role-aware workspace rather than
 
 Normal production does not ask for raw UUIDs, JSON payloads, fixed seeds, or PowerShell commands. The browser displays the real workflow status, permitted next action, human-readable blocker, and background job state for every content item.
 
+Producers also have a bounded **Local production queue** panel. It can enqueue 1–20 eligible scripts or continue already approved audio, visual, and MP4 work. It never creates an unbounded generator and never approves or publishes content.
+
 ## Implemented
 
 - PostgreSQL-backed multi-brand plans, content, versions, artifacts, reviews, releases, and analytics.
@@ -48,14 +50,16 @@ Normal production does not ask for raw UUIDs, JSON payloads, fixed seeds, or Pow
 - Versioned brand profiles, approved voices, and narration presets.
 - Local Ollama-compatible concept and script adapters with deterministic fallback.
 - P87 restart-safe generation queue.
-- Local Kokoro narration jobs.
+- Local Kokoro narration jobs with local `faster-whisper` script-anchored word alignment.
+- Preview-only timing fallback that cannot satisfy final narration approval.
+- Local FFmpeg narration mixes and deterministic MP4 previews.
 - Local ComfyUI keyframe candidates.
 - Human comments, change requests, comparisons, approvals, and preserved revisions.
 - Renderer catalogue, quotes, spend reservations, and cost reconciliation.
 - Shared artifact storage, immutable release manifests, final technical QA.
 - Simulated delivery and external live-result evidence.
 - Operations, backup/restore evidence, readiness, and the bounded P100 pilot.
-- Secure authenticated playback for local audio, image, and MP4 job outputs.
+- Secure authenticated playback for local audio, image, narration-mix, and MP4 outputs.
 
 ## Deliberately disabled
 
@@ -83,6 +87,8 @@ Start:
 powershell -NoProfile -ExecutionPolicy Bypass `
   -File .\scripts\windows\start_local_production.ps1
 ```
+
+The launcher installs the repository dependencies, Kokoro, and local Whisper alignment dependencies in `.venv`. The default alignment profile uses the open-source Whisper `tiny` model on CPU with `int8` compute. A failed or low-coverage alignment remains preview-only and visibly blocks final narration approval.
 
 Creator Studio opens at:
 
@@ -119,7 +125,9 @@ Login
 → Submit for review
 → Reviewer approves exact version
 → Start local narration and visuals
-→ Review and approve media
+→ Play and select one passing narration take per paragraph
+→ Build the local narration mix
+→ Submit and approve narration and visuals
 → Generate MP4 preview
 → Play or export preview
 ```
@@ -140,7 +148,7 @@ The smoke exercises the real API, PostgreSQL, brand profile, local Ollama adapte
 ```text
 src/application/          domain services for concepts, scripts, audio, visuals, routing, releases, delivery, analytics, acceptance
 src/operator_api/         authenticated FastAPI routes and production Creator Studio serving
-src/operations/           local onboarding, queue worker, operations and recovery
+src/operations/           local onboarding, queue workers, alignment, operations and recovery
 web/static-creator-ui/    routed role-aware browser application
 migrations/               append-only PostgreSQL schema migrations
 scripts/windows/          local workstation launch/stop and P68 GPU setup
