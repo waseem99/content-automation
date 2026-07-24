@@ -30,8 +30,19 @@ def test_non_publishers_do_not_call_publisher_delivery_apis_during_signin() -> N
     core = read("web/static-creator-ui/assets/studio-v2.js")
     extensions = read("web/static-creator-ui/assets/studio-v2-extensions.js")
 
-    assert "StudioApi.deliveries(" not in core
+    sign_in = core.split("async function authenticateSavedSession", 1)[1].split(
+        "function showLogin", 1
+    )[0]
+    assert "StudioApi.deliveries(" not in sign_in
+
+    operations = core.split("async function renderOperations", 1)[1].split(
+        "function renderNotFound", 1
+    )[0]
+    admin_guard = operations.index('if (!isAdmin()) return navigate("/app/dashboard"')
+    admin_delivery_call = operations.index("StudioApi.deliveries()")
+    assert admin_guard < admin_delivery_call
+
     publisher_guard = extensions.index('if (!hasRole("publisher")) return')
-    deliveries_call = extensions.index("window.StudioApi.deliveries()")
-    assert publisher_guard < deliveries_call
+    publisher_delivery_call = extensions.index("window.StudioApi.deliveries()")
+    assert publisher_guard < publisher_delivery_call
     assert 'window.location.pathname === "/app/publishing"' in extensions
