@@ -68,6 +68,27 @@ jobs:
           python -m pip install -r requirements.txt
       - name: Compile Python
         run: python -m compileall -q src tests
+      - name: PowerShell syntax
+        shell: pwsh
+        run: |
+          $files = @(
+            "scripts/windows/install_local_production_service.ps1",
+            "scripts/windows/supervise_always_on_local_production.ps1",
+            "scripts/windows/supervise_local_production.ps1"
+          )
+          foreach ($file in $files) {
+            $tokens = $null
+            $errors = $null
+            [System.Management.Automation.Language.Parser]::ParseFile(
+              (Resolve-Path $file),
+              [ref]$tokens,
+              [ref]$errors
+            ) | Out-Null
+            if ($errors.Count -gt 0) {
+              $errors | ForEach-Object { Write-Error "$file: $($_.Message)" }
+              throw "PowerShell syntax validation failed for $file"
+            }
+          }
       - name: JavaScript syntax
         run: |
           node --check web/static-creator-ui/assets/studio-v2-api.js
