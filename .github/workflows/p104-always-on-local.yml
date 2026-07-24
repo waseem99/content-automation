@@ -16,9 +16,12 @@ on:
       - "config/local.env.example"
       - "video-engine/voice-requirements.txt"
       - "scripts/windows/*local_production*.ps1"
+      - "migrations/0091_studio_manual_brief_event.sql"
       - "docs/operations/ALWAYS_ON_LOCAL_WORKSTATION.md"
       - "tests/unit/test_p104_always_on_local_contracts.py"
+      - "tests/unit/test_p101_manual_brief_and_singleton_contracts.py"
       - "tests/integration/test_p104_always_on_local.py"
+      - "tests/integration/test_p101_manual_brief_event.py"
       - ".github/workflows/p104-always-on-local.yml"
   workflow_dispatch:
 
@@ -65,6 +68,27 @@ jobs:
           python -m pip install -r requirements.txt
       - name: Compile Python
         run: python -m compileall -q src tests
+      - name: PowerShell syntax
+        shell: pwsh
+        run: |
+          $files = @(
+            "scripts/windows/install_local_production_service.ps1",
+            "scripts/windows/supervise_always_on_local_production.ps1",
+            "scripts/windows/supervise_local_production.ps1"
+          )
+          foreach ($file in $files) {
+            $tokens = $null
+            $errors = $null
+            [System.Management.Automation.Language.Parser]::ParseFile(
+              (Resolve-Path $file),
+              [ref]$tokens,
+              [ref]$errors
+            ) | Out-Null
+            if ($errors.Count -gt 0) {
+              $errors | ForEach-Object { Write-Error ("{0}: {1}" -f $file, $_.Message) }
+              throw "PowerShell syntax validation failed for $file"
+            }
+          }
       - name: JavaScript syntax
         run: |
           node --check web/static-creator-ui/assets/studio-v2-api.js
@@ -73,12 +97,18 @@ jobs:
           node --check web/static-creator-ui/assets/studio-v2-extensions.js
           node --check web/static-creator-ui/assets/studio-v2-queue.js
       - name: Focused contracts
-        run: python -m pytest -q tests/unit/test_p104_always_on_local_contracts.py
-      - name: PostgreSQL queue and MP4 proof
+        run: |
+          python -m pytest -q \
+            tests/unit/test_p104_always_on_local_contracts.py \
+            tests/unit/test_p101_manual_brief_and_singleton_contracts.py
+      - name: PostgreSQL queue, manual brief, and MP4 proof
         shell: bash
         run: |
           set -o pipefail
-          python -m pytest -vv tests/integration/test_p104_always_on_local.py 2>&1 | tee p104-postgres.log
+          python -m pytest -vv \
+            tests/integration/test_p101_manual_brief_event.py \
+            tests/integration/test_p104_always_on_local.py \
+            2>&1 | tee p104-postgres.log
       - name: Upload focused evidence
         if: always()
         uses: actions/upload-artifact@v4
