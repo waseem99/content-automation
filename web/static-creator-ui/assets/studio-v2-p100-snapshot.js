@@ -113,13 +113,16 @@
       });
     } catch (error) {
       const hostNow = $("#p100-control-center");
-      if (hostNow && !$("#p100-evidence-snapshot", hostNow)) {
-        const panel = document.createElement("section");
-        panel.id = "p100-evidence-snapshot";
+      if (hostNow) {
+        let panel = $("#p100-evidence-snapshot", hostNow);
+        if (!panel) {
+          panel = document.createElement("section");
+          panel.id = "p100-evidence-snapshot";
+          panel.style.marginTop = "16px";
+          hostNow.appendChild(panel);
+        }
         panel.className = "notice bad";
-        panel.style.marginTop = "16px";
         panel.innerHTML = `<strong>Evidence snapshot unavailable</strong>${escapeHtml(errorText(error))}`;
-        hostNow.appendChild(panel);
       }
     } finally {
       busy = false;
