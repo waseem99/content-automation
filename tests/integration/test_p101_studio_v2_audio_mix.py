@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import json
 import wave
 from pathlib import Path
 from types import SimpleNamespace
@@ -11,6 +10,8 @@ import pytest
 from src.application.audio.adapters import proportional_preview_timings
 from src.application.audio.models import AlignmentSource, AudioInitializeRequest, AudioTakeResult
 from src.application.audio.service import AudioProductionService
+from src.application.generation_jobs.models import GenerationJobCompletion, GenerationJobType
+from src.application.generation_jobs.service import GenerationJobService
 from src.operator_api.access import OperatorIdentity, OperatorRole
 from src.operator_api.auth import OperatorAuthSettings
 from src.operator_api.runtime_config import OperatorRuntimeSettings
@@ -18,7 +19,6 @@ from src.operator_api.runtime_factory import create_configured_app
 from src.operator_api.studio_v2_media_runtime import install_studio_v2_media_routes
 from tests.integration.p89_script_support import p89_seeded
 from tests.integration.p90_audio_support import (
-    complete_next_narration_job,
     p89_database,
     p90_ready,
     register_audio_asset,
@@ -86,6 +86,7 @@ def test_studio_builds_brand_scoped_local_mix_and_unlocks_submit(
     artifact_root = tmp_path / "artifacts"
     monkeypatch.setenv("LOCAL_ARTIFACT_ROOT", str(artifact_root))
     service = AudioProductionService(p89_database)
+    jobs = GenerationJobService(p89_database)
     initialized = service.initialize(
         content_id=p90_ready["content_one"],
         request=AudioInitializeRequest(model_id="kokoro-v1.0"),
@@ -94,11 +95,35 @@ def test_studio_builds_brand_scoped_local_mix_and_unlocks_submit(
     production_id = initialized["production"]["id"]
 
     for index in range(len(initialized["paragraphs"])):
-        job = complete_next_narration_job(
-            p89_database,
-            worker=p90_ready["producer"],
-            brand_id=p90_ready["brand_one"],
+        claimed = jobs.claim(
+            worker_id=p90_ready["producer"],
+            allowed_brand_ids=[p90_ready["brand_one"]],
+            allowed_job_types=[GenerationJobType.NARRATION],
+            requested_job_types=[GenerationJobType.NARRATION],
+            providers=["kokoro-onnx"],
+            lease_seconds=120,
         )
+        assert claimed is not None
+        job = claimed["job"]
+        source = artifact_root / "jobs" / str(job["id"]) / "narration.wav"
+        _write_wave(source)
+        completed = jobs.complete(
+            GenerationJobCompletion(
+                job_id=job["id"],
+                attempt_id=claimed["attempt"]["id"],
+                lease_token=claimed["lease_token"],
+                worker_id=p90_ready["producer"],
+                output_payload={
+                    "storage_path": str(source),
+                    "mime_type": "audio/wav",
+                    "kind": "local_kokoro_narration",
+                    "external_fee_incurred": False,
+                },
+                actual_cost_usd=0,
+            )
+        )
+        assert completed["job"]["status"] == "succeeded"
+
         detail = service.detail(production_id=production_id)
         take = next(
             row
@@ -110,24 +135,6 @@ def test_studio_builds_brand_scoped_local_mix_and_unlocks_submit(
             for row in detail["paragraphs"]
             if str(row["id"]) == str(take["paragraph_id"])
         )
-        source = artifact_root / "jobs" / str(job["id"]) / "narration.wav"
-        _write_wave(source)
-        with p89_database.transaction() as conn:
-            conn.execute(
-                """UPDATE football_brief.generation_jobs
-                   SET output_payload=%s::jsonb WHERE id=%s""",
-                (
-                    json.dumps(
-                        {
-                            "storage_path": str(source),
-                            "mime_type": "audio/wav",
-                            "kind": "local_kokoro_narration",
-                            "external_fee_incurred": False,
-                        }
-                    ),
-                    job["id"],
-                ),
-            )
         asset_id = register_audio_asset(
             p89_database,
             key=f"studio-v2-segment-{production_id}-{index}",
