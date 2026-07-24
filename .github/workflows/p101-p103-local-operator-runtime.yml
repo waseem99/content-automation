@@ -42,13 +42,13 @@ jobs:
         run: python -m compileall -q src tests scripts/local_golden_path_smoke.py
       - name: JavaScript syntax
         run: |
-          node --check web/static-creator-ui/assets/portfolio-api.js
-          node --check web/static-creator-ui/assets/p100-api-compat.js
-          node --check web/static-creator-ui/assets/role-aware-api.js
-          node --check web/static-creator-ui/assets/production-console.js
+          node --check web/static-creator-ui/assets/studio-v2-api.js
+          node --check web/static-creator-ui/assets/studio-v2.js
+          node --check web/static-creator-ui/assets/studio-v2-media.js
       - name: Focused contracts
         run: >
           python -m pytest -q
+          tests/unit/test_p101_creator_studio_v2_contracts.py
           tests/unit/test_p101_p103_local_runtime_contracts.py
           tests/unit/test_p101_role_aware_studio_signin.py
           tests/unit/test_p103_local_onboarding_contracts.py
@@ -62,6 +62,9 @@ jobs:
           paths = [
               Path("src/operations/local_onboarding.py"),
               Path("src/operations/local_worker.py"),
+              Path("src/operator_api/studio_v2_runtime.py"),
+              Path("src/operator_api/studio_v2_media_runtime.py"),
+              Path("web/static-creator-ui/assets/studio-v2.js"),
               Path("scripts/windows/start_local_production.ps1"),
               Path("scripts/windows/stop_local_production.ps1"),
               Path("compose.local.yml"),
