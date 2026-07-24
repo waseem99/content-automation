@@ -52,7 +52,7 @@ jobs:
           tests/unit/test_p101_p103_local_runtime_contracts.py
           tests/unit/test_p101_role_aware_studio_signin.py
           tests/unit/test_p103_local_onboarding_contracts.py
-      - name: No deployment or live publishing
+      - name: No deployment, automatic approval, or live publishing
         shell: bash
         run: |
           python - <<'PY'
@@ -64,6 +64,7 @@ jobs:
               Path("src/operations/local_worker.py"),
               Path("src/operator_api/studio_v2_runtime.py"),
               Path("src/operator_api/studio_v2_media_runtime.py"),
+              Path("src/operator_api/studio_v2_schema_patch.py"),
               Path("web/static-creator-ui/assets/studio-v2.js"),
               Path("scripts/windows/start_local_production.ps1"),
               Path("scripts/windows/stop_local_production.ps1"),
@@ -74,8 +75,8 @@ jobs:
               r"\bdocker\s+push\b|"
               r"\bkubectl\s+apply\b|"
               r"\bterraform\s+apply\b|"
-              r"\blive[_ -]publish\b|"
-              r"\bautomatic[_ -]publish\b",
+              r"\blive[_ -]publish(?:ing)?\s*[:=]\s*(?:true|1)\b|"
+              r"\bautomatic[_ -](?:approve|approval|publish|publishing)\s*[:=]\s*(?:true|1)\b",
               re.IGNORECASE,
           )
           violations = []
