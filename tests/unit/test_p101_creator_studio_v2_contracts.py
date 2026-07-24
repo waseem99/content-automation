@@ -23,10 +23,14 @@ def test_v2_shell_replaces_the_legacy_one_page_console() -> None:
 
     assert 'href="/app/dashboard"' in index
     assert 'id="app-view"' in index
-    assert 'src="/assets/studio-v2-api.js"' in index
-    assert 'src="/assets/studio-v2.js"' in index
-    assert 'src="/assets/studio-v2-media.js"' in index
-    assert 'src="/assets/studio-v2-extensions.js"' in index
+    for asset in (
+        "studio-v2-api.js",
+        "studio-v2.js",
+        "studio-v2-media.js",
+        "studio-v2-extensions.js",
+        "studio-v2-queue.js",
+    ):
+        assert f'src="/assets/{asset}"' in index
     assert "portfolio-api.js" not in index
     assert "production-console.js" not in index
     assert "local-pipeline-controls.js" not in index
@@ -59,15 +63,21 @@ def test_v2_application_exposes_task_oriented_routes() -> None:
 
 
 def test_normal_workflow_has_no_prompt_uuid_or_json_editor() -> None:
-    script = read(ASSETS / "studio-v2.js")
-    extensions = read(ASSETS / "studio-v2-extensions.js")
+    inspected = "\n".join(
+        read(ASSETS / name)
+        for name in (
+            "studio-v2.js",
+            "studio-v2-media.js",
+            "studio-v2-extensions.js",
+            "studio-v2-queue.js",
+        )
+    )
     index = read(UI / "index.html")
 
-    assert "window.prompt" not in script
-    assert "window.prompt" not in extensions
-    assert "Draft monthly plan UUID" not in script + extensions
+    assert "window.prompt" not in inspected
+    assert "Draft monthly plan UUID" not in inspected
     assert "JSON.stringify" not in index
-    assert "json-textarea" not in script + extensions
+    assert "json-textarea" not in inspected
     assert "Advanced production tools" not in index
 
 
@@ -75,24 +85,29 @@ def test_v2_api_client_covers_the_golden_path() -> None:
     client = read(ASSETS / "studio-v2-api.js")
 
     for contract in (
-        'createContent:',
-        'generateScript:',
-        'submitScript:',
-        'decideScript:',
-        'startLocalProduction:',
-        'submitAudio:',
-        'decideAudio:',
-        'submitVisualProject:',
-        'decideVisualProject:',
-        'authenticatedMediaUrl:',
-        'jobMediaUrl:',
-        'teamKeys:',
+        "createContent:",
+        "generateScript:",
+        "submitScript:",
+        "decideScript:",
+        "startLocalProduction:",
+        "selectAudioTake:",
+        "buildLocalAudioMix:",
+        "submitAudio:",
+        "decideAudio:",
+        "submitVisualProject:",
+        "decideVisualProject:",
+        "authenticatedMediaUrl:",
+        "jobMediaUrl:",
+        "teamKeys:",
+        "enqueueLocalScripts:",
+        "continueApproved:",
     ):
         assert contract in client
 
 
-def test_v2_completion_extensions_cover_suggestions_publisher_and_p100() -> None:
+def test_v2_completion_extensions_cover_suggestions_publisher_p100_and_queue() -> None:
     source = read(ASSETS / "studio-v2-extensions.js")
+    queue = read(ASSETS / "studio-v2-queue.js")
 
     assert "Generate 6 suggestions" in source
     assert "Use this idea" in source
@@ -103,6 +118,10 @@ def test_v2_completion_extensions_cover_suggestions_publisher_and_p100() -> None
     assert "/start-controlled" in source
     assert "The four pilot items must be unique" in source
     assert "live_delivery_evidence_required" in source
+    assert 'id="queue-more-scripts"' in queue
+    assert 'id="continue-approved-local"' in queue
+    assert 'max="20"' in queue
+    assert "include_previews: true" in queue
 
 
 def test_v2_backend_is_a_thin_orchestrator_over_existing_services() -> None:
@@ -158,6 +177,8 @@ def test_local_media_endpoint_is_authenticated_and_root_bounded() -> None:
     assert "artifact_root not in candidate.parents" in source
     assert 'media_type.startswith(("audio/", "image/", "video/"))' in source
     assert 'Cache-Control"] = "private, no-store"' in source
+    assert 'build-local-mix' in source
+    assert 'mix-media' in source
 
 
 def test_new_python_and_javascript_sources_are_syntax_valid() -> None:
@@ -167,6 +188,8 @@ def test_new_python_and_javascript_sources_are_syntax_valid() -> None:
         ROOT / "src" / "operator_api" / "studio_v2_schema_patch.py",
         ROOT / "src" / "operator_api" / "entrypoint.py",
         ROOT / "src" / "operator_api" / "studio_runtime.py",
+        ROOT / "src" / "operations" / "local_audio_alignment_patch.py",
+        ROOT / "src" / "operations" / "local_worker_aligned.py",
     ):
         ast.parse(read(path), filename=str(path))
 
@@ -175,6 +198,7 @@ def test_new_python_and_javascript_sources_are_syntax_valid() -> None:
         ASSETS / "studio-v2.js",
         ASSETS / "studio-v2-media.js",
         ASSETS / "studio-v2-extensions.js",
+        ASSETS / "studio-v2-queue.js",
     ):
         source = read(path)
         assert source.startswith("(() => {")
