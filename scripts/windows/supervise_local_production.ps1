@@ -51,36 +51,77 @@ function Test-ApiReady {
   } catch { return $false }
 }
 
+function Invoke-NativeQuiet([string]$FilePath, [string[]]$Arguments) {
+  # Windows PowerShell 5.1 can promote harmless native stderr progress output
+  # (for example Docker Compose "Container ... Running") into a terminating
+  # error when the supervisor uses ErrorActionPreference=Stop. Suppress output
+  # and decide success exclusively from the native process exit code.
+  $previousPreference = $ErrorActionPreference
+  try {
+    $ErrorActionPreference = "Continue"
+    & $FilePath @Arguments 1>$null 2>$null
+    return [int]$LASTEXITCODE
+  } finally {
+    $ErrorActionPreference = $previousPreference
+  }
+}
+
+function Invoke-NativeLogged([string]$FilePath, [string[]]$Arguments, [string]$LogPath) {
+  $previousPreference = $ErrorActionPreference
+  try {
+    $ErrorActionPreference = "Continue"
+    & $FilePath @Arguments *> $LogPath
+    return [int]$LASTEXITCODE
+  } finally {
+    $ErrorActionPreference = $previousPreference
+  }
+}
+
 function Wait-ForInfrastructure {
   while (-not (Test-Path $StopMarker)) {
     try {
-      if (-not (Get-Command docker -ErrorAction SilentlyContinue)) { throw "docker is not available" }
+      $dockerCommand = Get-Command docker -ErrorAction SilentlyContinue
+      if (-not $dockerCommand) { throw "docker is not available" }
       if (-not (Test-Path $Python)) { throw "local virtual environment is not installed" }
       if (-not (Get-Command ffmpeg -ErrorAction SilentlyContinue)) { throw "FFmpeg is not available" }
-      docker info *> $null
-      if ($LASTEXITCODE -ne 0) { throw "Docker Desktop is not ready" }
+
+      $dockerExit = Invoke-NativeQuiet -FilePath $dockerCommand.Source -Arguments @("info")
+      if ($dockerExit -ne 0) { throw "Docker Desktop is not ready" }
+
       Push-Location $Root
       try {
-        docker compose --env-file $EnvPath -f compose.local.yml up -d postgres *> $null
-        if ($LASTEXITCODE -ne 0) { throw "PostgreSQL compose start failed" }
+        $composeExit = Invoke-NativeQuiet -FilePath $dockerCommand.Source -Arguments @(
+          "compose", "--env-file", $EnvPath, "-f", "compose.local.yml", "up", "-d", "postgres"
+        )
+        if ($composeExit -ne 0) { throw "PostgreSQL compose start failed with exit code $composeExit" }
       } finally { Pop-Location }
+
       $deadline = (Get-Date).AddMinutes(3)
       $ready = $false
       do {
         Start-Sleep -Seconds 3
         Push-Location $Root
         try {
-          docker compose --env-file $EnvPath -f compose.local.yml exec -T postgres pg_isready -U $env:POSTGRES_USER -d $env:POSTGRES_DB *> $null
-          $ready = $LASTEXITCODE -eq 0
+          $readyExit = Invoke-NativeQuiet -FilePath $dockerCommand.Source -Arguments @(
+            "compose", "--env-file", $EnvPath, "-f", "compose.local.yml", "exec", "-T",
+            "postgres", "pg_isready", "-U", $env:POSTGRES_USER, "-d", $env:POSTGRES_DB
+          )
+          $ready = $readyExit -eq 0
         } finally { Pop-Location }
       } until ($ready -or (Get-Date) -gt $deadline -or (Test-Path $StopMarker))
       if (-not $ready) { throw "PostgreSQL did not become ready" }
+
       Push-Location $Root
       try {
-        & $Python -m src.infrastructure.database.cli migrate *> (Join-Path $Runtime "logs\migration.log")
-        if ($LASTEXITCODE -ne 0) { throw "Database migration failed" }
-        & $Python -m src.operations.local_onboarding_v2 *> (Join-Path $Runtime "logs\onboarding.log")
-        if ($LASTEXITCODE -ne 0) { throw "Local onboarding failed" }
+        $migrationExit = Invoke-NativeLogged -FilePath $Python -Arguments @(
+          "-m", "src.infrastructure.database.cli", "migrate"
+        ) -LogPath (Join-Path $Runtime "logs\migration.log")
+        if ($migrationExit -ne 0) { throw "Database migration failed with exit code $migrationExit" }
+
+        $onboardingExit = Invoke-NativeLogged -FilePath $Python -Arguments @(
+          "-m", "src.operations.local_onboarding_v2"
+        ) -LogPath (Join-Path $Runtime "logs\onboarding.log")
+        if ($onboardingExit -ne 0) { throw "Local onboarding failed with exit code $onboardingExit" }
       } finally { Pop-Location }
       return
     } catch {
