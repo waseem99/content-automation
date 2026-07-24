@@ -167,7 +167,7 @@ try {
   $workerLog = Join-Path $Runtime "logs\worker.log"
   $workerError = Join-Path $Runtime "logs\worker.error.log"
   $worker = Start-Process -FilePath $Python `
-    -ArgumentList @("-m", "src.operations.local_worker_v2", "--poll-seconds", "3") `
+    -ArgumentList @("-m", "src.operations.local_worker_aligned", "--poll-seconds", "3") `
     -WorkingDirectory $Root -RedirectStandardOutput $workerLog -RedirectStandardError $workerError -PassThru
   Set-Content -LiteralPath $workerPid -Value $worker.Id -Encoding ascii
 
