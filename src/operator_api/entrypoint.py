@@ -14,6 +14,7 @@ from src.operator_api.runtime_factory import create_configured_app
 from src.operator_api.studio_runtime import install_studio_routes
 from src.operator_api.studio_v2_media_runtime import install_studio_v2_media_routes
 from src.operator_api.studio_v2_runtime import install_studio_v2_routes
+from src.operator_api.studio_v2_schema_patch import apply_studio_v2_schema_patch
 
 APP_IMPORT_PATH = "src.operator_api.entrypoint:app"
 FACTORY_IMPORT_PATH = "src.operator_api.entrypoint:create_runtime_app"
@@ -28,6 +29,7 @@ def create_runtime_app() -> FastAPI:
         auth_settings=auth_settings,
         runtime_settings=settings,
     )
+    apply_studio_v2_schema_patch()
     install_local_pipeline_routes(application, database=database, auth_settings=auth_settings)
     install_studio_v2_routes(application, database=database, auth_settings=auth_settings)
     install_studio_v2_media_routes(application, database=database, auth_settings=auth_settings)
