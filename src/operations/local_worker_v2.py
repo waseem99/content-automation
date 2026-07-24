@@ -528,7 +528,7 @@ class AlwaysOnLocalGenerationWorker(LocalGenerationWorker):
                          )
                    ) pending
                    WHERE job_type = ANY(%s::text[])
-                   ORDER BY completed_at NULLS LAST,queued_at,id LIMIT 20""",
+                   ORDER BY queued_at,id LIMIT 20""",
                 (wanted,),
             ).fetchall()
         now = time.monotonic()
