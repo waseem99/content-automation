@@ -65,25 +65,32 @@
       event.preventDefault();
       event.stopImmediatePropagation();
       history.pushState({}, "", "/app/publishing");
-      void renderPublishing();
+      void renderPublishing({ force: true });
     }, true);
     nav.appendChild(link);
   }
 
-  async function renderPublishing() {
-    if (publisherBusy || !window.StudioApi?.configured()) return;
+  async function renderPublishing({ force = false } = {}) {
+    const view = $("#app-view");
+    if (publisherBusy || !window.StudioApi?.configured() || !view) return;
+    const alreadyRendered = (
+      window.location.pathname === "/app/publishing" &&
+      view.dataset.extensionRoute === "publishing" &&
+      view.dataset.publisherReady === "true" &&
+      Boolean($("#publisher-workspace", view))
+    );
+    if (!force && alreadyRendered) return;
     publisherBusy = true;
     try {
       if (!access) await refreshAccess();
       if (!hasRole("publisher")) return;
-      const view = $("#app-view");
-      if (!view) return;
       $$(".nav-link").forEach((item) => item.classList.remove("active"));
       $("#publisher-nav-link")?.classList.add("active");
       $("#page-eyebrow").textContent = "Publisher workspace";
       $("#page-title").textContent = "Release & delivery";
       $("#page-subtitle").textContent = "Inspect approved releases and controlled delivery records.";
       view.dataset.extensionRoute = "publishing";
+      view.dataset.publisherReady = "false";
       view.innerHTML = '<div class="grid two"><div class="skeleton"></div><div class="skeleton"></div></div>';
       const [releasePayload, deliveryPayload] = await Promise.all([
         window.StudioApi.releases().catch((error) => ({ error: errorText(error), items: [] })),
@@ -93,12 +100,15 @@
       const releases = releasePayload.items || releasePayload.releases || [];
       const deliveries = deliveryPayload.items || deliveryPayload.deliveries || [];
       view.innerHTML = `
-        <div class="page-actions"><div><h2>Approved release packages</h2><p>Publishing remains human-controlled. No social platform action runs automatically.</p></div></div>
-        <div class="grid two">
-          <section class="card"><div class="card-header"><div><h2>Releases</h2><p>Immutable packages that passed final QA.</p></div></div><div class="content-card-list">${releasePayload.error ? `<div class="notice bad">${escapeHtml(releasePayload.error)}</div>` : releases.length ? releases.map((item) => `<article class="content-card"><div class="button-row between"><h3>${escapeHtml(item.release_key || item.title || `Release ${item.version || ""}`)}</h3><span class="status-badge status-${escapeHtml(item.status || "draft")}">${escapeHtml(humanize(item.status || "draft"))}</span></div><p>${escapeHtml(item.brand_name || item.platform || "Controlled release")} · ${escapeHtml(item.created_at ? new Date(item.created_at).toLocaleString() : "")}</p></article>`).join("") : '<div class="empty-state"><h3>No approved releases</h3><p>Final QA must complete before a publisher can act.</p></div>'}</div></section>
-          <section class="card"><div class="card-header"><div><h2>Delivery requests</h2><p>Simulated staging delivery and externally recorded results.</p></div></div><div class="content-card-list">${deliveryPayload.error ? `<div class="notice bad">${escapeHtml(deliveryPayload.error)}</div>` : deliveries.length ? deliveries.map((item) => `<article class="content-card"><div class="button-row between"><h3>${escapeHtml(item.target_name || item.platform || "Delivery")}</h3><span class="status-badge status-${escapeHtml(item.status || "draft")}">${escapeHtml(humanize(item.status || "draft"))}</span></div><p>${escapeHtml(item.release_key || item.delivery_key || "Controlled request")}</p></article>`).join("") : '<div class="empty-state"><h3>No delivery requests</h3><p>Nothing is queued for delivery.</p></div>'}</div></section>
-        </div>
-        <div class="notice warn" style="margin-top:18px"><strong>Publishing safety</strong>Live platform OAuth is not connected. This screen cannot publish automatically.</div>`;
+        <div id="publisher-workspace">
+          <div class="page-actions"><div><h2>Approved release packages</h2><p>Publishing remains human-controlled. No social platform action runs automatically.</p></div></div>
+          <div class="grid two">
+            <section class="card"><div class="card-header"><div><h2>Releases</h2><p>Immutable packages that passed final QA.</p></div></div><div class="content-card-list">${releasePayload.error ? `<div class="notice bad">${escapeHtml(releasePayload.error)}</div>` : releases.length ? releases.map((item) => `<article class="content-card"><div class="button-row between"><h3>${escapeHtml(item.release_key || item.title || `Release ${item.version || ""}`)}</h3><span class="status-badge status-${escapeHtml(item.status || "draft")}">${escapeHtml(humanize(item.status || "draft"))}</span></div><p>${escapeHtml(item.brand_name || item.platform || "Controlled release")} · ${escapeHtml(item.created_at ? new Date(item.created_at).toLocaleString() : "")}</p></article>`).join("") : '<div class="empty-state"><h3>No approved releases</h3><p>Final QA must complete before a publisher can act.</p></div>'}</div></section>
+            <section class="card"><div class="card-header"><div><h2>Delivery requests</h2><p>Simulated staging delivery and externally recorded results.</p></div></div><div class="content-card-list">${deliveryPayload.error ? `<div class="notice bad">${escapeHtml(deliveryPayload.error)}</div>` : deliveries.length ? deliveries.map((item) => `<article class="content-card"><div class="button-row between"><h3>${escapeHtml(item.target_name || item.platform || "Delivery")}</h3><span class="status-badge status-${escapeHtml(item.status || "draft")}">${escapeHtml(humanize(item.status || "draft"))}</span></div><p>${escapeHtml(item.release_key || item.delivery_key || "Controlled request")}</p></article>`).join("") : '<div class="empty-state"><h3>No delivery requests</h3><p>Nothing is queued for delivery.</p></div>'}</div></section>
+          </div>
+          <div class="notice warn" style="margin-top:18px"><strong>Publishing safety</strong>Live platform OAuth is not connected. This screen cannot publish automatically.</div>
+        </div>`;
+      view.dataset.publisherReady = "true";
     } finally { publisherBusy = false; }
   }
 
