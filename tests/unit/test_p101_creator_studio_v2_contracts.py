@@ -1,0 +1,150 @@
+from __future__ import annotations
+
+import ast
+from pathlib import Path
+
+from fastapi import FastAPI
+from fastapi.testclient import TestClient
+
+from src.operator_api.studio_runtime import install_studio_routes
+
+
+ROOT = Path(__file__).resolve().parents[2]
+UI = ROOT / "web" / "static-creator-ui"
+ASSETS = UI / "assets"
+
+
+def read(path: Path) -> str:
+    return path.read_text(encoding="utf-8")
+
+
+def test_v2_shell_replaces_the_legacy_one_page_console() -> None:
+    index = read(UI / "index.html")
+
+    assert 'href="/app/dashboard"' in index
+    assert 'id="app-view"' in index
+    assert 'src="/assets/studio-v2-api.js"' in index
+    assert 'src="/assets/studio-v2.js"' in index
+    assert 'src="/assets/studio-v2-media.js"' in index
+    assert "portfolio-api.js" not in index
+    assert "production-console.js" not in index
+    assert "local-pipeline-controls.js" not in index
+    assert "advanced-tools" not in index
+    assert "p100-console" not in index
+
+
+def test_v2_application_exposes_task_oriented_routes() -> None:
+    script = read(ASSETS / "studio-v2.js")
+    runtime = read(ROOT / "src" / "operator_api" / "studio_runtime.py")
+
+    for route in (
+        "/app/dashboard",
+        "/app/content",
+        "/app/content/new",
+        "/app/reviews",
+        "/app/team",
+        "/app/settings",
+        "/app/operations",
+    ):
+        assert route in script or route in runtime
+
+    assert "Create content" in script
+    assert "Review inbox" in script
+    assert "Start local production" in script
+    assert "MP4 preview" in script
+
+
+def test_normal_workflow_has_no_prompt_uuid_or_json_editor() -> None:
+    script = read(ASSETS / "studio-v2.js")
+    index = read(UI / "index.html")
+
+    assert "window.prompt" not in script
+    assert "Draft monthly plan UUID" not in script
+    assert "JSON.stringify" not in index
+    assert "json-textarea" not in script
+    assert "Advanced production tools" not in index
+
+
+def test_v2_api_client_covers_the_golden_path() -> None:
+    client = read(ASSETS / "studio-v2-api.js")
+
+    for contract in (
+        'createContent:',
+        'generateScript:',
+        'submitScript:',
+        'decideScript:',
+        'startLocalProduction:',
+        'submitAudio:',
+        'decideAudio:',
+        'submitVisualProject:',
+        'decideVisualProject:',
+        'authenticatedMediaUrl:',
+        'jobMediaUrl:',
+        'teamKeys:',
+    ):
+        assert contract in client
+
+
+def test_v2_backend_is_a_thin_orchestrator_over_existing_services() -> None:
+    source = read(ROOT / "src" / "operator_api" / "studio_v2_runtime.py")
+
+    assert "PortfolioService" in source
+    assert "ProductionWorkflowService" in source
+    assert "GenerationJobService" in source
+    assert "AudioProductionService" in source
+    assert "ValidatedVisualProjectService" in source
+    assert '@app.post("/studio-v2/content")' in source
+    assert '@app.get("/studio-v2/content/{content_id}/state")' in source
+    assert '@app.post("/studio-v2/content/{content_id}/generate-script")' in source
+    assert '@app.post("/studio-v2/content/{content_id}/start-local-production")' in source
+    assert "manual_brief_accepted" in source
+    assert '"automatic_approval": False' in source
+    assert '"live_publishing": False' in source
+
+
+def test_local_media_endpoint_is_authenticated_and_root_bounded() -> None:
+    source = read(ROOT / "src" / "operator_api" / "studio_v2_media_runtime.py")
+
+    assert "OperatorIdentity = Depends(authenticate)" in source
+    assert "require_access(operator, AccessPermission.READ_PORTFOLIO" in source
+    assert "artifact_root not in candidate.parents" in source
+    assert 'media_type.startswith(("audio/", "image/", "video/"))' in source
+    assert 'Cache-Control"] = "private, no-store"' in source
+
+
+def test_new_python_and_javascript_sources_are_syntax_valid() -> None:
+    for path in (
+        ROOT / "src" / "operator_api" / "studio_v2_runtime.py",
+        ROOT / "src" / "operator_api" / "studio_v2_media_runtime.py",
+        ROOT / "src" / "operator_api" / "entrypoint.py",
+        ROOT / "src" / "operator_api" / "studio_runtime.py",
+    ):
+        ast.parse(read(path), filename=str(path))
+
+    for path in (
+        ASSETS / "studio-v2-api.js",
+        ASSETS / "studio-v2.js",
+        ASSETS / "studio-v2-media.js",
+    ):
+        source = read(path)
+        assert source.startswith("(() => {")
+        assert source.rstrip().endswith("})();")
+
+
+def test_nested_application_routes_return_the_same_shell(tmp_path: Path) -> None:
+    root = tmp_path / "studio"
+    (root / "assets").mkdir(parents=True)
+    index = root / "index.html"
+    index.write_text("<!doctype html><title>Studio v2</title>", encoding="utf-8")
+
+    app = FastAPI()
+    install_studio_routes(app, studio_root=root)
+    client = TestClient(app)
+
+    assert client.get("/").status_code == 200
+    assert client.get("/app/dashboard").status_code == 200
+    assert client.get("/app/content/new").status_code == 200
+    assert client.get("/app/content/00000000-0000-0000-0000-000000000001/script").status_code == 200
+    status = client.get("/studio/status").json()
+    assert status["kind"] == "production_creator_studio_v2"
+    assert status["demo_fallback"] is False
