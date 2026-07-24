@@ -28,14 +28,20 @@ from tests.integration.p90_audio_support import (
 pytestmark = pytest.mark.integration
 
 
-def _write_wave(path: Path, *, seconds: float = 0.25) -> None:
+def _write_wave(
+    path: Path,
+    *,
+    seconds: float = 0.25,
+    sample_value: int = 0,
+) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     sample_rate = 24000
+    sample = int(sample_value).to_bytes(2, "little", signed=True)
     with wave.open(str(path), "wb") as handle:
         handle.setnchannels(1)
         handle.setsampwidth(2)
         handle.setframerate(sample_rate)
-        handle.writeframes(b"\x00\x00" * int(sample_rate * seconds))
+        handle.writeframes(sample * int(sample_rate * seconds))
 
 
 def _auth_settings(ready) -> OperatorAuthSettings:
@@ -106,7 +112,7 @@ def test_studio_builds_brand_scoped_local_mix_and_unlocks_submit(
         assert claimed is not None
         job = claimed["job"]
         source = artifact_root / "jobs" / str(job["id"]) / "narration.wav"
-        _write_wave(source)
+        _write_wave(source, sample_value=700 + index)
         completed = jobs.complete(
             GenerationJobCompletion(
                 job_id=job["id"],
@@ -167,7 +173,16 @@ def test_studio_builds_brand_scoped_local_mix_and_unlocks_submit(
         )
 
     def fake_ffmpeg(arguments, **_kwargs):
-        _write_wave(Path(arguments[-1]), seconds=0.5)
+        output = str(arguments[-1])
+        if output == "-":
+            return SimpleNamespace(
+                returncode=0,
+                stderr='{"input_i":"-16.00","input_tp":"-1.50"}',
+                stdout="",
+            )
+        path = Path(output)
+        sample_value = 1000 if path.name.startswith("narration-") else 5193
+        _write_wave(path, seconds=60, sample_value=sample_value)
         return SimpleNamespace(returncode=0, stderr="", stdout="")
 
     monkeypatch.setattr(
@@ -211,12 +226,15 @@ def test_studio_builds_brand_scoped_local_mix_and_unlocks_submit(
     )
     assert mixed.status_code == 200, mixed.text
     body = mixed.json()
+    current_mix = body["mixes"][0]
     assert body["ok"] is True
     assert body["reused"] is False
     assert body["production"]["current_mix_status"] == "working"
-    assert body["mixes"][0]["final_mix_asset_id"] is not None
-    assert body["mixes"][0]["qc_status"] == "pass"
-    assert body["mixes"][0]["alignment_source"] == "forced_alignment"
+    assert current_mix["narration_asset_id"] is not None
+    assert current_mix["final_mix_asset_id"] is not None
+    assert current_mix["narration_asset_id"] != current_mix["final_mix_asset_id"]
+    assert current_mix["qc_status"] == "pass"
+    assert current_mix["alignment_source"] == "forced_alignment"
 
     reviewer_media = client.get(
         f"/studio-v2/audio/{production_id}/mix-media",
