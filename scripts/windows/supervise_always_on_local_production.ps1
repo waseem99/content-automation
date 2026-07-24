@@ -16,13 +16,14 @@ New-Item -ItemType Directory -Force -Path (Join-Path $Runtime "logs") | Out-Null
 function Start-CoreSupervisor {
   $arguments = @("-NoProfile", "-ExecutionPolicy", "Bypass", "-File", $CoreSupervisor, "-ApiPort", [string]$ApiPort, "-PostgresPort", [string]$PostgresPort)
   if ($ExposeWithNgrok) { $arguments += "-ExposeWithNgrok" }
-  return Start-Process powershell -ArgumentList $arguments -WorkingDirectory $Root -PassThru
+  return Start-Process powershell -ArgumentList $arguments -WorkingDirectory $Root -WindowStyle Hidden -PassThru
 }
 
 function Start-Continuation {
   return Start-Process -FilePath $Python `
     -ArgumentList @("-m", "src.operations.always_on_continuation", "--interval-seconds", "30", "--limit", "2") `
     -WorkingDirectory $Root `
+    -WindowStyle Hidden `
     -RedirectStandardOutput (Join-Path $Runtime "logs\continuation.log") `
     -RedirectStandardError (Join-Path $Runtime "logs\continuation.error.log") `
     -PassThru
