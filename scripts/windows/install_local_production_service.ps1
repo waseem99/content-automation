@@ -40,7 +40,7 @@ function Stop-ExistingLocalRuntime {
     Start-Sleep -Seconds 1
   } while ((Get-Date) -lt $deadline)
 
-  $remaining = @(
+  $remainingSupervisors = @(
     Get-CimInstance Win32_Process -ErrorAction SilentlyContinue |
     Where-Object {
       $_.CommandLine -and
@@ -53,7 +53,30 @@ function Stop-ExistingLocalRuntime {
     Sort-Object ProcessId -Descending
   )
 
-  foreach ($process in $remaining) {
+  foreach ($process in $remainingSupervisors) {
+    if (Get-Process -Id $process.ProcessId -ErrorAction SilentlyContinue) {
+      & taskkill.exe /PID $process.ProcessId /T /F 1>$null 2>$null
+    }
+  }
+
+  # A previously force-terminated supervisor may have left Python children
+  # behind. Remove only processes whose command lines prove they belong to
+  # this repository's API, workers, or continuation loop.
+  $remainingRuntimeChildren = @(
+    Get-CimInstance Win32_Process -ErrorAction SilentlyContinue |
+    Where-Object {
+      $_.CommandLine -and
+      $_.CommandLine -match $escapedRoot -and
+      (
+        $_.CommandLine -match "src\.operator_api\.entrypoint:app" -or
+        $_.CommandLine -match "src\.operations\.local_worker_aligned" -or
+        $_.CommandLine -match "src\.operations\.always_on_continuation"
+      )
+    } |
+    Sort-Object ProcessId -Descending
+  )
+
+  foreach ($process in $remainingRuntimeChildren) {
     if (Get-Process -Id $process.ProcessId -ErrorAction SilentlyContinue) {
       & taskkill.exe /PID $process.ProcessId /T /F 1>$null 2>$null
     }
