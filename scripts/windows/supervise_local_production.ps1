@@ -116,7 +116,7 @@ function Start-ManagedProcess($State) {
   Rotate-Log $err
   Write-SupervisorLog "Starting $($State.name)"
   $State.process = Start-Process -FilePath $State.file -ArgumentList $State.arguments -WorkingDirectory $Root `
-    -RedirectStandardOutput $out -RedirectStandardError $err -PassThru
+    -WindowStyle Hidden -RedirectStandardOutput $out -RedirectStandardError $err -PassThru
   $State.started_at = Get-Date
   $State.restart_count = [int]$State.restart_count + 1
   $delay = [Math]::Min(60, [Math]::Pow(2, [Math]::Min([int]$State.restart_count, 6)))
@@ -135,6 +135,9 @@ function Ensure-ManagedProcess($State) {
   $now = Get-Date
   $stopped = $null -eq $State.process -or $State.process.HasExited
   if ($stopped -and $now -ge $State.next_start) {
+    if ($null -ne $State.process -and $State.process.HasExited) {
+      Write-SupervisorLog "$($State.name) exited with code $($State.process.ExitCode); restarting"
+    }
     Start-ManagedProcess $State
     return
   }
@@ -165,6 +168,8 @@ $previewWorker = New-ManagedState "preview-worker" $Python @("-m", "src.operatio
 $ngrok = New-ManagedState "ngrok" "ngrok" @("http", [string]$ApiPort)
 $ngrokEnabled = $ExposeWithNgrok -or ($env:LOCAL_NGROK_ENABLED -match '^(1|true|yes|on)$')
 $apiNotReadyChecks = 0
+$apiStartupGraceSeconds = 300
+$apiUnreadyCheckLimit = 60
 
 try {
   while (-not (Test-Path $StopMarker)) {
@@ -185,8 +190,8 @@ try {
     $apiReady = Test-ApiReady
     if ($null -ne $api.process -and -not $api.process.HasExited -and -not $apiReady) {
       $apiNotReadyChecks++
-      if ($apiNotReadyChecks -ge 12 -and (Get-Date) -ge $api.started_at.AddMinutes(1)) {
-        Write-SupervisorLog "API process stayed unready; forcing restart"
+      if ($apiNotReadyChecks -ge $apiUnreadyCheckLimit -and (Get-Date) -ge $api.started_at.AddSeconds($apiStartupGraceSeconds)) {
+        Write-SupervisorLog "API process stayed unready for $apiStartupGraceSeconds seconds; forcing restart"
         Stop-ManagedProcess $api
         $api.next_start = (Get-Date).AddSeconds(5)
         $apiNotReadyChecks = 0
