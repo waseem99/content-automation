@@ -6,12 +6,15 @@ on:
     paths:
       - "src/operations/local_pipeline.py"
       - "src/operations/always_on_*.py"
+      - "src/operations/local_audio_alignment_patch.py"
+      - "src/operations/local_worker_aligned.py"
       - "src/operations/local_onboarding_v2.py"
       - "src/operations/local_worker_v2.py"
       - "src/operator_api/local_pipeline_runtime.py"
       - "src/operator_api/entrypoint.py"
       - "web/static-creator-ui/**"
       - "config/local.env.example"
+      - "video-engine/voice-requirements.txt"
       - "scripts/windows/*local_production*.ps1"
       - "docs/operations/ALWAYS_ON_LOCAL_WORKSTATION.md"
       - "tests/unit/test_p104_always_on_local_contracts.py"
@@ -64,9 +67,11 @@ jobs:
         run: python -m compileall -q src tests
       - name: JavaScript syntax
         run: |
-          node --check web/static-creator-ui/assets/local-pipeline-controls.js
-          node --check web/static-creator-ui/assets/portfolio-api.js
-          node --check web/static-creator-ui/assets/production-console.js
+          node --check web/static-creator-ui/assets/studio-v2-api.js
+          node --check web/static-creator-ui/assets/studio-v2.js
+          node --check web/static-creator-ui/assets/studio-v2-media.js
+          node --check web/static-creator-ui/assets/studio-v2-extensions.js
+          node --check web/static-creator-ui/assets/studio-v2-queue.js
       - name: Focused contracts
         run: python -m pytest -q tests/unit/test_p104_always_on_local_contracts.py
       - name: PostgreSQL queue and MP4 proof
@@ -88,5 +93,6 @@ jobs:
           ! grep -R -n -E "vercel[[:space:]]+deploy|vercel[[:space:]]+--prod|live[ -]publish|automatic[ -]publish|higgsfield" \
             src/operations/local_pipeline.py src/operations/always_on_pipeline.py \
             src/operations/always_on_continuation.py src/operations/local_worker_v2.py \
+            src/operations/local_audio_alignment_patch.py src/operations/local_worker_aligned.py \
             src/operator_api/local_pipeline_runtime.py scripts/windows/supervise_local_production.ps1 \
             scripts/windows/supervise_always_on_local_production.ps1
