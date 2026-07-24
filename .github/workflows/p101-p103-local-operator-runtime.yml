@@ -9,7 +9,7 @@ on:
       - "web/static-creator-ui/**"
       - "compose.local.yml"
       - "config/local.env.example"
-      - "config/ngrok.local.example.yml"
+      - "video-engine/voice-requirements.txt"
       - "scripts/local_golden_path_smoke.py"
       - "scripts/windows/start_local_production.ps1"
       - "scripts/windows/stop_local_production.ps1"
@@ -46,12 +46,14 @@ jobs:
           node --check web/static-creator-ui/assets/studio-v2.js
           node --check web/static-creator-ui/assets/studio-v2-media.js
           node --check web/static-creator-ui/assets/studio-v2-extensions.js
+          node --check web/static-creator-ui/assets/studio-v2-queue.js
       - name: Focused contracts
         run: >
           python -m pytest -q
           tests/unit/test_p101_creator_studio_v2_contracts.py
           tests/unit/test_p101_p103_local_runtime_contracts.py
           tests/unit/test_p101_role_aware_studio_signin.py
+          tests/unit/test_p101_local_audio_alignment.py
           tests/unit/test_p103_local_onboarding_contracts.py
       - name: No deployment, automatic approval, or live publishing
         shell: bash
@@ -63,11 +65,13 @@ jobs:
           paths = [
               Path("src/operations/local_onboarding.py"),
               Path("src/operations/local_worker.py"),
+              Path("src/operations/local_audio_alignment_patch.py"),
               Path("src/operator_api/studio_v2_runtime.py"),
               Path("src/operator_api/studio_v2_media_runtime.py"),
               Path("src/operator_api/studio_v2_schema_patch.py"),
               Path("web/static-creator-ui/assets/studio-v2.js"),
               Path("web/static-creator-ui/assets/studio-v2-extensions.js"),
+              Path("web/static-creator-ui/assets/studio-v2-queue.js"),
               Path("scripts/windows/start_local_production.ps1"),
               Path("scripts/windows/stop_local_production.ps1"),
               Path("compose.local.yml"),
