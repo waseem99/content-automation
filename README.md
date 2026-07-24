@@ -8,8 +8,7 @@ The current production line is P84–P100. Earlier football clip-extraction and 
 
 ```text
 brand setup
-→ local concept generation
-→ human concept review
+→ guided content brief or approved idea
 → local script generation
 → source and claim review
 → local Kokoro narration
@@ -21,6 +20,26 @@ brand setup
 → simulated delivery / external result evidence
 → analytics and production economics
 ```
+
+## Creator Studio v2
+
+The production browser application is a routed, role-aware workspace rather than one technical page.
+
+```text
+/app/dashboard                 attention, reviews, active jobs, and failures
+/app/content                   searchable content library
+/app/content/new               guided Create Content workflow
+/app/content/{id}/script       script evidence and exact-version review
+/app/content/{id}/production   local generation jobs, progress, and retry
+/app/content/{id}/media        narration, visual, and MP4 review
+/app/reviews                   Reviewer inbox
+/app/publishing                Publisher release and delivery workspace
+/app/team                      Admin team and role-key management
+/app/settings                  brand, voice, model, idea, and renderer settings
+/app/operations                runtime recovery, releases, delivery, and P100
+```
+
+Normal production does not ask for raw UUIDs, JSON payloads, fixed seeds, or PowerShell commands. The browser displays the real workflow status, permitted next action, human-readable blocker, and background job state for every content item.
 
 ## Implemented
 
@@ -36,6 +55,7 @@ brand setup
 - Shared artifact storage, immutable release manifests, final technical QA.
 - Simulated delivery and external live-result evidence.
 - Operations, backup/restore evidence, readiness, and the bounded P100 pilot.
+- Secure authenticated playback for local audio, image, and MP4 job outputs.
 
 ## Deliberately disabled
 
@@ -67,7 +87,7 @@ powershell -NoProfile -ExecutionPolicy Bypass `
 Creator Studio opens at:
 
 ```text
-http://127.0.0.1:8000/
+http://127.0.0.1:8000/app/dashboard
 ```
 
 Role-specific keys are generated outside Git at:
@@ -75,6 +95,8 @@ Role-specific keys are generated outside Git at:
 ```text
 .runtime/operator-keys.json
 ```
+
+Admin users can copy Producer, Reviewer, and Publisher keys from **Team & access**. The browser never reveals the Admin key.
 
 Start with remote team review:
 
@@ -86,7 +108,23 @@ powershell -NoProfile -ExecutionPolicy Bypass `
 
 Only the authenticated Creator Studio/API port is exposed. PostgreSQL, Ollama, ComfyUI, artifacts, and worker ports remain local.
 
-See [Local Production Runtime](docs/operations/LOCAL_PRODUCTION_RUNBOOK.md).
+See [Local Production Runtime](docs/operations/LOCAL_PRODUCTION_RUNBOOK.md) and [Creator Studio v2](docs/operations/CREATOR_STUDIO_V2.md).
+
+## Browser golden path
+
+```text
+Login
+→ Create content
+→ Generate local script
+→ Submit for review
+→ Reviewer approves exact version
+→ Start local narration and visuals
+→ Review and approve media
+→ Generate MP4 preview
+→ Play or export preview
+```
+
+Every model operation returns a background job immediately. Queued, running, succeeded, failed, cancelled, and retried states remain visible after browser refresh.
 
 ## Local smoke
 
@@ -95,7 +133,7 @@ $env:LOCAL_ADMIN_OPERATOR_KEY = "<admin-key>"
 .\.venv\Scripts\python.exe .\scripts\local_golden_path_smoke.py
 ```
 
-The smoke exercises the real API, PostgreSQL, brand profile, local Ollama adapter, workflow initialization, and queue state. It stops at the human concept-review gate and creates no approval, paid spend, delivery, or publication evidence.
+The smoke exercises the real API, PostgreSQL, brand profile, local Ollama adapter, workflow initialization, and queue state. It creates no approval, paid spend, delivery, or publication evidence.
 
 ## Repository map
 
@@ -103,7 +141,7 @@ The smoke exercises the real API, PostgreSQL, brand profile, local Ollama adapte
 src/application/          domain services for concepts, scripts, audio, visuals, routing, releases, delivery, analytics, acceptance
 src/operator_api/         authenticated FastAPI routes and production Creator Studio serving
 src/operations/           local onboarding, queue worker, operations and recovery
-web/static-creator-ui/    role-aware browser workspace
+web/static-creator-ui/    routed role-aware browser application
 migrations/               append-only PostgreSQL schema migrations
 scripts/windows/          local workstation launch/stop and P68 GPU setup
 deploy/                   local/managed worker packaging
