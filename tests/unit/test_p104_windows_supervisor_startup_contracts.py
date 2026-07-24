@@ -32,3 +32,15 @@ def test_all_scheduled_child_processes_are_hidden() -> None:
 def test_supervisor_logs_child_exit_codes_before_restart() -> None:
     script = read("supervise_local_production.ps1")
     assert "exited with code $($State.process.ExitCode); restarting" in script
+
+
+def test_windows_native_stderr_does_not_block_infrastructure_startup() -> None:
+    script = read("supervise_local_production.ps1")
+
+    assert "function Invoke-NativeQuiet" in script
+    assert "function Invoke-NativeLogged" in script
+    assert '$ErrorActionPreference = "Continue"' in script
+    assert "Invoke-NativeQuiet -FilePath $dockerCommand.Source" in script
+    assert "Invoke-NativeLogged -FilePath $Python" in script
+    assert "docker compose --env-file $EnvPath -f compose.local.yml up -d postgres *> $null" not in script
+    assert "docker compose --env-file $EnvPath -f compose.local.yml exec -T postgres pg_isready" not in script
