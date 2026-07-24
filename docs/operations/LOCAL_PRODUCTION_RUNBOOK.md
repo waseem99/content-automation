@@ -1,6 +1,6 @@
 # Local Production Runtime
 
-This runbook operates the multi-brand Creator Studio, PostgreSQL, authenticated operator API, durable local queues, Ollama script generation, Kokoro narration, ComfyUI keyframes, and FFmpeg MP4 previews on one Windows workstation.
+This runbook operates the multi-brand Creator Studio, PostgreSQL, authenticated operator API, durable local queues, Ollama script generation, Kokoro narration, local Whisper alignment, ComfyUI keyframes, and FFmpeg narration/MP4 previews on one Windows workstation.
 
 ## Boundaries
 
@@ -35,12 +35,12 @@ The launcher:
 1. Creates `.env.local` when missing.
 2. Generates four strong operator keys outside Git.
 3. Starts PostgreSQL on loopback port `5434`.
-4. Creates `.venv` and installs application and Kokoro dependencies.
+4. Creates `.venv` and installs application, Kokoro, and `faster-whisper` dependencies.
 5. Verifies Ollama and pulls the configured open-source model.
 6. Applies all PostgreSQL migrations.
 7. Idempotently seeds Rawr Nation, Animal X, roles, assignments, profiles, narration presets, visual presets, and safe initial content records.
 8. Starts the FastAPI/Creator Studio at `http://127.0.0.1:8000`.
-9. Starts restart-safe script/audio, visual, and MP4 preview workers.
+9. Starts the aligned local worker in manual mode, or supervised script/audio, visual, and MP4 workers in always-on mode.
 
 Operator keys are written to:
 
@@ -60,7 +60,7 @@ http://127.0.0.1:8000/app/dashboard
 
 The browser application is divided into task-oriented routes:
 
-- Dashboard — attention, reviews, running jobs, and failures.
+- Dashboard — attention, reviews, running jobs, failures, and bounded local queue controls.
 - Content — searchable real records and one clear next action.
 - Create content — guided brief and local script generation.
 - Reviews — role-scoped script and media decisions.
@@ -70,6 +70,15 @@ The browser application is divided into task-oriented routes:
 - Operations — runtime recovery, releases, delivery, and P100 controls.
 
 Refreshing a nested `/app/...` route returns the same application shell. The browser never falls back to demo data.
+
+## Bounded local queue
+
+Producer and Admin users see **Local production queue** on Dashboard and Content.
+
+- **Generate more scripts** enqueues between 1 and 20 eligible script jobs.
+- **Continue approved locally** initializes only missing audio/visual work for approved scripts and queues MP4 previews only after narration and visuals are approved.
+- Brand scope follows the signed-in operator’s assignments.
+- The controls never approve, spend, deliver, or publish.
 
 ## Browser golden path
 
@@ -99,11 +108,14 @@ Refreshing a nested `/app/...` route returns the same application shell. The bro
 2. Select **Start local production**.
 3. Kokoro narration and ComfyUI keyframes run as background jobs.
 4. Generated WAV and image outputs become playable/viewable under **Media review**.
-5. Select one candidate for every scene and submit the visual project.
-6. Submit the current narration mix for review.
-7. A Reviewer approves narration and visuals.
-8. The continuation and preview workers queue and assemble the FFmpeg MP4.
-9. Play or export the MP4 from **Media review**.
+5. Play the available takes and select one passing take for every narration paragraph.
+6. Regenerate only a paragraph whose pronunciation, pace, or tone needs correction.
+7. Select **Build local mix** after all paragraph takes are selected.
+8. Play the authenticated local narration mix and submit it for review.
+9. Select one candidate for every scene and submit the visual project.
+10. A Reviewer approves narration and visuals.
+11. The continuation and preview workers queue and assemble the FFmpeg MP4.
+12. Play or export the MP4 from **Media review**.
 
 No model action depends on keeping the browser open. Queue state and attempts survive refresh, sign-out, API restart, and workstation restart.
 
@@ -119,18 +131,34 @@ The default model is configured by `OLLAMA_MODEL` in `.env.local`. The Create Co
 
 A local-model failure never authorizes paid generation or automatic approval.
 
-## Local narration queue
+## Local narration and alignment
 
-After exact script approval, the P90 service initializes paragraph-bound Kokoro jobs in P87. The local worker:
+After exact script approval, the P90 service initializes paragraph-bound Kokoro jobs in P87. The aligned local worker:
 
 - claims only approved narration work;
 - generates local WAV files with Kokoro;
+- runs local `faster-whisper` word recognition;
+- anchors the known script to measured word-time evidence;
+- requires the configured transcript-coverage threshold;
+- validates exact script order and monotonic timing ranges;
 - registers canonical internal review assets;
 - records zero external cost;
 - preserves script and preset lineage;
 - leaves final approval blocked until human review.
 
-Generated audio is served only through an authenticated, brand-scoped media route and only from `LOCAL_ARTIFACT_ROOT`.
+Default settings:
+
+```env
+LOCAL_ALIGNMENT_ENABLED=true
+LOCAL_ALIGNMENT_MODEL_ID=tiny
+LOCAL_ALIGNMENT_DEVICE=cpu
+LOCAL_ALIGNMENT_COMPUTE_TYPE=int8
+LOCAL_ALIGNMENT_MINIMUM_COVERAGE=0.72
+```
+
+When Whisper is unavailable or coverage/validation fails, the worker records proportional preview timings only. That fallback is playable but cannot satisfy the existing final narration-approval gate. It is never relabeled as forced alignment.
+
+Generated takes and mixes are served only through authenticated, brand-scoped routes and only from `LOCAL_ARTIFACT_ROOT`.
 
 ## Local ComfyUI keyframes
 
