@@ -1,13 +1,18 @@
 from __future__ import annotations
 
+from array import array
 import hashlib
 import json
+import math
 import mimetypes
 import os
+import re
 import shutil
 import subprocess
+import sys
 import wave
 from pathlib import Path
+from typing import Any
 from uuid import UUID
 
 from fastapi import Depends, FastAPI, HTTPException
@@ -43,7 +48,12 @@ def _sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
-def _safe_media_response(path: Path, *, artifact_root: Path, mime_type: str = "") -> FileResponse:
+def _safe_media_response(
+    path: Path,
+    *,
+    artifact_root: Path,
+    mime_type: str = "",
+) -> FileResponse:
     candidate = path.resolve()
     if not candidate.is_file() or (
         candidate != artifact_root and artifact_root not in candidate.parents
@@ -63,6 +73,188 @@ def _concat_manifest_line(path: Path) -> str:
     # FFmpeg concat manifests accept forward-slash absolute paths on Windows.
     value = str(path.resolve()).replace("\\", "/").replace("'", "'\\''")
     return f"file '{value}'"
+
+
+def _run_ffmpeg(
+    executable: str,
+    arguments: list[str],
+    *,
+    failure_code: str,
+    timeout: int = 300,
+) -> subprocess.CompletedProcess[str]:
+    completed = subprocess.run(
+        [executable, *arguments],
+        check=False,
+        capture_output=True,
+        text=True,
+        timeout=timeout,
+        shell=False,
+    )
+    if completed.returncode != 0:
+        diagnostic = (completed.stderr or completed.stdout or "ffmpeg failed")[-3000:]
+        raise HTTPException(
+            status_code=500,
+            detail={"code": failure_code, "diagnostic": diagnostic},
+        )
+    return completed
+
+
+def _finite_metric(value: Any, *, name: str) -> float:
+    try:
+        number = float(str(value).strip())
+    except (TypeError, ValueError) as exc:
+        raise HTTPException(
+            status_code=500,
+            detail={"code": "local_audio_measurement_invalid", "metric": name},
+        ) from exc
+    if not math.isfinite(number):
+        raise HTTPException(
+            status_code=500,
+            detail={"code": "local_audio_measurement_invalid", "metric": name},
+        )
+    return number
+
+
+def _probe_loudness(executable: str, path: Path) -> tuple[float, float]:
+    completed = _run_ffmpeg(
+        executable,
+        [
+            "-hide_banner",
+            "-nostats",
+            "-i",
+            str(path),
+            "-af",
+            "loudnorm=I=-16:TP=-1.5:LRA=11:print_format=json",
+            "-f",
+            "null",
+            "-",
+        ],
+        failure_code="local_audio_loudness_probe_failed",
+    )
+    diagnostic = f"{completed.stderr}\n{completed.stdout}"
+    payload: dict[str, Any] | None = None
+    for candidate in reversed(re.findall(r"\{[^{}]+\}", diagnostic, flags=re.DOTALL)):
+        try:
+            parsed = json.loads(candidate)
+        except json.JSONDecodeError:
+            continue
+        if "input_i" in parsed and "input_tp" in parsed:
+            payload = parsed
+            break
+    if payload is None:
+        raise HTTPException(
+            status_code=500,
+            detail={"code": "local_audio_loudness_evidence_missing"},
+        )
+    return (
+        _finite_metric(payload["input_i"], name="integrated_lufs"),
+        _finite_metric(payload["input_tp"], name="true_peak_dbfs"),
+    )
+
+
+def _wave_quality(path: Path) -> dict[str, float | int]:
+    with wave.open(str(path), "rb") as handle:
+        sample_rate = int(handle.getframerate())
+        channels = int(handle.getnchannels())
+        sample_width = int(handle.getsampwidth())
+        frame_count = int(handle.getnframes())
+        frames = handle.readframes(frame_count)
+    if sample_width != 2 or channels != 1 or sample_rate <= 0 or frame_count <= 0:
+        raise HTTPException(
+            status_code=500,
+            detail={
+                "code": "local_audio_wave_contract_invalid",
+                "sample_rate_hz": sample_rate,
+                "channels": channels,
+                "sample_width_bytes": sample_width,
+            },
+        )
+    samples = array("h")
+    samples.frombytes(frames)
+    if sys.byteorder == "big":
+        samples.byteswap()
+    if not samples:
+        raise HTTPException(status_code=500, detail="local_audio_wave_is_empty")
+    clipping_count = sum(1 for sample in samples if abs(sample) >= 32767)
+    silence_threshold = 33  # approximately -60 dBFS for signed 16-bit PCM.
+    silence_ratio = sum(1 for sample in samples if abs(sample) <= silence_threshold) / len(samples)
+    return {
+        "sample_rate_hz": sample_rate,
+        "channels": channels,
+        "duration_seconds": frame_count / sample_rate,
+        "clipping_count": clipping_count,
+        "silence_ratio": round(silence_ratio, 6),
+    }
+
+
+def _register_local_audio_asset(
+    database: Database,
+    *,
+    path: Path,
+    production_id: UUID,
+    mix_version_id: UUID,
+    selected_take_ids: list[str],
+    role: str,
+    actor: str,
+    extra_metadata: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    digest = _sha256(path)
+    metadata = {
+        "storage_path": str(path),
+        "audio_production_id": str(production_id),
+        "audio_mix_version_id": str(mix_version_id),
+        "selected_take_ids": selected_take_ids,
+        "audio_role": role,
+        "local_only": True,
+        "external_fee_incurred": False,
+        "generated_by": "studio_v2_local_ffmpeg_mix",
+        **dict(extra_metadata or {}),
+    }
+    storage_uri = f"local-artifact://audio-mixes/{production_id}/{path.name}"
+    with database.transaction() as conn:
+        existing = conn.execute(
+            "SELECT id,metadata FROM football_brief.assets WHERE sha256=%s",
+            (digest,),
+        ).fetchone()
+        if existing is not None:
+            existing_metadata = dict(existing["metadata"] or {})
+            if existing_metadata.get("audio_role") != role:
+                raise HTTPException(
+                    status_code=409,
+                    detail={
+                        "code": "local_audio_asset_role_collision",
+                        "sha256": digest,
+                        "requested_role": role,
+                    },
+                )
+            return {
+                "id": existing["id"],
+                "sha256": digest,
+                "storage_uri": storage_uri,
+                "metadata": existing_metadata,
+            }
+        row = conn.execute(
+            """INSERT INTO football_brief.assets
+               (asset_type,source_type,lifecycle_status,original_filename,storage_uri,
+                sha256,mime_type,size_bytes,metadata,created_by)
+               VALUES ('audio','ai_generated','approved',%s,%s,%s,
+                       'audio/wav',%s,%s::jsonb,%s)
+               RETURNING id""",
+            (
+                path.name,
+                storage_uri,
+                digest,
+                path.stat().st_size,
+                json.dumps(metadata),
+                actor,
+            ),
+        ).fetchone()
+    return {
+        "id": row["id"],
+        "sha256": digest,
+        "storage_uri": storage_uri,
+        "metadata": metadata,
+    }
 
 
 def install_studio_v2_media_routes(
@@ -173,7 +365,7 @@ def install_studio_v2_media_routes(
         if production["status"] not in {"working", "changes_requested"}:
             raise HTTPException(status_code=409, detail="audio_production_not_writable")
 
-        selected = []
+        selected: list[dict[str, Any]] = []
         with require_database().connection() as conn:
             rows = conn.execute(
                 """SELECT apar.id AS paragraph_id,apar.sequence,ast.id AS take_id,
@@ -210,14 +402,16 @@ def install_studio_v2_media_routes(
         output_dir.mkdir(parents=True, exist_ok=True)
         mix_version = int(production.get("current_mix_version") or 1)
         manifest = output_dir / f"mix-v{mix_version}-concat.txt"
+        narration_path = output_dir / f"narration-v{mix_version}.wav"
         output_path = output_dir / f"mix-v{mix_version}.wav"
         manifest.write_text(
             "\n".join(_concat_manifest_line(item["source"]) for item in selected) + "\n",
             encoding="utf-8",
         )
-        completed = subprocess.run(
+
+        _run_ffmpeg(
+            ffmpeg,
             [
-                ffmpeg,
                 "-y",
                 "-f",
                 "concat",
@@ -225,8 +419,29 @@ def install_studio_v2_media_routes(
                 "0",
                 "-i",
                 str(manifest),
+                "-ar",
+                "24000",
+                "-ac",
+                "1",
+                "-c:a",
+                "pcm_s16le",
+                str(narration_path),
+            ],
+            failure_code="local_audio_narration_stem_failed",
+        )
+        if not narration_path.is_file() or narration_path.stat().st_size == 0:
+            raise HTTPException(status_code=500, detail="local_audio_narration_stem_missing")
+
+        _run_ffmpeg(
+            ffmpeg,
+            [
+                "-y",
+                "-i",
+                str(narration_path),
                 "-af",
                 "loudnorm=I=-16:TP=-1.5:LRA=11",
+                "-metadata",
+                "comment=Content Engine normalized final mix",
                 "-ar",
                 "24000",
                 "-ac",
@@ -235,85 +450,70 @@ def install_studio_v2_media_routes(
                 "pcm_s16le",
                 str(output_path),
             ],
-            check=False,
-            capture_output=True,
-            text=True,
-            timeout=300,
-            shell=False,
+            failure_code="local_audio_mix_failed",
         )
-        if completed.returncode != 0 or not output_path.is_file():
-            diagnostic = (completed.stderr or completed.stdout or "ffmpeg failed")[-3000:]
+        if not output_path.is_file() or output_path.stat().st_size == 0:
+            raise HTTPException(status_code=500, detail="local_audio_mix_missing")
+        if _sha256(narration_path) == _sha256(output_path):
             raise HTTPException(
                 status_code=500,
-                detail={"code": "local_audio_mix_failed", "diagnostic": diagnostic},
+                detail="local_audio_stem_and_mix_must_have_distinct_evidence",
             )
-        with wave.open(str(output_path), "rb") as handle:
-            sample_rate = int(handle.getframerate())
-            duration_seconds = handle.getnframes() / max(sample_rate, 1)
-        digest = _sha256(output_path)
-        size_bytes = output_path.stat().st_size
-        metadata = {
-            "storage_path": str(output_path),
-            "audio_production_id": str(production_id),
-            "audio_mix_version_id": str(production["current_mix_version_id"]),
-            "selected_take_ids": [str(item["take_id"]) for item in selected],
-            "local_only": True,
-            "external_fee_incurred": False,
-            "generated_by": "studio_v2_local_ffmpeg_mix",
-        }
-        with require_database().transaction() as conn:
-            asset = conn.execute(
-                "SELECT id FROM football_brief.assets WHERE sha256=%s",
-                (digest,),
-            ).fetchone()
-            if asset is None:
-                asset = conn.execute(
-                    """INSERT INTO football_brief.assets
-                       (asset_type,source_type,lifecycle_status,original_filename,storage_uri,
-                        sha256,mime_type,size_bytes,metadata,created_by)
-                       VALUES ('audio','ai_generated','approved',%s,%s,%s,
-                               'audio/wav',%s,%s::jsonb,%s)
-                       RETURNING id""",
-                    (
-                        output_path.name,
-                        f"local-artifact://audio-mixes/{production_id}/{output_path.name}",
-                        digest,
-                        size_bytes,
-                        json.dumps(metadata),
-                        operator.operator_id,
-                    ),
-                ).fetchone()
+
+        measured_lufs, true_peak_dbfs = _probe_loudness(ffmpeg, output_path)
+        quality = _wave_quality(output_path)
+        selected_take_ids = [str(item["take_id"]) for item in selected]
+        db = require_database()
+        narration_asset = _register_local_audio_asset(
+            db,
+            path=narration_path,
+            production_id=production_id,
+            mix_version_id=production["current_mix_version_id"],
+            selected_take_ids=selected_take_ids,
+            role="narration_stem",
+            actor=operator.operator_id,
+            extra_metadata={"normalization": "none", "source": "selected_kokoro_takes"},
+        )
+        final_asset = _register_local_audio_asset(
+            db,
+            path=output_path,
+            production_id=production_id,
+            mix_version_id=production["current_mix_version_id"],
+            selected_take_ids=selected_take_ids,
+            role="final_mix",
+            actor=operator.operator_id,
+            extra_metadata={
+                "normalization": "ebu-r128",
+                "narration_asset_id": str(narration_asset["id"]),
+                "measured_lufs": measured_lufs,
+                "true_peak_dbfs": true_peak_dbfs,
+            },
+        )
         alignment = (
             AlignmentSource.FORCED_ALIGNMENT
             if {str(item["timing_source"]) for item in selected}
             == {AlignmentSource.FORCED_ALIGNMENT.value}
             else AlignmentSource.PROPORTIONAL_PREVIEW
         )
-        silence_ratio = min(
-            1.0,
-            max(
-                0.0,
-                sum(float(item["silence_ratio"] or 0) for item in selected)
-                / len(selected),
-            ),
-        )
         try:
             mixed = audio.register_mix(
                 production_id=production_id,
                 request=MixRegistrationRequest(
                     expected_lock_version=request.expected_lock_version,
-                    narration_asset_id=asset["id"],
-                    final_mix_asset_id=asset["id"],
+                    narration_asset_id=narration_asset["id"],
+                    final_mix_asset_id=final_asset["id"],
                     target_lufs=-16.0,
                     peak_limit_dbfs=-1.0,
-                    measured_lufs=-16.0,
-                    true_peak_dbfs=-1.5,
-                    clipping_count=0,
-                    silence_ratio=silence_ratio,
-                    duration_seconds=duration_seconds,
+                    measured_lufs=measured_lufs,
+                    true_peak_dbfs=true_peak_dbfs,
+                    clipping_count=int(quality["clipping_count"]),
+                    silence_ratio=float(quality["silence_ratio"]),
+                    duration_seconds=float(quality["duration_seconds"]),
                     waveform_metadata={
-                        "sample_rate_hz": sample_rate,
+                        "sample_rate_hz": int(quality["sample_rate_hz"]),
+                        "channels": int(quality["channels"]),
                         "source": "local_ffmpeg",
+                        "loudness_measurement": "ffmpeg_loudnorm_json_probe",
                         "selected_segment_count": len(selected),
                     },
                     segment_snapshot=[
@@ -328,14 +528,15 @@ def install_studio_v2_media_routes(
                         "target_lufs": -16.0,
                         "true_peak_dbfs": -1.5,
                         "local": True,
+                        "separate_narration_and_final_assets": True,
                     },
                     alignment_source=alignment,
                     tracks=[
                         MixTrackRequest(
                             track_role=TrackRole.NARRATION,
-                            asset_id=asset["id"],
+                            asset_id=narration_asset["id"],
                             level_db=0,
-                            metadata={"local_mix": True},
+                            metadata={"local_narration_stem": True},
                         )
                     ],
                 ),
@@ -350,7 +551,8 @@ def install_studio_v2_media_routes(
             "ok": True,
             "kind": "studio_v2_local_audio_mix",
             "reused": False,
-            "storage_uri": f"local-artifact://audio-mixes/{production_id}/{output_path.name}",
+            "narration_storage_uri": narration_asset["storage_uri"],
+            "storage_uri": final_asset["storage_uri"],
             **mixed,
         }
 
