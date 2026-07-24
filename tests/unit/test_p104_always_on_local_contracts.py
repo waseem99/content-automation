@@ -9,6 +9,7 @@ from src.operations.always_on_pipeline import AlwaysOnLocalPipelineService
 from src.operations.local_pipeline import LocalPipelineError
 from src.operations.local_worker_v2 import _parse_types
 
+
 ROOT = Path(__file__).resolve().parents[2]
 
 
@@ -36,7 +37,7 @@ def test_worker_type_partition_is_explicit() -> None:
         _parse_types("publishing")
 
 
-def test_supervisor_restarts_all_local_processes_without_publishers() -> None:
+def test_supervisor_restarts_aligned_local_processes_without_publishers() -> None:
     script = read("scripts/windows/supervise_local_production.ps1")
     wrapper = read("scripts/windows/supervise_always_on_local_production.ps1")
     continuation = read("src/operations/always_on_continuation.py")
@@ -44,6 +45,7 @@ def test_supervisor_restarts_all_local_processes_without_publishers() -> None:
     assert '"text-audio-worker"' in script
     assert '"visual-worker"' in script
     assert '"preview-worker"' in script
+    assert script.count("src.operations.local_worker_aligned") == 3
     assert '"--job-types", "preview"' in script
     assert "Ensure-ManagedProcess" in script
     assert "forcing restart" in script
@@ -72,6 +74,18 @@ def test_windows_secret_generation_supports_windows_powershell_51() -> None:
     assert ".GetBytes($buffer)" in script
 
 
+def test_manual_launcher_installs_alignment_and_starts_the_aligned_worker() -> None:
+    launcher = read("scripts/windows/start_local_production.ps1")
+    requirements = read("video-engine/voice-requirements.txt")
+    env = read("config/local.env.example")
+
+    assert "video-engine\\voice-requirements.txt" in launcher
+    assert "src.operations.local_worker_aligned" in launcher
+    assert "faster-whisper" in requirements
+    assert "LOCAL_ALIGNMENT_ENABLED=true" in env
+    assert "LOCAL_ALIGNMENT_MINIMUM_COVERAGE=0.72" in env
+
+
 def test_local_comfyui_and_ffmpeg_are_explicitly_configured() -> None:
     env = read("config/local.env.example")
     launcher = read("scripts/windows/start_local_production.ps1")
@@ -84,16 +98,20 @@ def test_local_comfyui_and_ffmpeg_are_explicitly_configured() -> None:
 
 def test_creator_studio_exposes_bounded_local_queue_controls() -> None:
     html = read("web/static-creator-ui/index.html")
-    client = read("web/static-creator-ui/assets/local-pipeline-controls.js")
-    assert 'id="queue-more-scripts"' in html
-    assert 'id="continue-approved-local"' in html
-    assert 'max="20"' in html
-    assert "/local-production/enqueue-scripts" in client
-    assert "/local-production/continue-approved" in client
-    assert "include_previews: true" in client
-    assert "MP4 preview" in client
-    assert "setInterval" in client
-    assert "automatic" not in html.lower() or "no automatic publishing" in html.lower()
+    queue = read("web/static-creator-ui/assets/studio-v2-queue.js")
+    api = read("web/static-creator-ui/assets/studio-v2-api.js")
+
+    assert 'src="/assets/studio-v2-queue.js"' in html
+    assert 'id="queue-more-scripts"' in queue
+    assert 'id="continue-approved-local"' in queue
+    assert 'max="20"' in queue
+    assert "enqueueLocalScripts" in api
+    assert '"/local-production/enqueue-scripts"' in api
+    assert '"/local-production/continue-approved"' in api
+    assert "include_previews: true" in queue
+    assert "MP4 preview" in queue
+    assert "MutationObserver" in queue
+    assert "human-controlled" in queue
 
 
 def test_pipeline_routes_are_installed_with_pinned_lineage_service() -> None:
@@ -133,6 +151,7 @@ def test_no_paid_or_live_execution_is_introduced() -> None:
             "src/operations/always_on_pipeline.py",
             "src/operations/always_on_continuation.py",
             "src/operations/local_worker_v2.py",
+            "src/operations/local_audio_alignment_patch.py",
             "src/operator_api/local_pipeline_runtime.py",
             "scripts/windows/supervise_local_production.ps1",
             "scripts/windows/supervise_always_on_local_production.ps1",
