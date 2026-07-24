@@ -44,9 +44,9 @@ jobs:
           python -m pip install "fastapi>=0.111" "httpx>=0.27" "pydantic>=2.7" "pydantic-settings>=2.3" "pytest>=8" "psycopg[binary]>=3.2,<4" "psycopg-pool>=3.2,<4" "typer>=0.12"
       - name: Compile local audio modules tests API and Studio
         run: |
-          python -m compileall -q src/application/audio src/operator_api/audio_runtime.py src/operator_api/runtime_factory.py tests/unit/test_p90_audio_contracts.py tests/unit/test_p90_audio_studio.py tests/integration/p90_audio_support.py tests/integration/test_p90_audio_lifecycle.py tests/integration/test_p90_audio_api.py
-          node --check web/static-creator-ui/assets/audio-review.js
-          node --check web/static-creator-ui/assets/portfolio-api.js
+          python -m compileall -q src/application/audio src/operator_api/audio_runtime.py src/operator_api/studio_v2_media_runtime.py src/operator_api/runtime_factory.py tests/unit/test_p90_audio_contracts.py tests/unit/test_p90_audio_studio.py tests/integration/p90_audio_support.py tests/integration/test_p90_audio_lifecycle.py tests/integration/test_p90_audio_api.py tests/integration/test_p101_studio_v2_audio_mix.py
+          node --check web/static-creator-ui/assets/studio-v2-api.js
+          node --check web/static-creator-ui/assets/studio-v2-media.js
       - name: Apply migrations
         run: |
           set -o pipefail
@@ -54,7 +54,7 @@ jobs:
       - name: Run focused tests
         run: |
           set -o pipefail
-          pytest -vv tests/unit/test_p90_audio_contracts.py tests/unit/test_p90_audio_studio.py tests/integration/test_p90_audio_lifecycle.py tests/integration/test_p90_audio_api.py 2>&1 | tee p90-tests.log
+          pytest -vv tests/unit/test_p90_audio_contracts.py tests/unit/test_p90_audio_studio.py tests/integration/test_p90_audio_lifecycle.py tests/integration/test_p90_audio_api.py tests/integration/test_p101_studio_v2_audio_mix.py 2>&1 | tee p90-tests.log
       - name: Upload logs
         if: always()
         uses: actions/upload-artifact@v4
