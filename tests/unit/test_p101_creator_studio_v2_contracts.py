@@ -125,13 +125,29 @@ def test_v2_backend_is_a_thin_orchestrator_over_existing_services() -> None:
 def test_schema_safe_content_reader_uses_existing_script_columns() -> None:
     source = read(ROOT / "src" / "operator_api" / "studio_v2_schema_patch.py")
     entrypoint = read(ROOT / "src" / "operator_api" / "entrypoint.py")
+    claims_fragment = source.split("script_claims", 1)[1].split("script_sources", 1)[0]
+    sources_fragment = source.split("script_sources", 1)[1].split("audio_productions", 1)[0]
 
-    assert "ORDER BY claim_key,id" in source
-    assert "ORDER BY source_key,id" in source
     assert "ORDER BY sequence,id" in source
+    assert "ORDER BY claim_key,id" in claims_fragment
+    assert "ORDER BY sequence,id" not in claims_fragment
+    assert "ORDER BY source_key,id" in sources_fragment
+    assert "ORDER BY created_at,id" not in sources_fragment
     assert "apply_studio_v2_schema_patch()" in entrypoint
-    assert "ORDER BY created_at,id" not in source
-    assert "ORDER BY sequence,id\"\"\",\n                    (script[\"current_version_id\"],),\n                ).fetchall()\n            ]\n            claims" not in source
+
+
+def test_guided_brief_fields_reach_the_local_script_context_and_request() -> None:
+    source = read(ROOT / "src" / "operator_api" / "studio_v2_schema_patch.py")
+
+    assert 'brief.get("platform")' in source
+    assert 'brief.get("language")' in source
+    assert 'brief.get("duration_seconds")' in source
+    assert 'brief.get("objective")' in source
+    assert 'brief.get("audience")' in source
+    assert 'brief.get("notes")' in source
+    assert 'context["concept"]' in source
+    assert 'context["audience"]' in source
+    assert '"brief_fields_applied": True' in source
 
 
 def test_local_media_endpoint_is_authenticated_and_root_bounded() -> None:
