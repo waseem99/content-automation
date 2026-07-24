@@ -13,7 +13,7 @@ if (-not (Test-Path (Join-Path $Root ".env.local"))) {
 }
 New-Item -ItemType Directory -Force -Path $Runtime | Out-Null
 
-$arguments = "-NoProfile -ExecutionPolicy Bypass -File `"$Supervisor`""
+$arguments = "-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File `"$Supervisor`""
 if ($ExposeWithNgrok) { $arguments += " -ExposeWithNgrok" }
 $action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument $arguments -WorkingDirectory $Root
 $trigger = New-ScheduledTaskTrigger -AtLogOn -User $env:USERNAME
