@@ -4,189 +4,74 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Content Engine Studio</title>
-  <meta name="description" content="Multi-brand local-first content production, review, and release workspace.">
-  <meta name="content-api-mode" content="same-origin">
-  <meta name="content-api-base" content="">
-  <meta name="content-plan-month" content="2026-08-01">
-  <meta name="content-local-model-id" content="qwen2.5:7b">
-  <link rel="stylesheet" href="assets/styles.css">
-  <link rel="stylesheet" href="assets/production-console.css">
-  <link rel="stylesheet" href="assets/local-pipeline-controls.css">
+  <meta name="description" content="Local-first multi-brand content production workspace.">
+  <link rel="stylesheet" href="/assets/studio-v2.css">
 </head>
-<body class="production-studio">
-  <header class="studio-topbar">
-    <div>
-      <p class="eyebrow">Content Automation Platform</p>
-      <h1>Production Creator Studio</h1>
-      <p class="studio-subtitle">Multi-brand planning, local generation, human review, controlled rendering, release, and pilot evidence.</p>
-    </div>
-    <div class="studio-session">
-      <div id="session-summary" class="session-summary" aria-live="polite">
-        <strong>Not signed in</strong>
-        <span>Enter your assigned operator key.</span>
+<body>
+  <div id="studio-shell" class="studio-shell" hidden>
+    <aside class="sidebar">
+      <a class="brand-mark" href="/app/dashboard" data-route>
+        <span class="brand-symbol">CE</span>
+        <span><strong>Content Engine</strong><small>Creator Studio</small></span>
+      </a>
+      <nav id="primary-nav" class="primary-nav" aria-label="Primary navigation"></nav>
+      <div class="sidebar-footer">
+        <div id="sidebar-runtime" class="runtime-chip"><span class="status-dot"></span><span>Checking runtime…</span></div>
+        <button id="sign-out" class="link-button" type="button">Sign out</button>
       </div>
-      <button id="connect-api" type="button">Sign in</button>
-      <button id="logout-api" class="secondary" type="button" hidden>Sign out</button>
-    </div>
-  </header>
+    </aside>
 
-  <main>
-    <section class="runtime-strip" aria-labelledby="runtime-heading">
-      <div>
-        <p class="eyebrow dark-eyebrow">Runtime</p>
-        <h2 id="runtime-heading">Local production readiness</h2>
-      </div>
-      <div id="runtime-cards" class="runtime-cards" aria-live="polite">
-        <article><strong>Disconnected</strong><span>API</span></article>
-        <article><strong>Unknown</strong><span>Database</span></article>
-        <article><strong>Unknown</strong><span>Queue</span></article>
-        <article><strong>Human-controlled</strong><span>Publishing</span></article>
-      </div>
-    </section>
-
-    <nav class="studio-nav" aria-label="Creator Studio sections">
-      <a href="#portfolio-studio">Portfolio</a>
-      <a href="#local-pipeline">Local pipeline</a>
-      <a href="#team-work">Team work</a>
-      <a href="#release-operations">Release & delivery</a>
-      <a href="#p100-console">P100 pilot</a>
-    </nav>
-
-    <section id="portfolio-studio" class="portfolio-section" aria-labelledby="portfolio-heading">
-      <div class="portfolio-head">
+    <div class="workspace-shell">
+      <header class="topbar">
         <div>
-          <p class="eyebrow dark-eyebrow">Multi-brand command center</p>
-          <h2 id="portfolio-heading">Operate real content records</h2>
-          <p class="section-copy">Production mode never falls back to demo content. Every item shown here comes from the connected PostgreSQL runtime.</p>
+          <p id="page-eyebrow" class="eyebrow">Creator Studio</p>
+          <h1 id="page-title">Dashboard</h1>
+          <p id="page-subtitle" class="page-subtitle">Your content production workspace.</p>
         </div>
-        <div id="operator-badge" class="operator-badge"><strong>Sign in required</strong><span>No data loaded</span></div>
-      </div>
-
-      <div id="portfolio-metrics" class="portfolio-metrics" aria-label="Portfolio metrics"></div>
-
-      <div class="portfolio-toolbar">
-        <label for="brand-filter">Brand</label>
-        <select id="brand-filter" disabled><option value="all">All assigned brands</option></select>
-        <label for="status-filter">Workflow stage</label>
-        <select id="status-filter" disabled>
-          <option value="all">All stages</option>
-          <option value="idea">Idea</option>
-          <option value="script">Script</option>
-          <option value="preview">Preview</option>
-          <option value="premium">Managed render</option>
-          <option value="package">Package</option>
-          <option value="ready">Ready</option>
-          <option value="blocked">Blocked</option>
-        </select>
-        <button id="refresh-console" class="secondary" type="button" disabled>Refresh</button>
-        <span id="data-mode" class="data-mode demo">Disconnected</span>
-      </div>
-
-      <section id="local-pipeline" class="console-panel local-pipeline-panel" aria-labelledby="local-pipeline-heading">
-        <div class="panel-title"><div><p class="eyebrow dark-eyebrow">Always-on workstation</p><h3 id="local-pipeline-heading">Bounded local production queue</h3></div><button id="refresh-local-pipeline" class="secondary" type="button">Refresh</button></div>
-        <div class="pipeline-actions">
-          <label>Batch size<input id="local-batch-limit" type="number" min="1" max="20" value="5"></label>
-          <button id="queue-more-scripts" type="button">Generate more scripts</button>
-          <button id="continue-approved-local" class="secondary" type="button">Continue approved locally</button>
+        <div class="topbar-actions">
+          <button id="refresh-view" class="icon-button" type="button" aria-label="Refresh current view" title="Refresh">↻</button>
+          <div id="session-card" class="session-card"></div>
         </div>
-        <p class="secondary-note">Only eligible script-stage items are queued. Audio and ComfyUI visuals start only after exact script approval. Nothing is automatically approved or published.</p>
-        <div id="local-pipeline-status" class="compact-list"><p>Sign in to inspect the local production queue.</p></div>
-      </section>
+      </header>
+      <main id="app-view" class="app-view" tabindex="-1"></main>
+    </div>
+  </div>
 
-      <div class="portfolio-layout">
-        <aside id="brand-summary" class="brand-summary"><p>Sign in to load assigned brands.</p></aside>
-        <section class="calendar-panel" aria-labelledby="queue-heading">
-          <div class="queue-title">
-            <div><p class="eyebrow dark-eyebrow">Production queue</p><h3 id="queue-heading">Current content inventory</h3></div>
-            <span class="queue-note">Human approval remains mandatory</span>
-          </div>
-          <div class="table-wrap">
-            <table class="content-table">
-              <thead><tr><th>Date</th><th>Brand & content</th><th>Format</th><th>Stage</th><th>Evidence</th><th>Action</th></tr></thead>
-              <tbody id="content-queue"><tr><td colspan="6" class="empty-row">Sign in to load content.</td></tr></tbody>
-            </table>
-          </div>
-        </section>
-      </div>
+  <section id="boot-screen" class="boot-screen">
+    <div class="boot-card">
+      <div class="brand-symbol large">CE</div>
+      <p class="eyebrow">Content Automation Platform</p>
+      <h1>Content Engine Studio</h1>
+      <p id="boot-message">Connecting to the local production platform…</p>
+      <div class="loading-bar" aria-hidden="true"><span></span></div>
+    </div>
+  </section>
 
-      <section id="team-work" class="console-grid" aria-label="Team work">
-        <article class="console-panel">
-          <div class="panel-title"><div><p class="eyebrow dark-eyebrow">Review</p><h3>Assigned review tasks</h3></div><span id="review-count">0</span></div>
-          <div id="review-inbox-summary" class="compact-list"><p>No review tasks loaded.</p></div>
-        </article>
-        <article class="console-panel">
-          <div class="panel-title"><div><p class="eyebrow dark-eyebrow">Workers</p><h3>Generation queue</h3></div><span id="job-count">0</span></div>
-          <div id="job-summary" class="compact-list"><p>No generation jobs loaded.</p></div>
-        </article>
-      </section>
-
-      <section id="release-operations" class="console-grid" aria-label="Release operations">
-        <article class="console-panel">
-          <div class="panel-title"><div><p class="eyebrow dark-eyebrow">Release</p><h3>Final QA and packages</h3></div><span id="release-count">0</span></div>
-          <div id="release-summary" class="compact-list"><p>No releases loaded.</p></div>
-        </article>
-        <article class="console-panel">
-          <div class="panel-title"><div><p class="eyebrow dark-eyebrow">Publisher</p><h3>Simulated delivery</h3></div><span id="delivery-count">0</span></div>
-          <div id="delivery-summary" class="compact-list"><p>No delivery requests loaded.</p></div>
-        </article>
-        <article class="console-panel">
-          <div class="panel-title"><div><p class="eyebrow dark-eyebrow">Learning</p><h3>Analytics readiness</h3></div><span id="analytics-status">—</span></div>
-          <div id="analytics-summary" class="compact-list"><p>Select a brand after sign-in.</p></div>
-        </article>
-        <article class="console-panel">
-          <div class="panel-title"><div><p class="eyebrow dark-eyebrow">Operations</p><h3>Recovery and observability</h3></div><span id="ops-status">—</span></div>
-          <div id="operations-summary" class="compact-list"><p>Runtime checks not loaded.</p></div>
-        </article>
-      </section>
-
-      <section id="p100-console" class="p100-console" aria-labelledby="p100-heading">
-        <div class="p100-head">
-          <div><p class="eyebrow dark-eyebrow">Controlled rollout</p><h3 id="p100-heading">P100 four-item acceptance pilot</h3><p>Select one local and one managed item for each pilot brand. Managed selection remains blocked until the real renderer is connected.</p></div>
-          <button id="refresh-p100" class="secondary" type="button" disabled>Refresh candidates</button>
-        </div>
-        <div id="p100-status" class="notice">Sign in to inspect pilot candidates.</div>
-        <div id="p100-candidates" class="p100-candidates"></div>
-        <div class="p100-actions">
-          <label>Pilot key <input id="p100-key" value="p100-local-team-pilot"></label>
-          <button id="bootstrap-p100" type="button" disabled>Create controlled draft</button>
-          <button id="start-p100" type="button" disabled>Start controlled pilot</button>
-        </div>
-        <div id="p100-readiness" class="compact-list"></div>
-      </section>
-      <details id="advanced-tools" class="advanced-tools">
-        <summary>Advanced production tools</summary>
-        <p>Brand setup, concept slates, narration, visual candidates, queue controls, and routing tools are available here for Admins and Producers. Reviewers can use the normal queue and script review flow above.</p>
-        <div id="advanced-tools-mount"></div>
-      </details>
-    </section>
-  </main>
-
-  <dialog id="script-review-dialog" class="script-dialog">
-    <form method="dialog" class="dialog-close"><button aria-label="Close script review">&times;</button></form>
-    <div id="script-dialog-body"><p>Select a content item to review its script.</p></div>
-  </dialog>
-
-  <dialog id="operator-login" class="operator-login">
-    <form id="operator-login-form">
-      <p class="eyebrow dark-eyebrow">Secure local access</p>
+  <dialog id="login-dialog" class="login-dialog">
+    <form id="login-form" method="dialog">
+      <div class="brand-symbol large">CE</div>
+      <p class="eyebrow">Secure local access</p>
       <h2>Sign in to Creator Studio</h2>
-      <p>Use the operator key assigned to your role. The key is stored only for this browser tab.</p>
-      <label for="operator-key">Operator key</label>
-      <input id="operator-key" type="password" autocomplete="current-password" required>
+      <p>Use the access key assigned to your role. Your key stays only in this browser tab.</p>
+      <label>Operator key<input id="operator-key" type="password" autocomplete="current-password" required></label>
       <p id="login-error" class="form-error" role="alert"></p>
-      <div class="actions"><button type="submit">Sign in</button><button id="cancel-login" class="secondary" type="button">Cancel</button></div>
+      <button class="primary-button full" type="submit">Sign in</button>
     </form>
   </dialog>
 
-  <footer class="studio-footer">
-    <span>Content Engine Studio</span>
-    <span>Local-first generation · role-based review · no automatic publishing</span>
-  </footer>
+  <dialog id="confirm-dialog" class="confirm-dialog">
+    <form method="dialog">
+      <h2 id="confirm-title">Confirm action</h2>
+      <p id="confirm-message"></p>
+      <div class="dialog-actions">
+        <button value="cancel" class="secondary-button">Cancel</button>
+        <button id="confirm-action" value="confirm" class="primary-button">Continue</button>
+      </div>
+    </form>
+  </dialog>
 
-  <script src="assets/portfolio-api.js" defer></script>
-  <script src="assets/p100-api-compat.js" defer></script>
-  <script src="assets/role-aware-api.js" defer></script>
-  <script src="assets/production-console.js" defer></script>
-  <script src="assets/local-pipeline-controls.js" defer></script>
+  <div id="toast-region" class="toast-region" aria-live="polite"></div>
+  <script src="/assets/studio-v2-api.js" defer></script>
+  <script src="/assets/studio-v2.js" defer></script>
 </body>
 </html>
