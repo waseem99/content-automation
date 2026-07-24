@@ -131,6 +131,8 @@
     upsertOperator: (payload) => request("/admin/operators", { method: "POST", body: JSON.stringify(payload) }),
     teamKeys: () => request("/studio-v2/team-keys"),
     localStatus: () => request("/local-production/status"),
+    enqueueLocalScripts: (payload) => request("/local-production/enqueue-scripts", { method: "POST", body: JSON.stringify(payload) }),
+    continueApproved: (payload) => request("/local-production/continue-approved", { method: "POST", body: JSON.stringify(payload) }),
     approvedVoices: () => request("/portfolio/approved-voices"),
     brandProfiles: (brandId) => request(`/portfolio/brands/${brandId}/profiles`),
     createBrandProfile: (brandId, payload) => request(`/portfolio/brands/${brandId}/profiles`, { method: "POST", body: JSON.stringify(payload) }),
