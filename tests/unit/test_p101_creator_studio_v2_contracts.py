@@ -26,6 +26,7 @@ def test_v2_shell_replaces_the_legacy_one_page_console() -> None:
     assert 'src="/assets/studio-v2-api.js"' in index
     assert 'src="/assets/studio-v2.js"' in index
     assert 'src="/assets/studio-v2-media.js"' in index
+    assert 'src="/assets/studio-v2-extensions.js"' in index
     assert "portfolio-api.js" not in index
     assert "production-console.js" not in index
     assert "local-pipeline-controls.js" not in index
@@ -35,6 +36,7 @@ def test_v2_shell_replaces_the_legacy_one_page_console() -> None:
 
 def test_v2_application_exposes_task_oriented_routes() -> None:
     script = read(ASSETS / "studio-v2.js")
+    extensions = read(ASSETS / "studio-v2-extensions.js")
     runtime = read(ROOT / "src" / "operator_api" / "studio_runtime.py")
 
     for route in (
@@ -48,20 +50,24 @@ def test_v2_application_exposes_task_oriented_routes() -> None:
     ):
         assert route in script or route in runtime
 
+    assert "/app/publishing" in extensions
     assert "Create content" in script
     assert "Review inbox" in script
     assert "Start local production" in script
     assert "MP4 preview" in script
+    assert "Release & delivery" in extensions
 
 
 def test_normal_workflow_has_no_prompt_uuid_or_json_editor() -> None:
     script = read(ASSETS / "studio-v2.js")
+    extensions = read(ASSETS / "studio-v2-extensions.js")
     index = read(UI / "index.html")
 
     assert "window.prompt" not in script
-    assert "Draft monthly plan UUID" not in script
+    assert "window.prompt" not in extensions
+    assert "Draft monthly plan UUID" not in script + extensions
     assert "JSON.stringify" not in index
-    assert "json-textarea" not in script
+    assert "json-textarea" not in script + extensions
     assert "Advanced production tools" not in index
 
 
@@ -85,6 +91,20 @@ def test_v2_api_client_covers_the_golden_path() -> None:
         assert contract in client
 
 
+def test_v2_completion_extensions_cover_suggestions_publisher_and_p100() -> None:
+    source = read(ASSETS / "studio-v2-extensions.js")
+
+    assert "Generate 6 suggestions" in source
+    assert "Use this idea" in source
+    assert "Use an existing approved plan item" in source
+    assert "Release & delivery" in source
+    assert "/acceptance/pilots/bootstrap-draft" in source
+    assert "/start-readiness" in source
+    assert "/start-controlled" in source
+    assert "The four pilot items must be unique" in source
+    assert "live_delivery_evidence_required" in source
+
+
 def test_v2_backend_is_a_thin_orchestrator_over_existing_services() -> None:
     source = read(ROOT / "src" / "operator_api" / "studio_v2_runtime.py")
 
@@ -102,6 +122,18 @@ def test_v2_backend_is_a_thin_orchestrator_over_existing_services() -> None:
     assert '"live_publishing": False' in source
 
 
+def test_schema_safe_content_reader_uses_existing_script_columns() -> None:
+    source = read(ROOT / "src" / "operator_api" / "studio_v2_schema_patch.py")
+    entrypoint = read(ROOT / "src" / "operator_api" / "entrypoint.py")
+
+    assert "ORDER BY claim_key,id" in source
+    assert "ORDER BY source_key,id" in source
+    assert "ORDER BY sequence,id" in source
+    assert "apply_studio_v2_schema_patch()" in entrypoint
+    assert "ORDER BY created_at,id" not in source
+    assert "ORDER BY sequence,id\"\"\",\n                    (script[\"current_version_id\"],),\n                ).fetchall()\n            ]\n            claims" not in source
+
+
 def test_local_media_endpoint_is_authenticated_and_root_bounded() -> None:
     source = read(ROOT / "src" / "operator_api" / "studio_v2_media_runtime.py")
 
@@ -116,6 +148,7 @@ def test_new_python_and_javascript_sources_are_syntax_valid() -> None:
     for path in (
         ROOT / "src" / "operator_api" / "studio_v2_runtime.py",
         ROOT / "src" / "operator_api" / "studio_v2_media_runtime.py",
+        ROOT / "src" / "operator_api" / "studio_v2_schema_patch.py",
         ROOT / "src" / "operator_api" / "entrypoint.py",
         ROOT / "src" / "operator_api" / "studio_runtime.py",
     ):
@@ -125,6 +158,7 @@ def test_new_python_and_javascript_sources_are_syntax_valid() -> None:
         ASSETS / "studio-v2-api.js",
         ASSETS / "studio-v2.js",
         ASSETS / "studio-v2-media.js",
+        ASSETS / "studio-v2-extensions.js",
     ):
         source = read(path)
         assert source.startswith("(() => {")
@@ -145,6 +179,7 @@ def test_nested_application_routes_return_the_same_shell(tmp_path: Path) -> None
     assert client.get("/app/dashboard").status_code == 200
     assert client.get("/app/content/new").status_code == 200
     assert client.get("/app/content/00000000-0000-0000-0000-000000000001/script").status_code == 200
+    assert client.get("/app/publishing").status_code == 200
     status = client.get("/studio/status").json()
     assert status["kind"] == "production_creator_studio_v2"
     assert status["demo_fallback"] is False
