@@ -51,10 +51,8 @@
     return `${path}${search.size ? `?${search}` : ""}`;
   }
 
-  async function authenticatedMediaUrl(contentId, artifactId) {
-    const response = await fetch(`${base}/portfolio/content/${contentId}/artifacts/${artifactId}/media`, {
-      headers: { "X-Operator-Key": operatorKey }
-    });
+  async function blobUrl(path) {
+    const response = await fetch(`${base}${path}`, { headers: { "X-Operator-Key": operatorKey } });
     if (!response.ok) throw new Error(`Media is not available (${response.status}).`);
     const url = URL.createObjectURL(await response.blob());
     objectUrls.add(url);
@@ -102,11 +100,13 @@
     job: (jobId) => request(`/generation/jobs/${jobId}`),
     retryJob: (jobId, delaySeconds = 0) => request(`/generation/jobs/${jobId}/retry`, { method: "POST", body: JSON.stringify({ delay_seconds: delaySeconds }) }),
     cancelJob: (jobId, reason) => request(`/generation/jobs/${jobId}/cancel`, { method: "POST", body: JSON.stringify({ reason }) }),
+    jobMediaUrl: (jobId) => blobUrl(`/studio-v2/jobs/${jobId}/media`),
     scriptForContent: (contentId) => request(`/scripts/content/${contentId}`),
     submitScript: (documentId, lockVersion) => request(`/scripts/${documentId}/submit`, { method: "POST", body: JSON.stringify({ expected_lock_version: lockVersion }) }),
     decideScript: (documentId, lockVersion, decision, rationale) => request(`/scripts/${documentId}/decisions`, { method: "POST", body: JSON.stringify({ expected_lock_version: lockVersion, decision, rationale }) }),
     reviseScript: (documentId, lockVersion, reason) => request(`/scripts/${documentId}/revise`, { method: "POST", body: JSON.stringify({ expected_lock_version: lockVersion, reason }) }),
     audioForContent: (contentId) => request(`/audio/content/${contentId}`),
+    submitAudio: (productionId, lockVersion) => request(`/audio/${productionId}/submit`, { method: "POST", body: JSON.stringify({ expected_lock_version: lockVersion }) }),
     decideAudio: (productionId, payload) => request(`/audio/${productionId}/decisions`, { method: "POST", body: JSON.stringify(payload) }),
     visualsForContent: (contentId) => request(`/visuals/content/${contentId}`),
     decideVisualCandidate: (projectId, shotId, versionId, candidateId, payload) => request(`/visuals/${projectId}/shots/${shotId}/versions/${versionId}/candidates/${candidateId}/decisions`, { method: "POST", body: JSON.stringify(payload) }),
@@ -140,6 +140,6 @@
     conceptBatches: (brandId, monthStart) => request(query("/concepts/batches", { brand_id: brandId, month_start: monthStart, limit: 100 })),
     conceptBatch: (batchId) => request(`/concepts/batches/${batchId}`),
     generateConcepts: (payload) => request("/concepts/batches", { method: "POST", body: JSON.stringify(payload) }),
-    authenticatedMediaUrl
+    authenticatedMediaUrl: (contentId, artifactId) => blobUrl(`/portfolio/content/${contentId}/artifacts/${artifactId}/media`)
   };
 })();
