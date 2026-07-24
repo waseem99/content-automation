@@ -16,6 +16,7 @@ from src.operator_api.auth import OperatorAuthSettings
 from src.operator_api.runtime_config import OperatorRuntimeSettings
 from src.operator_api.runtime_factory import create_configured_app
 from src.operator_api.studio_v2_media_runtime import install_studio_v2_media_routes
+from tests.integration.p89_script_support import p89_seeded
 from tests.integration.p90_audio_support import (
     complete_next_narration_job,
     p89_database,
