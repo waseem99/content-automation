@@ -15,6 +15,7 @@ on:
       - "scripts/windows/stop_local_production.ps1"
       - "docs/operations/LOCAL_PRODUCTION_RUNBOOK.md"
       - "README.md"
+      - "tests/unit/test_p100_controlled_snapshot_studio_contracts.py"
       - "tests/unit/test_p101_*"
       - "tests/unit/test_p103_*"
       - ".github/workflows/p101-p103-local-operator-runtime.yml"
@@ -47,11 +48,17 @@ jobs:
           node --check web/static-creator-ui/assets/studio-v2-media.js
           node --check web/static-creator-ui/assets/studio-v2-extensions.js
           node --check web/static-creator-ui/assets/studio-v2-queue.js
+          node --check web/static-creator-ui/assets/studio-v2-p100-snapshot.js
       - name: Creator Studio v2 contracts
         shell: bash
         run: |
           set -o pipefail
           python -m pytest -vv tests/unit/test_p101_creator_studio_v2_contracts.py 2>&1 | tee p101-studio.log
+      - name: P100 snapshot Studio contracts
+        shell: bash
+        run: |
+          set -o pipefail
+          python -m pytest -vv tests/unit/test_p100_controlled_snapshot_studio_contracts.py 2>&1 | tee p100-snapshot-studio.log
       - name: Local runtime contracts
         shell: bash
         run: |
@@ -81,6 +88,7 @@ jobs:
           if-no-files-found: ignore
           path: |
             p101-studio.log
+            p100-snapshot-studio.log
             p101-runtime.log
             p101-roles.log
             p101-alignment.log
@@ -99,9 +107,11 @@ jobs:
               Path("src/operator_api/studio_v2_runtime.py"),
               Path("src/operator_api/studio_v2_media_runtime.py"),
               Path("src/operator_api/studio_v2_schema_patch.py"),
+              Path("src/operator_api/acceptance_controlled_snapshot_runtime.py"),
               Path("web/static-creator-ui/assets/studio-v2.js"),
               Path("web/static-creator-ui/assets/studio-v2-extensions.js"),
               Path("web/static-creator-ui/assets/studio-v2-queue.js"),
+              Path("web/static-creator-ui/assets/studio-v2-p100-snapshot.js"),
               Path("scripts/windows/start_local_production.ps1"),
               Path("scripts/windows/stop_local_production.ps1"),
               Path("compose.local.yml"),
