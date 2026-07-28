@@ -154,7 +154,7 @@ Live platform credentials remain outside Git and PostgreSQL. A platform target m
 - a private or unlisted test upload succeeds;
 - the platform reference and status reconcile into the delivery record;
 - duplicate and idempotency tests pass;
-- a human Publisher/Admin explicitly authorizes the final public action.
+- a human Super Admin or Admin explicitly authorizes the final public action.
 
 Until that evidence exists, use the approved release export and record the manually published external result. Never mark a simulated delivery as a real publication.
 
