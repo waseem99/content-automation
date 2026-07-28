@@ -83,7 +83,7 @@ jobs:
       - name: Generation job unit regressions
         run: python -m pytest -q tests/unit/test_p87_generation_job_contracts.py
       - name: Renderer catalogue unit regressions
-        run: python -m pytest -q tests/unit/test_p93_renderer_catalogue_contracts.py
+        run: python -m pytest -q tests/unit/test_p93_renderer_contracts.py
       - name: Always-on workstation unit regressions
         run: python -m pytest -q tests/unit/test_p104_always_on_local_contracts.py
       - name: Generation job lifecycle regressions
