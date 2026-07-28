@@ -4,16 +4,21 @@ on:
   pull_request:
     branches: [test]
     paths:
+      - "README.md"
       - "src/operator_api/access.py"
       - "src/operations/local_onboarding_v2.py"
       - "migrations/0092_simplified_operator_roles.sql"
       - "scripts/windows/start_local_production.ps1"
       - "scripts/windows/deploy_remote_content_automation.ps1"
       - "scripts/windows/setup_higgsfield_official.ps1"
+      - "scripts/windows/setup_youtube_official.ps1"
       - "scripts/windows/check_production_readiness.ps1"
       - "web/static-creator-ui/assets/role-aware-api.js"
       - "docs/operations/PRODUCTION_ACTIVATION.md"
+      - "docs/operations/CREATOR_STUDIO_V2.md"
+      - "docs/operations/LOCAL_PRODUCTION_RUNBOOK.md"
       - "tests/unit/test_p105_simplified_roles_remote_production.py"
+      - "tests/unit/test_p108_operator_docs_sync.py"
       - ".github/workflows/p105-simplified-roles-remote-production.yml"
   workflow_dispatch:
 
@@ -65,6 +70,7 @@ jobs:
             "scripts/windows/start_local_production.ps1",
             "scripts/windows/deploy_remote_content_automation.ps1",
             "scripts/windows/setup_higgsfield_official.ps1",
+            "scripts/windows/setup_youtube_official.ps1",
             "scripts/windows/check_production_readiness.ps1"
           )
           foreach ($file in $files) {
@@ -83,7 +89,10 @@ jobs:
       - name: Apply complete migration chain
         run: python -m src.infrastructure.database.cli migrate
       - name: Focused contracts
-        run: python -m pytest -q tests/unit/test_p105_simplified_roles_remote_production.py
+        run: >-
+          python -m pytest -q
+          tests/unit/test_p105_simplified_roles_remote_production.py
+          tests/unit/test_p108_operator_docs_sync.py
       - name: Existing access regressions
         run: python -m pytest -q tests/unit/test_p84_operator_access.py
       - name: Safety boundary
