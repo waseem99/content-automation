@@ -41,6 +41,68 @@ function Write-DotEnv([System.Collections.IDictionary]$Values, [string]$Path) {
   [IO.File]::WriteAllLines($Path, $content, (New-Object Text.UTF8Encoding($false)))
 }
 
+function Find-OperatorKey([System.Collections.IDictionary]$Pairs, [string[]]$OperatorIds) {
+  foreach ($operatorId in $OperatorIds) {
+    foreach ($entry in $Pairs.GetEnumerator()) {
+      if ([string]$entry.Value -eq $operatorId) { return [string]$entry.Key }
+    }
+  }
+  return $null
+}
+
+function Sync-SimplifiedOperatorKeys([System.Collections.IDictionary]$Values) {
+  $pairs = [ordered]@{}
+  $raw = [string]$Values["OPERATOR_API_KEYS_JSON"]
+  if ($raw) {
+    try {
+      $parsed = $raw | ConvertFrom-Json
+      foreach ($property in $parsed.PSObject.Properties) {
+        $pairs[[string]$property.Name] = [string]$property.Value
+      }
+    } catch {
+      throw "OPERATOR_API_KEYS_JSON is not valid JSON. Preserve .env.local and correct that value before continuing."
+    }
+  }
+
+  $superAdminKey = Find-OperatorKey $pairs @("local-super-admin")
+  $existingAdminKey = Find-OperatorKey $pairs @("local-admin")
+  if (-not $superAdminKey) {
+    # Preserve the original local admin secret by promoting it to Super Admin.
+    $superAdminKey = if ($existingAdminKey) { $existingAdminKey } else { New-Secret }
+  }
+
+  $adminKey = $existingAdminKey
+  if (-not $adminKey -or $adminKey -eq $superAdminKey) { $adminKey = New-Secret }
+
+  $reviewerKey = Find-OperatorKey $pairs @("local-reviewer", "local-producer", "local-publisher")
+  if (-not $reviewerKey -or $reviewerKey -in @($superAdminKey, $adminKey)) { $reviewerKey = New-Secret }
+
+  $next = [ordered]@{}
+  foreach ($entry in $pairs.GetEnumerator()) {
+    $operatorId = [string]$entry.Value
+    if ($operatorId -notin @("local-super-admin", "local-admin", "local-reviewer", "local-producer", "local-publisher")) {
+      $next[[string]$entry.Key] = $operatorId
+    }
+  }
+  $next[$superAdminKey] = "local-super-admin"
+  $next[$adminKey] = "local-admin"
+  $next[$reviewerKey] = "local-reviewer"
+
+  $Values["OPERATOR_API_KEYS_JSON"] = ($next | ConvertTo-Json -Compress)
+  $safeKeyFile = Join-Path $Runtime "operator-keys.json"
+  $readable = [ordered]@{
+    "local-super-admin" = $superAdminKey
+    "local-admin" = $adminKey
+    "local-reviewer" = $reviewerKey
+  }
+  foreach ($entry in $next.GetEnumerator()) {
+    if (-not $readable.Contains([string]$entry.Value)) {
+      $readable[[string]$entry.Value] = [string]$entry.Key
+    }
+  }
+  $readable | ConvertTo-Json | Set-Content -LiteralPath $safeKeyFile -Encoding utf8
+}
+
 function Refresh-ProcessPath {
   $machine = [Environment]::GetEnvironmentVariable("Path", "Machine")
   $user = [Environment]::GetEnvironmentVariable("Path", "User")
@@ -55,27 +117,24 @@ if (-not (Test-Path $EnvPath)) {
   $values["POSTGRES_PASSWORD"] = $password
   $values["DATABASE_URL"] = "postgresql://postgres:$password@127.0.0.1:$PostgresPort/content_automation"
   $keys = [ordered]@{}
+  $keys[(New-Secret)] = "local-super-admin"
   $keys[(New-Secret)] = "local-admin"
-  $keys[(New-Secret)] = "local-producer"
   $keys[(New-Secret)] = "local-reviewer"
-  $keys[(New-Secret)] = "local-publisher"
   $values["OPERATOR_API_KEYS_JSON"] = ($keys | ConvertTo-Json -Compress)
   Write-DotEnv $values $EnvPath
-  $safeKeyFile = Join-Path $Runtime "operator-keys.json"
-  $readable = [ordered]@{}
-  foreach ($entry in $keys.GetEnumerator()) { $readable[$entry.Value] = $entry.Key }
-  $readable | ConvertTo-Json | Set-Content -LiteralPath $safeKeyFile -Encoding utf8
-  Write-Host "Created local configuration and operator keys at $safeKeyFile" -ForegroundColor Green
+  Write-Host "Created local configuration." -ForegroundColor Green
 }
 
 $envValues = Read-DotEnv $EnvPath
 $envValues["POSTGRES_PORT"] = [string]$PostgresPort
 $envValues["LOCAL_API_PORT"] = [string]$ApiPort
 if ($ExposeWithNgrok) { $envValues["LOCAL_NGROK_ENABLED"] = "true" }
+Sync-SimplifiedOperatorKeys $envValues
 Write-DotEnv $envValues $EnvPath
 foreach ($entry in $envValues.GetEnumerator()) {
   [Environment]::SetEnvironmentVariable($entry.Key, [string]$entry.Value, "Process")
 }
+Write-Host "Simplified operator keys are available at $Runtime\operator-keys.json" -ForegroundColor Green
 
 foreach ($command in "docker", "python") {
   if (-not (Get-Command $command -ErrorAction SilentlyContinue)) {
@@ -202,7 +261,7 @@ try {
   if ($ExposeWithNgrok) {
     Write-Host "ngrok started. Open http://127.0.0.1:4040 to copy the HTTPS forwarding URL." -ForegroundColor Yellow
   }
-  Write-Host "No managed renderer or live publishing is enabled." -ForegroundColor Yellow
+  Write-Host "No managed renderer or live publishing is enabled until its account integration is explicitly activated." -ForegroundColor Yellow
 } finally {
   Pop-Location
 }
