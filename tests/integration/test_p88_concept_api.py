@@ -92,12 +92,14 @@ def test_concept_api_enforces_roles_brand_scope_and_admin_only_application(
     outsider = {"X-Operator-Key": "outsider-key"}
     admin = {"X-Operator-Key": "admin-key"}
 
-    denied_reviewer_generation = client.post(
+    # Reviewer is now the single brand-scoped content and production role, so
+    # generation is allowed while cross-brand access remains denied.
+    generated = client.post(
         "/concepts/batches",
         headers=reviewer,
         json=generation_payload(p88_seeded["brand_one"]),
     )
-    assert denied_reviewer_generation.status_code == 403
+    assert generated.status_code == 200, generated.text
 
     denied_outsider_generation = client.post(
         "/concepts/batches",
@@ -106,27 +108,24 @@ def test_concept_api_enforces_roles_brand_scope_and_admin_only_application(
     )
     assert denied_outsider_generation.status_code == 403
 
-    generated = client.post(
-        "/concepts/batches",
-        headers=producer,
-        json=generation_payload(p88_seeded["brand_one"]),
-    )
-    assert generated.status_code == 200, generated.text
     batch = generated.json()["batch"]
     candidates = generated.json()["candidates"]
     assert len(candidates) == 4
 
     producer_list = client.get("/concepts/batches", headers=producer)
+    reviewer_list = client.get("/concepts/batches", headers=reviewer)
     outsider_list = client.get("/concepts/batches", headers=outsider)
     assert producer_list.status_code == 200
+    assert reviewer_list.status_code == 200
     assert producer_list.json()["count"] == 1
+    assert reviewer_list.json()["count"] == 1
     assert outsider_list.status_code == 200
     assert outsider_list.json()["count"] == 0
 
     producer_review = client.post(
         f"/concepts/candidates/{candidates[0]['id']}/review",
         headers=producer,
-        json={"action": "shortlist", "rationale": "Producer cannot approve candidates."},
+        json={"action": "shortlist", "rationale": "Legacy producer capability cannot approve candidates."},
     )
     assert producer_review.status_code == 403
 
