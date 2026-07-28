@@ -149,18 +149,13 @@ def test_routing_api_enforces_roles_brand_scope_and_approval_sequence(
     payload = plan_payload(p94_ready, policy_id)
     assert client.post(
         f"/routing/content/{p94_ready['content_one']}/plans",
-        headers=reviewer,
-        json=payload,
-    ).status_code == 403
-    assert client.post(
-        f"/routing/content/{p94_ready['content_one']}/plans",
         headers=outsider,
         json=payload,
     ).status_code == 403
 
     draft_response = client.post(
         f"/routing/content/{p94_ready['content_one']}/plans",
-        headers=producer,
+        headers=reviewer,
         json=payload,
     )
     assert draft_response.status_code == 200, draft_response.text
@@ -179,7 +174,7 @@ def test_routing_api_enforces_roles_brand_scope_and_approval_sequence(
 
     submitted_response = client.post(
         f"/routing/plans/{plan_id}/submit",
-        headers=producer,
+        headers=reviewer,
         json={"expected_lock_version": draft["plan"]["lock_version"]},
     )
     assert submitted_response.status_code == 200, submitted_response.text
@@ -192,35 +187,28 @@ def test_routing_api_enforces_roles_brand_scope_and_approval_sequence(
             "expected_lock_version": submitted["plan"]["lock_version"],
             "decision": "approved",
             "approved_ceiling": "3",
-            "rationale": "Producer cannot approve their own managed spend.",
+            "rationale": "A legacy producer capability cannot approve managed spend.",
         },
     )
     assert producer_decision.status_code == 403
 
     approved_response = client.post(
         f"/routing/plans/{plan_id}/decisions",
-        headers=reviewer,
+        headers=admin,
         json={
             "expected_lock_version": submitted["plan"]["lock_version"],
             "decision": "approved",
             "approved_ceiling": "3",
-            "rationale": "Reviewer approves one managed hero shot with a three-dollar ceiling.",
+            "rationale": "Admin independently approves one managed hero shot with a three-dollar ceiling.",
         },
     )
     assert approved_response.status_code == 200, approved_response.text
     approved = approved_response.json()
     assert approved["plan"]["status"] == "approved"
 
-    reviewer_enqueue = client.post(
-        f"/routing/plans/{plan_id}/managed-jobs",
-        headers=reviewer,
-        json={"routing_item_id": managed["id"]},
-    )
-    assert reviewer_enqueue.status_code == 403
-
     enqueued = client.post(
         f"/routing/plans/{plan_id}/managed-jobs",
-        headers=producer,
+        headers=reviewer,
         json={
             "routing_item_id": managed["id"],
             "preferred_worker_id": p94_ready["producer"],
