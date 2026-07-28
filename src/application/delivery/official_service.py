@@ -4,6 +4,7 @@ from datetime import timedelta
 from typing import Any, Iterable, Mapping
 from uuid import UUID, uuid4
 
+from src.application.delivery import service as delivery_service
 from src.application.delivery.adapters import default_delivery_adapters
 from src.application.delivery.models import (
     DeliveryAdapterRequest,
@@ -13,7 +14,6 @@ from src.application.delivery.models import (
 from src.application.delivery.service import (
     PlatformDeliveryError,
     PlatformDeliveryService,
-    _utcnow,
 )
 
 
@@ -45,7 +45,7 @@ class OfficialPlatformDeliveryService(PlatformDeliveryService):
         *,
         allowed_brand_ids: Iterable[UUID] | None,
     ) -> dict[str, Any] | None:
-        now = _utcnow()
+        now = delivery_service._utcnow()
         lease_expires_at = now + timedelta(seconds=request.lease_seconds)
         normalized_brands = (
             [UUID(str(value)) for value in allowed_brand_ids]
