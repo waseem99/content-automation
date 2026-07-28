@@ -44,6 +44,7 @@ jobs:
           --health-retries 10
     env:
       DATABASE_URL: postgresql://postgres@localhost:5432/football_brief_test
+      FOOTBALL_BRIEF_TEST_DATABASE_URL: postgresql://postgres@localhost:5432/football_brief_test
       DATABASE_REQUIRE_SCHEMA: "false"
       DATABASE_MIGRATIONS_DIR: migrations
     steps:
@@ -86,8 +87,12 @@ jobs:
         run: python -m pytest -q tests/unit/test_p93_renderer_contracts.py
       - name: Always-on workstation unit regressions
         run: python -m pytest -q tests/unit/test_p104_always_on_local_contracts.py
-      - name: Generation job lifecycle regressions
-        run: python -m pytest -q tests/integration/test_p87_generation_job_lifecycle.py
+      - name: Generation job integration regressions
+        run: |
+          python -m pytest -q \
+            tests/integration/test_p87_generation_jobs.py \
+            tests/integration/test_p87_generation_job_api.py \
+            tests/integration/test_p87_generation_job_idempotency_race.py
       - name: Renderer lifecycle regressions
         run: python -m pytest -q tests/integration/test_p93_renderer_lifecycle.py
       - name: No secret or automatic-spend path
