@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Protocol
+from typing import Any, Protocol
 
 from src.application.delivery.models import DeliveryAdapterRequest, DeliveryAdapterResult
 from src.application.delivery.reconciliation import (
@@ -186,8 +186,15 @@ class SimulatedFallbackDeliveryAdapter(_SimulatedReconciliationMixin):
         )
 
 
-def default_delivery_adapters() -> dict[str, PlatformDeliveryAdapter]:
-    return {
+def default_delivery_adapters(database: Any | None = None) -> dict[str, PlatformDeliveryAdapter]:
+    adapters: dict[str, PlatformDeliveryAdapter] = {
         "simulated-primary": SimulatedPrimaryDeliveryAdapter(),
         "simulated-fallback": SimulatedFallbackDeliveryAdapter(),
     }
+    if database is not None:
+        # Delayed import avoids a module cycle because the official adapter uses
+        # DeliveryAdapterError from this module.
+        from src.application.delivery.youtube import YouTubeOfficialDeliveryAdapter
+
+        adapters["youtube-official"] = YouTubeOfficialDeliveryAdapter(database)
+    return adapters

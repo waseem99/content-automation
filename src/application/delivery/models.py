@@ -104,7 +104,17 @@ class DeliveryTargetRequest(BaseModel):
         if self.requests_per_day < self.requests_per_minute:
             raise ValueError("requests_per_day cannot be lower than requests_per_minute")
         if self.execution_enabled and not self.simulated:
-            raise ValueError("P97 only permits execution for simulated delivery targets")
+            if not (
+                self.platform == "youtube"
+                and self.primary_adapter_key == "youtube-official"
+                and self.environment in {"staging", "production"}
+                and self.credential_secret_ref
+            ):
+                raise ValueError(
+                    "non-simulated execution is limited to the official account-gated YouTube adapter"
+                )
+            if self.fallback_adapter_key is not None:
+                raise ValueError("official YouTube targets do not permit an automatic fallback transport")
         if self.simulated and not self.primary_adapter_key.startswith("simulated-"):
             raise ValueError("simulated targets must use a simulated primary adapter")
         if self.fallback_adapter_key and self.simulated and not self.fallback_adapter_key.startswith("simulated-"):
@@ -204,6 +214,9 @@ class DeliveryCreateRequest(BaseModel):
         metadata.update(
             {
                 "delivery_mode": self.delivery_mode.value,
+                "scheduled_for": self.scheduled_for.astimezone(timezone.utc).isoformat()
+                if self.scheduled_for is not None
+                else None,
                 "title": self.title,
                 "caption": self.caption,
                 "hashtags": list(self.hashtags),

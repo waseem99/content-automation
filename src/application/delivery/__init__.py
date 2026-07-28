@@ -19,6 +19,9 @@ from src.application.delivery.models import (
     DeliveryTargetStatus,
     DeliveryTransport,
 )
+from src.application.delivery.official_validated_service import (
+    OfficialValidatedPlatformDeliveryService,
+)
 from src.application.delivery.reconciliation import (
     DeliveryPlatformStatus,
     DeliveryReconciliationResult,
@@ -27,7 +30,7 @@ from src.application.delivery.service import PlatformDeliveryError
 from src.application.delivery.validated_service import ValidatedPlatformDeliveryService
 
 
-PlatformDeliveryService = ValidatedPlatformDeliveryService
+PlatformDeliveryService = OfficialValidatedPlatformDeliveryService
 
 
 __all__ = [
@@ -46,6 +49,7 @@ __all__ = [
     "DeliveryTargetRequest",
     "DeliveryTargetStatus",
     "DeliveryTransport",
+    "OfficialValidatedPlatformDeliveryService",
     "PlatformDeliveryAdapter",
     "PlatformDeliveryError",
     "PlatformDeliveryService",

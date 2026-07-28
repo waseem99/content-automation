@@ -11,9 +11,9 @@ from src.application.delivery.models import DeliveryCreateRequest, DeliveryTarge
 
 
 ROOT = Path(__file__).resolve().parents[2]
-FOUNDATION = ROOT / "migrations/0074_platform_delivery_foundation.sql"
-INTEGRITY = ROOT / "migrations/0075_platform_delivery_integrity.sql"
-CONTENT = ROOT / "migrations/0076_platform_delivery_content_and_reconciliation.sql"
+FOUNDATION = ROOT / "migrations" / "0074_platform_delivery_foundation.sql"
+INTEGRITY = ROOT / "migrations" / "0075_platform_delivery_integrity.sql"
+CONTENT = ROOT / "migrations" / "0076_platform_delivery_content_and_reconciliation.sql"
 RUNTIME = ROOT / "src/operator_api/delivery_runtime.py"
 FACTORY = ROOT / "src/operator_api/runtime_factory.py"
 
@@ -61,8 +61,8 @@ def delivery_payload(**overrides):
     return payload
 
 
-def test_public_delivery_service_is_validated() -> None:
-    assert PlatformDeliveryService is ValidatedPlatformDeliveryService
+def test_public_delivery_service_retains_the_validated_contract() -> None:
+    assert issubclass(PlatformDeliveryService, ValidatedPlatformDeliveryService)
 
 
 def test_live_execution_and_secret_material_are_rejected() -> None:
@@ -121,7 +121,7 @@ def test_database_contract_is_publisher_only_idempotent_and_append_only() -> Non
     assert "exact current available thumbnail" in source
 
 
-def test_api_keeps_delivery_permission_separate_and_simulated() -> None:
+def test_api_keeps_delivery_permission_separate_and_official_adapter_is_not_browser_exposed() -> None:
     runtime = RUNTIME.read_text(encoding="utf-8")
     factory = FACTORY.read_text(encoding="utf-8")
     assert "OperatorRole.PUBLISHER" in runtime
