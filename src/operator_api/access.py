@@ -11,8 +11,14 @@ if TYPE_CHECKING:
 
 
 class OperatorRole(StrEnum):
+    # Public roles. Creator Studio presents only these three choices.
+    SUPER_ADMIN = "super_admin"
     ADMIN = "admin"
     REVIEWER = "reviewer"
+
+    # Internal compatibility capabilities retained for the existing production
+    # and delivery services. They are expanded automatically and are not shown
+    # as standalone roles in the simplified Creator Studio role selector.
     PRODUCER = "producer"
     PUBLISHER = "publisher"
 
@@ -28,9 +34,16 @@ class AccessPermission(StrEnum):
 
 
 ROLE_PERMISSIONS: dict[OperatorRole, frozenset[AccessPermission]] = {
+    OperatorRole.SUPER_ADMIN: frozenset(AccessPermission),
     OperatorRole.ADMIN: frozenset(AccessPermission),
     OperatorRole.REVIEWER: frozenset(
-        {AccessPermission.READ_PORTFOLIO, AccessPermission.REVIEW_CONTENT}
+        {
+            AccessPermission.READ_PORTFOLIO,
+            AccessPermission.EDIT_CONTENT,
+            AccessPermission.REVIEW_CONTENT,
+            AccessPermission.RUN_PRODUCTION,
+            AccessPermission.DELIVER_RELEASE,
+        }
     ),
     OperatorRole.PRODUCER: frozenset(
         {
@@ -45,6 +58,64 @@ ROLE_PERMISSIONS: dict[OperatorRole, frozenset[AccessPermission]] = {
 }
 
 
+PUBLIC_ROLE_EXPANSIONS: dict[OperatorRole, frozenset[OperatorRole]] = {
+    OperatorRole.SUPER_ADMIN: frozenset(
+        {
+            OperatorRole.SUPER_ADMIN,
+            OperatorRole.ADMIN,
+            OperatorRole.REVIEWER,
+            OperatorRole.PRODUCER,
+            OperatorRole.PUBLISHER,
+        }
+    ),
+    OperatorRole.ADMIN: frozenset(
+        {
+            OperatorRole.ADMIN,
+            OperatorRole.REVIEWER,
+            OperatorRole.PRODUCER,
+            OperatorRole.PUBLISHER,
+        }
+    ),
+    OperatorRole.REVIEWER: frozenset(
+        {
+            OperatorRole.REVIEWER,
+            OperatorRole.PRODUCER,
+            OperatorRole.PUBLISHER,
+        }
+    ),
+    OperatorRole.PRODUCER: frozenset({OperatorRole.PRODUCER}),
+    OperatorRole.PUBLISHER: frozenset({OperatorRole.PUBLISHER}),
+}
+
+
+def expand_operator_roles(roles: Iterable[str | OperatorRole]) -> frozenset[OperatorRole]:
+    """Expand one public role into the legacy capabilities used by existing services."""
+
+    expanded: set[OperatorRole] = set()
+    for raw in roles:
+        role = raw if isinstance(raw, OperatorRole) else OperatorRole(str(raw))
+        expanded.update(PUBLIC_ROLE_EXPANSIONS[role])
+    return frozenset(expanded)
+
+
+def public_operator_roles(roles: Iterable[str | OperatorRole]) -> tuple[str, ...]:
+    """Collapse internal compatibility roles to the three user-facing choices."""
+
+    normalized = {
+        role if isinstance(role, OperatorRole) else OperatorRole(str(role))
+        for role in roles
+    }
+    if OperatorRole.SUPER_ADMIN in normalized:
+        return (OperatorRole.SUPER_ADMIN.value,)
+    if OperatorRole.ADMIN in normalized:
+        return (OperatorRole.ADMIN.value,)
+    if normalized.intersection(
+        {OperatorRole.REVIEWER, OperatorRole.PRODUCER, OperatorRole.PUBLISHER}
+    ):
+        return (OperatorRole.REVIEWER.value,)
+    return ()
+
+
 @dataclass(frozen=True, slots=True)
 class OperatorIdentity:
     operator_id: str
@@ -55,8 +126,18 @@ class OperatorIdentity:
     display_name: str | None = None
 
     @property
+    def is_super_admin(self) -> bool:
+        return OperatorRole.SUPER_ADMIN in self.roles
+
+    @property
     def is_admin(self) -> bool:
-        return OperatorRole.ADMIN in self.roles
+        return bool(
+            self.roles.intersection({OperatorRole.SUPER_ADMIN, OperatorRole.ADMIN})
+        )
+
+    @property
+    def public_roles(self) -> tuple[str, ...]:
+        return public_operator_roles(self.roles)
 
     def permits(self, permission: AccessPermission) -> bool:
         return self.active and any(permission in ROLE_PERMISSIONS[role] for role in self.roles)
@@ -130,7 +211,13 @@ class OperatorAccessService:
                    GROUP BY u.id
                    ORDER BY u.display_name, u.operator_id"""
             ).fetchall()
-        return [dict(row) for row in rows]
+        output: list[dict[str, Any]] = []
+        for raw in rows:
+            row = dict(raw)
+            row["internal_roles"] = sorted(str(role) for role in row.get("roles") or [])
+            row["roles"] = list(public_operator_roles(row["internal_roles"]))
+            output.append(row)
+        return output
 
     def upsert_user(
         self,
@@ -142,12 +229,19 @@ class OperatorAccessService:
         brand_ids: Iterable[str],
         actor: str,
     ) -> dict[str, Any]:
-        normalized_roles = sorted({OperatorRole(str(role)).value for role in roles})
+        requested_roles = {
+            role if isinstance(role, OperatorRole) else OperatorRole(str(role))
+            for role in roles
+        }
+        normalized_roles = sorted(role.value for role in expand_operator_roles(requested_roles))
         normalized_brands = sorted({str(brand_id) for brand_id in brand_ids})
         if not normalized_roles:
             raise ValueError("at least one operator role is required")
-        if OperatorRole.ADMIN.value not in normalized_roles and not normalized_brands:
-            raise ValueError("non-admin operators require at least one brand assignment")
+        portfolio_wide = bool(
+            requested_roles.intersection({OperatorRole.SUPER_ADMIN, OperatorRole.ADMIN})
+        )
+        if not portfolio_wide and not normalized_brands:
+            raise ValueError("reviewers require at least one brand assignment")
         with self.database.transaction() as conn:
             user = conn.execute(
                 """INSERT INTO football_brief.operator_users
@@ -186,6 +280,7 @@ class OperatorAccessService:
             "operator_id": identity.operator_id,
             "display_name": identity.display_name,
             "active": identity.active,
-            "roles": sorted(role.value for role in identity.roles),
+            "roles": list(identity.public_roles),
+            "internal_roles": sorted(role.value for role in identity.roles),
             "brand_ids": sorted(identity.brand_ids),
         }
