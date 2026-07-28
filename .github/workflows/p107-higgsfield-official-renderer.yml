@@ -11,6 +11,8 @@ on:
       - "scripts/windows/setup_higgsfield_official.ps1"
       - "config/local.env.example"
       - "docs/operations/HIGGSFIELD_OFFICIAL_RENDERER.md"
+      - "tests/unit/test_p101_p103_local_runtime_contracts.py"
+      - "tests/unit/test_p104_always_on_local_contracts.py"
       - "tests/unit/test_p107_higgsfield_official_renderer.py"
       - ".github/workflows/p107-higgsfield-official-renderer.yml"
   workflow_dispatch:
@@ -78,14 +80,16 @@ jobs:
         run: python -m src.infrastructure.database.cli migrate
       - name: Focused Higgsfield contracts
         run: python -m pytest -q tests/unit/test_p107_higgsfield_official_renderer.py
-      - name: Existing generation and renderer regressions
-        run: |
-          python -m pytest -q \
-            tests/unit/test_p87_generation_job_contracts.py \
-            tests/unit/test_p93_renderer_catalogue_contracts.py \
-            tests/unit/test_p104_always_on_local_contracts.py \
-            tests/integration/test_p87_generation_job_lifecycle.py \
-            tests/integration/test_p93_renderer_lifecycle.py
+      - name: Generation job unit regressions
+        run: python -m pytest -q tests/unit/test_p87_generation_job_contracts.py
+      - name: Renderer catalogue unit regressions
+        run: python -m pytest -q tests/unit/test_p93_renderer_catalogue_contracts.py
+      - name: Always-on workstation unit regressions
+        run: python -m pytest -q tests/unit/test_p104_always_on_local_contracts.py
+      - name: Generation job lifecycle regressions
+        run: python -m pytest -q tests/integration/test_p87_generation_job_lifecycle.py
+      - name: Renderer lifecycle regressions
+        run: python -m pytest -q tests/integration/test_p93_renderer_lifecycle.py
       - name: No secret or automatic-spend path
         shell: bash
         run: |
