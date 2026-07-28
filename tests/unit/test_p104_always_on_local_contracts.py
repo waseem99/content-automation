@@ -143,7 +143,7 @@ def test_ffmpeg_preview_is_safe_zero_fee_and_reviewable() -> None:
     assert "'approved'" in worker
 
 
-def test_no_paid_or_live_execution_is_introduced() -> None:
+def test_paid_renderer_is_explicitly_opt_in_and_live_publishing_stays_disabled() -> None:
     inspected = "\n".join(
         read(path)
         for path in (
@@ -159,7 +159,8 @@ def test_no_paid_or_live_execution_is_introduced() -> None:
     ).lower()
     assert "estimated_cost_usd=decimal(\"0\")" in inspected
     assert "reserved_cost_usd=decimal(\"0\")" in inspected
+    assert "$env:higgsfield_enabled" in inspected
+    assert "automatic_spend_approval = $false" in inspected
     assert "automatic_approval" in inspected
-    assert "live_publishing" in inspected
-    assert "higgsfield" not in inspected
+    assert "live_publishing = $false" in inspected
     assert "vercel deploy" not in inspected

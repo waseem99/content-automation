@@ -56,7 +56,7 @@ def test_windows_launchers_start_aligned_workers_and_optional_ngrok() -> None:
     assert "no managed renderer or live publishing is enabled" in manual.lower()
 
 
-def test_alignment_is_local_optional_and_fails_closed() -> None:
+def test_alignment_is_local_optional_and_managed_render_stays_disabled_by_default() -> None:
     patch = read("src/operations/local_audio_alignment_patch.py")
     wrapper = read("src/operations/local_worker_aligned.py")
     requirements = read("video-engine/voice-requirements.txt")
@@ -70,7 +70,9 @@ def test_alignment_is_local_optional_and_fails_closed() -> None:
     assert "apply_local_audio_alignment_patch()" in wrapper
     assert "LOCAL_ALIGNMENT_ENABLED=true" in env
     assert "LOCAL_ALIGNMENT_DEVICE=cpu" in env
-    assert "HIGGSFIELD" not in env
+    assert "HIGGSFIELD_ENABLED=false" in env
+    assert "HIGGSFIELD_CLI_PATH=higgsfield" in env
+    assert "HIGGSFIELD_WORKER_OPERATOR_ID=higgsfield-worker" in env
 
 
 def test_routed_studio_keeps_role_specific_work_separate() -> None:
