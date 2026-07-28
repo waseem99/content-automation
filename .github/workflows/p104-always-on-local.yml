@@ -120,9 +120,12 @@ jobs:
       - name: Safety boundary
         shell: bash
         run: |
-          ! grep -R -n -E "vercel[[:space:]]+deploy|vercel[[:space:]]+--prod|live[ -]publish|automatic[ -]publish|higgsfield" \
+          ! grep -R -n -E "vercel[[:space:]]+deploy|vercel[[:space:]]+--prod|live[ -]publish|automatic[ -]publish" \
             src/operations/local_pipeline.py src/operations/always_on_pipeline.py \
             src/operations/always_on_continuation.py src/operations/local_worker_v2.py \
             src/operations/local_audio_alignment_patch.py src/operations/local_worker_aligned.py \
             src/operator_api/local_pipeline_runtime.py scripts/windows/supervise_local_production.ps1 \
             scripts/windows/supervise_always_on_local_production.ps1
+          grep -q '\$env:HIGGSFIELD_ENABLED' scripts/windows/supervise_local_production.ps1
+          grep -q 'automatic_spend_approval = \$false' scripts/windows/supervise_local_production.ps1
+          grep -q 'live_publishing = \$false' scripts/windows/supervise_local_production.ps1

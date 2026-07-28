@@ -1,0 +1,105 @@
+name: P107 Official Higgsfield Renderer
+
+on:
+  pull_request:
+    branches: [test]
+    paths:
+      - "src/application/renderers/higgsfield_cli.py"
+      - "src/operations/higgsfield_worker.py"
+      - "src/operations/local_onboarding_v2.py"
+      - "scripts/windows/supervise_local_production.ps1"
+      - "scripts/windows/setup_higgsfield_official.ps1"
+      - "config/local.env.example"
+      - "docs/operations/HIGGSFIELD_OFFICIAL_RENDERER.md"
+      - "tests/unit/test_p101_p103_local_runtime_contracts.py"
+      - "tests/unit/test_p104_always_on_local_contracts.py"
+      - "tests/unit/test_p107_higgsfield_official_renderer.py"
+      - ".github/workflows/p107-higgsfield-official-renderer.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: p107-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  higgsfield-official:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: football_brief_test
+          POSTGRES_USER: postgres
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d football_brief_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://postgres@localhost:5432/football_brief_test
+      FOOTBALL_BRIEF_TEST_DATABASE_URL: postgresql://postgres@localhost:5432/football_brief_test
+      DATABASE_REQUIRE_SCHEMA: "false"
+      DATABASE_MIGRATIONS_DIR: migrations
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install dependencies
+        run: python -m pip install -r requirements.txt
+      - name: Compile Python
+        run: python -m compileall -q src tests
+      - name: PowerShell syntax
+        shell: pwsh
+        run: |
+          $files = @(
+            "scripts/windows/supervise_local_production.ps1",
+            "scripts/windows/setup_higgsfield_official.ps1"
+          )
+          foreach ($file in $files) {
+            $tokens = $null
+            $errors = $null
+            [System.Management.Automation.Language.Parser]::ParseFile(
+              (Resolve-Path $file),
+              [ref]$tokens,
+              [ref]$errors
+            ) | Out-Null
+            if ($errors.Count -gt 0) {
+              $errors | ForEach-Object { Write-Error ("{0}: {1}" -f $file, $_.Message) }
+              throw "PowerShell syntax validation failed for $file"
+            }
+          }
+      - name: Apply complete migration chain
+        run: python -m src.infrastructure.database.cli migrate
+      - name: Focused Higgsfield contracts
+        run: python -m pytest -q tests/unit/test_p107_higgsfield_official_renderer.py
+      - name: Generation job unit regressions
+        run: python -m pytest -q tests/unit/test_p87_generation_job_contracts.py
+      - name: Renderer catalogue unit regressions
+        run: python -m pytest -q tests/unit/test_p93_renderer_contracts.py
+      - name: Always-on workstation unit regressions
+        run: python -m pytest -q tests/unit/test_p104_always_on_local_contracts.py
+      - name: Generation job integration regressions
+        run: |
+          python -m pytest -q \
+            tests/integration/test_p87_generation_jobs.py \
+            tests/integration/test_p87_generation_job_api.py \
+            tests/integration/test_p87_generation_job_idempotency_race.py
+      - name: Renderer lifecycle regressions
+        run: python -m pytest -q tests/integration/test_p93_renderer_lifecycle.py
+      - name: No secret or automatic-spend path
+        shell: bash
+        run: |
+          ! grep -R -n -E '(--api-key|--token|--cookie|--password)' \
+            scripts/windows/setup_higgsfield_official.ps1 config/local.env.example
+          ! grep -R -n 'automatic_spend_approval = \$true' \
+            scripts/windows src/operations/higgsfield_worker.py
+          ! grep -R -n 'generate create' scripts/windows/setup_higgsfield_official.ps1

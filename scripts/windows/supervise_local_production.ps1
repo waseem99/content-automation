@@ -52,10 +52,6 @@ function Test-ApiReady {
 }
 
 function Invoke-NativeQuiet([string]$FilePath, [string[]]$Arguments) {
-  # Windows PowerShell 5.1 can promote harmless native stderr progress output
-  # (for example Docker Compose "Container ... Running") into a terminating
-  # error when the supervisor uses ErrorActionPreference=Stop. Suppress output
-  # and decide success exclusively from the native process exit code.
   $previousPreference = $ErrorActionPreference
   try {
     $ErrorActionPreference = "Continue"
@@ -206,8 +202,10 @@ $api = New-ManagedState "api" $Python @("-m", "uvicorn", "src.operator_api.entry
 $textWorker = New-ManagedState "text-audio-worker" $Python @("-m", "src.operations.local_worker_aligned", "--job-types", "script,narration", "--poll-seconds", "3")
 $visualWorker = New-ManagedState "visual-worker" $Python @("-m", "src.operations.local_worker_aligned", "--job-types", "keyframe", "--poll-seconds", "3")
 $previewWorker = New-ManagedState "preview-worker" $Python @("-m", "src.operations.local_worker_aligned", "--job-types", "preview", "--poll-seconds", "3")
+$higgsfieldWorker = New-ManagedState "higgsfield-worker" $Python @("-m", "src.operations.higgsfield_worker", "--poll-seconds", "5")
 $ngrok = New-ManagedState "ngrok" "ngrok" @("http", [string]$ApiPort)
 $ngrokEnabled = $ExposeWithNgrok -or ($env:LOCAL_NGROK_ENABLED -match '^(1|true|yes|on)$')
+$higgsfieldEnabled = $env:HIGGSFIELD_ENABLED -match '^(1|true|yes|on)$'
 $apiNotReadyChecks = 0
 $apiStartupGraceSeconds = 300
 $apiUnreadyCheckLimit = 60
@@ -218,6 +216,15 @@ try {
     Ensure-ManagedProcess $textWorker
     Ensure-ManagedProcess $visualWorker
     Ensure-ManagedProcess $previewWorker
+
+    if ($higgsfieldEnabled) {
+      if (Get-Command higgsfield -ErrorAction SilentlyContinue) {
+        Ensure-ManagedProcess $higgsfieldWorker
+      } elseif ((Get-Date) -ge $higgsfieldWorker.next_start) {
+        Write-SupervisorLog "Higgsfield enabled but official CLI is not on PATH"
+        $higgsfieldWorker.next_start = (Get-Date).AddMinutes(5)
+      }
+    }
 
     if ($ngrokEnabled) {
       if (Get-Command ngrok -ErrorAction SilentlyContinue) {
@@ -250,6 +257,12 @@ try {
         text_audio_worker = Process-Snapshot $textWorker
         visual_worker = Process-Snapshot $visualWorker
         preview_worker = Process-Snapshot $previewWorker
+        higgsfield_worker = Process-Snapshot $higgsfieldWorker
+      }
+      higgsfield = [ordered]@{
+        enabled = [bool]$higgsfieldEnabled
+        external_fee_possible = [bool]$higgsfieldEnabled
+        automatic_spend_approval = $false
       }
       ngrok = [ordered]@{
         enabled = [bool]$ngrokEnabled
@@ -263,6 +276,7 @@ try {
   }
 } finally {
   Stop-ManagedProcess $ngrok
+  Stop-ManagedProcess $higgsfieldWorker
   Stop-ManagedProcess $previewWorker
   Stop-ManagedProcess $visualWorker
   Stop-ManagedProcess $textWorker
