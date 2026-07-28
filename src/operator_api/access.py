@@ -36,14 +36,12 @@ class AccessPermission(StrEnum):
 ROLE_PERMISSIONS: dict[OperatorRole, frozenset[AccessPermission]] = {
     OperatorRole.SUPER_ADMIN: frozenset(AccessPermission),
     OperatorRole.ADMIN: frozenset(AccessPermission),
+    # A bare historical reviewer capability remains review-only. Public
+    # Reviewer accounts are persisted with reviewer+producer+publisher by
+    # expand_operator_roles(), giving them the complete brand-scoped workflow
+    # without changing old audit identities or least-privilege fixtures.
     OperatorRole.REVIEWER: frozenset(
-        {
-            AccessPermission.READ_PORTFOLIO,
-            AccessPermission.EDIT_CONTENT,
-            AccessPermission.REVIEW_CONTENT,
-            AccessPermission.RUN_PRODUCTION,
-            AccessPermission.DELIVER_RELEASE,
-        }
+        {AccessPermission.READ_PORTFOLIO, AccessPermission.REVIEW_CONTENT}
     ),
     OperatorRole.PRODUCER: frozenset(
         {
