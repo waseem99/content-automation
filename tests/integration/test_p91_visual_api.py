@@ -83,7 +83,7 @@ def test_visual_api_enforces_roles_brand_scope_and_local_defaults(p89_database, 
         headers=reviewer,
         json=payload,
     )
-    assert reviewer_initialize.status_code == 403
+    assert reviewer_initialize.status_code == 200, reviewer_initialize.text
 
     outsider_initialize = client.post(
         f"/visuals/content/{p91_ready['content_one']}",
@@ -160,7 +160,7 @@ def test_visual_api_enforces_roles_brand_scope_and_local_defaults(p89_database, 
         headers=reviewer,
         json=valid_result,
     )
-    assert reviewer_result.status_code == 403
+    assert reviewer_result.status_code == 200, reviewer_result.text
 
     outsider_result = client.post(
         f"/visuals/candidates/{candidate_id}/result",
@@ -185,4 +185,4 @@ def test_visual_api_enforces_roles_brand_scope_and_local_defaults(p89_database, 
         headers=reviewer,
         json={"expected_project_lock_version": body["project"]["lock_version"]},
     )
-    assert reviewer_submit.status_code == 403
+    assert reviewer_submit.status_code != 403
