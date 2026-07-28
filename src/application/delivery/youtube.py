@@ -419,7 +419,8 @@ class YouTubeOfficialDeliveryAdapter:
 
     def _open(self, request: Request, *, operation: str):
         try:
-            return urlopen(request, timeout=self.timeout_seconds)
+            # Requests are limited to the hard-coded Google HTTPS endpoints or the HTTPS resumable session returned by YouTube.
+            return urlopen(request, timeout=self.timeout_seconds)  # nosec B310
         except HTTPError as exc:
             retryable = exc.code in {408, 429, 500, 502, 503, 504}
             raise DeliveryAdapterError(

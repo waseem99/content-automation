@@ -20,8 +20,11 @@ from src.application.delivery.service import (
 class OfficialPlatformDeliveryService(PlatformDeliveryService):
     """P97 delivery plus the single reviewed official YouTube execution path."""
 
-    def __init__(self, database: Any) -> None:
-        super().__init__(database, adapters=default_delivery_adapters(database))
+    def __init__(self, database: Any, *, adapters: Mapping[str, Any] | None = None) -> None:
+        super().__init__(
+            database,
+            adapters=adapters if adapters is not None else default_delivery_adapters(database),
+        )
 
     @staticmethod
     def _target_is_executable(target: Mapping[str, Any]) -> bool:
