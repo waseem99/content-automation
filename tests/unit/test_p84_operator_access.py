@@ -34,28 +34,23 @@ def identity(*roles: OperatorRole, brands: tuple[str, ...] = (BRAND_A,), active:
     )
 
 
-def test_simplified_reviewer_role_can_complete_the_content_workflow() -> None:
+def test_role_permissions_are_least_privilege() -> None:
     reviewer = identity(OperatorRole.REVIEWER)
-    legacy_producer = identity(OperatorRole.PRODUCER)
-    legacy_publisher = identity(OperatorRole.PUBLISHER)
+    producer = identity(OperatorRole.PRODUCER)
+    publisher = identity(OperatorRole.PUBLISHER)
 
-    require_access(reviewer, AccessPermission.READ_PORTFOLIO, brand_id=BRAND_A)
-    require_access(reviewer, AccessPermission.EDIT_CONTENT, brand_id=BRAND_A)
     require_access(reviewer, AccessPermission.REVIEW_CONTENT, brand_id=BRAND_A)
-    require_access(reviewer, AccessPermission.RUN_PRODUCTION, brand_id=BRAND_A)
-    require_access(reviewer, AccessPermission.DELIVER_RELEASE, brand_id=BRAND_A)
+    require_access(producer, AccessPermission.RUN_PRODUCTION, brand_id=BRAND_A)
+    require_access(publisher, AccessPermission.DELIVER_RELEASE, brand_id=BRAND_A)
+
+    with pytest.raises(HTTPException) as denied:
+        require_access(producer, AccessPermission.REVIEW_CONTENT, brand_id=BRAND_A)
+    assert denied.value.status_code == 403
 
     with pytest.raises(HTTPException):
-        require_access(reviewer, AccessPermission.MANAGE_USERS)
+        require_access(reviewer, AccessPermission.RUN_PRODUCTION, brand_id=BRAND_A)
     with pytest.raises(HTTPException):
-        require_access(reviewer, AccessPermission.MANAGE_BRANDS)
-
-    # Historical capability roles remain least-privilege when encountered in
-    # old audit records or pre-upgrade fixtures.
-    with pytest.raises(HTTPException):
-        require_access(legacy_producer, AccessPermission.REVIEW_CONTENT, brand_id=BRAND_A)
-    with pytest.raises(HTTPException):
-        require_access(legacy_publisher, AccessPermission.EDIT_CONTENT, brand_id=BRAND_A)
+        require_access(publisher, AccessPermission.EDIT_CONTENT, brand_id=BRAND_A)
 
 
 def test_brand_assignments_fail_closed_for_non_admins() -> None:
@@ -71,10 +66,6 @@ def test_admin_is_portfolio_wide_but_inactive_users_are_blocked() -> None:
     admin = identity(OperatorRole.ADMIN, brands=())
     require_access(admin, AccessPermission.MANAGE_USERS, brand_id=BRAND_B)
     assert visible_brand_ids(admin) is None
-
-    super_admin = identity(OperatorRole.SUPER_ADMIN, brands=())
-    require_access(super_admin, AccessPermission.MANAGE_USERS, brand_id=BRAND_B)
-    assert visible_brand_ids(super_admin) is None
 
     inactive = identity(OperatorRole.ADMIN, active=False)
     with pytest.raises(HTTPException) as denied:
