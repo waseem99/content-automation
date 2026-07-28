@@ -60,6 +60,15 @@
       api.operators = async (...args) => normalizeOperators(await originalOperators(...args));
     }
 
+    if (typeof api.upsertOperator === "function") {
+      const originalUpsert = api.upsertOperator.bind(api);
+      api.upsertOperator = async (payload) => {
+        const role = publicRole(payload?.roles || []);
+        const roles = role === "super_admin" ? ["super_admin", "admin"] : role ? [role] : payload?.roles;
+        return originalUpsert({ ...payload, roles });
+      };
+    }
+
     if (typeof api.deliveries === "function") {
       const originalDeliveries = api.deliveries.bind(api);
       api.deliveries = async (...args) => {
