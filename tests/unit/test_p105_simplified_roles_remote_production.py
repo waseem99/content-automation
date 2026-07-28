@@ -2,6 +2,7 @@ from pathlib import Path
 
 from src.operator_api.access import (
     AccessPermission,
+    OperatorIdentity,
     OperatorRole,
     expand_operator_roles,
     public_operator_roles,
@@ -31,17 +32,33 @@ def test_public_roles_expand_to_existing_service_capabilities() -> None:
     assert public_operator_roles(reviewer) == ("reviewer",)
 
 
-def test_reviewer_can_complete_content_workflow_but_not_administer_users() -> None:
-    from src.operator_api.access import ROLE_PERMISSIONS
+def test_public_reviewer_can_complete_workflow_but_bare_legacy_reviewer_stays_limited() -> None:
+    public_reviewer = OperatorIdentity(
+        operator_id="reviewer.one",
+        key_name="reviewer-key",
+        roles=expand_operator_roles((OperatorRole.REVIEWER,)),
+        brand_ids=frozenset({"brand-one"}),
+    )
+    for permission in (
+        AccessPermission.READ_PORTFOLIO,
+        AccessPermission.EDIT_CONTENT,
+        AccessPermission.REVIEW_CONTENT,
+        AccessPermission.RUN_PRODUCTION,
+        AccessPermission.DELIVER_RELEASE,
+    ):
+        assert public_reviewer.permits(permission)
+    assert not public_reviewer.permits(AccessPermission.MANAGE_USERS)
+    assert not public_reviewer.permits(AccessPermission.MANAGE_BRANDS)
 
-    permissions = ROLE_PERMISSIONS[OperatorRole.REVIEWER]
-    assert AccessPermission.READ_PORTFOLIO in permissions
-    assert AccessPermission.EDIT_CONTENT in permissions
-    assert AccessPermission.REVIEW_CONTENT in permissions
-    assert AccessPermission.RUN_PRODUCTION in permissions
-    assert AccessPermission.DELIVER_RELEASE in permissions
-    assert AccessPermission.MANAGE_USERS not in permissions
-    assert AccessPermission.MANAGE_BRANDS not in permissions
+    legacy_reviewer = OperatorIdentity(
+        operator_id="legacy.reviewer",
+        key_name="legacy-key",
+        roles=frozenset({OperatorRole.REVIEWER}),
+        brand_ids=frozenset({"brand-one"}),
+    )
+    assert legacy_reviewer.permits(AccessPermission.REVIEW_CONTENT)
+    assert not legacy_reviewer.permits(AccessPermission.RUN_PRODUCTION)
+    assert not legacy_reviewer.permits(AccessPermission.DELIVER_RELEASE)
 
 
 def test_forward_migration_preserves_internal_capabilities() -> None:
