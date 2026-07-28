@@ -1,19 +1,83 @@
 from __future__ import annotations
 
 import json
+import os
 
 from src.infrastructure.database.connection import Database
 from src.infrastructure.database.settings import get_database_settings
 from src.operations.local_onboarding import BRANDS, LocalOnboarding
+from src.operator_api.access import OperatorRole, expand_operator_roles
+
+
+PUBLIC_OPERATORS = (
+    ("LOCAL_SUPER_ADMIN_OPERATOR_ID", "local-super-admin", "Local Super Administrator", OperatorRole.SUPER_ADMIN),
+    ("LOCAL_ADMIN_OPERATOR_ID", "local-admin", "Local Administrator", OperatorRole.ADMIN),
+    ("LOCAL_REVIEWER_OPERATOR_ID", "local-reviewer", "Local Reviewer", OperatorRole.REVIEWER),
+)
 
 
 class AlwaysOnLocalOnboarding(LocalOnboarding):
-    """Extend the existing local seed with one active, safe visual preset per brand."""
+    """Seed safe local production defaults and the simplified three-role model."""
 
     def run(self) -> dict:
+        # Preserve all historical onboarding behavior, then reconcile the public
+        # role model without deleting any production, artifact or review data.
         result = super().run()
         presets: dict[str, dict] = {}
+        operators: dict[str, dict] = {}
         with self.database.transaction() as conn:
+            brands = conn.execute(
+                "SELECT id,slug,display_name FROM football_brief.brands WHERE active=true ORDER BY slug"
+            ).fetchall()
+
+            for env_name, default_id, default_name, public_role in PUBLIC_OPERATORS:
+                operator_id = os.getenv(env_name, default_id)
+                display_name = os.getenv(env_name.replace("_ID", "_DISPLAY_NAME"), default_name)
+                row = conn.execute(
+                    """INSERT INTO football_brief.operator_users
+                       (operator_id,display_name,active,created_by)
+                       VALUES (%s,%s,true,%s)
+                       ON CONFLICT (operator_id) DO UPDATE SET
+                         display_name=EXCLUDED.display_name,active=true
+                       RETURNING *""",
+                    (operator_id, display_name, self.admin_id),
+                ).fetchone()
+                conn.execute(
+                    "DELETE FROM football_brief.operator_user_roles WHERE operator_user_id=%s",
+                    (row["id"],),
+                )
+                internal_roles = expand_operator_roles((public_role,))
+                for role in sorted(internal_roles, key=lambda value: value.value):
+                    conn.execute(
+                        """INSERT INTO football_brief.operator_user_roles
+                           (operator_user_id,role,assigned_by) VALUES (%s,%s,%s)""",
+                        (row["id"], role.value, self.admin_id),
+                    )
+                conn.execute(
+                    "DELETE FROM football_brief.operator_brand_assignments WHERE operator_user_id=%s",
+                    (row["id"],),
+                )
+                for brand in brands:
+                    conn.execute(
+                        """INSERT INTO football_brief.operator_brand_assignments
+                           (operator_user_id,brand_id,assigned_by)
+                           VALUES (%s,%s,%s) ON CONFLICT DO NOTHING""",
+                        (row["id"], brand["id"], self.admin_id),
+                    )
+                operators[operator_id] = {
+                    "operator_id": operator_id,
+                    "display_name": display_name,
+                    "roles": [public_role.value],
+                    "internal_roles": sorted(role.value for role in internal_roles),
+                }
+
+            # Old local keys are removed by the launcher upgrade. Keep their
+            # historical audit records but prevent those identities from signing in.
+            conn.execute(
+                """UPDATE football_brief.operator_users SET active=false
+                   WHERE operator_id IN ('local-producer','local-publisher')"""
+            )
+
             for spec in BRANDS:
                 row = conn.execute(
                     """SELECT bp.id AS profile_id,b.id AS brand_id
@@ -67,6 +131,8 @@ class AlwaysOnLocalOnboarding(LocalOnboarding):
                         ),
                     ).fetchone()
                 presets[spec["slug"]] = {"id": str(preset["id"]), "status": preset["status"]}
+        result["operators"] = operators
+        result["role_model"] = ["super_admin", "admin", "reviewer"]
         result["visual_presets"] = presets
         return result
 
