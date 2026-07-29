@@ -155,14 +155,19 @@ class LocalVideoGenerationWorker:
             inference_steps=int(payload.get("inference_steps") or context["workflow"]["default_steps"]),
             output_prefix=f"p114-video/{job['id']}/{attempt['id']}",
         )
-        self.provider.health()
-        started = time.monotonic()
-        submitted = self.provider.submit(request)
+        self._validate_request_against_workflow(request, context["workflow"])
         self._record_execution(
             job=job,
             attempt=attempt,
             request=request,
             context=context,
+            provider_request_id=None,
+        )
+        self.provider.health()
+        started = time.monotonic()
+        submitted = self.provider.submit(request)
+        self._bind_provider_request(
+            attempt_id=attempt["id"],
             provider_request_id=submitted.provider_job_id,
         )
 
@@ -256,9 +261,14 @@ class LocalVideoGenerationWorker:
                 """SELECT w.*,p.*,
                           w.id AS workflow_id,w.provider_key AS workflow_provider_key,
                           w.model_key AS workflow_model_key,w.status AS workflow_status,
-                          p.id AS policy_id,p.status AS policy_status
+                          p.id AS policy_id,p.status AS policy_status,
+                          r.status AS renderer_status,r.provider_key AS renderer_provider_key,
+                          r.model_key AS renderer_model_key,r.operation AS renderer_operation,
+                          r.supported_formats AS renderer_supported_formats,
+                          r.commercial_use_allowed AS renderer_commercial_use_allowed
                    FROM football_brief.local_video_workflows w
                    JOIN football_brief.video_model_use_policies p ON p.id=w.model_policy_id
+                   JOIN football_brief.renderer_catalogue_entries r ON r.id=w.renderer_catalogue_entry_id
                    WHERE w.id=%s""",
                 (workflow_id,),
             ).fetchone()
@@ -268,22 +278,25 @@ class LocalVideoGenerationWorker:
             workflow["id"] = workflow["workflow_id"]
             workflow["provider_key"] = workflow["workflow_provider_key"]
             workflow["model_key"] = workflow["workflow_model_key"]
+            self._validate_renderer_binding(workflow)
             input_asset = conn.execute(
-                "SELECT * FROM football_brief.assets WHERE id=%s AND lifecycle_status='approved'",
+                """SELECT * FROM football_brief.assets
+                   WHERE id=%s AND lifecycle_status='approved' AND asset_type='image'""",
                 (input_asset_id,),
             ).fetchone()
             end_asset = (
                 conn.execute(
-                    "SELECT * FROM football_brief.assets WHERE id=%s AND lifecycle_status='approved'",
+                    """SELECT * FROM football_brief.assets
+                       WHERE id=%s AND lifecycle_status='approved' AND asset_type='image'""",
                     (end_asset_id,),
                 ).fetchone()
                 if end_asset_id
                 else None
             )
         if not input_asset:
-            raise RuntimeError("approved input keyframe asset is required")
+            raise RuntimeError("approved input keyframe image asset is required")
         if end_asset_id and not end_asset:
-            raise RuntimeError("approved end-frame asset is required")
+            raise RuntimeError("approved end-frame image asset is required")
 
         scope = DistributionScope(str(payload.get("distribution_scope") or "internal"))
         territories = tuple(str(value) for value in payload.get("release_territories") or ())
@@ -308,6 +321,75 @@ class LocalVideoGenerationWorker:
             "end_path": self._asset_path(dict(end_asset)) if end_asset else None,
             "preflight": preflight,
         }
+
+    @staticmethod
+    def _validate_renderer_binding(workflow: dict[str, Any]) -> None:
+        if workflow.get("renderer_status") != "active":
+            raise RuntimeError("active P93 renderer catalogue entry is required")
+        if workflow.get("renderer_provider_key") != workflow.get("provider_key"):
+            raise RuntimeError("P93 renderer provider does not match the local workflow")
+        if workflow.get("renderer_model_key") != workflow.get("model_key"):
+            raise RuntimeError("P93 renderer model does not match the local workflow")
+        expected_operation = (
+            "video_to_video"
+            if workflow.get("operation") == "video_super_resolution"
+            else "image_to_video"
+        )
+        if workflow.get("renderer_operation") != expected_operation:
+            raise RuntimeError("P93 renderer operation does not match the local workflow")
+        formats = {
+            str(value).strip().lower().lstrip(".")
+            for value in (workflow.get("renderer_supported_formats") or ())
+        }
+        if "mp4" not in formats and "video/mp4" not in formats:
+            raise RuntimeError("P93 renderer must declare MP4 output support")
+        if workflow.get("renderer_commercial_use_allowed") is not True:
+            raise RuntimeError("P93 renderer commercial-use evidence is required")
+
+    @staticmethod
+    def _resolution_allowed(supported: Any, width: int, height: int) -> bool:
+        for value in supported or ():
+            if isinstance(value, dict):
+                try:
+                    if int(value.get("width")) == width and int(value.get("height")) == height:
+                        return True
+                except (TypeError, ValueError):
+                    continue
+            elif isinstance(value, (list, tuple)) and len(value) == 2:
+                try:
+                    if int(value[0]) == width and int(value[1]) == height:
+                        return True
+                except (TypeError, ValueError):
+                    continue
+            elif isinstance(value, str):
+                normalized = value.strip().lower().replace("×", "x").replace(" ", "")
+                if normalized == f"{width}x{height}":
+                    return True
+        return False
+
+    def _validate_request_against_workflow(
+        self,
+        request: LocalVideoRequest,
+        workflow: dict[str, Any],
+    ) -> None:
+        operation = str(workflow["operation"])
+        if operation == "video_super_resolution":
+            raise RuntimeError("video super-resolution execution is not activated in this worker slice")
+        if operation in {"start_end_frame", "transition"} and request.end_image_path is None:
+            raise RuntimeError("this local video workflow requires an approved end-frame image")
+        if operation == "image_to_video" and request.end_image_path is not None:
+            raise RuntimeError("image-to-video workflow does not accept an end-frame image")
+        if not self._resolution_allowed(
+            workflow.get("supported_resolutions"),
+            request.width,
+            request.height,
+        ):
+            raise RuntimeError("requested resolution is not approved for the active workflow")
+        duration_seconds = request.frame_count / request.fps
+        minimum = float(workflow["min_duration_seconds"])
+        maximum = float(workflow["max_duration_seconds"])
+        if duration_seconds < minimum or duration_seconds > maximum:
+            raise RuntimeError("requested duration is outside the active workflow bounds")
 
     def _asset_path(self, asset: dict[str, Any]) -> Path:
         metadata = dict(asset.get("metadata") or {})
@@ -337,7 +419,7 @@ class LocalVideoGenerationWorker:
         attempt: dict[str, Any],
         request: LocalVideoRequest,
         context: dict[str, Any],
-        provider_request_id: str,
+        provider_request_id: str | None,
     ) -> None:
         with self.database.transaction() as conn:
             conn.execute(
@@ -364,10 +446,33 @@ class LocalVideoGenerationWorker:
                     request.frame_count,
                     request.inference_steps,
                     provider_request_id,
-                    json.dumps({"model_use_preflight": context["preflight"]}, default=str),
+                    json.dumps(
+                        {
+                            "model_use_preflight": context["preflight"],
+                            "renderer_catalogue_entry_id": str(
+                                context["workflow"]["renderer_catalogue_entry_id"]
+                            ),
+                            "idempotency_key": request.idempotency_key,
+                            "output_prefix": request.output_prefix,
+                        },
+                        default=str,
+                    ),
                     self.worker_id,
                 ),
             )
+
+    def _bind_provider_request(self, *, attempt_id: UUID, provider_request_id: str) -> None:
+        with self.database.transaction() as conn:
+            row = conn.execute(
+                """UPDATE football_brief.local_video_executions
+                   SET provider_request_id=%s
+                   WHERE generation_attempt_id=%s AND status='submitted'
+                     AND provider_request_id IS NULL
+                   RETURNING id""",
+                (provider_request_id, attempt_id),
+            ).fetchone()
+            if not row:
+                raise RuntimeError("local video provider request could not be bound to its attempt")
 
     def _mark_execution_running(self, attempt_id: UUID) -> None:
         with self.database.transaction() as conn:
