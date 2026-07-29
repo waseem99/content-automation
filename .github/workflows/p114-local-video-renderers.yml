@@ -95,7 +95,21 @@ jobs:
           tests/unit/test_p94_routing_contracts.py
           tests/unit/test_p113_video_pilot_contracts.py
       - name: Safety boundary
-        shell: bash
         run: |
-          ! grep -R -n -E "https?://(?!127\.0\.0\.1|localhost)|automatic paid generation|automatic public publishing" \
-            src/application/local_video config/p114-local-video-manifest.example.json
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          paths = [Path("src/application/local_video"), Path("config/p114-local-video-manifest.example.json")]
+          external = re.compile(r"https?://([^/\s\"']+)")
+          for root in paths:
+              files = [root] if root.is_file() else list(root.rglob("*"))
+              for path in files:
+                  if not path.is_file():
+                      continue
+                  text = path.read_text(encoding="utf-8")
+                  assert "automatic paid generation" not in text.lower()
+                  assert "automatic public publishing" not in text.lower()
+                  for host in external.findall(text):
+                      assert host.split(":", 1)[0] in {"127.0.0.1", "localhost"}, (path, host)
+          PY
