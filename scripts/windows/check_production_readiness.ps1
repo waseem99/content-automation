@@ -69,7 +69,7 @@ $remote = $null
 if (Test-Path $RemotePath) {
   $remote = Get-Content -LiteralPath $RemotePath -Raw | ConvertFrom-Json
   try {
-    $remoteReady = Invoke-RestMethod -Uri "$($remote.public_url)/runtime/ready" -TimeoutSec 15
+    $remoteReady = Invoke-RestMethod -Uri "$($remote.public_url)/runtime/ready" -Headers @{ "ngrok-skip-browser-warning" = "true" } -TimeoutSec 15
     $checks["remote_https_ready"] = [bool]$remoteReady.ok
   } catch {
     $checks["remote_https_ready"] = $false

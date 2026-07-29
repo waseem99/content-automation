@@ -59,7 +59,7 @@ if (-not $publicUrl) {
 }
 
 try {
-  $remoteReady = Invoke-RestMethod -Uri "$publicUrl/runtime/ready" -TimeoutSec 15
+  $remoteReady = Invoke-RestMethod -Uri "$publicUrl/runtime/ready" -Headers @{ "ngrok-skip-browser-warning" = "true" } -TimeoutSec 15
   if (-not $remoteReady.ok) { throw "Remote readiness returned false." }
 } catch {
   throw "The ngrok URL exists but the authenticated Creator Studio runtime is not reachable: $($_.Exception.Message)"
