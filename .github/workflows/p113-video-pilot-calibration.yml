@@ -17,7 +17,9 @@ on:
       - "scripts/windows/capture_p113_hardware_snapshot.ps1"
       - "scripts/windows/initialize_p113_pilot.ps1"
       - "scripts/windows/deploy_remote_content_automation.ps1"
+      - "tests/unit/test_p110_four_brand_multiplatform.py"
       - "tests/unit/test_p113_video_pilot_contracts.py"
+      - "docs/implementation/p113-video-pilot-calibration.md"
       - ".github/workflows/p113-video-pilot-calibration.yml"
   workflow_dispatch:
 
@@ -128,6 +130,48 @@ jobs:
                   assert "global_public" not in hv["allowed_use_scopes"]
                   assert set(hv["prohibited_territories"]) == {"European Union", "United Kingdom", "South Korea"}
                   assert hv["requires_written_clearance"] is True
+          finally:
+              database.close()
+          PY
+      - name: Initialize representative pilot twice
+        run: |
+          python -m src.operations.p113_pilot_initialize --plan config/p113-pilot-plan.example.json
+          python -m src.operations.p113_pilot_initialize --plan config/p113-pilot-plan.example.json
+      - name: Verify pilot grouping and unmeasured acceptance state
+        run: |
+          python - <<'PY'
+          from src.application.video_pilot.grouped_service import GroupedVideoPilotService
+          from src.infrastructure.database.connection import Database
+          from src.infrastructure.database.settings import get_database_settings
+
+          database = Database(get_database_settings())
+          database.open(require_schema=True)
+          try:
+              with database.connection() as conn:
+                  run = conn.execute(
+                      "SELECT * FROM football_brief.video_pilot_runs WHERE run_key='p113-dual-model-pilot-v1'"
+                  ).fetchone()
+                  assert run is not None
+                  items = conn.execute(
+                      "SELECT * FROM football_brief.video_pilot_items WHERE pilot_run_id=%s",
+                      (run["id"],),
+                  ).fetchall()
+                  cases = conn.execute(
+                      "SELECT * FROM football_brief.video_pilot_cases WHERE pilot_run_id=%s",
+                      (run["id"],),
+                  ).fetchall()
+                  assert len(items) == 3
+                  assert len(cases) == 6
+                  assert {str(row["shot_class"]) for row in cases} == {
+                      "easy_motion", "people_animals", "product", "map_diagram", "transition", "hero"
+                  }
+              report = GroupedVideoPilotService(database).report(run["id"])["report"]
+              assert report["actuals"]["completed_videos"] == 0
+              assert report["actuals"]["attempts"] == 0
+              assert report["acceptance_ready"] is False
+              assert set(report["insufficiency_reasons"]) == {
+                  "completed_video_target_not_met", "attempt_target_not_met"
+              }
           finally:
               database.close()
           PY
