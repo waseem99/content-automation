@@ -104,7 +104,6 @@ class ModelUsePreflightRequest(BaseModel):
     model_key: str = Field(min_length=1, max_length=200)
     distribution_scope: DistributionScope
     release_territories: tuple[str, ...] = Field(default_factory=tuple, max_length=100)
-    written_clearance_reference: str | None = Field(default=None, min_length=3, max_length=2000)
 
     @field_validator("provider_key")
     @classmethod
@@ -125,14 +124,13 @@ class PilotAttemptCreateRequest(BaseModel):
     workflow_key: str = Field(min_length=2, max_length=200)
     workflow_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
     checkpoint_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
-    seed: int
+    seed: int = Field(ge=0, le=9223372036854775807)
     width: int = Field(ge=256, le=8192)
     height: int = Field(ge=256, le=8192)
     fps: int = Field(ge=1, le=240)
     frame_count: int = Field(ge=1, le=10000)
     inference_steps: int = Field(ge=1, le=500)
     started_at: datetime
-    written_clearance_reference: str | None = Field(default=None, min_length=3, max_length=2000)
 
     @field_validator("provider_key")
     @classmethod
@@ -147,10 +145,10 @@ class PilotAttemptCompleteRequest(BaseModel):
     gpu_active_ms: int | None = Field(default=None, ge=0)
     peak_vram_mib: int | None = Field(default=None, ge=0)
     peak_system_ram_mib: int | None = Field(default=None, ge=0)
-    average_gpu_temperature_c: Decimal | None = None
-    peak_gpu_temperature_c: Decimal | None = None
-    average_gpu_power_w: Decimal | None = None
-    peak_gpu_power_w: Decimal | None = None
+    average_gpu_temperature_c: Decimal | None = Field(default=None, ge=Decimal("-100"), le=Decimal("250"))
+    peak_gpu_temperature_c: Decimal | None = Field(default=None, ge=Decimal("-100"), le=Decimal("250"))
+    average_gpu_power_w: Decimal | None = Field(default=None, ge=0, le=Decimal("10000"))
+    peak_gpu_power_w: Decimal | None = Field(default=None, ge=0, le=Decimal("10000"))
     output_asset_id: UUID | None = None
     external_cost_usd: Decimal = Field(default=Decimal("0"), ge=0)
     failure_code: str | None = Field(default=None, max_length=200)
