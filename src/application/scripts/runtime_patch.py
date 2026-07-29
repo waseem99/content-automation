@@ -67,6 +67,8 @@ def _decide_with_friendly_validation(
     rationale: str | None,
     reviewer: str,
 ) -> dict[str, Any]:
+    """Apply the existing decision while translating expected DB gates for HTTP clients."""
+
     normalized = _normalize_rationale(decision, rationale)
     try:
         return _ORIGINAL_DECIDE(
@@ -98,6 +100,10 @@ def _decide_with_friendly_validation(
 
 
 def install_validated_script_service() -> None:
-    """Install validated revision copying and user-facing decision safeguards."""
+    """Install only the JSON-safe revision copier on the canonical service.
+
+    Friendly decision translation is invoked explicitly by the HTTP route so
+    direct service/database lifecycle tests retain their original exceptions.
+    """
+
     ScriptReviewService._copy_children = staticmethod(ValidatedScriptReviewService._copy_children)
-    ScriptReviewService.decide = _decide_with_friendly_validation
