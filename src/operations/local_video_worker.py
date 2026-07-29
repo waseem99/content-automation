@@ -28,6 +28,7 @@ from src.operations.job_logging import ObservedGenerationJobService
 
 
 SUPPORTED_TYPES = {GenerationJobType.LOCAL_CLIP}
+ENABLED_VALUES = {"1", "true", "yes", "on"}
 
 
 def _sha256(path: Path) -> str:
@@ -38,8 +39,14 @@ def _sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
+def _local_video_enabled() -> bool:
+    return os.getenv("P114_LOCAL_VIDEO_ENABLED", "false").strip().lower() in ENABLED_VALUES
+
+
 class LocalVideoGenerationWorker:
     def __init__(self, database: Database) -> None:
+        if not _local_video_enabled():
+            raise RuntimeError("P114 local video worker is disabled")
         self.database = database
         self.jobs = ObservedGenerationJobService(database)
         self.worker_id = os.getenv("LOCAL_VIDEO_WORKER_OPERATOR_ID", "local-video-worker")
@@ -47,6 +54,9 @@ class LocalVideoGenerationWorker:
         self.poll_seconds = max(1, int(os.getenv("LOCAL_VIDEO_POLL_SECONDS", "3")))
         self.artifact_root = Path(os.getenv("LOCAL_ARTIFACT_ROOT", ".runtime/artifacts")).resolve()
         self.artifact_root.mkdir(parents=True, exist_ok=True)
+        self.workflow_root = Path(
+            os.getenv("P114_WORKFLOW_ROOT", "config/local-video-workflows")
+        ).resolve()
         self.provider = ComfyUILocalVideoProvider(
             base_url=os.getenv("P114_COMFYUI_BASE_URL", "http://127.0.0.1:8188")
         )
@@ -87,7 +97,7 @@ class LocalVideoGenerationWorker:
                 "output": output,
             }
         except Exception as exc:
-            self._mark_execution_failed(job_id=job["id"], error=exc)
+            self._mark_execution_failed(attempt_id=attempt["id"], error=exc)
             self.jobs.fail(
                 GenerationJobFailure(
                     job_id=job["id"],
@@ -127,7 +137,7 @@ class LocalVideoGenerationWorker:
             provider_key=str(context["workflow"]["provider_key"]),
             model_key=str(context["workflow"]["model_key"]),
             workflow_key=str(context["workflow"]["workflow_key"]),
-            workflow_path=Path(str(context["workflow"]["workflow_path"])).resolve(),
+            workflow_path=self._workflow_path(str(context["workflow"]["workflow_path"])),
             workflow_sha256=str(context["workflow"]["workflow_sha256"]),
             checkpoint_sha256=str(context["workflow"]["checkpoint_sha256"]),
             input_image_path=context["input_path"],
@@ -174,7 +184,7 @@ class LocalVideoGenerationWorker:
                         lease_seconds=self.lease_seconds,
                     )
                 )
-                self._mark_execution_running(job["id"])
+                self._mark_execution_running(attempt["id"])
                 next_heartbeat = time.monotonic() + min(60, self.lease_seconds // 3)
             time.sleep(self.poll_seconds)
 
@@ -192,7 +202,7 @@ class LocalVideoGenerationWorker:
         asset_id = self._register_asset(job=job, request=request, output_path=output_path)
         wall_clock_ms = int((time.monotonic() - started) * 1000)
         self._complete_execution(
-            job_id=job["id"],
+            attempt_id=attempt["id"],
             output_asset_id=asset_id,
             wall_clock_ms=wall_clock_ms,
         )
@@ -217,6 +227,7 @@ class LocalVideoGenerationWorker:
             "inference_steps": request.inference_steps,
             "external_fee_incurred": False,
             "actual_cost_usd": 0,
+            "review_status": "pending",
             "human_review_required": True,
             "automatic_approval": False,
             "automatic_publishing": False,
@@ -299,6 +310,12 @@ class LocalVideoGenerationWorker:
             raise RuntimeError("local video input asset path is unavailable or outside artifact root")
         return path
 
+    def _workflow_path(self, value: str) -> Path:
+        path = Path(value).resolve()
+        if not path.is_file() or self.workflow_root not in path.parents:
+            raise RuntimeError("local video workflow is unavailable or outside the approved workflow root")
+        return path
+
     def _record_execution(
         self,
         *,
@@ -338,31 +355,31 @@ class LocalVideoGenerationWorker:
                 ),
             )
 
-    def _mark_execution_running(self, job_id: UUID) -> None:
+    def _mark_execution_running(self, attempt_id: UUID) -> None:
         with self.database.transaction() as conn:
             conn.execute(
-                "UPDATE football_brief.local_video_executions SET status='running' WHERE generation_job_id=%s AND status='submitted'",
-                (job_id,),
+                "UPDATE football_brief.local_video_executions SET status='running' WHERE generation_attempt_id=%s AND status='submitted'",
+                (attempt_id,),
             )
 
-    def _complete_execution(self, *, job_id: UUID, output_asset_id: UUID, wall_clock_ms: int) -> None:
+    def _complete_execution(self, *, attempt_id: UUID, output_asset_id: UUID, wall_clock_ms: int) -> None:
         with self.database.transaction() as conn:
             conn.execute(
                 """UPDATE football_brief.local_video_executions
                    SET status='succeeded',completed_at=now(),output_asset_id=%s,wall_clock_ms=%s,
                        external_cost_usd=0
-                   WHERE generation_job_id=%s AND status IN ('submitted','running')""",
-                (output_asset_id, wall_clock_ms, job_id),
+                   WHERE generation_attempt_id=%s AND status IN ('submitted','running')""",
+                (output_asset_id, wall_clock_ms, attempt_id),
             )
 
-    def _mark_execution_failed(self, *, job_id: UUID, error: Exception) -> None:
+    def _mark_execution_failed(self, *, attempt_id: UUID, error: Exception) -> None:
         with self.database.transaction() as conn:
             conn.execute(
                 """UPDATE football_brief.local_video_executions
                    SET status='failed',completed_at=now(),failure_code=%s,failure_message=%s,
                        external_cost_usd=0
-                   WHERE generation_job_id=%s AND status IN ('submitted','running')""",
-                (type(error).__name__, str(error)[:5000], job_id),
+                   WHERE generation_attempt_id=%s AND status IN ('submitted','running')""",
+                (type(error).__name__, str(error)[:5000], attempt_id),
             )
 
     def _register_asset(self, *, job: dict[str, Any], request: LocalVideoRequest, output_path: Path) -> UUID:
@@ -378,7 +395,7 @@ class LocalVideoGenerationWorker:
                 """INSERT INTO football_brief.assets
                    (asset_type,source_type,lifecycle_status,original_filename,storage_uri,sha256,
                     mime_type,size_bytes,metadata,created_by)
-                   VALUES ('video','ai_generated','approved',%s,%s,%s,'video/mp4',%s,%s::jsonb,%s)
+                   VALUES ('video','ai_generated','internal_only',%s,%s,%s,'video/mp4',%s,%s::jsonb,%s)
                    RETURNING id""",
                 (
                     output_path.name,
@@ -395,7 +412,9 @@ class LocalVideoGenerationWorker:
                             "storage_path": str(output_path),
                             "local_only": True,
                             "external_fee_incurred": False,
+                            "review_status": "pending",
                             "human_content_review_required": True,
+                            "automatic_approval": False,
                         }
                     ),
                     self.worker_id,
@@ -410,6 +429,21 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--poll-seconds", type=int, default=5)
     args = parser.parse_args(argv)
 
+    if not _local_video_enabled():
+        print(
+            json.dumps(
+                {
+                    "ok": True,
+                    "enabled": False,
+                    "claimed": False,
+                    "reason": "P114_LOCAL_VIDEO_ENABLED is false",
+                },
+                sort_keys=True,
+            ),
+            flush=True,
+        )
+        return 0
+
     database = Database(get_database_settings())
     database.open(require_schema=True)
     worker = LocalVideoGenerationWorker(database)
@@ -421,6 +455,7 @@ def main(argv: list[str] | None = None) -> int:
                 break
             time.sleep(max(1, args.poll_seconds))
     finally:
+        worker.provider.client.close()
         database.close()
     return 0
 
