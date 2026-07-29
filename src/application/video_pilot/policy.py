@@ -30,22 +30,19 @@ def evaluate_model_policy(policy: dict[str, Any], request: ModelUsePreflightRequ
     allowed_scopes = {str(value) for value in policy.get("allowed_use_scopes") or ()}
     prohibited = {territory_key(value) for value in policy.get("prohibited_territories") or ()}
     requested = {territory_key(value) for value in request.release_territories}
-    clearance = bool(request.written_clearance_reference and request.written_clearance_reference.strip())
 
     if not bool(policy.get("commercial_use_allowed")):
         reasons.append("commercial_use_not_allowed")
-    if scope not in allowed_scopes and not clearance:
+    if scope not in allowed_scopes:
         reasons.append("distribution_scope_not_allowed")
     if request.distribution_scope == DistributionScope.TERRITORY_LIMITED and not requested:
         reasons.append("release_territories_required")
 
     intersection = sorted(prohibited.intersection(requested))
-    if intersection and not clearance:
+    if intersection:
         reasons.append("release_territory_prohibited")
-    if request.distribution_scope == DistributionScope.GLOBAL_PUBLIC and prohibited and not clearance:
+    if request.distribution_scope == DistributionScope.GLOBAL_PUBLIC and prohibited:
         reasons.append("global_public_distribution_reaches_prohibited_territories")
-    if clearance and scope not in allowed_scopes and not bool(policy.get("requires_written_clearance")):
-        reasons.append("policy_does_not_allow_clearance_override")
 
     return {
         "ok": True,
@@ -60,5 +57,6 @@ def evaluate_model_policy(policy: dict[str, Any], request: ModelUsePreflightRequ
         "distribution_scope": scope,
         "release_territories": list(request.release_territories),
         "prohibited_territory_matches": intersection,
-        "written_clearance_recorded": clearance,
+        "policy_requires_written_clearance": bool(policy.get("requires_written_clearance")),
+        "clearance_process": "activate_a_reviewed_child_policy_version",
     }
