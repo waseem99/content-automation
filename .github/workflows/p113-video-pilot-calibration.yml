@@ -1,0 +1,149 @@
+name: P113 Video Pilot Calibration
+
+on:
+  pull_request:
+    branches: [test]
+    paths:
+      - "migrations/0096_p113_video_pilot_calibration.sql"
+      - "migrations/0097_p113_model_policy_versioning.sql"
+      - "migrations/0098_p113_pilot_video_grouping.sql"
+      - "src/application/video_pilot/**"
+      - "src/operations/p113_model_policy_onboarding.py"
+      - "src/operations/p113_pilot_initialize.py"
+      - "src/operator_api/video_pilot_runtime.py"
+      - "src/operator_api/runtime_factory.py"
+      - "config/p113-pilot-plan.example.json"
+      - "config/local.env.example"
+      - "scripts/windows/capture_p113_hardware_snapshot.ps1"
+      - "scripts/windows/initialize_p113_pilot.ps1"
+      - "scripts/windows/deploy_remote_content_automation.ps1"
+      - "tests/unit/test_p113_video_pilot_contracts.py"
+      - ".github/workflows/p113-video-pilot-calibration.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: p113-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  contracts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: content_automation
+          POSTGRES_USER: postgres
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d content_automation"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://postgres@localhost:5432/content_automation
+      DATABASE_REQUIRE_SCHEMA: "false"
+      DATABASE_MIGRATIONS_DIR: migrations
+      LOCAL_SUPER_ADMIN_OPERATOR_ID: local-super-admin
+      LOCAL_ADMIN_OPERATOR_ID: local-admin
+      LOCAL_REVIEWER_OPERATOR_ID: local-reviewer
+      LOCAL_PLAN_MONTH: 2026-08-01
+      KOKORO_PRIMARY_VOICE: af_heart
+      KOKORO_ENERGETIC_VOICE: af_bella
+      KOKORO_SERIOUS_VOICE: am_adam
+      OPS_ENVIRONMENT: staging
+      OPS_MIGRATION_HEAD: 0098_p113_pilot_video_grouping.sql
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install dependencies
+        run: python -m pip install -r requirements.txt
+      - name: Compile Python
+        run: python -m compileall -q src tests
+      - name: PowerShell syntax
+        shell: pwsh
+        run: |
+          $files = @(
+            "scripts/windows/capture_p113_hardware_snapshot.ps1",
+            "scripts/windows/initialize_p113_pilot.ps1",
+            "scripts/windows/deploy_remote_content_automation.ps1"
+          )
+          foreach ($file in $files) {
+            $tokens = $null
+            $errors = $null
+            [System.Management.Automation.Language.Parser]::ParseFile(
+              (Resolve-Path $file),
+              [ref]$tokens,
+              [ref]$errors
+            ) | Out-Null
+            if ($errors.Count -gt 0) {
+              $errors | ForEach-Object { Write-Error ("{0}: {1}" -f $file, $_.Message) }
+              throw "PowerShell syntax validation failed for $file"
+            }
+          }
+      - name: Apply complete migration chain
+        run: python -m src.infrastructure.database.cli migrate
+      - name: Run local operator onboarding twice
+        run: |
+          python -m src.operations.local_onboarding_v2
+          python -m src.operations.local_onboarding_v2
+      - name: Run P113 model policy onboarding twice
+        run: |
+          python -m src.operations.p113_model_policy_onboarding
+          python -m src.operations.p113_model_policy_onboarding
+      - name: Verify active model-use policies
+        run: |
+          python - <<'PY'
+          from src.infrastructure.database.connection import Database
+          from src.infrastructure.database.settings import get_database_settings
+
+          expected = {
+              ("wan-ai", "Wan2.2-TI2V-5B"),
+              ("tencent-hunyuan", "HunyuanVideo-1.5-480p-I2V-Step-Distilled"),
+          }
+          database = Database(get_database_settings())
+          database.open(require_schema=True)
+          try:
+              with database.connection() as conn:
+                  policies = conn.execute(
+                      """SELECT provider_key,model_key,version,allowed_use_scopes,
+                                prohibited_territories,requires_written_clearance
+                           FROM football_brief.video_model_use_policies
+                           WHERE status='active' ORDER BY provider_key,model_key"""
+                  ).fetchall()
+                  assert {(str(row["provider_key"]), str(row["model_key"])) for row in policies} == expected
+                  assert len(policies) == 2
+                  wan = next(row for row in policies if row["provider_key"] == "wan-ai")
+                  hv = next(row for row in policies if row["provider_key"] == "tencent-hunyuan")
+                  assert "global_public" in wan["allowed_use_scopes"]
+                  assert "global_public" not in hv["allowed_use_scopes"]
+                  assert set(hv["prohibited_territories"]) == {"European Union", "United Kingdom", "South Korea"}
+                  assert hv["requires_written_clearance"] is True
+          finally:
+              database.close()
+          PY
+      - name: Focused P113 contracts
+        run: python -m pytest -q tests/unit/test_p113_video_pilot_contracts.py
+      - name: Existing renderer, routing and creator regressions
+        run: >-
+          python -m pytest -q
+          tests/unit/test_p93_renderer_contracts.py
+          tests/unit/test_p94_routing_contracts.py
+          tests/unit/test_p110_four_brand_multiplatform.py
+          tests/unit/test_p101_creator_studio_v2_contracts.py
+      - name: Safety boundary
+        shell: bash
+        run: |
+          ! grep -R -n -E "OPERATOR_API_KEYS_JSON=.*(token|secret)|ngrok.*authtoken.*=" \
+            scripts/windows config/local.env.example
+          ! grep -R -n -E "automatic public publishing|automatic paid generation|copied cookies|private endpoint" \
+            src/application/video_pilot src/operations/p113_* src/operator_api/video_pilot_runtime.py
