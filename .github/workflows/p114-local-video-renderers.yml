@@ -13,11 +13,12 @@ on:
       - "config/local.env.example"
       - "tests/unit/test_p113_video_pilot_contracts.py"
       - "tests/unit/test_p114_local_video_contracts.py"
+      - ".github/scripts/p114_source_repair.py"
       - ".github/workflows/p114-local-video-renderers.yml"
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: p114-${{ github.event.pull_request.number || github.ref }}
@@ -57,12 +58,48 @@ jobs:
       OPS_MIGRATION_HEAD: 0099_p114_local_video_renderers.sql
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
           cache: pip
+      - name: Apply idempotent HTTPS source repair
+        run: python .github/scripts/p114_source_repair.py
       - name: Install dependencies
-        run: python -m pip install -r requirements.txt
+        run: |
+          python -m pip install -r requirements.txt
+          python -m pip install "bandit>=1.7"
+      - name: Validate HTTPS source repair
+        run: |
+          python -m compileall -q \
+            src/application/https_fetch.py \
+            src/application/scripts/automatic_evidence.py \
+            src/operator_api/p110_runtime.py
+          bandit -q -r \
+            src/application/https_fetch.py \
+            src/application/scripts/automatic_evidence.py \
+            src/operator_api/p110_runtime.py
+          ! grep -R -n "urlopen(" \
+            src/application/scripts/automatic_evidence.py \
+            src/operator_api/p110_runtime.py
+      - name: Commit repaired sources when needed
+        shell: bash
+        run: |
+          git add \
+            src/application/https_fetch.py \
+            src/application/scripts/automatic_evidence.py \
+            src/operator_api/p110_runtime.py
+          git diff --cached --check
+          if git diff --cached --quiet; then
+            echo "HTTPS source repair already committed."
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git commit -m "P114 enforce HTTPS-only source fetching"
+            git push origin "HEAD:${{ github.head_ref }}"
+          fi
       - name: Compile Python
         run: python -m compileall -q src tests
       - name: Apply complete migration chain
