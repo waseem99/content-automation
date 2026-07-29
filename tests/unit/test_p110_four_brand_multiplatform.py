@@ -5,6 +5,7 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
+from src.application.scripts.automatic_evidence import AutomaticScriptEvidenceService
 from src.operator_api.p110_runtime import (
     ALL_PLATFORMS,
     PLATFORM_PROFILES,
@@ -17,9 +18,12 @@ from src.operator_api.p110_runtime import (
 ROOT = Path(__file__).resolve().parents[2]
 MIGRATION = ROOT / "migrations" / "0093_p110_four_brand_multiplatform.sql"
 FAMILY_MIGRATION = ROOT / "migrations" / "0094_p110_content_family_defaults.sql"
+OVERRIDE_MIGRATION = ROOT / "migrations" / "0095_p111_super_admin_evidence_override.sql"
 ONBOARDING = ROOT / "src" / "operations" / "local_onboarding.py"
 ONBOARDING_V2 = ROOT / "src" / "operations" / "local_onboarding_v2.py"
+WORKER = ROOT / "src" / "operations" / "local_worker_aligned.py"
 RUNTIME = ROOT / "src" / "operator_api" / "p110_runtime.py"
+PATCH = ROOT / "src" / "operator_api" / "p111_runtime_patch.py"
 API = ROOT / "web" / "static-creator-ui" / "assets" / "studio-v2-api.js"
 UI = ROOT / "web" / "static-creator-ui" / "assets" / "studio-v2-p110.js"
 INDEX = ROOT / "web" / "static-creator-ui" / "index.html"
@@ -77,6 +81,27 @@ def test_source_validation_rejects_private_and_credential_urls_without_network()
             _assert_public_https_url(value)
 
 
+def test_automatic_evidence_matching_is_conservative() -> None:
+    strong = AutomaticScriptEvidenceService._match_score(
+        "African elephants communicate using low frequency rumbles",
+        "Elephant communication includes low frequency rumbles used by African elephants",
+    )
+    weak = AutomaticScriptEvidenceService._match_score(
+        "African elephants communicate using low frequency rumbles",
+        "A page about unrelated marine biology and coral reefs",
+    )
+    assert strong >= 0.45
+    assert weak < 0.45
+    assert AutomaticScriptEvidenceService._numbers_are_preserved(
+        "A call can travel 8 kilometres",
+        "The call can travel 8 kilometres",
+    )
+    assert not AutomaticScriptEvidenceService._numbers_are_preserved(
+        "A call can travel 8 kilometres",
+        "The call can travel several kilometres",
+    )
+
+
 def test_four_brand_onboarding_retains_three_fixed_voice_contract() -> None:
     source = ONBOARDING.read_text(encoding="utf-8")
     for slug, label, url in (
@@ -98,12 +123,14 @@ def test_four_brand_onboarding_retains_three_fixed_voice_contract() -> None:
     assert "historical" not in source.lower() or "existing" in source.lower()
 
 
-def test_schema_is_forward_only_and_records_explicit_self_review() -> None:
+def test_schema_is_forward_only_and_records_explicit_overrides() -> None:
     migration = MIGRATION.read_text(encoding="utf-8")
     family = FAMILY_MIGRATION.read_text(encoding="utf-8")
-    assert "DROP TABLE" not in migration
-    assert "TRUNCATE" not in migration
-    assert "DELETE FROM football_brief.script" not in migration
+    override = OVERRIDE_MIGRATION.read_text(encoding="utf-8")
+    for source in (migration, family, override):
+        assert "DROP TABLE" not in source
+        assert "TRUNCATE" not in source
+        assert "DELETE FROM football_brief.script" not in source
     assert "brand_review_policies" in migration
     assert "script_source_research_runs" in migration
     assert "script_source_research_candidates" in migration
@@ -113,6 +140,10 @@ def test_schema_is_forward_only_and_records_explicit_self_review() -> None:
     assert "self_review boolean NOT NULL DEFAULT false" in migration
     assert "Admin role is required for script self-review" in migration
     assert "initialize_content_family" in family
+    assert "unsupported_claim_override boolean NOT NULL DEFAULT false" in override
+    assert "Super Admin role is required for unsupported factual claim override" in override
+    assert "matching_override_total" in override
+    assert "unsupported_claim_snapshot" in override
 
 
 def test_review_policies_are_seeded_after_operator_onboarding() -> None:
@@ -125,11 +156,12 @@ def test_review_policies_are_seeded_after_operator_onboarding() -> None:
     assert "independent_reviewer_available" in onboarding
 
 
-def test_runtime_keeps_research_operator_controlled_and_ssrf_safe() -> None:
+def test_runtime_keeps_research_safe_and_super_admin_override_audited() -> None:
     source = RUNTIME.read_text(encoding="utf-8")
+    patch = PATCH.read_text(encoding="utf-8")
+    worker = WORKER.read_text(encoding="utf-8")
     assert "operator-controlled source research" in source
     assert "operator_triggered" in source
-    assert "Never" not in source or "source" in source
     assert "ipaddress.ip_address" in source
     assert "ip.is_private" in source
     assert "source_url_must_be_public_https" in source
@@ -138,7 +170,11 @@ def test_runtime_keeps_research_operator_controlled_and_ssrf_safe() -> None:
     assert "working_script_revision_required_for_sources" in source
     assert "self_review" in source
     assert "Same-session Admin progression" in source
-    assert "automatic" not in source.lower() or "automatic" in source.lower()
+    assert "actor.is_super_admin" in patch
+    assert "unsupported_claim_snapshot" in patch
+    assert "AutomaticScriptEvidenceService" in patch
+    assert "automatic_approval\": False" in (ROOT / "src" / "application" / "scripts" / "automatic_evidence.py").read_text(encoding="utf-8")
+    assert "install_p111_worker_evidence_patch" in worker
 
 
 def test_creator_studio_exposes_complete_operator_path() -> None:
@@ -169,7 +205,8 @@ def test_windows_upgrade_preserves_secrets_and_advances_schema_marker() -> None:
     deploy = DEPLOY.read_text(encoding="utf-8")
     config = CONFIG.read_text(encoding="utf-8")
     assert "Sync-P110Environment" in deploy
-    assert 'OPS_MIGRATION_HEAD"] = "0094_p110_content_family_defaults.sql"' in deploy
+    assert 'OPS_MIGRATION_HEAD"] = "0095_p111_super_admin_evidence_override.sql"' in deploy
     assert "OPERATOR_API_KEYS_JSON" not in deploy
     assert "KOKORO_PRIMARY_VOICE" in deploy
-    assert "OPS_MIGRATION_HEAD=0094_p110_content_family_defaults.sql" in config
+    assert "LOCAL_AUTO_RESEARCH_MINIMUM_MATCH" in deploy
+    assert "OPS_MIGRATION_HEAD=0095_p111_super_admin_evidence_override.sql" in config
