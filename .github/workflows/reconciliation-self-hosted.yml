@@ -47,6 +47,14 @@ jobs:
           npm --version
           git --version
 
+      - name: Install Python dependencies
+        run: |
+          python -m venv .venv-ci
+          $python = (Resolve-Path .\.venv-ci\Scripts\python.exe).Path
+          $scripts = Split-Path $python
+          $scripts | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          & $python -m pip install --disable-pip-version-check --requirement requirements.txt
+
       - name: Confirm sensitive local files are not tracked
         run: |
           $tracked = git ls-files
