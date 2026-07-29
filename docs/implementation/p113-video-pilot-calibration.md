@@ -11,9 +11,11 @@ It does **not** download model weights, enqueue video generation, approve paid s
 The active policy matrix is versioned in `football_brief.video_model_use_policies`.
 
 - `wan-ai / Wan2.2-TI2V-5B` is the default global-public pilot candidate.
-- `tencent-hunyuan / HunyuanVideo-1.5-480p-I2V-Step-Distilled` is limited to internal or territory-limited work unless an explicit written-clearance reference is recorded.
+- `tencent-hunyuan / HunyuanVideo-1.5-480p-I2V-Step-Distilled` is limited to internal or territory-limited work under the active policy.
 - Hunyuan preflight rejects the European Union, United Kingdom and South Korea under the recorded official licence evidence.
-- Model policies cannot be edited in place after activation. Evidence or permission changes require a child version.
+- No operator can bypass model-use restrictions by typing an ad hoc clearance reference on an attempt.
+- Written legal clearance must be reviewed and activated as a new child policy version before broader use becomes eligible.
+- Model policies cannot be edited in place after activation.
 - The policy matrix supports production governance; it does not replace legal review.
 
 The idempotent onboarding command is:
