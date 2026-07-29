@@ -106,6 +106,20 @@ class GroupedVideoPilotService(VideoPilotService):
         return {"ok": True, "kind": "video_pilot_case_created", "case": dict(case)}
 
     def review_attempt(self, attempt_id: UUID, request: Any, *, actor: str) -> dict[str, Any]:
+        with self.database.connection() as conn:
+            state = conn.execute(
+                """SELECT c.status AS case_status,i.status AS item_status
+                   FROM football_brief.video_pilot_attempts a
+                   JOIN football_brief.video_pilot_cases c ON c.id=a.pilot_case_id
+                   JOIN football_brief.video_pilot_items i ON i.id=c.pilot_item_id
+                   WHERE a.id=%s""",
+                (attempt_id,),
+            ).fetchone()
+        if not state:
+            raise VideoPilotError("pilot_attempt_not_found")
+        if state["case_status"] == "completed" or state["item_status"] == "completed":
+            raise VideoPilotError("pilot_case_already_has_accepted_output")
+
         result = super().review_attempt(attempt_id, request, actor=actor)
         with self.database.transaction() as conn:
             row = conn.execute(
