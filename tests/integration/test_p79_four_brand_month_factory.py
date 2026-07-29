@@ -19,12 +19,13 @@ def test_static_manifest_exposes_real_queue_without_paid_or_publish_actions() ->
     assert payload["guardrails"]["human_approval_before_publish"] is True
 
 
-def test_static_ui_loads_month_factory_and_surfaces_brief_blockers() -> None:
-    app = (ROOT / "web" / "static-creator-ui" / "assets" / "app.js").read_text(encoding="utf-8")
+def test_static_snapshot_is_built_while_studio_v2_uses_runtime_data() -> None:
+    app = (ROOT / "web" / "static-creator-ui" / "assets" / "studio-v2.js").read_text(encoding="utf-8")
     build = (ROOT / "scripts" / "build-static-creator-ui.js").read_text(encoding="utf-8")
 
-    assert 'fetch("data/month-factory.json"' in app
-    assert "selected.blocker" in app
+    assert "StudioApi.brands()" in app
+    assert "StudioApi.overview()" in app
+    assert "data.blockers?.length" in app
+    assert 'fetch("data/month-factory.json"' not in app
     assert 'path.join("data", "month-factory.json")' in build
-    assert "paid_render_jobs_started" not in app
     assert "/publish" not in app
