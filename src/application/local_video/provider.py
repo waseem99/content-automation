@@ -5,6 +5,7 @@ import json
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlparse
 
 import httpx
 
@@ -33,6 +34,13 @@ class ComfyUILocalVideoProvider:
         base_url: str,
         client: httpx.Client | None = None,
     ) -> None:
+        parsed = urlparse(base_url)
+        if parsed.scheme != "http" or parsed.hostname not in {"127.0.0.1", "localhost", "::1"}:
+            raise ValueError("local ComfyUI must use a loopback HTTP endpoint")
+        if parsed.username or parsed.password or parsed.query or parsed.fragment:
+            raise ValueError("local ComfyUI endpoint must not contain credentials, query or fragment")
+        if parsed.path not in {"", "/"}:
+            raise ValueError("local ComfyUI endpoint must not contain a path")
         self.client = client or httpx.Client(
             base_url=base_url.rstrip("/"),
             timeout=120,
@@ -139,7 +147,9 @@ class ComfyUILocalVideoProvider:
         return LocalVideoJob(**{**job.__dict__, "status": LocalVideoJobStatus.RUNNING})
 
     def cancel(self, job: LocalVideoJob) -> LocalVideoJob:
-        response = self.client.post("/interrupt")
+        # Remove only the named queued prompt. Global /interrupt can terminate a
+        # different operator's active generation and is never safe here.
+        response = self.client.post("/queue", json={"delete": [job.provider_job_id]})
         response.raise_for_status()
         return LocalVideoJob(**{**job.__dict__, "status": LocalVideoJobStatus.CANCELLED})
 
@@ -162,7 +172,10 @@ class ComfyUILocalVideoProvider:
         if not partial.is_file() or partial.stat().st_size == 0:
             partial.unlink(missing_ok=True)
             raise RuntimeError("downloaded local video is empty")
-        if not response.headers.get("content-type", "").lower().startswith("video/") and partial.suffix.lower() != ".mp4.partial":
+        content_type = response.headers.get("content-type", "").lower()
+        if content_type and not (
+            content_type.startswith("video/") or content_type.startswith("application/octet-stream")
+        ):
             partial.unlink(missing_ok=True)
             raise RuntimeError("ComfyUI output is not a video")
         partial.replace(output_path)
