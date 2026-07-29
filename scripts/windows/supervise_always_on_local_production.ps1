@@ -9,10 +9,23 @@ $ErrorActionPreference = "Stop"
 $Root = (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path
 $Runtime = Join-Path $Root ".runtime"
 $Python = Join-Path $Root ".venv\Scripts\python.exe"
+$EnvPath = Join-Path $Root ".env.local"
 $CoreSupervisor = Join-Path $PSScriptRoot "supervise_local_production.ps1"
 $StopMarker = Join-Path $Runtime "stop.request"
 $InstanceLock = Join-Path $Runtime "always-on-supervisor.lock"
 New-Item -ItemType Directory -Force -Path (Join-Path $Runtime "logs") | Out-Null
+
+function Import-LocalEnvironment {
+  if (-not (Test-Path -LiteralPath $EnvPath)) { return }
+  foreach ($line in Get-Content -LiteralPath $EnvPath) {
+    $trimmed = $line.Trim()
+    if (-not $trimmed -or $trimmed.StartsWith("#") -or -not $trimmed.Contains("=")) { continue }
+    $parts = $trimmed.Split("=", 2)
+    [Environment]::SetEnvironmentVariable([string]$parts[0], [string]$parts[1], "Process")
+  }
+}
+
+Import-LocalEnvironment
 
 $lockStream = $null
 try {
@@ -43,9 +56,22 @@ function Start-Continuation {
     -PassThru
 }
 
+function Start-P114VideoWorker {
+  return Start-Process -FilePath $Python `
+    -ArgumentList @("-m", "src.operations.p114_local_video_worker", "--poll-seconds", "3") `
+    -WorkingDirectory $Root `
+    -WindowStyle Hidden `
+    -RedirectStandardOutput (Join-Path $Runtime "logs\p114-local-video-worker.log") `
+    -RedirectStandardError (Join-Path $Runtime "logs\p114-local-video-worker.error.log") `
+    -PassThru
+}
+
 $core = $null
 $continuation = $null
+$localVideoWorker = $null
 $nextContinuationStart = Get-Date
+$nextVideoWorkerStart = Get-Date
+$localVideoEnabled = $env:P114_LOCAL_VIDEO_ENABLED -match '^(1|true|yes|on)$'
 try {
   $core = Start-CoreSupervisor
   while (-not $core.HasExited) {
@@ -54,9 +80,10 @@ try {
         Stop-Process -Id $continuation.Id -Force -ErrorAction SilentlyContinue
         $continuation = $null
       }
-      # The core supervisor watches the same marker and owns orderly shutdown
-      # of the API and all worker children. Wait for it instead of force-killing
-      # the PowerShell parent and orphaning those children.
+      if ($null -ne $localVideoWorker -and -not $localVideoWorker.HasExited) {
+        Stop-Process -Id $localVideoWorker.Id -Force -ErrorAction SilentlyContinue
+        $localVideoWorker = $null
+      }
       Start-Sleep -Seconds 1
       continue
     }
@@ -64,9 +91,16 @@ try {
       $continuation = Start-Continuation
       $nextContinuationStart = (Get-Date).AddSeconds(10)
     }
+    if ($localVideoEnabled -and ($null -eq $localVideoWorker -or $localVideoWorker.HasExited) -and (Get-Date) -ge $nextVideoWorkerStart) {
+      $localVideoWorker = Start-P114VideoWorker
+      $nextVideoWorkerStart = (Get-Date).AddSeconds(20)
+    }
     Start-Sleep -Seconds 3
   }
 } finally {
+  if ($null -ne $localVideoWorker -and -not $localVideoWorker.HasExited) {
+    Stop-Process -Id $localVideoWorker.Id -Force -ErrorAction SilentlyContinue
+  }
   if ($null -ne $continuation -and -not $continuation.HasExited) {
     Stop-Process -Id $continuation.Id -Force -ErrorAction SilentlyContinue
   }
