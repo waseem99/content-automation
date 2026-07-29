@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 from uuid import UUID
 
+import httpx
 import pytest
 
 from src.application.generation_jobs.models import GenerationJobType
@@ -16,6 +17,7 @@ ROOT = Path(__file__).resolve().parents[2]
 MIGRATION = ROOT / "migrations" / "0099_p114_local_video_renderers.sql"
 CONFIG = ROOT / "config" / "local.env.example"
 WORKER = ROOT / "src" / "operations" / "local_video_worker.py"
+ONBOARDING = ROOT / "src" / "operations" / "local_onboarding_v2.py"
 
 
 def _digest(path: Path) -> str:
@@ -66,6 +68,19 @@ def _request(tmp_path: Path, **overrides) -> LocalVideoRequest:
     return LocalVideoRequest(**values)
 
 
+def _job(status: LocalVideoJobStatus = LocalVideoJobStatus.RUNNING) -> LocalVideoJob:
+    return LocalVideoJob(
+        provider="local-comfyui-video",
+        provider_job_id="prompt-1",
+        idempotency_key="b" * 64,
+        status=status,
+        model_key="Wan2.2-TI2V-5B",
+        workflow_sha256="c" * 64,
+        submitted_at="2026-07-29T00:00:00+00:00",
+        output_descriptor={"filename": "clip.mp4"} if status == LocalVideoJobStatus.SUCCEEDED else None,
+    )
+
+
 def test_local_clip_is_distinct_from_premium_clip() -> None:
     assert GenerationJobType.LOCAL_CLIP.value == "local_clip"
     assert GenerationJobType.LOCAL_CLIP is not GenerationJobType.PREMIUM_CLIP
@@ -88,6 +103,39 @@ def test_provider_rejects_workflow_file_drift_before_submission(tmp_path: Path) 
     provider.client.close()
 
 
+def test_provider_is_loopback_only() -> None:
+    for endpoint in (
+        "https://example.com",
+        "http://user:password@127.0.0.1:8188",
+        "http://127.0.0.1:8188/api",
+        "http://127.0.0.1:8188?token=secret",
+    ):
+        with pytest.raises(ValueError, match="local ComfyUI"):
+            ComfyUILocalVideoProvider(base_url=endpoint)
+
+
+def test_provider_cancels_only_the_named_queued_prompt() -> None:
+    requests: list[httpx.Request] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        requests.append(request)
+        return httpx.Response(200, json={})
+
+    client = httpx.Client(
+        base_url="http://127.0.0.1:8188",
+        transport=httpx.MockTransport(handler),
+        trust_env=False,
+    )
+    provider = ComfyUILocalVideoProvider(base_url="http://127.0.0.1:8188", client=client)
+    cancelled = provider.cancel(_job())
+    assert cancelled.status == LocalVideoJobStatus.CANCELLED
+    assert len(requests) == 1
+    assert requests[0].url.path == "/queue"
+    assert json.loads(requests[0].content) == {"delete": ["prompt-1"]}
+    assert "/interrupt" not in requests[0].url.path
+    client.close()
+
+
 def test_provider_recognizes_only_video_outputs() -> None:
     video = ComfyUILocalVideoProvider._video_descriptor(
         {"outputs": {"8": {"videos": [{"filename": "clip.mp4", "type": "output"}]}}}
@@ -99,22 +147,16 @@ def test_provider_recognizes_only_video_outputs() -> None:
     assert image is None
 
 
-def test_terminal_job_contract_and_zero_fee_schema() -> None:
-    job = LocalVideoJob(
-        provider="local-comfyui-video",
-        provider_job_id="prompt-1",
-        idempotency_key="b" * 64,
-        status=LocalVideoJobStatus.SUCCEEDED,
-        model_key="Wan2.2-TI2V-5B",
-        workflow_sha256="c" * 64,
-        submitted_at="2026-07-29T00:00:00+00:00",
-        output_descriptor={"filename": "clip.mp4"},
-    )
+def test_terminal_job_contract_and_zero_fee_retry_schema() -> None:
+    job = _job(LocalVideoJobStatus.SUCCEEDED)
     assert job.status == LocalVideoJobStatus.SUCCEEDED
     migration = MIGRATION.read_text(encoding="utf-8")
     assert "'local_clip'" in migration
+    assert "generation_attempt_id uuid NOT NULL UNIQUE" in migration
+    assert "local_video_executions_job_idx" in migration
     assert "external_cost_usd numeric(14,6) NOT NULL DEFAULT 0 CHECK (external_cost_usd = 0)" in migration
     assert "Terminal local video executions are immutable" in migration
+    assert "BEFORE UPDATE OR DELETE ON football_brief.local_video_executions" in migration
     assert "DROP TABLE" not in migration
     assert "TRUNCATE" not in migration
 
@@ -122,9 +164,19 @@ def test_terminal_job_contract_and_zero_fee_schema() -> None:
 def test_worker_and_configuration_fail_closed_by_default() -> None:
     config = CONFIG.read_text(encoding="utf-8")
     worker = WORKER.read_text(encoding="utf-8")
+    onboarding = ONBOARDING.read_text(encoding="utf-8")
     assert "P114_LOCAL_VIDEO_ENABLED=false" in config
+    assert "P114_WORKFLOW_ROOT=config/local-video-workflows" in config
     assert "OPS_MIGRATION_HEAD=0099_p114_local_video_renderers.sql" in config
+    assert 'os.getenv("P114_LOCAL_VIDEO_ENABLED", "false")' in worker
+    assert "P114 local video worker is disabled" in worker
+    assert "outside the approved workflow root" in worker
     assert "model-use preflight rejected" in worker
-    assert "external_fee_incurred\": False" in worker
-    assert "automatic_publishing\": False" in worker
+    assert "generation_attempt_id=%s" in worker
+    assert "'internal_only'" in worker
+    assert '"review_status": "pending"' in worker
+    assert '"external_fee_incurred": False' in worker
+    assert '"automatic_publishing": False' in worker
     assert "GenerationJobType.LOCAL_CLIP" in worker
+    assert '"LOCAL_VIDEO_WORKER_OPERATOR_ID", "local-video-worker"' in onboarding
+    assert '"api_key_created": False' in onboarding
