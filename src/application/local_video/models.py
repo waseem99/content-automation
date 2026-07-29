@@ -20,6 +20,7 @@ class LocalVideoJobStatus(StrEnum):
 @dataclass(frozen=True)
 class LocalVideoRequest:
     generation_job_id: UUID
+    generation_attempt_id: UUID
     pilot_case_id: UUID | None
     provider_key: str
     model_key: str
@@ -69,6 +70,7 @@ class LocalVideoRequest:
     def idempotency_key(self) -> str:
         document = {
             "generation_job_id": str(self.generation_job_id),
+            "generation_attempt_id": str(self.generation_attempt_id),
             "pilot_case_id": str(self.pilot_case_id) if self.pilot_case_id else None,
             "provider_key": self.provider_key,
             "model_key": self.model_key,
@@ -85,6 +87,7 @@ class LocalVideoRequest:
             "fps": self.fps,
             "frame_count": self.frame_count,
             "inference_steps": self.inference_steps,
+            "output_prefix": self.output_prefix,
         }
         return hashlib.sha256(
             json.dumps(document, sort_keys=True, separators=(",", ":")).encode("utf-8")
