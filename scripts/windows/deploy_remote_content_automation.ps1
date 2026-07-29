@@ -15,7 +15,7 @@ $RemoteStatus = Join-Path $Runtime "remote-access.json"
 $EnvPath = Join-Path $Root ".env.local"
 $Python = Join-Path $Root ".venv\Scripts\python.exe"
 
-function Sync-P110Environment([string]$Path) {
+function Sync-LocalEnvironment([string]$Path) {
   if (-not (Test-Path -LiteralPath $Path)) { return }
   $values = [ordered]@{}
   foreach ($line in Get-Content -LiteralPath $Path) {
@@ -38,7 +38,22 @@ function Sync-P110Environment([string]$Path) {
   if (-not $values.Contains("P113_WAN_MODEL_KEY")) { $values["P113_WAN_MODEL_KEY"] = "Wan2.2-TI2V-5B" }
   if (-not $values.Contains("P113_HUNYUAN_PROVIDER_KEY")) { $values["P113_HUNYUAN_PROVIDER_KEY"] = "tencent-hunyuan" }
   if (-not $values.Contains("P113_HUNYUAN_MODEL_KEY")) { $values["P113_HUNYUAN_MODEL_KEY"] = "HunyuanVideo-1.5-480p-I2V-Step-Distilled" }
-  $values["OPS_MIGRATION_HEAD"] = "0098_p113_pilot_video_grouping.sql"
+  if (-not $values.Contains("P114_LOCAL_VIDEO_ENABLED")) { $values["P114_LOCAL_VIDEO_ENABLED"] = "false" }
+  if (-not $values.Contains("P114_LOCAL_VIDEO_WORKER_OPERATOR_ID")) { $values["P114_LOCAL_VIDEO_WORKER_OPERATOR_ID"] = "p114-local-video-worker" }
+  if (-not $values.Contains("P114_LOCAL_VIDEO_WORKER_LEASE_SECONDS")) { $values["P114_LOCAL_VIDEO_WORKER_LEASE_SECONDS"] = "1800" }
+  if (-not $values.Contains("P114_COMFYUI_BASE_URL")) { $values["P114_COMFYUI_BASE_URL"] = "http://127.0.0.1:8188" }
+  if (-not $values.Contains("P114_COMFYUI_ROOT")) { $values["P114_COMFYUI_ROOT"] = "ComfyUI" }
+  if (-not $values.Contains("P114_COMFYUI_POLL_SECONDS")) { $values["P114_COMFYUI_POLL_SECONDS"] = "2" }
+  if (-not $values.Contains("P114_FFPROBE_PATH")) { $values["P114_FFPROBE_PATH"] = "ffprobe" }
+  if (-not $values.Contains("P114_WAN_EXECUTION_ENABLED")) { $values["P114_WAN_EXECUTION_ENABLED"] = "false" }
+  if (-not $values.Contains("P114_WAN_LICENSE_ACKNOWLEDGED")) { $values["P114_WAN_LICENSE_ACKNOWLEDGED"] = "false" }
+  if (-not $values.Contains("P114_WAN_WORKFLOW_PATH")) { $values["P114_WAN_WORKFLOW_PATH"] = "deploy/p114-local-video/workflows/wan2.2-ti2v-5b-i2v-api.json" }
+  if (-not $values.Contains("P114_WAN_MODEL_FILES_JSON")) { $values["P114_WAN_MODEL_FILES_JSON"] = "[]" }
+  if (-not $values.Contains("P114_HUNYUAN_EXECUTION_ENABLED")) { $values["P114_HUNYUAN_EXECUTION_ENABLED"] = "false" }
+  if (-not $values.Contains("P114_HUNYUAN_LICENSE_ACKNOWLEDGED")) { $values["P114_HUNYUAN_LICENSE_ACKNOWLEDGED"] = "false" }
+  if (-not $values.Contains("P114_HUNYUAN_WORKFLOW_PATH")) { $values["P114_HUNYUAN_WORKFLOW_PATH"] = "" }
+  if (-not $values.Contains("P114_HUNYUAN_MODEL_FILES_JSON")) { $values["P114_HUNYUAN_MODEL_FILES_JSON"] = "[]" }
+  $values["OPS_MIGRATION_HEAD"] = "0099_p114_dual_local_video_renderer.sql"
   [IO.File]::WriteAllLines(
     $Path,
     [string[]]@($values.Keys | ForEach-Object { "$_=$($values[$_])" }),
@@ -56,13 +71,12 @@ function Import-LocalEnvironment([string]$Path) {
   }
 }
 
-Sync-P110Environment $EnvPath
+Sync-LocalEnvironment $EnvPath
 
 if (-not (Get-Command ngrok -ErrorAction SilentlyContinue)) {
   throw "ngrok is required. Install ngrok, run 'ngrok config add-authtoken <token>', then rerun."
 }
 
-# A configured account is required. The command reveals no token.
 & ngrok config check 1>$null 2>$null
 if ($LASTEXITCODE -ne 0) {
   throw "ngrok is installed but not configured. Run 'ngrok config add-authtoken <token>' first."
@@ -85,13 +99,15 @@ if ($deployment.ExitCode -ne 0) {
 }
 
 if (-not (Test-Path -LiteralPath $Python)) {
-  throw "P113 model policy onboarding could not run because the local Python environment is missing."
+  throw "P113/P114 onboarding could not run because the local Python environment is missing."
 }
 Import-LocalEnvironment $EnvPath
 Push-Location $Root
 try {
   & $Python -m src.operations.p113_model_policy_onboarding
   if ($LASTEXITCODE -ne 0) { throw "P113 model policy onboarding failed." }
+  & $Python -m src.operations.p114_renderer_onboarding
+  if ($LASTEXITCODE -ne 0) { throw "P114 renderer onboarding failed." }
 } finally {
   Pop-Location
 }
@@ -143,4 +159,5 @@ Write-Host "Remote Content Automation is ready." -ForegroundColor Green
 Write-Host "Creator Studio: $publicUrl/app/dashboard" -ForegroundColor Green
 Write-Host "Operator keys:  $Runtime\operator-keys.json"
 Write-Host "Remote status:  $RemoteStatus"
+Write-Host "P114 local video remains disabled until its explicit setup script succeeds." -ForegroundColor Yellow
 Write-Host "Share only the HTTPS Creator Studio URL and the intended user's key. Never share the Super Admin key." -ForegroundColor Yellow
