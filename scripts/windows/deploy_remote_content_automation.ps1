@@ -13,6 +13,7 @@ $Runtime = Join-Path $Root ".runtime"
 $Deploy = Join-Path $PSScriptRoot "deploy_always_on_local_production.ps1"
 $RemoteStatus = Join-Path $Runtime "remote-access.json"
 $EnvPath = Join-Path $Root ".env.local"
+$Python = Join-Path $Root ".venv\Scripts\python.exe"
 
 function Sync-P110Environment([string]$Path) {
   if (-not (Test-Path -LiteralPath $Path)) { return }
@@ -31,7 +32,13 @@ function Sync-P110Environment([string]$Path) {
   if (-not $values.Contains("LOCAL_AUTO_RESEARCH_CLAIM_LIMIT")) { $values["LOCAL_AUTO_RESEARCH_CLAIM_LIMIT"] = "8" }
   if (-not $values.Contains("LOCAL_AUTO_RESEARCH_RESULT_LIMIT")) { $values["LOCAL_AUTO_RESEARCH_RESULT_LIMIT"] = "3" }
   if (-not $values.Contains("LOCAL_AUTO_RESEARCH_MINIMUM_MATCH")) { $values["LOCAL_AUTO_RESEARCH_MINIMUM_MATCH"] = "0.45" }
-  $values["OPS_MIGRATION_HEAD"] = "0095_p111_super_admin_evidence_override.sql"
+  if (-not $values.Contains("P113_PILOT_TARGET_VIDEOS")) { $values["P113_PILOT_TARGET_VIDEOS"] = "3" }
+  if (-not $values.Contains("P113_PILOT_TARGET_ATTEMPTS")) { $values["P113_PILOT_TARGET_ATTEMPTS"] = "30" }
+  if (-not $values.Contains("P113_WAN_PROVIDER_KEY")) { $values["P113_WAN_PROVIDER_KEY"] = "wan-ai" }
+  if (-not $values.Contains("P113_WAN_MODEL_KEY")) { $values["P113_WAN_MODEL_KEY"] = "Wan2.2-TI2V-5B" }
+  if (-not $values.Contains("P113_HUNYUAN_PROVIDER_KEY")) { $values["P113_HUNYUAN_PROVIDER_KEY"] = "tencent-hunyuan" }
+  if (-not $values.Contains("P113_HUNYUAN_MODEL_KEY")) { $values["P113_HUNYUAN_MODEL_KEY"] = "HunyuanVideo-1.5-480p-I2V-Step-Distilled" }
+  $values["OPS_MIGRATION_HEAD"] = "0098_p113_pilot_video_grouping.sql"
   [IO.File]::WriteAllLines(
     $Path,
     [string[]]@($values.Keys | ForEach-Object { "$_=$($values[$_])" }),
@@ -65,6 +72,17 @@ if ($SkipModelPull) { $arguments += "-SkipModelPull" }
 $deployment = Start-Process powershell -ArgumentList $arguments -WorkingDirectory $Root -Wait -PassThru
 if ($deployment.ExitCode -ne 0) {
   throw "Remote Content Automation deployment failed. Inspect .runtime\logs."
+}
+
+if (-not (Test-Path -LiteralPath $Python)) {
+  throw "P113 model policy onboarding could not run because the local Python environment is missing."
+}
+Push-Location $Root
+try {
+  & $Python -m src.operations.p113_model_policy_onboarding
+  if ($LASTEXITCODE -ne 0) { throw "P113 model policy onboarding failed." }
+} finally {
+  Pop-Location
 }
 
 $deadline = (Get-Date).AddMinutes(2)
