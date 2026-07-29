@@ -12,6 +12,10 @@
     const detail = payload?.detail;
     if (typeof detail === "string") return detail.replaceAll("_", " ");
     if (detail && typeof detail === "object") {
+      if (detail.message) return String(detail.message);
+      if (Array.isArray(detail.blockers) && detail.blockers.length) {
+        return detail.blockers.map((item) => item.message || String(item.code || "blocked").replaceAll("_", " ")).join(" ");
+      }
       const code = detail.code || detail.error;
       if (code) return String(code).replaceAll("_", " ");
     }
@@ -87,9 +91,13 @@
     queue: (filters = {}) => request(query("/portfolio/queue", { brand_id: filters.brandId, stage: filters.stage })),
     content: (contentId) => request(`/portfolio/content/${contentId}`),
     contentState: (contentId) => request(`/studio-v2/content/${contentId}/state`),
-    createContent: (payload) => request("/studio-v2/content", { method: "POST", body: JSON.stringify(payload) }),
-    generateScript: (contentId) => request(`/studio-v2/content/${contentId}/generate-script`, { method: "POST" }),
-    startLocalProduction: (contentId, payload = { include_audio: true, include_visuals: true }) => request(`/studio-v2/content/${contentId}/start-local-production`, { method: "POST", body: JSON.stringify(payload) }),
+    platformProfiles: () => request("/p110/platform-profiles"),
+    createContent: (payload) => request("/p110/content", { method: "POST", body: JSON.stringify(payload) }),
+    contentFamily: (contentId) => request(`/p110/content/${contentId}/family`),
+    generateScript: (contentId) => request(`/p110/content/${contentId}/generate-script`, { method: "POST" }),
+    startLocalProduction: (contentId, payload = { include_audio: true, include_visuals: true }) => request(`/p110/content/${contentId}/start-local-production`, { method: "POST", body: JSON.stringify(payload) }),
+    reviewPolicy: (brandId) => request(`/p110/brands/${brandId}/review-policy`),
+    setReviewPolicy: (brandId, payload) => request(`/p110/brands/${brandId}/review-policy`, { method: "POST", body: JSON.stringify(payload) }),
     jobs: (filters = {}) => request(query("/generation/jobs", {
       content_id: filters.contentId,
       brand_id: filters.brandId,
@@ -103,8 +111,13 @@
     jobMediaUrl: (jobId) => blobUrl(`/studio-v2/jobs/${jobId}/media`),
     scriptForContent: (contentId) => request(`/scripts/content/${contentId}`),
     submitScript: (documentId, lockVersion) => request(`/scripts/${documentId}/submit`, { method: "POST", body: JSON.stringify({ expected_lock_version: lockVersion }) }),
-    decideScript: (documentId, lockVersion, decision, rationale) => request(`/scripts/${documentId}/decisions`, { method: "POST", body: JSON.stringify({ expected_lock_version: lockVersion, decision, rationale }) }),
+    decideScript: (documentId, lockVersion, decision, rationale) => request(`/p110/scripts/${documentId}/decisions`, { method: "POST", body: JSON.stringify({ expected_lock_version: lockVersion, decision, rationale: rationale || "" }) }),
     reviseScript: (documentId, lockVersion, reason) => request(`/scripts/${documentId}/revise`, { method: "POST", body: JSON.stringify({ expected_lock_version: lockVersion, reason }) }),
+    scriptResearch: (documentId) => request(`/p110/scripts/${documentId}/research`),
+    researchClaim: (documentId, payload) => request(`/p110/scripts/${documentId}/research`, { method: "POST", body: JSON.stringify(payload) }),
+    addManualSource: (documentId, payload) => request(`/p110/scripts/${documentId}/manual-source`, { method: "POST", body: JSON.stringify(payload) }),
+    attachSource: (documentId, payload) => request(`/p110/scripts/${documentId}/sources/attach`, { method: "POST", body: JSON.stringify(payload) }),
+    rejectResearchCandidate: (candidateId, reason) => request(`/p110/research/candidates/${candidateId}/reject`, { method: "POST", body: JSON.stringify({ reason }) }),
     audioForContent: (contentId) => request(`/audio/content/${contentId}`),
     selectAudioTake: (productionId, takeId, lockVersion) => request(`/audio/${productionId}/takes/${takeId}/select`, { method: "POST", body: JSON.stringify({ expected_lock_version: lockVersion }) }),
     regenerateAudioParagraph: (productionId, paragraphId, payload) => request(`/audio/${productionId}/paragraphs/${paragraphId}/regenerate`, { method: "POST", body: JSON.stringify(payload) }),
