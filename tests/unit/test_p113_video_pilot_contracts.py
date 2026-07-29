@@ -65,7 +65,7 @@ def test_wan_global_public_policy_is_eligible_for_pilot_preflight() -> None:
     assert result["rejection_reasons"] == []
 
 
-def test_hunyuan_global_public_is_rejected_without_written_clearance() -> None:
+def test_hunyuan_global_public_is_rejected_by_active_policy() -> None:
     hunyuan = policy(
         provider_key="tencent-hunyuan",
         model_key="HunyuanVideo-1.5-480p-I2V-Step-Distilled",
@@ -75,13 +75,12 @@ def test_hunyuan_global_public_is_rejected_without_written_clearance() -> None:
     )
     result = evaluate_model_policy(
         hunyuan,
-        preflight(
-            provider_key=hunyuan["provider_key"],
-            model_key=hunyuan["model_key"],
-        ),
+        preflight(provider_key=hunyuan["provider_key"], model_key=hunyuan["model_key"]),
     )
     assert result["accepted"] is False
+    assert "distribution_scope_not_allowed" in result["rejection_reasons"]
     assert "global_public_distribution_reaches_prohibited_territories" in result["rejection_reasons"]
+    assert result["clearance_process"] == "activate_a_reviewed_child_policy_version"
 
 
 def test_hunyuan_territory_preflight_rejects_prohibited_region_and_accepts_allowed_region() -> None:
@@ -115,24 +114,14 @@ def test_hunyuan_territory_preflight_rejects_prohibited_region_and_accepts_allow
     assert allowed["accepted"] is True
 
 
-def test_written_clearance_is_auditable_exception_not_an_implicit_global_default() -> None:
-    hunyuan = policy(
-        provider_key="tencent-hunyuan",
-        model_key="HunyuanVideo-1.5-480p-I2V-Step-Distilled",
-        allowed_use_scopes=["internal", "territory_limited"],
-        prohibited_territories=["European Union", "United Kingdom", "South Korea"],
-        requires_written_clearance=True,
-    )
-    result = evaluate_model_policy(
-        hunyuan,
-        preflight(
-            provider_key=hunyuan["provider_key"],
-            model_key=hunyuan["model_key"],
-            written_clearance_reference="legal-review/P113-HV15-001",
-        ),
-    )
-    assert result["accepted"] is True
-    assert result["written_clearance_recorded"] is True
+def test_clearance_cannot_be_supplied_as_an_ad_hoc_attempt_field() -> None:
+    source = (ROOT / "src" / "application" / "video_pilot" / "models.py").read_text(encoding="utf-8")
+    service = (ROOT / "src" / "application" / "video_pilot" / "service.py").read_text(encoding="utf-8")
+    assert "written_clearance_reference" not in source
+    assert "written_clearance_reference" not in service
+    assert "activate_a_reviewed_child_policy_version" in (
+        ROOT / "src" / "application" / "video_pilot" / "policy.py"
+    ).read_text(encoding="utf-8")
 
 
 def test_hardware_snapshots_reject_sensitive_fields_recursively() -> None:
