@@ -93,7 +93,7 @@ def test_routed_studio_keeps_role_specific_work_separate() -> None:
 
 def test_readme_routes_new_work_through_creator_studio() -> None:
     readme = read("README.md")
-    assert "P84–P100" in readme
+    assert "P84–P107" in readme
     assert "/app/dashboard" in readme
     assert "start_local_production.ps1" in readme
     assert "LOCAL_PRODUCTION_RUNBOOK.md" in readme
