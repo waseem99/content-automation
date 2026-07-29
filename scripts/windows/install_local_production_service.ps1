@@ -59,9 +59,7 @@ function Stop-ExistingLocalRuntime {
     }
   }
 
-  # A previously force-terminated supervisor may have left Python children
-  # behind. Remove only processes whose command lines prove they belong to
-  # this repository's API, workers, or continuation loop.
+  # Remove only child processes whose command lines prove they belong to this repository.
   $remainingRuntimeChildren = @(
     Get-CimInstance Win32_Process -ErrorAction SilentlyContinue |
     Where-Object {
@@ -70,7 +68,8 @@ function Stop-ExistingLocalRuntime {
       (
         $_.CommandLine -match "src\.operator_api\.entrypoint:app" -or
         $_.CommandLine -match "src\.operations\.local_worker_aligned" -or
-        $_.CommandLine -match "src\.operations\.always_on_continuation"
+        $_.CommandLine -match "src\.operations\.always_on_continuation" -or
+        $_.CommandLine -match "src\.operations\.p114_local_video_worker"
       )
     } |
     Sort-Object ProcessId -Descending
