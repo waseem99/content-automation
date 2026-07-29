@@ -69,8 +69,9 @@ ON football_brief.local_video_workflows(provider_key,model_key,workflow_key)
 WHERE status='active';
 
 CREATE TABLE football_brief.local_video_executions (
-    generation_job_id uuid PRIMARY KEY REFERENCES football_brief.generation_jobs(id) ON DELETE RESTRICT,
-    generation_attempt_id uuid NOT NULL REFERENCES football_brief.generation_job_attempts(id) ON DELETE RESTRICT,
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    generation_job_id uuid NOT NULL REFERENCES football_brief.generation_jobs(id) ON DELETE RESTRICT,
+    generation_attempt_id uuid NOT NULL UNIQUE REFERENCES football_brief.generation_job_attempts(id) ON DELETE RESTRICT,
     local_video_workflow_id uuid NOT NULL REFERENCES football_brief.local_video_workflows(id) ON DELETE RESTRICT,
     model_policy_id uuid NOT NULL REFERENCES football_brief.video_model_use_policies(id) ON DELETE RESTRICT,
     pilot_case_id uuid REFERENCES football_brief.video_pilot_cases(id) ON DELETE RESTRICT,
@@ -104,6 +105,9 @@ CREATE TABLE football_brief.local_video_executions (
     CHECK (status NOT IN ('failed','cancelled') OR completed_at IS NOT NULL)
 );
 
+CREATE INDEX local_video_executions_job_idx
+ON football_brief.local_video_executions(generation_job_id,submitted_at);
+
 CREATE INDEX local_video_executions_status_idx
 ON football_brief.local_video_executions(status,submitted_at);
 
@@ -112,6 +116,9 @@ RETURNS trigger
 LANGUAGE plpgsql
 AS $$
 BEGIN
+    IF TG_OP='DELETE' THEN
+        RAISE EXCEPTION 'Local video executions are immutable and cannot be deleted';
+    END IF;
     IF OLD.status IN ('succeeded','failed','cancelled') THEN
         RAISE EXCEPTION 'Terminal local video executions are immutable';
     END IF;
@@ -120,14 +127,13 @@ END;
 $$;
 
 CREATE TRIGGER local_video_execution_terminal_immutable
-BEFORE UPDATE ON football_brief.local_video_executions
+BEFORE UPDATE OR DELETE ON football_brief.local_video_executions
 FOR EACH ROW
-WHEN (OLD.status IN ('succeeded','failed','cancelled'))
 EXECUTE FUNCTION football_brief.protect_terminal_local_video_execution();
 
 COMMENT ON TABLE football_brief.local_video_workflows IS
     'Versioned, hash-pinned local ComfyUI video workflows bound to renderer and model-use policy evidence.';
 COMMENT ON TABLE football_brief.local_video_executions IS
-    'Exact zero-fee local video execution lineage for P87 jobs and canonical MP4 assets.';
+    'Exact zero-fee local video execution lineage for every P87 attempt and canonical MP4 asset.';
 
 COMMIT;
