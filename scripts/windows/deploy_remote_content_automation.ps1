@@ -28,7 +28,10 @@ function Sync-P110Environment([string]$Path) {
   }
   if (-not $values.Contains("KOKORO_ENERGETIC_VOICE")) { $values["KOKORO_ENERGETIC_VOICE"] = "af_bella" }
   if (-not $values.Contains("KOKORO_SERIOUS_VOICE")) { $values["KOKORO_SERIOUS_VOICE"] = "am_adam" }
-  $values["OPS_MIGRATION_HEAD"] = "0094_p110_content_family_defaults.sql"
+  if (-not $values.Contains("LOCAL_AUTO_RESEARCH_CLAIM_LIMIT")) { $values["LOCAL_AUTO_RESEARCH_CLAIM_LIMIT"] = "8" }
+  if (-not $values.Contains("LOCAL_AUTO_RESEARCH_RESULT_LIMIT")) { $values["LOCAL_AUTO_RESEARCH_RESULT_LIMIT"] = "3" }
+  if (-not $values.Contains("LOCAL_AUTO_RESEARCH_MINIMUM_MATCH")) { $values["LOCAL_AUTO_RESEARCH_MINIMUM_MATCH"] = "0.45" }
+  $values["OPS_MIGRATION_HEAD"] = "0095_p111_super_admin_evidence_override.sql"
   [IO.File]::WriteAllLines(
     $Path,
     [string[]]@($values.Keys | ForEach-Object { "$_=$($values[$_])" }),
