@@ -45,19 +45,18 @@ $processors = @(Get-CimInstance Win32_Processor | ForEach-Object {
 $gpus = @()
 if (Get-Command nvidia-smi -ErrorAction SilentlyContinue) {
   $rows = @(& nvidia-smi `
-    --query-gpu=name,uuid,driver_version,memory.total,temperature.gpu,power.draw,power.limit `
+    --query-gpu=name,driver_version,memory.total,temperature.gpu,power.draw,power.limit `
     --format=csv,noheader,nounits 2>$null)
   foreach ($row in $rows) {
     $parts = @($row -split "," | ForEach-Object { $_.Trim() })
-    if ($parts.Count -ge 7) {
+    if ($parts.Count -ge 6) {
       $gpus += [ordered]@{
         name = $parts[0]
-        uuid = $parts[1]
-        driver_version = $parts[2]
-        memory_total_mib = Parse-NullableNumber $parts[3]
-        temperature_c = Parse-NullableNumber $parts[4]
-        power_draw_w = Parse-NullableNumber $parts[5]
-        power_limit_w = Parse-NullableNumber $parts[6]
+        driver_version = $parts[1]
+        memory_total_mib = Parse-NullableNumber $parts[2]
+        temperature_c = Parse-NullableNumber $parts[3]
+        power_draw_w = Parse-NullableNumber $parts[4]
+        power_limit_w = Parse-NullableNumber $parts[5]
       }
     }
   }
@@ -65,7 +64,6 @@ if (Get-Command nvidia-smi -ErrorAction SilentlyContinue) {
 
 $disks = @(Get-CimInstance Win32_LogicalDisk -Filter "DriveType=3" | ForEach-Object {
   [ordered]@{
-    device_id = [string]$_.DeviceID
     filesystem = [string]$_.FileSystem
     size_bytes = if ($_.Size) { [int64]$_.Size } else { $null }
     free_bytes = if ($_.FreeSpace) { [int64]$_.FreeSpace } else { $null }
@@ -106,15 +104,10 @@ try {
   Pop-Location
 }
 
-$pythonVersion = First-Line { python --version }
-$dockerVersion = First-Line { docker --version }
-$ffmpegVersion = First-Line { ffmpeg -version }
-
 $snapshot = [ordered]@{
   generated_at = (Get-Date).ToUniversalTime().ToString("o")
   snapshot_kind = "p113_workstation_hardware"
   workstation = [ordered]@{
-    computer_name = [string]$env:COMPUTERNAME
     manufacturer = [string]$computer.Manufacturer
     model = [string]$computer.Model
     total_physical_memory_bytes = [int64]$computer.TotalPhysicalMemory
@@ -128,14 +121,14 @@ $snapshot = [ordered]@{
   software = [ordered]@{
     git_sha = $gitSha
     git_branch = $gitBranch
-    python = $pythonVersion
-    docker = $dockerVersion
-    ffmpeg = $ffmpegVersion
+    python = First-Line { python --version }
+    docker = First-Line { docker --version }
+    ffmpeg = First-Line { ffmpeg -version }
     comfyui = $comfy
   }
   measurement_notes = @(
     "This is a point-in-time inventory snapshot, not a throughput benchmark.",
-    "No environment variables, access keys, cookies or credentials are collected.",
+    "Machine names, disk letters, GPU UUIDs, environment variables and credentials are omitted.",
     "Sustained temperature, power, VRAM and timing are recorded per generation attempt."
   )
 }
