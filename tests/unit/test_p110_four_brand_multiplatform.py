@@ -205,8 +205,9 @@ def test_windows_upgrade_preserves_secrets_and_advances_schema_marker() -> None:
     deploy = DEPLOY.read_text(encoding="utf-8")
     config = CONFIG.read_text(encoding="utf-8")
     assert "Sync-P110Environment" in deploy
-    assert 'OPS_MIGRATION_HEAD"] = "0095_p111_super_admin_evidence_override.sql"' in deploy
+    assert 'OPS_MIGRATION_HEAD"] = "0098_p113_pilot_video_grouping.sql"' in deploy
     assert "OPERATOR_API_KEYS_JSON" not in deploy
     assert "KOKORO_PRIMARY_VOICE" in deploy
     assert "LOCAL_AUTO_RESEARCH_MINIMUM_MATCH" in deploy
-    assert "OPS_MIGRATION_HEAD=0095_p111_super_admin_evidence_override.sql" in config
+    assert "P113_PILOT_TARGET_ATTEMPTS" in deploy
+    assert "OPS_MIGRATION_HEAD=0098_p113_pilot_video_grouping.sql" in config
