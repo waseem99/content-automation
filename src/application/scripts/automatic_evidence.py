@@ -9,11 +9,10 @@ import re
 import socket
 from dataclasses import dataclass
 from typing import Any
-from urllib.error import HTTPError, URLError
 from urllib.parse import quote, urlencode, urlparse
-from urllib.request import Request, urlopen
 from uuid import UUID
 
+from src.application.https_fetch import HttpsFetchError, fetch_https
 from src.infrastructure.database.connection import Database
 
 
@@ -305,12 +304,14 @@ class AutomaticScriptEvidenceService:
             "utf8": 1,
             "origin": "*",
         })
-        request = Request(
+        response = fetch_https(
             f"{self.endpoint}?{params}",
             headers={"User-Agent": self.user_agent, "Accept": "application/json"},
+            timeout=12,
+            max_bytes=512_000,
+            allowed_hosts={"en.wikipedia.org"},
         )
-        with urlopen(request, timeout=12) as response:  # noqa: S310 - fixed Wikipedia endpoint
-            payload = json.loads(response.read(512_000).decode("utf-8"))
+        payload = json.loads(response.content.decode("utf-8"))
         results = payload.get("query", {}).get("search", [])
         output: list[EvidenceCandidate] = []
         for index, item in enumerate(results, start=1):
@@ -377,16 +378,17 @@ class AutomaticScriptEvidenceService:
 
     def _inspect_public_url(self, value: str) -> dict[str, str]:
         safe_url, _ = self._assert_public_https_url(value)
-        request = Request(
-            safe_url,
-            headers={"User-Agent": self.user_agent, "Accept": "text/html,application/xhtml+xml"},
-        )
         try:
-            with urlopen(request, timeout=12) as response:  # noqa: S310 - strict public HTTPS validation
-                final_url = response.geturl()
-                self._assert_public_https_url(final_url)
-                raw = response.read(512_000)
-        except (HTTPError, URLError, TimeoutError, OSError) as exc:
+            response = fetch_https(
+                safe_url,
+                headers={"User-Agent": self.user_agent, "Accept": "text/html,application/xhtml+xml"},
+                timeout=12,
+                max_bytes=512_000,
+                validator=self._assert_public_https_url,
+            )
+            final_url = response.final_url
+            raw = response.content
+        except HttpsFetchError as exc:
             raise RuntimeError(f"source_url_validation_failed: {exc}") from exc
         return {"final_url": final_url, "sha256": hashlib.sha256(raw).hexdigest()}
 

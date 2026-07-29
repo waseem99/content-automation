@@ -112,46 +112,49 @@ class AlwaysOnLocalOnboarding(LocalOnboarding):
                     "policy_key": str(policy["policy_key"]),
                 }
 
-            # A dedicated non-login worker identity may claim only jobs allowed by
-            # the P87 queue. It has no API key and cannot review, approve, manage
-            # users, configure brands, release or publish content.
-            worker_id = os.getenv("HIGGSFIELD_WORKER_OPERATOR_ID", "higgsfield-worker")
-            worker = conn.execute(
-                """INSERT INTO football_brief.operator_users
-                   (operator_id,display_name,active,created_by)
-                   VALUES (%s,'Higgsfield Managed Renderer',true,%s)
-                   ON CONFLICT (operator_id) DO UPDATE SET
-                     display_name=EXCLUDED.display_name,active=true
-                   RETURNING *""",
-                (worker_id, self.admin_id),
-            ).fetchone()
-            conn.execute(
-                "DELETE FROM football_brief.operator_user_roles WHERE operator_user_id=%s",
-                (worker["id"],),
-            )
-            conn.execute(
-                """INSERT INTO football_brief.operator_user_roles
-                   (operator_user_id,role,assigned_by) VALUES (%s,'producer',%s)""",
-                (worker["id"], self.admin_id),
-            )
-            conn.execute(
-                "DELETE FROM football_brief.operator_brand_assignments WHERE operator_user_id=%s",
-                (worker["id"],),
-            )
-            for brand in brands:
+            # Dedicated non-login worker identities may claim only P87 jobs. They
+            # have no API keys and cannot review, approve, manage users, release or publish.
+            for env_name, default_id, display_name in (
+                ("HIGGSFIELD_WORKER_OPERATOR_ID", "higgsfield-worker", "Higgsfield Managed Renderer"),
+                ("LOCAL_VIDEO_WORKER_OPERATOR_ID", "local-video-worker", "Local Video Renderer"),
+            ):
+                worker_id = os.getenv(env_name, default_id)
+                worker = conn.execute(
+                    """INSERT INTO football_brief.operator_users
+                       (operator_id,display_name,active,created_by)
+                       VALUES (%s,%s,true,%s)
+                       ON CONFLICT (operator_id) DO UPDATE SET
+                         display_name=EXCLUDED.display_name,active=true
+                       RETURNING *""",
+                    (worker_id, display_name, self.admin_id),
+                ).fetchone()
                 conn.execute(
-                    """INSERT INTO football_brief.operator_brand_assignments
-                       (operator_user_id,brand_id,assigned_by)
-                       VALUES (%s,%s,%s) ON CONFLICT DO NOTHING""",
-                    (worker["id"], brand["id"], self.admin_id),
+                    "DELETE FROM football_brief.operator_user_roles WHERE operator_user_id=%s",
+                    (worker["id"],),
                 )
-            operators[worker_id] = {
-                "operator_id": worker_id,
-                "display_name": "Higgsfield Managed Renderer",
-                "roles": ["internal_worker"],
-                "internal_roles": ["producer"],
-                "api_key_created": False,
-            }
+                conn.execute(
+                    """INSERT INTO football_brief.operator_user_roles
+                       (operator_user_id,role,assigned_by) VALUES (%s,'producer',%s)""",
+                    (worker["id"], self.admin_id),
+                )
+                conn.execute(
+                    "DELETE FROM football_brief.operator_brand_assignments WHERE operator_user_id=%s",
+                    (worker["id"],),
+                )
+                for brand in brands:
+                    conn.execute(
+                        """INSERT INTO football_brief.operator_brand_assignments
+                           (operator_user_id,brand_id,assigned_by)
+                           VALUES (%s,%s,%s) ON CONFLICT DO NOTHING""",
+                        (worker["id"], brand["id"], self.admin_id),
+                    )
+                operators[worker_id] = {
+                    "operator_id": worker_id,
+                    "display_name": display_name,
+                    "roles": ["internal_worker"],
+                    "internal_roles": ["producer"],
+                    "api_key_created": False,
+                }
 
             # Old local keys are removed by the launcher upgrade. Keep their
             # historical audit records but prevent those identities from signing in.

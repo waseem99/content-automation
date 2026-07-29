@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 import yaml
@@ -22,7 +23,7 @@ def test_production_studio_is_same_origin_routed_and_has_no_demo_fallback() -> N
     assert 'id="app-view"' in index
     assert 'id="login-dialog"' in index
     assert 'id="operator-key"' in index
-    assert 'src="/assets/studio-v2-api.js"' in index
+    assert re.search(r'src="/assets/studio-v2-api\.js(?:\?[^\"]*)?"', index)
     assert "Demo data" not in index + api + core
     assert "portfolio-api.js" not in index
     assert "production-console.js" not in index

@@ -46,29 +46,34 @@ def test_review_workspace_migration_is_local_media_safe():
 def test_operator_api_exposes_workspace_without_upload_or_publish_route():
     source = (ROOT / "src" / "operator_api" / "app.py").read_text()
     for route in (
-        '/portfolio/content/{content_id}',
-        '/portfolio/content/{content_id}/workspace',
-        '/portfolio/content/{content_id}/artifacts',
-        '/portfolio/content/{content_id}/artifacts/{artifact_id}/media',
+        "/portfolio/content/{content_id}",
+        "/portfolio/content/{content_id}/workspace",
+        "/portfolio/content/{content_id}/artifacts",
+        "/portfolio/content/{content_id}/artifacts/{artifact_id}/media",
     ):
         assert route in source
-    assert 'PORTFOLIO_MEDIA_ROOT' in source
-    assert '/portfolio/content/{content_id}/upload' not in source
-    assert '/portfolio/publish' not in source
+    assert "PORTFOLIO_MEDIA_ROOT" in source
+    assert "/portfolio/content/{content_id}/upload" not in source
+    assert "/portfolio/publish" not in source
 
 
-def test_creator_ui_has_real_review_workspace_and_no_prompt_approval():
+def test_creator_studio_v2_has_role_gated_review_actions_without_prompt_approval():
     html = (ROOT / "web" / "static-creator-ui" / "index.html").read_text()
-    app = (ROOT / "web" / "static-creator-ui" / "assets" / "app.js").read_text()
-    api = (ROOT / "web" / "static-creator-ui" / "assets" / "portfolio-api.js").read_text()
-    assert 'id="content-review"' in html
-    assert 'id="review-script"' in app
-    assert 'data-review-decision="changes_requested"' in app
-    assert "missing_for_approval" in app
-    assert "PortfolioApi.content" in app
-    assert "updateWorkspace" in api
-    assert "mediaHeaders" in api
+    app = (ROOT / "web" / "static-creator-ui" / "assets" / "studio-v2.js").read_text()
+    api = (ROOT / "web" / "static-creator-ui" / "assets" / "studio-v2-api.js").read_text()
+
+    assert 'id="app-view"' in html
+    assert 'id="confirm-dialog"' in html
+    assert 'hasRole("reviewer")' in app
+    assert 'data-script-decision="changes_requested"' in app
+    assert 'data-audio-decision="changes_requested"' in app
+    assert 'data-visual-decision="changes_requested"' in app
+    assert "reviewWorkspace:" in api
+    assert "authenticatedMediaUrl:" in api
+    assert "blobUrl" in api
     assert "Approve the ${gate}" not in app
+    assert "/publish" not in app
+    assert "/publish" not in api
 
 
 def test_local_compose_mounts_review_media_read_only():

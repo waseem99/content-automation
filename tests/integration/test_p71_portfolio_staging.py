@@ -22,9 +22,21 @@ def test_brand_bootstrap_has_seven_workspaces_without_invented_links():
     assert len(config["brands"]) == 7
     assert sum(brand["content_mode"] == "video" for brand in config["brands"]) == 6
     assert sum(brand["content_mode"] == "mixed" for brand in config["brands"]) == 1
-    placeholders = [brand for brand in config["brands"] if brand["metadata"]["onboarding_status"].startswith("blocked")]
-    assert len(placeholders) == 5
+
+    placeholders = [
+        brand for brand in config["brands"]
+        if brand["metadata"]["onboarding_status"].startswith("blocked")
+    ]
+    onboarded = [brand for brand in config["brands"] if brand not in placeholders]
+
+    assert len(placeholders) == 3
     assert all(brand["source_links"] == [] for brand in placeholders)
+    assert len(onboarded) == 4
+    assert all(
+        brand["source_links"]
+        and all(link.startswith("https://www.facebook.com/") for link in brand["source_links"])
+        for brand in onboarded
+    )
 
 
 def test_bootstrap_and_smoke_scripts_never_embed_secrets_or_publish():

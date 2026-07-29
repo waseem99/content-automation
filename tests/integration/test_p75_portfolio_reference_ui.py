@@ -37,11 +37,11 @@ def test_reference_job_and_artifact_guards_are_terminal_safe() -> None:
         validate_local_locator("reference://ref-1/source/original.mp4")
 
 
-def test_reference_schema_api_and_static_ui_preserve_runtime_boundary() -> None:
+def test_reference_schema_api_and_studio_v2_preserve_runtime_boundary() -> None:
     migration = (ROOT / "migrations" / "0027_reference_intelligence_portfolio.sql").read_text()
     api = (ROOT / "src" / "operator_api" / "app.py").read_text()
     html = (ROOT / "web" / "static-creator-ui" / "index.html").read_text()
-    js = (ROOT / "web" / "static-creator-ui" / "assets" / "portfolio-api.js").read_text()
+    studio_api = (ROOT / "web" / "static-creator-ui" / "assets" / "studio-v2-api.js").read_text()
     for table in (
         "reference_sources",
         "reference_ingestion_jobs",
@@ -53,15 +53,18 @@ def test_reference_schema_api_and_static_ui_preserve_runtime_boundary() -> None:
         assert f"CREATE TABLE football_brief.{table}" in migration
     assert "CHECK (source_media_synced = false)" in migration
     assert "CHECK (automatic_decision = false)" in migration
-    assert 'worker_mode text NOT NULL DEFAULT \'local\'' in migration
+    assert "worker_mode text NOT NULL DEFAULT 'local'" in migration
     for route in (
         '"/portfolio/references"',
         '"/portfolio/references/{source_id}"',
         '"/portfolio/reference-jobs/{job_id}/progress"',
     ):
         assert route in api
-    assert 'id="reference-intelligence"' in html
-    assert "source files stay in the local workspace" in html
-    assert "decideReferenceGate" in js
-    assert "sessionStorage" in js
-    assert "/publish" not in js
+    assert 'id="app-view"' in html
+    assert 'id="login-dialog"' in html
+    assert "/assets/studio-v2-api.js" in html
+    assert "sessionStorage" in studio_api
+    assert '"X-Operator-Key"' in studio_api
+    assert "sameOrigin" in studio_api
+    assert "blobUrl" in studio_api
+    assert "/publish" not in studio_api

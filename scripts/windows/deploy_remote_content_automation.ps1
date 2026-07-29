@@ -38,7 +38,7 @@ function Sync-P110Environment([string]$Path) {
   if (-not $values.Contains("P113_WAN_MODEL_KEY")) { $values["P113_WAN_MODEL_KEY"] = "Wan2.2-TI2V-5B" }
   if (-not $values.Contains("P113_HUNYUAN_PROVIDER_KEY")) { $values["P113_HUNYUAN_PROVIDER_KEY"] = "tencent-hunyuan" }
   if (-not $values.Contains("P113_HUNYUAN_MODEL_KEY")) { $values["P113_HUNYUAN_MODEL_KEY"] = "HunyuanVideo-1.5-480p-I2V-Step-Distilled" }
-  $values["OPS_MIGRATION_HEAD"] = "0098_p113_pilot_video_grouping.sql"
+  $values["OPS_MIGRATION_HEAD"] = "0099_p114_local_video_renderers.sql"
   [IO.File]::WriteAllLines(
     $Path,
     [string[]]@($values.Keys | ForEach-Object { "$_=$($values[$_])" }),

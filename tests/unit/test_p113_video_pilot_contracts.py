@@ -261,14 +261,22 @@ def test_pilot_plan_has_three_videos_six_shot_classes_and_no_paid_activation() -
     assert plan["baseline_assumptions"]["automatic_public_publishing"] is False
 
 
-def test_windows_upgrade_preserves_secrets_and_advances_p113_schema() -> None:
+def test_windows_upgrade_preserves_secrets_and_keeps_current_schema_head() -> None:
     config = CONFIG.read_text(encoding="utf-8")
     deploy = DEPLOY.read_text(encoding="utf-8")
     capture = CAPTURE.read_text(encoding="utf-8")
     initialize = INITIALIZE_PS.read_text(encoding="utf-8")
     initializer = INITIALIZER.read_text(encoding="utf-8")
-    assert "OPS_MIGRATION_HEAD=0098_p113_pilot_video_grouping.sql" in config
-    assert '$values["OPS_MIGRATION_HEAD"] = "0098_p113_pilot_video_grouping.sql"' in deploy
+    config_heads = [
+        line.split("=", 1)[1]
+        for line in config.splitlines()
+        if line.startswith("OPS_MIGRATION_HEAD=")
+    ]
+    assert len(config_heads) == 1
+    migration_head = config_heads[0]
+    assert int(migration_head.split("_", 1)[0]) >= 98
+    assert (ROOT / "migrations" / migration_head).is_file()
+    assert f'$values["OPS_MIGRATION_HEAD"] = "{migration_head}"' in deploy
     assert "p113_model_policy_onboarding" in deploy
     assert "OPERATOR_API_KEYS_JSON" not in deploy
     assert "computer_name" not in capture
