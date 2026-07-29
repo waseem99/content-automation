@@ -12,7 +12,7 @@ BEGIN
         FROM pg_constraint
         WHERE conrelid = 'football_brief.generation_jobs'::regclass
           AND contype = 'c'
-          AND pg_get_constraintdef(oid) ILIKE '%job_type%'
+          AND conname LIKE 'generation_jobs_job_type%check'
     LOOP
         EXECUTE format(
             'ALTER TABLE football_brief.generation_jobs DROP CONSTRAINT %I',
