@@ -201,13 +201,21 @@ def test_creator_studio_exposes_complete_operator_path() -> None:
     assert "studio-v2-p110.js" in index
 
 
-def test_windows_upgrade_preserves_secrets_and_advances_schema_marker() -> None:
+def test_windows_upgrade_preserves_secrets_and_keeps_current_schema_head() -> None:
     deploy = DEPLOY.read_text(encoding="utf-8")
     config = CONFIG.read_text(encoding="utf-8")
+    config_heads = [
+        line.split("=", 1)[1]
+        for line in config.splitlines()
+        if line.startswith("OPS_MIGRATION_HEAD=")
+    ]
+    assert len(config_heads) == 1
+    migration_head = config_heads[0]
+    assert int(migration_head.split("_", 1)[0]) >= 95
+    assert (ROOT / "migrations" / migration_head).is_file()
+    assert f'$values["OPS_MIGRATION_HEAD"] = "{migration_head}"' in deploy
     assert "Sync-P110Environment" in deploy
-    assert 'OPS_MIGRATION_HEAD"] = "0098_p113_pilot_video_grouping.sql"' in deploy
     assert "OPERATOR_API_KEYS_JSON" not in deploy
     assert "KOKORO_PRIMARY_VOICE" in deploy
     assert "LOCAL_AUTO_RESEARCH_MINIMUM_MATCH" in deploy
     assert "P113_PILOT_TARGET_ATTEMPTS" in deploy
-    assert "OPS_MIGRATION_HEAD=0098_p113_pilot_video_grouping.sql" in config
