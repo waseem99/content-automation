@@ -46,6 +46,16 @@ function Sync-P110Environment([string]$Path) {
   )
 }
 
+function Import-LocalEnvironment([string]$Path) {
+  if (-not (Test-Path -LiteralPath $Path)) { throw "Local environment file is missing: $Path" }
+  foreach ($line in Get-Content -LiteralPath $Path) {
+    $trimmed = $line.Trim()
+    if (-not $trimmed -or $trimmed.StartsWith("#") -or -not $trimmed.Contains("=")) { continue }
+    $parts = $trimmed.Split("=", 2)
+    [Environment]::SetEnvironmentVariable([string]$parts[0], [string]$parts[1], "Process")
+  }
+}
+
 Sync-P110Environment $EnvPath
 
 if (-not (Get-Command ngrok -ErrorAction SilentlyContinue)) {
@@ -77,6 +87,7 @@ if ($deployment.ExitCode -ne 0) {
 if (-not (Test-Path -LiteralPath $Python)) {
   throw "P113 model policy onboarding could not run because the local Python environment is missing."
 }
+Import-LocalEnvironment $EnvPath
 Push-Location $Root
 try {
   & $Python -m src.operations.p113_model_policy_onboarding
