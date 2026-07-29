@@ -55,14 +55,15 @@ def compile_pilot_report(detail: dict[str, Any]) -> dict[str, Any]:
             bucket["accepted_clips"] += 1
 
     accepted_case_ids = set(accepted_by_case)
-    cases_by_item: dict[str, list[str]] = defaultdict(list)
+    required_cases_by_item: dict[str, list[str]] = defaultdict(list)
     for case in cases:
-        cases_by_item[str(case["pilot_item_id"])].append(str(case["id"]))
+        if str(case.get("status") or "") != "cancelled":
+            required_cases_by_item[str(case["pilot_item_id"])].append(str(case["id"]))
     completed_item_ids = {
         str(item["id"])
         for item in items
-        if cases_by_item.get(str(item["id"]))
-        and all(case_id in accepted_case_ids for case_id in cases_by_item[str(item["id"])])
+        if required_cases_by_item.get(str(item["id"]))
+        and all(case_id in accepted_case_ids for case_id in required_cases_by_item[str(item["id"])])
     }
 
     attempts_for_accepted = sum(1 for row in attempts if str(row["pilot_case_id"]) in accepted_case_ids)
