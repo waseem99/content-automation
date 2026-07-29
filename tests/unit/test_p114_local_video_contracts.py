@@ -143,14 +143,34 @@ def test_provider_cancels_only_the_named_queued_prompt() -> None:
     client.close()
 
 
-def test_provider_recognizes_only_video_outputs() -> None:
+def test_provider_streams_only_canonical_mp4(tmp_path: Path) -> None:
+    def handler(request: httpx.Request) -> httpx.Response:
+        assert request.url.path == "/view"
+        return httpx.Response(200, headers={"content-type": "video/mp4"}, content=b"mp4-bytes")
+
+    client = httpx.Client(
+        base_url="http://127.0.0.1:8188",
+        transport=httpx.MockTransport(handler),
+        trust_env=False,
+    )
+    provider = ComfyUILocalVideoProvider(base_url="http://127.0.0.1:8188", client=client)
+    output = provider.download(_job(LocalVideoJobStatus.SUCCEEDED), tmp_path / "clip.mp4")
+    assert output.read_bytes() == b"mp4-bytes"
+    client.close()
+
+
+def test_provider_recognizes_only_mp4_outputs() -> None:
     video = ComfyUILocalVideoProvider._video_descriptor(
         {"outputs": {"8": {"videos": [{"filename": "clip.mp4", "type": "output"}]}}}
+    )
+    webm = ComfyUILocalVideoProvider._video_descriptor(
+        {"outputs": {"8": {"videos": [{"filename": "clip.webm", "type": "output"}]}}}
     )
     image = ComfyUILocalVideoProvider._video_descriptor(
         {"outputs": {"8": {"images": [{"filename": "still.png", "type": "output"}]}}}
     )
     assert video and video["filename"] == "clip.mp4"
+    assert webm is None
     assert image is None
 
 
@@ -186,10 +206,19 @@ def test_worker_and_configuration_fail_closed_by_default() -> None:
     assert 'os.getenv("P114_LOCAL_VIDEO_ENABLED", "false")' in worker
     assert "P114 local video worker is disabled" in worker
     assert "outside the approved workflow root" in worker
+    assert "active P93 renderer catalogue entry is required" in worker
+    assert "P93 renderer commercial-use evidence is required" in worker
+    assert "P93 renderer must declare MP4 output support" in worker
+    assert "requested resolution is not approved" in worker
+    assert "requested duration is outside" in worker
+    assert "approved input keyframe image asset is required" in worker
     assert "model-use preflight rejected" in worker
     assert "generation_attempt_id=%s" in worker
     assert '"generation_attempt_id": str(attempt["id"])' in worker
     assert '"attempts"' in worker
+    assert "provider_request_id=None" in worker
+    assert "_bind_provider_request" in worker
+    assert worker.index("self._record_execution(") < worker.index("self.provider.health()")
     assert "'internal_only'" in worker
     assert '"review_status": "pending"' in worker
     assert '"external_fee_incurred": False' in worker
