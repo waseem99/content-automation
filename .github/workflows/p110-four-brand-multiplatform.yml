@@ -1,0 +1,158 @@
+name: P110 Four-brand Multi-platform Production
+
+on:
+  pull_request:
+    branches: [test, agent/p109-ngrok-readiness-header]
+    paths:
+      - "migrations/0093_p110_four_brand_multiplatform.sql"
+      - "migrations/0094_p110_content_family_defaults.sql"
+      - "src/operations/local_onboarding.py"
+      - "src/operations/local_onboarding_v2.py"
+      - "src/operator_api/p110_runtime.py"
+      - "src/operator_api/runtime_factory.py"
+      - "web/static-creator-ui/index.html"
+      - "web/static-creator-ui/assets/studio-v2-api.js"
+      - "web/static-creator-ui/assets/studio-v2-p110.js"
+      - "scripts/windows/deploy_remote_content_automation.ps1"
+      - "config/local.env.example"
+      - "tests/unit/test_p110_four_brand_multiplatform.py"
+      - ".github/workflows/p110-four-brand-multiplatform.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: p110-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  contracts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: content_automation
+          POSTGRES_USER: postgres
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d content_automation"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://postgres@localhost:5432/content_automation
+      DATABASE_REQUIRE_SCHEMA: "false"
+      DATABASE_MIGRATIONS_DIR: migrations
+      LOCAL_ADMIN_OPERATOR_ID: local-admin
+      LOCAL_SUPER_ADMIN_OPERATOR_ID: local-super-admin
+      LOCAL_REVIEWER_OPERATOR_ID: local-reviewer
+      LOCAL_PLAN_MONTH: 2026-08-01
+      KOKORO_PRIMARY_VOICE: af_heart
+      KOKORO_ENERGETIC_VOICE: af_bella
+      KOKORO_SERIOUS_VOICE: am_adam
+      OPS_ENVIRONMENT: staging
+      OPS_MIGRATION_HEAD: 0094_p110_content_family_defaults.sql
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install dependencies
+        run: python -m pip install -r requirements.txt
+      - name: Compile Python
+        run: python -m compileall -q src tests
+      - name: JavaScript syntax
+        run: |
+          node --check web/static-creator-ui/assets/studio-v2-api.js
+          node --check web/static-creator-ui/assets/studio-v2-p110.js
+          node --check web/static-creator-ui/assets/studio-v2-review-ux.js
+      - name: PowerShell syntax
+        shell: pwsh
+        run: |
+          $files = @(
+            "scripts/windows/deploy_remote_content_automation.ps1",
+            "scripts/windows/start_local_production.ps1",
+            "scripts/windows/check_production_readiness.ps1"
+          )
+          foreach ($file in $files) {
+            $tokens = $null
+            $errors = $null
+            [System.Management.Automation.Language.Parser]::ParseFile(
+              (Resolve-Path $file),
+              [ref]$tokens,
+              [ref]$errors
+            ) | Out-Null
+            if ($errors.Count -gt 0) {
+              $errors | ForEach-Object { Write-Error ("{0}: {1}" -f $file, $_.Message) }
+              throw "PowerShell syntax validation failed for $file"
+            }
+          }
+      - name: Apply complete migration chain
+        run: python -m src.infrastructure.database.cli migrate
+      - name: Run four-brand onboarding twice
+        run: |
+          python -m src.operations.local_onboarding_v2
+          python -m src.operations.local_onboarding_v2
+      - name: Verify four brands, profiles, voices and policies
+        run: |
+          python - <<'PY'
+          from src.infrastructure.database.connection import Database
+          from src.infrastructure.database.settings import get_database_settings
+
+          expected = {"ani-films", "animal-x", "rawr-nation", "historiq"}
+          database = Database(get_database_settings())
+          database.open(require_schema=True)
+          try:
+              with database.connection() as conn:
+                  brands = conn.execute(
+                      "SELECT id,slug,source_links,metadata FROM football_brief.brands WHERE active=true AND slug=ANY(%s::text[]) ORDER BY slug",
+                      (sorted(expected),),
+                  ).fetchall()
+                  assert {str(row["slug"]) for row in brands} == expected
+                  for brand in brands:
+                      profiles = conn.execute(
+                          "SELECT * FROM football_brief.brand_profiles WHERE brand_id=%s AND status='active'",
+                          (brand["id"],),
+                      ).fetchall()
+                      assert len(profiles) == 1
+                      presets = conn.execute(
+                          "SELECT * FROM football_brief.brand_narration_presets WHERE brand_profile_id=%s AND active=true ORDER BY role",
+                          (profiles[0]["id"],),
+                      ).fetchall()
+                      assert len(presets) == 3
+                      assert sum(1 for row in presets if row["is_default"]) == 1
+                      assert {str(row["role"]) for row in presets} == {"primary", "energetic", "serious"}
+                      policy = conn.execute(
+                          "SELECT * FROM football_brief.brand_review_policies WHERE brand_id=%s AND active=true",
+                          (brand["id"],),
+                      ).fetchall()
+                      assert len(policy) == 1
+                      assert policy[0]["policy_key"] == "admin_self_review_allowed"
+                  content = conn.execute(
+                      "SELECT count(*)::int AS value FROM football_brief.portfolio_content WHERE content_family_id=id AND variant_type='master'"
+                  ).fetchone()
+                  assert int(content["value"]) >= 4
+          finally:
+              database.close()
+          PY
+      - name: Focused P110 contracts
+        run: python -m pytest -q tests/unit/test_p110_four_brand_multiplatform.py
+      - name: Existing role and script regressions
+        run: >-
+          python -m pytest -q
+          tests/unit/test_p105_simplified_roles_remote_production.py
+          tests/unit/test_p89_script_contracts.py
+          tests/unit/test_p101_creator_studio_v2_contracts.py
+      - name: Safety boundary
+        shell: bash
+        run: |
+          ! grep -R -n -E "OPERATOR_API_KEYS_JSON=.*(token|secret)|ngrok.*authtoken.*=" \
+            scripts/windows config/local.env.example
+          ! grep -R -n -E "copied cookies|private endpoint|automatic public publishing" \
+            src/operator_api/p110_runtime.py web/static-creator-ui/assets/studio-v2-p110.js
