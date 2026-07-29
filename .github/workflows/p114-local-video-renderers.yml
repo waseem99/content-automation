@@ -1,0 +1,101 @@
+name: P114 Local Video Renderers
+
+on:
+  pull_request:
+    branches: [test]
+    paths:
+      - "migrations/0099_p114_local_video_renderer.sql"
+      - "src/application/local_video/**"
+      - "src/application/generation_jobs/models.py"
+      - "config/p114-local-video-manifest.example.json"
+      - "tests/unit/test_p114_local_video_contracts.py"
+      - ".github/workflows/p114-local-video-renderers.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: p114-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  contracts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: content_automation
+          POSTGRES_USER: postgres
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d content_automation"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://postgres@localhost:5432/content_automation
+      DATABASE_REQUIRE_SCHEMA: "false"
+      DATABASE_MIGRATIONS_DIR: migrations
+      LOCAL_SUPER_ADMIN_OPERATOR_ID: local-super-admin
+      LOCAL_ADMIN_OPERATOR_ID: local-admin
+      LOCAL_REVIEWER_OPERATOR_ID: local-reviewer
+      LOCAL_PLAN_MONTH: 2026-08-01
+      OPS_ENVIRONMENT: staging
+      OPS_MIGRATION_HEAD: 0099_p114_local_video_renderer.sql
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install dependencies
+        run: python -m pip install -r requirements.txt
+      - name: Compile Python
+        run: python -m compileall -q src tests
+      - name: Apply complete migration chain
+        run: python -m src.infrastructure.database.cli migrate
+      - name: Run local onboarding
+        run: python -m src.operations.local_onboarding_v2
+      - name: Run P113 policy onboarding
+        run: python -m src.operations.p113_model_policy_onboarding
+      - name: Verify local clip queue constraint
+        run: |
+          python - <<'PY'
+          from src.infrastructure.database.connection import Database
+          from src.infrastructure.database.settings import get_database_settings
+
+          database = Database(get_database_settings())
+          database.open(require_schema=True)
+          try:
+              with database.connection() as conn:
+                  definition = conn.execute(
+                      """SELECT pg_get_constraintdef(oid) AS value
+                           FROM pg_constraint
+                           WHERE conrelid='football_brief.generation_jobs'::regclass
+                             AND conname='generation_jobs_job_type_check'"""
+                  ).fetchone()["value"]
+                  assert "local_clip" in definition
+                  for table in ("local_video_workflow_versions", "local_video_job_bindings"):
+                      assert conn.execute("SELECT to_regclass(%s) AS value", (f"football_brief.{table}",)).fetchone()["value"]
+          finally:
+              database.close()
+          PY
+      - name: P114 contracts
+        run: python -m pytest -q tests/unit/test_p114_local_video_contracts.py
+      - name: Existing queue and pilot regressions
+        run: >-
+          python -m pytest -q
+          tests/unit/test_p87_generation_job_contracts.py
+          tests/unit/test_p93_renderer_contracts.py
+          tests/unit/test_p94_routing_contracts.py
+          tests/unit/test_p113_video_pilot_contracts.py
+      - name: Safety boundary
+        shell: bash
+        run: |
+          ! grep -R -n -E "https?://(?!127\.0\.0\.1|localhost)|automatic paid generation|automatic public publishing" \
+            src/application/local_video config/p114-local-video-manifest.example.json
