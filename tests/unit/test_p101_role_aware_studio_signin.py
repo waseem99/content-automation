@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 
@@ -10,13 +11,23 @@ def read(path: str) -> str:
     return (ROOT / path).read_text(encoding="utf-8")
 
 
+def script_position(index: str, asset_path: str) -> int:
+    match = re.search(rf'src="{re.escape(asset_path)}(?:\?[^\"]*)?"', index)
+    assert match is not None, f"missing script asset: {asset_path}"
+    return match.start()
+
+
 def test_role_aware_signin_and_navigation_use_the_routed_studio() -> None:
     index = read("web/static-creator-ui/index.html")
     core = read("web/static-creator-ui/assets/studio-v2.js")
     extensions = read("web/static-creator-ui/assets/studio-v2-extensions.js")
 
-    assert index.index('src="/assets/studio-v2-api.js"') < index.index('src="/assets/studio-v2.js"')
-    assert index.index('src="/assets/studio-v2.js"') < index.index('src="/assets/studio-v2-extensions.js"')
+    assert script_position(index, "/assets/studio-v2-api.js") < script_position(
+        index, "/assets/studio-v2.js"
+    )
+    assert script_position(index, "/assets/studio-v2.js") < script_position(
+        index, "/assets/studio-v2-extensions.js"
+    )
     assert 'show: hasRole("producer")' in core
     assert 'show: hasRole("reviewer")' in core
     assert 'show: isAdmin()' in core
