@@ -10,15 +10,14 @@ import socket
 from datetime import date
 from decimal import Decimal
 from typing import Any, Literal
-from urllib.error import HTTPError, URLError
 from urllib.parse import quote, urlencode, urlparse
-from urllib.request import Request, urlopen
 from uuid import UUID, uuid4
 
 from fastapi import Depends, FastAPI, HTTPException
 from pydantic import BaseModel, Field, model_validator
 
 from src.application.generation_jobs.models import GenerationJobEnqueue, GenerationJobType
+from src.application.https_fetch import HttpsFetchError, fetch_https
 from src.application.generation_jobs.service import GenerationJobError
 from src.application.portfolio_service import PortfolioService
 from src.application.production_workflow_service import ProductionWorkflowError, ProductionWorkflowService
@@ -191,9 +190,14 @@ class WikipediaResearchAdapter:
                 "utf8": 1,
             }
         )
-        request = Request(f"{self.endpoint}?{params}", headers={"User-Agent": self.user_agent, "Accept": "application/json"})
-        with urlopen(request, timeout=15) as response:  # noqa: S310 - fixed official HTTPS host
-            payload = json.loads(response.read(512_000).decode("utf-8"))
+        response = fetch_https(
+            f"{self.endpoint}?{params}",
+            headers={"User-Agent": self.user_agent, "Accept": "application/json"},
+            timeout=15,
+            max_bytes=512_000,
+            allowed_hosts={"en.wikipedia.org"},
+        )
+        payload = json.loads(response.content.decode("utf-8"))
         rows = payload.get("query", {}).get("search", [])
         output: list[dict[str, Any]] = []
         for index, row in enumerate(rows[:limit], start=1):
@@ -1029,20 +1033,22 @@ def _assert_public_https_url(value: str) -> tuple[str, str]:
 
 def _inspect_public_url(value: str) -> dict[str, Any]:
     safe_url, _ = _assert_public_https_url(value)
-    request = Request(
-        safe_url,
-        headers={
-            "User-Agent": "ContentAutomationP110/1.0 (operator-selected source validation)",
-            "Accept": "text/html,application/xhtml+xml,application/json,text/plain;q=0.8,*/*;q=0.5",
-        },
-    )
     try:
-        with urlopen(request, timeout=15) as response:  # noqa: S310 - URL passed strict public HTTPS/SSRF validation
-            final_url = response.geturl()
-            _, final_host = _assert_public_https_url(final_url)
-            content_type = str(response.headers.get("Content-Type") or "").split(";", 1)[0].strip().lower()
-            raw = response.read(512_000)
-    except (HTTPError, URLError, TimeoutError, OSError) as exc:
+        response = fetch_https(
+            safe_url,
+            headers={
+                "User-Agent": "ContentAutomationP110/1.0 (operator-selected source validation)",
+                "Accept": "text/html,application/xhtml+xml,application/json,text/plain;q=0.8,*/*;q=0.5",
+            },
+            timeout=15,
+            max_bytes=512_000,
+            validator=_assert_public_https_url,
+        )
+        final_url = response.final_url
+        _, final_host = _assert_public_https_url(final_url)
+        content_type = str(response.headers.get("content-type") or "").split(";", 1)[0].strip().lower()
+        raw = response.content
+    except HttpsFetchError as exc:
         raise P110Error("source_url_validation_failed", details={"message": str(exc)}) from exc
     text = raw.decode("utf-8", errors="replace")
     title_match = re.search(r"<title[^>]*>(.*?)</title>", text, flags=re.IGNORECASE | re.DOTALL)
