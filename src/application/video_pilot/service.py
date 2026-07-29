@@ -12,6 +12,7 @@ from src.application.video_pilot.models import (
     PilotAttemptReviewRequest,
     PilotAttemptStatus,
     PilotCaseCreateRequest,
+    PilotItemCreateRequest,
     PilotReviewDecision,
     PilotRunCreateRequest,
     PilotRunStartRequest,
@@ -109,17 +110,48 @@ class VideoPilotService:
             ).fetchone()
         return {"ok": True, "kind": "video_pilot_run_started", "reused": False, "run": dict(updated)}
 
+    def create_item(self, run_id: UUID, request: PilotItemCreateRequest, *, actor: str) -> dict[str, Any]:
+        with self.database.transaction() as conn:
+            self._require_active_operator(conn, actor)
+            run = self._editable_run(conn, run_id)
+            if request.portfolio_content_id and not conn.execute(
+                "SELECT id FROM football_brief.portfolio_content WHERE id=%s",
+                (request.portfolio_content_id,),
+            ).fetchone():
+                raise VideoPilotError("portfolio_content_not_found")
+            existing = conn.execute(
+                "SELECT id FROM football_brief.video_pilot_items WHERE pilot_run_id=%s AND item_key=%s",
+                (run["id"], request.item_key),
+            ).fetchone()
+            if existing:
+                raise VideoPilotError("pilot_item_key_exists", details={"pilot_item_id": str(existing["id"])})
+            item = conn.execute(
+                """INSERT INTO football_brief.video_pilot_items
+                   (pilot_run_id,item_key,title,portfolio_content_id,target_duration_seconds,status,created_by)
+                   VALUES (%s,%s,%s,%s,%s,'planned',%s) RETURNING *""",
+                (
+                    run_id,
+                    request.item_key,
+                    request.title.strip(),
+                    request.portfolio_content_id,
+                    request.target_duration_seconds,
+                    actor,
+                ),
+            ).fetchone()
+        return {"ok": True, "kind": "video_pilot_item_created", "item": dict(item)}
+
     def create_case(self, run_id: UUID, request: PilotCaseCreateRequest, *, actor: str) -> dict[str, Any]:
         with self.database.transaction() as conn:
             self._require_active_operator(conn, actor)
-            run = conn.execute(
-                "SELECT id,status FROM football_brief.video_pilot_runs WHERE id=%s FOR SHARE",
-                (run_id,),
+            self._editable_run(conn, run_id)
+            item = conn.execute(
+                "SELECT id,status FROM football_brief.video_pilot_items WHERE id=%s AND pilot_run_id=%s FOR UPDATE",
+                (request.pilot_item_id, run_id),
             ).fetchone()
-            if not run:
-                raise VideoPilotError("pilot_run_not_found")
-            if run["status"] not in {"planned", "running"}:
-                raise VideoPilotError("pilot_run_not_editable", details={"status": run["status"]})
+            if not item:
+                raise VideoPilotError("pilot_item_not_found")
+            if item["status"] in {"completed", "cancelled"}:
+                raise VideoPilotError("pilot_item_not_editable", details={"status": item["status"]})
             if request.input_asset_id and not conn.execute(
                 "SELECT id FROM football_brief.assets WHERE id=%s", (request.input_asset_id,)
             ).fetchone():
@@ -132,13 +164,14 @@ class VideoPilotService:
                 raise VideoPilotError("pilot_case_key_exists", details={"pilot_case_id": str(existing["id"])})
             case = conn.execute(
                 """INSERT INTO football_brief.video_pilot_cases
-                   (pilot_run_id,case_key,title,shot_class,difficulty,distribution_scope,
+                   (pilot_run_id,pilot_item_id,case_key,title,shot_class,difficulty,distribution_scope,
                     release_territories,target_duration_seconds,prompt,negative_prompt,input_asset_id,
                     required_model_keys,acceptance_criteria,status,created_by)
-                   VALUES (%s,%s,%s,%s,%s,%s,%s::text[],%s,%s,%s,%s,%s::text[],%s::jsonb,'ready',%s)
+                   VALUES (%s,%s,%s,%s,%s,%s,%s,%s::text[],%s,%s,%s,%s,%s::text[],%s::jsonb,'ready',%s)
                    RETURNING *""",
                 (
                     run_id,
+                    request.pilot_item_id,
                     request.case_key,
                     request.title.strip(),
                     request.shot_class.value,
@@ -154,33 +187,40 @@ class VideoPilotService:
                     actor,
                 ),
             ).fetchone()
+            conn.execute(
+                "UPDATE football_brief.video_pilot_items SET status='production' WHERE id=%s AND status='planned'",
+                (request.pilot_item_id,),
+            )
         return {"ok": True, "kind": "video_pilot_case_created", "case": dict(case)}
 
     def create_attempt(self, case_id: UUID, request: PilotAttemptCreateRequest, *, actor: str) -> dict[str, Any]:
         with self.database.transaction() as conn:
             self._require_active_operator(conn, actor)
             case = conn.execute(
-                """SELECT c.*,r.status AS run_status FROM football_brief.video_pilot_cases c
+                """SELECT c.*,r.status AS run_status,i.status AS item_status
+                   FROM football_brief.video_pilot_cases c
                    JOIN football_brief.video_pilot_runs r ON r.id=c.pilot_run_id
-                   WHERE c.id=%s FOR UPDATE OF c,r""",
+                   JOIN football_brief.video_pilot_items i ON i.id=c.pilot_item_id
+                   WHERE c.id=%s FOR UPDATE OF c,r,i""",
                 (case_id,),
             ).fetchone()
             if not case:
                 raise VideoPilotError("pilot_case_not_found")
             if case["run_status"] != "running":
                 raise VideoPilotError("pilot_run_not_running", details={"status": case["run_status"]})
-            if case["status"] in {"completed", "cancelled"}:
-                raise VideoPilotError("pilot_case_not_attemptable", details={"status": case["status"]})
+            if case["status"] in {"completed", "cancelled"} or case["item_status"] in {"completed", "cancelled"}:
+                raise VideoPilotError("pilot_case_not_attemptable")
 
             policy = self._active_policy(conn, request.provider_key, request.model_key)
-            preflight_request = ModelUsePreflightRequest(
-                provider_key=request.provider_key,
-                model_key=request.model_key,
-                distribution_scope=DistributionScope(str(case["distribution_scope"])),
-                release_territories=tuple(case["release_territories"] or ()),
-                written_clearance_reference=request.written_clearance_reference,
+            preflight = evaluate_model_policy(
+                policy,
+                ModelUsePreflightRequest(
+                    provider_key=request.provider_key,
+                    model_key=request.model_key,
+                    distribution_scope=DistributionScope(str(case["distribution_scope"])),
+                    release_territories=tuple(case["release_territories"] or ()),
+                ),
             )
-            preflight = evaluate_model_policy(policy, preflight_request)
             if not preflight["accepted"]:
                 raise VideoPilotError(
                     "video_model_use_not_allowed",
@@ -193,12 +233,6 @@ class VideoPilotService:
                     (case_id,),
                 ).fetchone()["value"]
             )
-            initial_metrics = {
-                "model_use_preflight": {
-                    **preflight,
-                    "written_clearance_reference": request.written_clearance_reference,
-                }
-            }
             attempt = conn.execute(
                 """INSERT INTO football_brief.video_pilot_attempts
                    (pilot_case_id,attempt_number,model_policy_id,renderer_catalogue_entry_id,
@@ -222,7 +256,7 @@ class VideoPilotService:
                     request.frame_count,
                     request.inference_steps,
                     request.started_at,
-                    _json(initial_metrics),
+                    _json({"model_use_preflight": preflight}),
                     actor,
                 ),
             ).fetchone()
@@ -281,16 +315,18 @@ class VideoPilotService:
         with self.database.transaction() as conn:
             self._require_active_operator(conn, actor)
             attempt = conn.execute(
-                """SELECT a.*,c.status AS case_status FROM football_brief.video_pilot_attempts a
+                """SELECT a.*,c.status AS case_status,c.pilot_item_id,i.status AS item_status
+                   FROM football_brief.video_pilot_attempts a
                    JOIN football_brief.video_pilot_cases c ON c.id=a.pilot_case_id
-                   WHERE a.id=%s FOR UPDATE OF a,c""",
+                   JOIN football_brief.video_pilot_items i ON i.id=c.pilot_item_id
+                   WHERE a.id=%s FOR UPDATE OF a,c,i""",
                 (attempt_id,),
             ).fetchone()
             if not attempt:
                 raise VideoPilotError("pilot_attempt_not_found")
             if attempt["status"] != "succeeded":
                 raise VideoPilotError("only_succeeded_pilot_attempts_are_reviewable")
-            if request.decision == PilotReviewDecision.ACCEPTED and attempt["case_status"] == "completed":
+            if attempt["case_status"] == "completed" or attempt["item_status"] == "completed":
                 raise VideoPilotError("pilot_case_already_has_accepted_output")
             review = conn.execute(
                 """INSERT INTO football_brief.video_pilot_attempt_reviews
@@ -309,8 +345,29 @@ class VideoPilotService:
                     actor,
                 ),
             ).fetchone()
-            next_status = "completed" if request.decision == PilotReviewDecision.ACCEPTED else "ready"
-            conn.execute("UPDATE football_brief.video_pilot_cases SET status=%s WHERE id=%s", (next_status, attempt["pilot_case_id"]))
+            case_status = "completed" if request.decision == PilotReviewDecision.ACCEPTED else "ready"
+            conn.execute(
+                "UPDATE football_brief.video_pilot_cases SET status=%s WHERE id=%s",
+                (case_status, attempt["pilot_case_id"]),
+            )
+            remaining = int(
+                conn.execute(
+                    """SELECT count(*)::int AS value FROM football_brief.video_pilot_cases
+                       WHERE pilot_item_id=%s AND status NOT IN ('completed','cancelled')""",
+                    (attempt["pilot_item_id"],),
+                ).fetchone()["value"]
+            )
+            total = int(
+                conn.execute(
+                    "SELECT count(*)::int AS value FROM football_brief.video_pilot_cases WHERE pilot_item_id=%s",
+                    (attempt["pilot_item_id"],),
+                ).fetchone()["value"]
+            )
+            item_status = "completed" if total > 0 and remaining == 0 else "production"
+            conn.execute(
+                "UPDATE football_brief.video_pilot_items SET status=%s WHERE id=%s",
+                (item_status, attempt["pilot_item_id"]),
+            )
         return {"ok": True, "kind": "video_pilot_attempt_reviewed", "review": dict(review)}
 
     def list_runs(self, *, limit: int = 100) -> dict[str, Any]:
@@ -328,8 +385,13 @@ class VideoPilotService:
             run = conn.execute("SELECT * FROM football_brief.video_pilot_runs WHERE id=%s", (run_id,)).fetchone()
             if not run:
                 raise VideoPilotError("pilot_run_not_found")
+            items = conn.execute(
+                "SELECT * FROM football_brief.video_pilot_items WHERE pilot_run_id=%s ORDER BY item_key,id",
+                (run_id,),
+            ).fetchall()
             cases = conn.execute(
-                "SELECT * FROM football_brief.video_pilot_cases WHERE pilot_run_id=%s ORDER BY case_key,id", (run_id,)
+                "SELECT * FROM football_brief.video_pilot_cases WHERE pilot_run_id=%s ORDER BY case_key,id",
+                (run_id,),
             ).fetchall()
             attempts = conn.execute(
                 """SELECT a.* FROM football_brief.video_pilot_attempts a
@@ -345,12 +407,14 @@ class VideoPilotService:
                 (run_id,),
             ).fetchall()
             reports = conn.execute(
-                "SELECT * FROM football_brief.video_pilot_reports WHERE pilot_run_id=%s ORDER BY version DESC", (run_id,)
+                "SELECT * FROM football_brief.video_pilot_reports WHERE pilot_run_id=%s ORDER BY version DESC",
+                (run_id,),
             ).fetchall()
         return {
             "ok": True,
             "kind": "video_pilot_run_detail",
             "run": dict(run),
+            "items": [dict(row) for row in items],
             "cases": [dict(row) for row in cases],
             "attempts": [dict(row) for row in attempts],
             "reviews": [dict(row) for row in reviews],
@@ -364,10 +428,12 @@ class VideoPilotService:
         report = self.report(run_id)["report"]
         with self.database.transaction() as conn:
             self._require_active_operator(conn, actor)
-            version = int(conn.execute(
-                "SELECT COALESCE(max(version),0)+1 AS value FROM football_brief.video_pilot_reports WHERE pilot_run_id=%s",
-                (run_id,),
-            ).fetchone()["value"])
+            version = int(
+                conn.execute(
+                    "SELECT COALESCE(max(version),0)+1 AS value FROM football_brief.video_pilot_reports WHERE pilot_run_id=%s",
+                    (run_id,),
+                ).fetchone()["value"]
+            )
             row = conn.execute(
                 """INSERT INTO football_brief.video_pilot_reports
                    (pilot_run_id,version,report_snapshot,generated_by)
@@ -382,7 +448,10 @@ class VideoPilotService:
             raise VideoPilotError("pilot_run_acceptance_not_ready", details={"reasons": preview["insufficiency_reasons"]})
         with self.database.transaction() as conn:
             self._require_active_operator(conn, actor)
-            run = conn.execute("SELECT * FROM football_brief.video_pilot_runs WHERE id=%s FOR UPDATE", (run_id,)).fetchone()
+            run = conn.execute(
+                "SELECT * FROM football_brief.video_pilot_runs WHERE id=%s FOR UPDATE",
+                (run_id,),
+            ).fetchone()
             if not run:
                 raise VideoPilotError("pilot_run_not_found")
             if run["status"] == "closed":
@@ -396,6 +465,17 @@ class VideoPilotService:
             ).fetchone()
         snapshot = self.snapshot_report(run_id, actor=actor)
         return {"ok": True, "kind": "video_pilot_run_closed", "reused": False, "run": dict(updated), "report": snapshot["report"]}
+
+    def _editable_run(self, conn: Any, run_id: UUID) -> dict[str, Any]:
+        run = conn.execute(
+            "SELECT id,status FROM football_brief.video_pilot_runs WHERE id=%s FOR SHARE",
+            (run_id,),
+        ).fetchone()
+        if not run:
+            raise VideoPilotError("pilot_run_not_found")
+        if run["status"] not in {"planned", "running"}:
+            raise VideoPilotError("pilot_run_not_editable", details={"status": run["status"]})
+        return dict(run)
 
     def _validate_attempt_bindings(self, conn: Any, request: PilotAttemptCreateRequest) -> None:
         if request.renderer_catalogue_entry_id:
@@ -421,13 +501,17 @@ class VideoPilotService:
             (provider_key.strip().lower(), model_key.strip()),
         ).fetchone()
         if not row:
-            raise VideoPilotError("video_model_use_policy_not_found", details={"provider_key": provider_key, "model_key": model_key})
+            raise VideoPilotError(
+                "video_model_use_policy_not_found",
+                details={"provider_key": provider_key, "model_key": model_key},
+            )
         return dict(row)
 
     @staticmethod
     def _require_active_operator(conn: Any, actor: str) -> None:
         if not conn.execute(
-            "SELECT operator_id FROM football_brief.operator_users WHERE operator_id=%s AND active=true", (actor,)
+            "SELECT operator_id FROM football_brief.operator_users WHERE operator_id=%s AND active=true",
+            (actor,),
         ).fetchone():
             raise VideoPilotError("active_operator_required")
 
