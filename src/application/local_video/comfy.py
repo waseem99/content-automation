@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 import json
+import mimetypes
 import time
 import urllib.error
 import urllib.parse
 import urllib.request
 from pathlib import Path
 from typing import Any
+from uuid import uuid4
 
 
 class ComfyUIError(RuntimeError):
@@ -22,6 +24,40 @@ class ComfyUIClient:
             raise ValueError("ComfyUI endpoint must not contain credentials, query or fragment")
         self.base_url = base_url.rstrip("/")
         self.timeout_seconds = timeout_seconds
+
+    def upload_image(self, path: Path, *, subfolder: str) -> str:
+        if not path.is_file() or path.stat().st_size <= 0:
+            raise ComfyUIError("comfyui_input_image_missing")
+        if path.stat().st_size > 100 * 1024 * 1024:
+            raise ComfyUIError("comfyui_input_image_too_large")
+        boundary = f"----content-automation-{uuid4().hex}"
+        mime = mimetypes.guess_type(path.name)[0] or "application/octet-stream"
+        parts = [
+            f"--{boundary}\r\nContent-Disposition: form-data; name=\"overwrite\"\r\n\r\ntrue\r\n".encode(),
+            f"--{boundary}\r\nContent-Disposition: form-data; name=\"subfolder\"\r\n\r\n{subfolder}\r\n".encode(),
+            (
+                f"--{boundary}\r\nContent-Disposition: form-data; name=\"image\"; filename=\"{path.name}\"\r\n"
+                f"Content-Type: {mime}\r\n\r\n"
+            ).encode(),
+            path.read_bytes(),
+            f"\r\n--{boundary}--\r\n".encode(),
+        ]
+        request = urllib.request.Request(
+            f"{self.base_url}/upload/image",
+            data=b"".join(parts),
+            method="POST",
+            headers={"Content-Type": f"multipart/form-data; boundary={boundary}"},
+        )
+        try:
+            with urllib.request.urlopen(request, timeout=max(self.timeout_seconds, 60)) as response:
+                payload = json.loads(response.read().decode("utf-8"))
+        except (urllib.error.URLError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+            raise ComfyUIError("comfyui_input_upload_failed") from exc
+        name = str(payload.get("name") or "").strip()
+        returned_subfolder = str(payload.get("subfolder") or "").strip()
+        if not name or returned_subfolder != subfolder:
+            raise ComfyUIError("comfyui_input_upload_response_invalid")
+        return f"{subfolder}/{name}" if subfolder else name
 
     def submit(self, workflow: dict[str, Any], *, client_id: str) -> str:
         payload = self._json_request(
