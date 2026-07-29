@@ -1,0 +1,24 @@
+{
+  "provider_key": "tencent-hunyuan",
+  "model_key": "HunyuanVideo-1.5-480p-I2V-Step-Distilled",
+  "execution_enabled": false,
+  "blocked_reason": "No reviewed ComfyUI API-format workflow and territory-cleared child policy are active.",
+  "official_template_reference": "video_hunyuan_video_1.5_720p_i2v.json",
+  "required_activation": [
+    "Create and review a ComfyUI API-format workflow export.",
+    "Record the exact workflow SHA-256.",
+    "Record every model file SHA-256.",
+    "Activate a P113 child model-use policy covering the intended release destinations.",
+    "Activate a child P114 renderer profile through Super Admin controls."
+  ],
+  "official_model_files_reference": [
+    "hunyuanvideo1.5_720p_i2v_fp16.safetensors",
+    "hunyuanvideo15_vae_fp16.safetensors",
+    "qwen_2.5_vl_7b_fp8_scaled.safetensors",
+    "byt5_small_glyphxl_fp16.safetensors",
+    "sigclip_vision_patch14_384.safetensors"
+  ],
+  "automatic_download": false,
+  "automatic_activation": false,
+  "automatic_public_distribution": false
+}
