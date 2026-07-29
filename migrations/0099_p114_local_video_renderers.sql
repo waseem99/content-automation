@@ -60,13 +60,47 @@ CREATE TABLE football_brief.local_video_workflows (
     UNIQUE (provider_key,model_key,workflow_key,version),
     CHECK (version = 1 OR parent_workflow_id IS NOT NULL),
     CHECK (version <> 1 OR parent_workflow_id IS NULL),
-    CHECK (status <> 'active' OR (activated_by IS NOT NULL AND activated_at IS NOT NULL)),
+    CHECK (status <> 'active' OR (
+        renderer_catalogue_entry_id IS NOT NULL
+        AND activated_by IS NOT NULL
+        AND activated_at IS NOT NULL
+    )),
     CHECK (status <> 'retired' OR (retired_by IS NOT NULL AND retired_at IS NOT NULL))
 );
 
 CREATE UNIQUE INDEX local_video_workflows_one_active_idx
 ON football_brief.local_video_workflows(provider_key,model_key,workflow_key)
 WHERE status='active';
+
+CREATE OR REPLACE FUNCTION football_brief.protect_local_video_workflow()
+RETURNS trigger
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    IF TG_OP='DELETE' THEN
+        RAISE EXCEPTION 'Local video workflows are immutable and cannot be deleted';
+    END IF;
+    IF OLD.status='retired' THEN
+        RAISE EXCEPTION 'Retired local video workflows are immutable';
+    END IF;
+    IF OLD.status='active' THEN
+        IF NEW.status <> 'retired'
+           OR NEW.retired_by IS NULL
+           OR NEW.retired_at IS NULL
+           OR (to_jsonb(NEW) - ARRAY['status','retired_by','retired_at'])
+              IS DISTINCT FROM
+              (to_jsonb(OLD) - ARRAY['status','retired_by','retired_at']) THEN
+            RAISE EXCEPTION 'Active local video workflows may only be retired without changing lineage';
+        END IF;
+    END IF;
+    RETURN NEW;
+END;
+$$;
+
+CREATE TRIGGER local_video_workflow_immutable
+BEFORE UPDATE OR DELETE ON football_brief.local_video_workflows
+FOR EACH ROW
+EXECUTE FUNCTION football_brief.protect_local_video_workflow();
 
 CREATE TABLE football_brief.local_video_executions (
     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
