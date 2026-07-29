@@ -1,0 +1,75 @@
+name: P114 Local Video Renderer
+
+on:
+  pull_request:
+    branches: [test]
+    paths:
+      - "migrations/0099_p114_local_video_renderer_manifests.sql"
+      - "src/application/local_video_renderer/**"
+      - "tests/unit/test_p114_local_video_renderer_contracts.py"
+      - ".github/workflows/p114-local-video-renderer.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  contracts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: content_automation
+          POSTGRES_USER: postgres
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d content_automation"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://postgres@localhost:5432/content_automation
+      DATABASE_REQUIRE_SCHEMA: "false"
+      DATABASE_MIGRATIONS_DIR: migrations
+      LOCAL_SUPER_ADMIN_OPERATOR_ID: local-super-admin
+      LOCAL_ADMIN_OPERATOR_ID: local-admin
+      LOCAL_REVIEWER_OPERATOR_ID: local-reviewer
+      LOCAL_PLAN_MONTH: 2026-08-01
+      KOKORO_PRIMARY_VOICE: af_heart
+      KOKORO_ENERGETIC_VOICE: af_bella
+      KOKORO_SERIOUS_VOICE: am_adam
+      OPS_ENVIRONMENT: staging
+      OPS_MIGRATION_HEAD: 0099_p114_local_video_renderer_manifests.sql
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install dependencies
+        run: python -m pip install -r requirements.txt
+      - name: Compile Python
+        run: python -m compileall -q src tests
+      - name: Apply migration chain
+        run: python -m src.infrastructure.database.cli migrate
+      - name: Run operator and model policy onboarding
+        run: |
+          python -m src.operations.local_onboarding_v2
+          python -m src.operations.p113_model_policy_onboarding
+      - name: P114 contracts
+        run: python -m pytest -q tests/unit/test_p114_local_video_renderer_contracts.py
+      - name: P93 P94 P113 regressions
+        run: >-
+          python -m pytest -q
+          tests/unit/test_p93_renderer_contracts.py
+          tests/unit/test_p94_routing_contracts.py
+          tests/unit/test_p113_video_pilot_contracts.py
+      - name: Safety boundary
+        shell: bash
+        run: |
+          ! grep -R -n -E "external_cost_usd[^\n]*[1-9]|automatic public publishing|automatic paid generation" \
+            src/application/local_video_renderer migrations/0099_p114_local_video_renderer_manifests.sql
