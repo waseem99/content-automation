@@ -1,0 +1,52 @@
+{
+  "enabled": false,
+  "workflow_root": "deploy/p114-local-video/workflows",
+  "checkpoint_root": ".runtime/models/video",
+  "comfyui_base_url": "http://127.0.0.1:8188",
+  "workflows": [
+    {
+      "workflow_key": "wan22-ti2v5b-draft",
+      "provider_key": "wan-ai",
+      "model_key": "Wan2.2-TI2V-5B",
+      "operation": "image_to_video",
+      "profile": "draft",
+      "workflow_relative_path": "wan22-ti2v5b-draft-api.json",
+      "workflow_sha256": "REPLACE_WITH_64_HEX",
+      "checkpoint_relative_path": "wan2.2-ti2v-5b/REPLACE_WITH_APPROVED_CHECKPOINT",
+      "checkpoint_sha256": "REPLACE_WITH_64_HEX",
+      "parameter_contract": {
+        "prompt_path": "REPLACE_WITH_NODE_INPUT_PATH",
+        "negative_prompt_path": "REPLACE_WITH_NODE_INPUT_PATH",
+        "source_image_path": "REPLACE_WITH_NODE_INPUT_PATH",
+        "seed_path": "REPLACE_WITH_NODE_INPUT_PATH",
+        "width_path": "REPLACE_WITH_NODE_INPUT_PATH",
+        "height_path": "REPLACE_WITH_NODE_INPUT_PATH",
+        "frame_count_path": "REPLACE_WITH_NODE_INPUT_PATH",
+        "fps_path": "REPLACE_WITH_NODE_INPUT_PATH",
+        "steps_path": "REPLACE_WITH_NODE_INPUT_PATH"
+      }
+    },
+    {
+      "workflow_key": "hunyuan15-i2v-draft",
+      "provider_key": "tencent-hunyuan",
+      "model_key": "HunyuanVideo-1.5-480p-I2V-Step-Distilled",
+      "operation": "image_to_video",
+      "profile": "draft",
+      "workflow_relative_path": "hunyuan15-i2v-draft-api.json",
+      "workflow_sha256": "REPLACE_WITH_64_HEX",
+      "checkpoint_relative_path": "hunyuan-video-1.5/REPLACE_WITH_APPROVED_CHECKPOINT",
+      "checkpoint_sha256": "REPLACE_WITH_64_HEX",
+      "parameter_contract": {
+        "prompt_path": "REPLACE_WITH_NODE_INPUT_PATH",
+        "negative_prompt_path": "REPLACE_WITH_NODE_INPUT_PATH",
+        "source_image_path": "REPLACE_WITH_NODE_INPUT_PATH",
+        "seed_path": "REPLACE_WITH_NODE_INPUT_PATH",
+        "width_path": "REPLACE_WITH_NODE_INPUT_PATH",
+        "height_path": "REPLACE_WITH_NODE_INPUT_PATH",
+        "frame_count_path": "REPLACE_WITH_NODE_INPUT_PATH",
+        "fps_path": "REPLACE_WITH_NODE_INPUT_PATH",
+        "steps_path": "REPLACE_WITH_NODE_INPUT_PATH"
+      }
+    }
+  ]
+}
