@@ -86,7 +86,7 @@ $values["P114_WAN_LICENSE_ACKNOWLEDGED"] = "true"
 $values["P114_WAN_WORKFLOW_PATH"] = "deploy/p114-local-video/workflows/wan2.2-ti2v-5b-i2v-api.json"
 $values["P114_WAN_MODEL_FILES_JSON"] = ($files | ConvertTo-Json -Compress)
 $values["P114_HUNYUAN_EXECUTION_ENABLED"] = if ($values.Contains("P114_HUNYUAN_EXECUTION_ENABLED")) { $values["P114_HUNYUAN_EXECUTION_ENABLED"] } else { "false" }
-$values["OPS_MIGRATION_HEAD"] = "0099_p114_dual_local_video_renderer.sql"
+$values["OPS_MIGRATION_HEAD"] = "0100_p114_pilot_attempt_binding.sql"
 Write-DotEnv $values $EnvPath
 
 foreach ($entry in $values.GetEnumerator()) {
