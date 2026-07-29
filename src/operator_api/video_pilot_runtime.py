@@ -5,16 +5,18 @@ from uuid import UUID
 
 from fastapi import Depends, FastAPI, HTTPException, Query
 
+from src.application.video_pilot.grouped_service import GroupedVideoPilotService
 from src.application.video_pilot.models import (
     ModelUsePreflightRequest,
     PilotAttemptCompleteRequest,
     PilotAttemptCreateRequest,
     PilotAttemptReviewRequest,
     PilotCaseCreateRequest,
+    PilotItemCreateRequest,
     PilotRunCreateRequest,
     PilotRunStartRequest,
 )
-from src.application.video_pilot.service import VideoPilotError, VideoPilotService
+from src.application.video_pilot.service import VideoPilotError
 from src.infrastructure.database.connection import Database
 from src.operator_api.access import AccessPermission, OperatorAccessService, OperatorIdentity, require_access
 from src.operator_api.auth import OperatorAuthSettings, build_operator_auth
@@ -29,7 +31,7 @@ def install_video_pilot_routes(
     if getattr(app.state, "video_pilot_routes_installed", False):
         return
     app.state.video_pilot_routes_installed = True
-    service = VideoPilotService(database) if database is not None else None
+    service = GroupedVideoPilotService(database) if database is not None else None
     access = OperatorAccessService(database) if database is not None else None
 
     def load_identity(operator_id: str, key_name: str) -> OperatorIdentity | None:
@@ -37,7 +39,7 @@ def install_video_pilot_routes(
 
     authenticate = build_operator_auth(auth_settings, load_identity)
 
-    def require_service() -> VideoPilotService:
+    def require_service() -> GroupedVideoPilotService:
         if service is None:
             raise HTTPException(status_code=503, detail="database_not_configured")
         return service
@@ -108,6 +110,19 @@ def install_video_pilot_routes(
         admin_required(operator)
         try:
             result = require_service().start_run(run_id, request, actor=operator.operator_id)
+        except VideoPilotError as exc:
+            raise_video_pilot_error(exc)
+        return {"operator": operator.operator_id, **result}
+
+    @app.post("/video-pilot/runs/{run_id}/items")
+    def create_item(
+        run_id: UUID,
+        request: PilotItemCreateRequest,
+        operator: OperatorIdentity = Depends(authenticate),
+    ) -> dict[str, Any]:
+        require_access(operator, AccessPermission.RUN_PRODUCTION)
+        try:
+            result = require_service().create_item(run_id, request, actor=operator.operator_id)
         except VideoPilotError as exc:
             raise_video_pilot_error(exc)
         return {"operator": operator.operator_id, **result}
@@ -206,6 +221,7 @@ def raise_video_pilot_error(exc: VideoPilotError) -> None:
         status_code = 404
     elif exc.code in {
         "pilot_run_key_exists",
+        "pilot_item_key_exists",
         "pilot_case_key_exists",
         "pilot_attempt_already_terminal",
         "pilot_case_already_has_accepted_output",
