@@ -30,6 +30,7 @@ from src.operator_api.app import create_app
 from src.operator_api.operations_middleware import OperationsSafetyMiddleware
 from src.operator_api.operations_validated_runtime import install_operations_routes
 from src.operator_api.p110_runtime import install_p110_routes
+from src.operator_api.p111_runtime_patch import install_p111_super_admin_override_patch
 from src.operator_api.performance_runtime import install_performance_routes
 from src.operator_api.production_workflow_runtime import install_production_workflow_routes
 from src.operator_api.releases_validated_runtime import install_release_routes
@@ -43,6 +44,7 @@ from src.operator_api.visuals_runtime import install_visual_routes
 
 
 install_validated_script_service()
+install_p111_super_admin_override_patch()
 
 
 def create_configured_app(

@@ -13,7 +13,10 @@ if os.getenv("LOCAL_PRODUCER_OPERATOR_ID", "local-producer") == "local-producer"
 
 apply_local_audio_alignment_patch()
 
-from src.operations.local_worker_v2 import main  # noqa: E402
+from src.operations.local_worker_v2 import AlwaysOnLocalGenerationWorker, main  # noqa: E402
+from src.operator_api.p111_runtime_patch import install_p111_worker_evidence_patch  # noqa: E402
+
+install_p111_worker_evidence_patch(AlwaysOnLocalGenerationWorker)
 
 
 if __name__ == "__main__":

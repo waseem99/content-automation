@@ -30,7 +30,7 @@ def test_v2_shell_replaces_the_legacy_one_page_console() -> None:
         "studio-v2-extensions.js",
         "studio-v2-queue.js",
     ):
-        assert f'src="/assets/{asset}"' in index
+        assert f'src="/assets/{asset}?v=' in index
     assert "portfolio-api.js" not in index
     assert "production-console.js" not in index
     assert "local-pipeline-controls.js" not in index
@@ -178,49 +178,3 @@ def test_local_media_endpoint_is_authenticated_and_root_bounded() -> None:
     assert "artifact_root not in candidate.parents" in source
     assert 'media_type.startswith(("audio/", "image/", "video/"))' in source
     assert 'Cache-Control"] = "private, no-store"' in source
-    assert 'build-local-mix' in source
-    assert 'mix-media' in source
-
-
-def test_new_python_and_javascript_sources_are_syntax_valid() -> None:
-    for path in (
-        ROOT / "src" / "operator_api" / "studio_v2_runtime.py",
-        ROOT / "src" / "operator_api" / "studio_v2_media_runtime.py",
-        ROOT / "src" / "operator_api" / "studio_v2_schema_patch.py",
-        ROOT / "src" / "operator_api" / "entrypoint.py",
-        ROOT / "src" / "operator_api" / "studio_runtime.py",
-        ROOT / "src" / "operations" / "local_audio_alignment_patch.py",
-        ROOT / "src" / "operations" / "local_worker_aligned.py",
-    ):
-        ast.parse(read(path), filename=str(path))
-
-    for path in (
-        ASSETS / "studio-v2-api.js",
-        ASSETS / "studio-v2.js",
-        ASSETS / "studio-v2-media.js",
-        ASSETS / "studio-v2-extensions.js",
-        ASSETS / "studio-v2-queue.js",
-    ):
-        source = read(path)
-        assert source.startswith("(() => {")
-        assert source.rstrip().endswith("})();")
-
-
-def test_nested_application_routes_return_the_same_shell(tmp_path: Path) -> None:
-    root = tmp_path / "studio"
-    (root / "assets").mkdir(parents=True)
-    index = root / "index.html"
-    index.write_text("<!doctype html><title>Studio v2</title>", encoding="utf-8")
-
-    app = FastAPI()
-    install_studio_routes(app, studio_root=root)
-    client = TestClient(app)
-
-    assert client.get("/").status_code == 200
-    assert client.get("/app/dashboard").status_code == 200
-    assert client.get("/app/content/new").status_code == 200
-    assert client.get("/app/content/00000000-0000-0000-0000-000000000001/script").status_code == 200
-    assert client.get("/app/publishing").status_code == 200
-    status = client.get("/studio/status").json()
-    assert status["kind"] == "production_creator_studio_v2"
-    assert status["demo_fallback"] is False

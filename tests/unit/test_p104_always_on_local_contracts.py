@@ -101,7 +101,7 @@ def test_creator_studio_exposes_bounded_local_queue_controls() -> None:
     queue = read("web/static-creator-ui/assets/studio-v2-queue.js")
     api = read("web/static-creator-ui/assets/studio-v2-api.js")
 
-    assert 'src="/assets/studio-v2-queue.js"' in html
+    assert 'src="/assets/studio-v2-queue.js?v=' in html
     assert 'id="queue-more-scripts"' in queue
     assert 'id="continue-approved-local"' in queue
     assert 'max="20"' in queue

@@ -6,9 +6,22 @@ from typing import Any
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
+from starlette.responses import Response
 
 
 STUDIO_ROOT = Path(__file__).resolve().parents[2] / "web" / "static-creator-ui"
+
+
+class NoStoreStaticFiles(StaticFiles):
+    """Serve Creator Studio assets without allowing mixed-version browser caches."""
+
+    async def get_response(self, path: str, scope: dict[str, Any]) -> Response:
+        response = await super().get_response(path, scope)
+        response.headers["Cache-Control"] = "no-store, max-age=0"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Expires"] = "0"
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        return response
 
 
 def install_studio_routes(app: FastAPI, *, studio_root: Path | None = None) -> None:
@@ -24,13 +37,15 @@ def install_studio_routes(app: FastAPI, *, studio_root: Path | None = None) -> N
     assets = root / "assets"
     data = root / "data"
     if assets.is_dir():
-        app.mount("/assets", StaticFiles(directory=assets), name="studio-assets")
+        app.mount("/assets", NoStoreStaticFiles(directory=assets), name="studio-assets")
     if data.is_dir():
-        app.mount("/data", StaticFiles(directory=data), name="studio-data")
+        app.mount("/data", NoStoreStaticFiles(directory=data), name="studio-data")
 
     def studio_response() -> FileResponse:
         response = FileResponse(index, media_type="text/html")
-        response.headers["Cache-Control"] = "no-store"
+        response.headers["Cache-Control"] = "no-store, max-age=0"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Expires"] = "0"
         response.headers["X-Content-Type-Options"] = "nosniff"
         return response
 
@@ -73,4 +88,4 @@ def install_studio_routes(app: FastAPI, *, studio_root: Path | None = None) -> N
     app.state.production_studio_available = True
 
 
-__all__ = ["STUDIO_ROOT", "install_studio_routes"]
+__all__ = ["NoStoreStaticFiles", "STUDIO_ROOT", "install_studio_routes"]
