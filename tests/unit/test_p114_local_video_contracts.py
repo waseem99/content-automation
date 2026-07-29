@@ -45,6 +45,7 @@ def _request(tmp_path: Path, **overrides) -> LocalVideoRequest:
     image.write_bytes(b"not-a-real-image-but-stable-contract-fixture")
     values = {
         "generation_job_id": UUID("00000000-0000-0000-0000-000000000001"),
+        "generation_attempt_id": UUID("00000000-0000-0000-0000-000000000002"),
         "pilot_case_id": None,
         "provider_key": "wan-ai",
         "model_key": "Wan2.2-TI2V-5B",
@@ -62,7 +63,7 @@ def _request(tmp_path: Path, **overrides) -> LocalVideoRequest:
         "fps": 24,
         "frame_count": 96,
         "inference_steps": 12,
-        "output_prefix": "p114-video/test",
+        "output_prefix": "p114-video/test/attempt-1",
     }
     values.update(overrides)
     return LocalVideoRequest(**values)
@@ -86,10 +87,16 @@ def test_local_clip_is_distinct_from_premium_clip() -> None:
     assert GenerationJobType.LOCAL_CLIP is not GenerationJobType.PREMIUM_CLIP
 
 
-def test_request_is_hash_pinned_and_idempotent(tmp_path: Path) -> None:
+def test_request_is_hash_pinned_idempotent_and_attempt_specific(tmp_path: Path) -> None:
     first = _request(tmp_path)
     second = _request(tmp_path)
+    retry = _request(
+        tmp_path,
+        generation_attempt_id=UUID("00000000-0000-0000-0000-000000000003"),
+        output_prefix="p114-video/test/attempt-2",
+    )
     assert first.idempotency_key == second.idempotency_key
+    assert first.idempotency_key != retry.idempotency_key
     with pytest.raises(ValueError, match="workflow_sha256"):
         _request(tmp_path, workflow_sha256="not-a-sha")
 
@@ -181,6 +188,8 @@ def test_worker_and_configuration_fail_closed_by_default() -> None:
     assert "outside the approved workflow root" in worker
     assert "model-use preflight rejected" in worker
     assert "generation_attempt_id=%s" in worker
+    assert '"generation_attempt_id": str(attempt["id"])' in worker
+    assert '"attempts"' in worker
     assert "'internal_only'" in worker
     assert '"review_status": "pending"' in worker
     assert '"external_fee_incurred": False' in worker
