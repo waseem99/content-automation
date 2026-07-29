@@ -53,7 +53,7 @@ function Sync-LocalEnvironment([string]$Path) {
   if (-not $values.Contains("P114_HUNYUAN_LICENSE_ACKNOWLEDGED")) { $values["P114_HUNYUAN_LICENSE_ACKNOWLEDGED"] = "false" }
   if (-not $values.Contains("P114_HUNYUAN_WORKFLOW_PATH")) { $values["P114_HUNYUAN_WORKFLOW_PATH"] = "" }
   if (-not $values.Contains("P114_HUNYUAN_MODEL_FILES_JSON")) { $values["P114_HUNYUAN_MODEL_FILES_JSON"] = "[]" }
-  $values["OPS_MIGRATION_HEAD"] = "0099_p114_dual_local_video_renderer.sql"
+  $values["OPS_MIGRATION_HEAD"] = "0100_p114_pilot_attempt_binding.sql"
   [IO.File]::WriteAllLines(
     $Path,
     [string[]]@($values.Keys | ForEach-Object { "$_=$($values[$_])" }),
