@@ -4,6 +4,7 @@ from src.application.video_pilot.models import (
     PilotAttemptCreateRequest,
     PilotAttemptReviewRequest,
     PilotCaseCreateRequest,
+    PilotItemCreateRequest,
     PilotRunCreateRequest,
     PilotRunStartRequest,
 )
@@ -15,6 +16,7 @@ __all__ = [
     "PilotAttemptCreateRequest",
     "PilotAttemptReviewRequest",
     "PilotCaseCreateRequest",
+    "PilotItemCreateRequest",
     "PilotRunCreateRequest",
     "PilotRunStartRequest",
     "VideoPilotError",
