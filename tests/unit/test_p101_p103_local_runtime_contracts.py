@@ -97,7 +97,7 @@ def test_readme_routes_new_work_through_creator_studio() -> None:
     assert "/app/dashboard" in readme
     assert "start_local_production.ps1" in readme
     assert "LOCAL_PRODUCTION_RUNBOOK.md" in readme
-    assert "Automatic live publishing" in readme
+    assert "automatic public publishing" in readme.lower()
 
 
 def test_runtime_entrypoint_serves_studio_without_replacing_canonical_factory() -> None:
