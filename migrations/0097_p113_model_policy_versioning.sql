@@ -6,6 +6,48 @@ BEGIN;
 DROP TRIGGER IF EXISTS video_model_use_policy_append_only
 ON football_brief.video_model_use_policies;
 
+CREATE OR REPLACE FUNCTION football_brief.validate_video_model_use_policy_lineage()
+RETURNS trigger
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    parent_row football_brief.video_model_use_policies%ROWTYPE;
+BEGIN
+    IF NEW.version = 1 THEN
+        IF NEW.parent_policy_id IS NOT NULL THEN
+            RAISE EXCEPTION 'First model-use policy version cannot have a parent';
+        END IF;
+        RETURN NEW;
+    END IF;
+
+    IF NEW.parent_policy_id IS NULL THEN
+        RAISE EXCEPTION 'Model-use policy child version requires a parent';
+    END IF;
+
+    SELECT * INTO parent_row
+      FROM football_brief.video_model_use_policies
+     WHERE id=NEW.parent_policy_id;
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'Model-use policy parent does not exist';
+    END IF;
+    IF parent_row.provider_key IS DISTINCT FROM NEW.provider_key
+       OR parent_row.model_key IS DISTINCT FROM NEW.model_key THEN
+        RAISE EXCEPTION 'Model-use policy parent must belong to the same provider and model';
+    END IF;
+    IF parent_row.version IS DISTINCT FROM NEW.version - 1 THEN
+        RAISE EXCEPTION 'Model-use policy parent must be the immediate previous version';
+    END IF;
+    IF parent_row.status IS DISTINCT FROM 'retired' THEN
+        RAISE EXCEPTION 'Model-use policy parent must be retired before child activation';
+    END IF;
+    RETURN NEW;
+END;
+$$;
+
+CREATE TRIGGER video_model_use_policy_lineage_valid
+BEFORE INSERT OR UPDATE ON football_brief.video_model_use_policies
+FOR EACH ROW EXECUTE FUNCTION football_brief.validate_video_model_use_policy_lineage();
+
 CREATE OR REPLACE FUNCTION football_brief.validate_video_model_use_policy_update()
 RETURNS trigger
 LANGUAGE plpgsql
