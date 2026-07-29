@@ -47,6 +47,98 @@ ALTER TABLE football_brief.video_pilot_cases
 CREATE INDEX video_pilot_cases_item_idx
 ON football_brief.video_pilot_cases (pilot_item_id, status, case_key);
 
+CREATE OR REPLACE FUNCTION football_brief.validate_video_pilot_case_status()
+RETURNS trigger
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    accepted_total integer;
+BEGIN
+    IF OLD.status IN ('completed','cancelled') AND NEW.status IS DISTINCT FROM OLD.status THEN
+        RAISE EXCEPTION 'Terminal pilot cases are immutable';
+    END IF;
+    IF OLD.status IS DISTINCT FROM 'completed' AND NEW.status = 'completed' THEN
+        SELECT count(*) INTO accepted_total
+          FROM football_brief.video_pilot_attempt_reviews rv
+          JOIN football_brief.video_pilot_attempts a ON a.id=rv.pilot_attempt_id
+         WHERE a.pilot_case_id=NEW.id
+           AND a.status='succeeded'
+           AND rv.decision='accepted';
+        IF accepted_total <> 1 THEN
+            RAISE EXCEPTION 'Completed pilot case requires exactly one accepted succeeded attempt';
+        END IF;
+    END IF;
+    RETURN NEW;
+END;
+$$;
+
+CREATE TRIGGER video_pilot_case_status_valid
+BEFORE UPDATE ON football_brief.video_pilot_cases
+FOR EACH ROW EXECUTE FUNCTION football_brief.validate_video_pilot_case_status();
+
+CREATE OR REPLACE FUNCTION football_brief.validate_video_pilot_item_status()
+RETURNS trigger
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    completed_total integer;
+    pending_total integer;
+BEGIN
+    IF OLD.status IN ('completed','cancelled') AND NEW.status IS DISTINCT FROM OLD.status THEN
+        RAISE EXCEPTION 'Terminal pilot video items are immutable';
+    END IF;
+    IF OLD.status IS DISTINCT FROM 'completed' AND NEW.status = 'completed' THEN
+        SELECT count(*) FILTER (WHERE status='completed'),
+               count(*) FILTER (WHERE status NOT IN ('completed','cancelled'))
+          INTO completed_total,pending_total
+          FROM football_brief.video_pilot_cases
+         WHERE pilot_item_id=NEW.id;
+        IF completed_total = 0 OR pending_total <> 0 THEN
+            RAISE EXCEPTION 'Completed pilot video requires accepted completion of every non-cancelled case';
+        END IF;
+    END IF;
+    RETURN NEW;
+END;
+$$;
+
+CREATE TRIGGER video_pilot_item_status_valid
+BEFORE UPDATE ON football_brief.video_pilot_items
+FOR EACH ROW EXECUTE FUNCTION football_brief.validate_video_pilot_item_status();
+
+CREATE OR REPLACE FUNCTION football_brief.validate_video_pilot_run_status()
+RETURNS trigger
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    completed_item_total integer;
+    terminal_attempt_total integer;
+BEGIN
+    IF OLD.status IN ('closed','cancelled') AND NEW.status IS DISTINCT FROM OLD.status THEN
+        RAISE EXCEPTION 'Terminal video pilot runs are immutable';
+    END IF;
+    IF OLD.status IS DISTINCT FROM 'closed' AND NEW.status = 'closed' THEN
+        SELECT count(*) INTO completed_item_total
+          FROM football_brief.video_pilot_items
+         WHERE pilot_run_id=NEW.id AND status='completed';
+        SELECT count(*) INTO terminal_attempt_total
+          FROM football_brief.video_pilot_attempts a
+          JOIN football_brief.video_pilot_cases c ON c.id=a.pilot_case_id
+         WHERE c.pilot_run_id=NEW.id AND a.status IN ('succeeded','failed','cancelled');
+        IF completed_item_total < NEW.target_videos THEN
+            RAISE EXCEPTION 'Pilot run cannot close before the completed-video target is met';
+        END IF;
+        IF terminal_attempt_total < NEW.target_attempts THEN
+            RAISE EXCEPTION 'Pilot run cannot close before the attempt target is met';
+        END IF;
+    END IF;
+    RETURN NEW;
+END;
+$$;
+
+CREATE TRIGGER video_pilot_run_status_valid
+BEFORE UPDATE ON football_brief.video_pilot_runs
+FOR EACH ROW EXECUTE FUNCTION football_brief.validate_video_pilot_run_status();
+
 COMMENT ON TABLE football_brief.video_pilot_items IS
     'Complete pilot-video grouping for clip-level generation cases and measured acceptance.';
 
