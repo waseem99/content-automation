@@ -157,28 +157,33 @@ class ComfyUILocalVideoProvider:
         if job.status != LocalVideoJobStatus.SUCCEEDED or not job.output_descriptor:
             raise ValueError("only successful local video jobs can be downloaded")
         descriptor = job.output_descriptor
-        response = self.client.get(
-            "/view",
-            params={
-                "filename": descriptor["filename"],
-                "subfolder": descriptor.get("subfolder") or "",
-                "type": descriptor.get("type") or "output",
-            },
-        )
-        response.raise_for_status()
         output_path.parent.mkdir(parents=True, exist_ok=True)
         partial = output_path.with_suffix(output_path.suffix + ".partial")
-        partial.write_bytes(response.content)
-        if not partial.is_file() or partial.stat().st_size == 0:
+        partial.unlink(missing_ok=True)
+        try:
+            with self.client.stream(
+                "GET",
+                "/view",
+                params={
+                    "filename": descriptor["filename"],
+                    "subfolder": descriptor.get("subfolder") or "",
+                    "type": descriptor.get("type") or "output",
+                },
+            ) as response:
+                response.raise_for_status()
+                content_type = response.headers.get("content-type", "").split(";", 1)[0].strip().lower()
+                if content_type not in {"video/mp4", "application/octet-stream"}:
+                    raise RuntimeError("ComfyUI output is not an MP4")
+                with partial.open("wb") as handle:
+                    for block in response.iter_bytes(1024 * 1024):
+                        if block:
+                            handle.write(block)
+            if not partial.is_file() or partial.stat().st_size == 0:
+                raise RuntimeError("downloaded local video is empty")
+            partial.replace(output_path)
+        except Exception:
             partial.unlink(missing_ok=True)
-            raise RuntimeError("downloaded local video is empty")
-        content_type = response.headers.get("content-type", "").lower()
-        if content_type and not (
-            content_type.startswith("video/") or content_type.startswith("application/octet-stream")
-        ):
-            partial.unlink(missing_ok=True)
-            raise RuntimeError("ComfyUI output is not a video")
-        partial.replace(output_path)
+            raise
         return output_path
 
     @staticmethod
@@ -187,6 +192,6 @@ class ComfyUILocalVideoProvider:
             for key in ("videos", "gifs", "images"):
                 for item in node.get(key) or []:
                     filename = str(item.get("filename") or "")
-                    if filename.lower().endswith((".mp4", ".mov", ".webm")):
+                    if filename.lower().endswith(".mp4"):
                         return item
         return None
