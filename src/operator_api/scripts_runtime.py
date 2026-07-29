@@ -15,6 +15,7 @@ from src.application.scripts.models import (
     SourceSupportUpdateRequest,
     SubmitScriptRequest,
 )
+from src.application.scripts.runtime_patch import _decide_with_friendly_validation
 from src.application.scripts.service import ScriptReviewError, ScriptReviewService
 from src.infrastructure.database.connection import Database
 from src.operator_api.access import (
@@ -266,7 +267,8 @@ def install_script_routes(
             brand_id=document_brand_id(document_id),
         )
         try:
-            result = require_service().decide(
+            result = _decide_with_friendly_validation(
+                require_service(),
                 document_id=document_id,
                 expected_lock_version=request.expected_lock_version,
                 decision=request.decision,
