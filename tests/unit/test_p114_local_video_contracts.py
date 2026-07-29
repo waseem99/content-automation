@@ -161,6 +161,14 @@ def test_terminal_job_contract_and_zero_fee_retry_schema() -> None:
     assert "TRUNCATE" not in migration
 
 
+def test_active_workflow_requires_catalogue_binding_and_is_immutable() -> None:
+    migration = MIGRATION.read_text(encoding="utf-8")
+    assert "renderer_catalogue_entry_id IS NOT NULL" in migration
+    assert "protect_local_video_workflow" in migration
+    assert "Active local video workflows may only be retired without changing lineage" in migration
+    assert "BEFORE UPDATE OR DELETE ON football_brief.local_video_workflows" in migration
+
+
 def test_worker_and_configuration_fail_closed_by_default() -> None:
     config = CONFIG.read_text(encoding="utf-8")
     worker = WORKER.read_text(encoding="utf-8")
