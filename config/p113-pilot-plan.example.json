@@ -1,0 +1,140 @@
+{
+  "run_key": "p113-dual-model-pilot-v1",
+  "title": "P113 Wan2.2 and HunyuanVideo 1.5 calibration pilot",
+  "target_videos": 3,
+  "target_attempts": 30,
+  "baseline_assumptions": {
+    "finished_video_target_seconds": 120,
+    "accepted_local_motion_target_seconds_per_video": 28,
+    "normal_attempt_target": 2,
+    "difficult_attempt_ceiling_before_reroute": 4,
+    "throughput_claim_status": "unmeasured",
+    "external_paid_generation_enabled": false,
+    "automatic_public_publishing": false
+  },
+  "items": [
+    {
+      "item_key": "pilot-animal-story",
+      "title": "Animal subject motion and continuity",
+      "target_duration_seconds": 120,
+      "cases": [
+        {
+          "case_key": "animal-public-motion",
+          "title": "Global-public animal movement baseline",
+          "shot_class": "people_animals",
+          "difficulty": "high",
+          "distribution_scope": "global_public",
+          "release_territories": [],
+          "target_duration_seconds": 5,
+          "prompt": "A documentary-style medium tracking shot of one clearly identifiable animal moving naturally through its habitat, stable anatomy, coherent direction, restrained cinematic camera motion and no visible text.",
+          "negative_prompt": "duplicate animal, malformed anatomy, extra limbs, flicker, warping, abrupt background changes, text, logo, watermark",
+          "required_model_keys": ["Wan2.2-TI2V-5B"],
+          "acceptance_criteria": {
+            "subject_identity_stable": true,
+            "anatomy_stable": true,
+            "camera_direction_coherent": true
+          }
+        },
+        {
+          "case_key": "animal-territory-transition",
+          "title": "Territory-limited natural scene transition",
+          "shot_class": "transition",
+          "difficulty": "high",
+          "distribution_scope": "territory_limited",
+          "release_territories": ["Pakistan"],
+          "target_duration_seconds": 5,
+          "prompt": "A controlled cinematic transition from a close animal detail to a wider habitat reveal, preserving subject identity, lighting direction and environmental continuity.",
+          "negative_prompt": "identity change, morphing subject, malformed anatomy, jump cut, flicker, text, logo, watermark",
+          "required_model_keys": ["Wan2.2-TI2V-5B", "HunyuanVideo-1.5-480p-I2V-Step-Distilled"],
+          "acceptance_criteria": {
+            "transition_readable": true,
+            "subject_identity_stable": true,
+            "lighting_continuity": true
+          }
+        }
+      ]
+    },
+    {
+      "item_key": "pilot-product-explainer",
+      "title": "Product motion and controlled camera movement",
+      "target_duration_seconds": 120,
+      "cases": [
+        {
+          "case_key": "product-public-orbit",
+          "title": "Global-public product orbit",
+          "shot_class": "product",
+          "difficulty": "medium",
+          "distribution_scope": "global_public",
+          "release_territories": [],
+          "target_duration_seconds": 4,
+          "prompt": "A clean premium product shot with a slow controlled camera orbit, stable proportions, consistent material finish, soft studio lighting and an uncluttered background.",
+          "negative_prompt": "shape deformation, changing labels, warped edges, floating parts, text hallucination, logo mutation, flicker",
+          "required_model_keys": ["Wan2.2-TI2V-5B"],
+          "acceptance_criteria": {
+            "product_shape_stable": true,
+            "material_consistent": true,
+            "camera_motion_smooth": true
+          }
+        },
+        {
+          "case_key": "product-territory-easy-motion",
+          "title": "Territory-limited simple background motion",
+          "shot_class": "easy_motion",
+          "difficulty": "low",
+          "distribution_scope": "territory_limited",
+          "release_territories": ["Pakistan"],
+          "target_duration_seconds": 4,
+          "prompt": "A locked product composition with subtle background light movement, gentle atmospheric particles and no change to product shape, markings or position.",
+          "negative_prompt": "product movement, label changes, camera shake, heavy particles, flicker, text, logo mutation",
+          "required_model_keys": ["Wan2.2-TI2V-5B", "HunyuanVideo-1.5-480p-I2V-Step-Distilled"],
+          "acceptance_criteria": {
+            "product_locked": true,
+            "background_motion_subtle": true,
+            "no_label_mutation": true
+          }
+        }
+      ]
+    },
+    {
+      "item_key": "pilot-history-explainer",
+      "title": "Map, diagram and cinematic hero integration",
+      "target_duration_seconds": 120,
+      "cases": [
+        {
+          "case_key": "map-public-camera",
+          "title": "Global-public map and diagram motion",
+          "shot_class": "map_diagram",
+          "difficulty": "medium",
+          "distribution_scope": "global_public",
+          "release_territories": [],
+          "target_duration_seconds": 5,
+          "prompt": "A precise cinematic camera move across an illustrated historical map, stable borders and symbols, subtle depth, no invented labels and no changing geography.",
+          "negative_prompt": "changing borders, unreadable text, invented labels, warped map, flicker, excessive depth distortion, watermark",
+          "required_model_keys": ["Wan2.2-TI2V-5B"],
+          "acceptance_criteria": {
+            "geography_stable": true,
+            "symbols_stable": true,
+            "camera_motion_readable": true
+          }
+        },
+        {
+          "case_key": "hero-territory-reveal",
+          "title": "Territory-limited cinematic hero reveal",
+          "shot_class": "hero",
+          "difficulty": "high",
+          "distribution_scope": "territory_limited",
+          "release_territories": ["Pakistan"],
+          "target_duration_seconds": 6,
+          "prompt": "A restrained cinematic reveal of a historically inspired environment at dawn, coherent architecture, controlled volumetric light, slow forward camera movement and a strong final composition.",
+          "negative_prompt": "architecture morphing, temporal inconsistency, aggressive camera shake, oversaturated glow, text, logo, watermark",
+          "required_model_keys": ["Wan2.2-TI2V-5B", "HunyuanVideo-1.5-480p-I2V-Step-Distilled"],
+          "acceptance_criteria": {
+            "architecture_stable": true,
+            "camera_motion_smooth": true,
+            "final_composition_strong": true
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -40,6 +40,7 @@ from src.operator_api.routing_runtime import install_routing_routes
 from src.operator_api.routing_workspace_runtime import install_routing_workspace_routes
 from src.operator_api.runtime_config import OperatorRuntimeSettings, get_operator_runtime_settings
 from src.operator_api.scripts_runtime import install_script_routes
+from src.operator_api.video_pilot_runtime import install_video_pilot_routes
 from src.operator_api.visuals_runtime import install_visual_routes
 
 
@@ -79,6 +80,7 @@ def create_configured_app(
     install_release_routes(app, database=database, auth_settings=auth)
     install_delivery_routes(app, database=database, auth_settings=auth)
     install_performance_routes(app, database=database, auth_settings=auth)
+    install_video_pilot_routes(app, database=database, auth_settings=auth)
     install_operations_routes(
         app,
         database=database,
