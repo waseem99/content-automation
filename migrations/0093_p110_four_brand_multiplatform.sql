@@ -31,22 +31,8 @@ WHERE active = true;
 CREATE INDEX brand_review_policies_history_idx
 ON football_brief.brand_review_policies (brand_id, version DESC);
 
-INSERT INTO football_brief.brand_review_policies
-    (brand_id,version,policy_key,active,rationale_required_for_override,created_by,activated_at,metadata)
-SELECT b.id,1,'admin_self_review_allowed',true,false,
-       COALESCE(
-           (SELECT ou.operator_id FROM football_brief.operator_users ou
-             WHERE ou.active=true AND ou.operator_id IN ('local-super-admin','local-admin')
-             ORDER BY CASE ou.operator_id WHEN 'local-super-admin' THEN 0 ELSE 1 END LIMIT 1),
-           (SELECT ou.operator_id FROM football_brief.operator_users ou WHERE ou.active=true ORDER BY ou.created_at LIMIT 1)
-       ),
-       now(),
-       jsonb_build_object('p110_default',true,'independent_reviewer_available',true)
-FROM football_brief.brands b
-WHERE b.active=true
-  AND NOT EXISTS (
-      SELECT 1 FROM football_brief.brand_review_policies p WHERE p.brand_id=b.id
-  );
+-- Review policies are seeded by the idempotent local onboarding step after
+-- operator identities exist. Migrations never invent login or audit actors.
 
 ALTER TABLE football_brief.portfolio_content
     ADD COLUMN content_family_id uuid,
