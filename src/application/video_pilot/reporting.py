@@ -18,6 +18,7 @@ def _decimal(value: Any) -> Decimal:
 
 def compile_pilot_report(detail: dict[str, Any]) -> dict[str, Any]:
     run = detail["run"]
+    items = detail.get("items") or []
     cases = detail["cases"]
     attempts = detail["attempts"]
     reviews = detail["reviews"]
@@ -54,6 +55,16 @@ def compile_pilot_report(detail: dict[str, Any]) -> dict[str, Any]:
             bucket["accepted_clips"] += 1
 
     accepted_case_ids = set(accepted_by_case)
+    cases_by_item: dict[str, list[str]] = defaultdict(list)
+    for case in cases:
+        cases_by_item[str(case["pilot_item_id"])].append(str(case["id"]))
+    completed_item_ids = {
+        str(item["id"])
+        for item in items
+        if cases_by_item.get(str(item["id"]))
+        and all(case_id in accepted_case_ids for case_id in cases_by_item[str(item["id"])])
+    }
+
     attempts_for_accepted = sum(1 for row in attempts if str(row["pilot_case_id"]) in accepted_case_ids)
     accepted_motion_seconds = sum(
         (_decimal(case_by_id[case_id]["target_duration_seconds"]) for case_id in accepted_case_ids),
@@ -76,8 +87,12 @@ def compile_pilot_report(detail: dict[str, Any]) -> dict[str, Any]:
     if earliest and latest and latest > earliest:
         elapsed_hours = Decimal(str((latest - earliest).total_seconds())) / Decimal("3600")
     measured_clips_per_day = None
-    if elapsed_hours > 0 and accepted_case_ids:
-        measured_clips_per_day = Decimal(len(accepted_case_ids)) * Decimal("24") / elapsed_hours
+    measured_videos_per_day = None
+    if elapsed_hours > 0:
+        if accepted_case_ids:
+            measured_clips_per_day = Decimal(len(accepted_case_ids)) * Decimal("24") / elapsed_hours
+        if completed_item_ids:
+            measured_videos_per_day = Decimal(len(completed_item_ids)) * Decimal("24") / elapsed_hours
 
     defects: dict[str, int] = defaultdict(int)
     for review in reviews:
@@ -87,9 +102,9 @@ def compile_pilot_report(detail: dict[str, Any]) -> dict[str, Any]:
 
     target_videos = int(run["target_videos"])
     target_attempts = int(run["target_attempts"])
-    acceptance_ready = len(accepted_case_ids) >= target_videos and len(terminal_attempts) >= target_attempts
+    acceptance_ready = len(completed_item_ids) >= target_videos and len(terminal_attempts) >= target_attempts
     source_digest = hashlib.sha256(
-        _json({"run": run, "cases": cases, "attempts": attempts, "reviews": reviews}).encode("utf-8")
+        _json({"run": run, "items": items, "cases": cases, "attempts": attempts, "reviews": reviews}).encode("utf-8")
     ).hexdigest()
 
     return {
@@ -98,8 +113,10 @@ def compile_pilot_report(detail: dict[str, Any]) -> dict[str, Any]:
         "status": run["status"],
         "targets": {"videos": target_videos, "attempts": target_attempts},
         "actuals": {
-            "cases": len(cases),
-            "completed_cases": len(accepted_case_ids),
+            "pilot_items": len(items),
+            "completed_videos": len(completed_item_ids),
+            "clip_cases": len(cases),
+            "accepted_clips": len(accepted_case_ids),
             "attempts": len(attempts),
             "completed_attempts": len(terminal_attempts),
             "succeeded_attempts": sum(1 for row in attempts if row["status"] == "succeeded"),
@@ -112,6 +129,7 @@ def compile_pilot_report(detail: dict[str, Any]) -> dict[str, Any]:
             "wall_clock_hours": Decimal(sum(int(row["wall_clock_ms"] or 0) for row in attempts)) / Decimal("3600000"),
             "external_cost_usd": sum((_decimal(row["external_cost_usd"]) for row in attempts), Decimal("0")),
             "measured_clips_per_24h_elapsed": measured_clips_per_day,
+            "measured_videos_per_24h_elapsed": measured_videos_per_day,
         },
         "quality": quality,
         "defect_counts": dict(sorted(defects.items())),
@@ -120,7 +138,7 @@ def compile_pilot_report(detail: dict[str, Any]) -> dict[str, Any]:
         "insufficiency_reasons": [
             reason
             for condition, reason in (
-                (len(accepted_case_ids) < target_videos, "accepted_video_target_not_met"),
+                (len(completed_item_ids) < target_videos, "completed_video_target_not_met"),
                 (len(terminal_attempts) < target_attempts, "attempt_target_not_met"),
             )
             if condition
