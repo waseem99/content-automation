@@ -272,7 +272,8 @@ def test_windows_upgrade_preserves_secrets_and_advances_p113_schema() -> None:
     assert "p113_model_policy_onboarding" in deploy
     assert "OPERATOR_API_KEYS_JSON" not in deploy
     assert "computer_name" not in capture
-    assert '"uuid"' not in capture.lower()
+    assert "--query-gpu=name,driver_version,memory.total,temperature.gpu,power.draw,power.limit" in capture
+    assert "--query-gpu=name,uuid" not in capture.lower()
     assert "uuid =" not in capture.lower()
     assert "environment variables and credentials are omitted" in capture
     assert "p113_pilot_initialize" in initialize
