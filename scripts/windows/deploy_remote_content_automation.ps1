@@ -12,6 +12,31 @@ $Root = (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path
 $Runtime = Join-Path $Root ".runtime"
 $Deploy = Join-Path $PSScriptRoot "deploy_always_on_local_production.ps1"
 $RemoteStatus = Join-Path $Runtime "remote-access.json"
+$EnvPath = Join-Path $Root ".env.local"
+
+function Sync-P110Environment([string]$Path) {
+  if (-not (Test-Path -LiteralPath $Path)) { return }
+  $values = [ordered]@{}
+  foreach ($line in Get-Content -LiteralPath $Path) {
+    $trimmed = $line.Trim()
+    if (-not $trimmed -or $trimmed.StartsWith("#") -or -not $trimmed.Contains("=")) { continue }
+    $parts = $trimmed.Split("=", 2)
+    $values[$parts[0]] = $parts[1]
+  }
+  if (-not $values.Contains("KOKORO_PRIMARY_VOICE")) {
+    $values["KOKORO_PRIMARY_VOICE"] = if ($values.Contains("KOKORO_VOICE") -and $values["KOKORO_VOICE"]) { [string]$values["KOKORO_VOICE"] } else { "af_heart" }
+  }
+  if (-not $values.Contains("KOKORO_ENERGETIC_VOICE")) { $values["KOKORO_ENERGETIC_VOICE"] = "af_bella" }
+  if (-not $values.Contains("KOKORO_SERIOUS_VOICE")) { $values["KOKORO_SERIOUS_VOICE"] = "am_adam" }
+  $values["OPS_MIGRATION_HEAD"] = "0094_p110_content_family_defaults.sql"
+  [IO.File]::WriteAllLines(
+    $Path,
+    [string[]]@($values.Keys | ForEach-Object { "$_=$($values[$_])" }),
+    (New-Object Text.UTF8Encoding($false))
+  )
+}
+
+Sync-P110Environment $EnvPath
 
 if (-not (Get-Command ngrok -ErrorAction SilentlyContinue)) {
   throw "ngrok is required. Install ngrok, run 'ngrok config add-authtoken <token>', then rerun."
@@ -81,7 +106,7 @@ $status = [ordered]@{
 }
 $status | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath $RemoteStatus -Encoding utf8
 
-Write-Host "" 
+Write-Host ""
 Write-Host "Remote Content Automation is ready." -ForegroundColor Green
 Write-Host "Creator Studio: $publicUrl/app/dashboard" -ForegroundColor Green
 Write-Host "Operator keys:  $Runtime\operator-keys.json"

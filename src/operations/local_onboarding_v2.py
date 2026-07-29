@@ -25,6 +25,7 @@ class AlwaysOnLocalOnboarding(LocalOnboarding):
         result = super().run()
         presets: dict[str, dict] = {}
         operators: dict[str, dict] = {}
+        review_policies: dict[str, dict] = {}
         with self.database.transaction() as conn:
             brands = conn.execute(
                 "SELECT id,slug,display_name FROM football_brief.brands WHERE active=true ORDER BY slug"
@@ -69,6 +70,46 @@ class AlwaysOnLocalOnboarding(LocalOnboarding):
                     "display_name": display_name,
                     "roles": [public_role.value],
                     "internal_roles": sorted(role.value for role in internal_roles),
+                }
+
+            # P110 seeds one explicit policy per active brand after the public Admin
+            # audit identity exists. Re-runs preserve any deliberate policy change.
+            for brand in brands:
+                policy = conn.execute(
+                    """SELECT * FROM football_brief.brand_review_policies
+                       WHERE brand_id=%s AND active=true
+                       ORDER BY version DESC LIMIT 1""",
+                    (brand["id"],),
+                ).fetchone()
+                if not policy:
+                    version = conn.execute(
+                        """SELECT COALESCE(max(version),0)+1 AS value
+                           FROM football_brief.brand_review_policies WHERE brand_id=%s""",
+                        (brand["id"],),
+                    ).fetchone()["value"]
+                    policy = conn.execute(
+                        """INSERT INTO football_brief.brand_review_policies
+                           (brand_id,version,policy_key,active,rationale_required_for_override,
+                            created_by,activated_at,metadata)
+                           VALUES (%s,%s,'admin_self_review_allowed',true,false,%s,now(),%s::jsonb)
+                           RETURNING *""",
+                        (
+                            brand["id"],
+                            version,
+                            self.admin_id,
+                            json.dumps(
+                                {
+                                    "p110_onboarding": True,
+                                    "independent_reviewer_available": True,
+                                    "final_release_gates_preserved": True,
+                                }
+                            ),
+                        ),
+                    ).fetchone()
+                review_policies[str(brand["slug"])] = {
+                    "id": str(policy["id"]),
+                    "version": int(policy["version"]),
+                    "policy_key": str(policy["policy_key"]),
                 }
 
             # A dedicated non-login worker identity may claim only jobs allowed by
@@ -153,7 +194,7 @@ class AlwaysOnLocalOnboarding(LocalOnboarding):
                            (brand_profile_id,preset_key,display_name,version,parent_preset_id,status,palette,
                             subject_rules,environment_rules,camera_rules,lighting_rules,
                             framing_rules,negative_prompt,exclusions,created_by,activated_at)
-                           VALUES (%s,'local-default','Local SDXL vertical preset',%s,%s,'active',
+                           VALUES (%s,'local-default','Local SDXL multi-format preset',%s,%s,'active',
                                    %s::jsonb,%s::jsonb,%s::jsonb,%s::jsonb,%s::jsonb,%s::jsonb,
                                    %s,%s::jsonb,%s,now()) RETURNING *""",
                         (
@@ -163,9 +204,9 @@ class AlwaysOnLocalOnboarding(LocalOnboarding):
                             json.dumps({"mood": "natural documentary", "contrast": "controlled cinematic"}),
                             json.dumps({"accurate_anatomy": True, "single_clear_subject": True}),
                             json.dumps({"habitat_consistency": True, "original_composition": True}),
-                            json.dumps({"portrait": True, "camera_motion": "none_in_keyframe"}),
+                            json.dumps({"portrait": True, "landscape": True, "camera_motion": "none_in_keyframe"}),
                             json.dumps({"naturalistic": True, "avoid_harsh_artificial_glow": True}),
-                            json.dumps({"aspect_ratio": "9:16", "safe_text_area": True}),
+                            json.dumps({"aspect_ratios": ["16:9", "4:5", "9:16"], "safe_text_area": True}),
                             "text, watermark, logo, duplicate subject, malformed anatomy, extra limbs, cropped face",
                             json.dumps(["copyrighted character", "brand logo", "graphic violence"]),
                             self.admin_id,
@@ -175,6 +216,7 @@ class AlwaysOnLocalOnboarding(LocalOnboarding):
         result["operators"] = operators
         result["role_model"] = ["super_admin", "admin", "reviewer"]
         result["visual_presets"] = presets
+        result["review_policies"] = review_policies
         return result
 
 
