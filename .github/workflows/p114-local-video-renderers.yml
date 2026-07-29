@@ -8,7 +8,10 @@ on:
       - "src/application/generation_jobs/models.py"
       - "src/application/local_video/**"
       - "src/operations/local_video_worker.py"
+      - "src/operations/local_onboarding_v2.py"
+      - "scripts/windows/deploy_remote_content_automation.ps1"
       - "config/local.env.example"
+      - "tests/unit/test_p113_video_pilot_contracts.py"
       - "tests/unit/test_p114_local_video_contracts.py"
       - ".github/workflows/p114-local-video-renderers.yml"
   workflow_dispatch:
@@ -45,6 +48,7 @@ jobs:
       LOCAL_SUPER_ADMIN_OPERATOR_ID: local-super-admin
       LOCAL_ADMIN_OPERATOR_ID: local-admin
       LOCAL_REVIEWER_OPERATOR_ID: local-reviewer
+      LOCAL_VIDEO_WORKER_OPERATOR_ID: local-video-worker
       LOCAL_PLAN_MONTH: 2026-08-01
       KOKORO_PRIMARY_VOICE: af_heart
       KOKORO_ENERGETIC_VOICE: af_bella
@@ -63,11 +67,12 @@ jobs:
         run: python -m compileall -q src tests
       - name: Apply complete migration chain
         run: python -m src.infrastructure.database.cli migrate
-      - name: Run operator and model policy onboarding
+      - name: Run operator and model policy onboarding twice
         run: |
           python -m src.operations.local_onboarding_v2
+          python -m src.operations.local_onboarding_v2
           python -m src.operations.p113_model_policy_onboarding
-      - name: Verify local clip schema
+      - name: Verify local clip schema and worker identity
         run: |
           python - <<'PY'
           from src.infrastructure.database.connection import Database
@@ -90,6 +95,23 @@ jobs:
                   assert conn.execute(
                       "SELECT to_regclass('football_brief.local_video_executions') AS value"
                   ).fetchone()["value"] is not None
+                  worker = conn.execute(
+                      """SELECT ou.id,ou.active,array_agg(our.role ORDER BY our.role) AS roles
+                           FROM football_brief.operator_users ou
+                           LEFT JOIN football_brief.operator_user_roles our ON our.operator_user_id=ou.id
+                           WHERE ou.operator_id='local-video-worker'
+                           GROUP BY ou.id,ou.active"""
+                  ).fetchone()
+                  assert worker and worker["active"] is True
+                  assert worker["roles"] == ["producer"]
+                  attempt_unique = conn.execute(
+                      """SELECT count(*) AS value
+                           FROM pg_constraint
+                           WHERE conrelid='football_brief.local_video_executions'::regclass
+                             AND contype='u'
+                             AND pg_get_constraintdef(oid) ILIKE '%generation_attempt_id%'"""
+                  ).fetchone()["value"]
+                  assert attempt_unique == 1
           finally:
               database.close()
           PY
@@ -107,4 +129,7 @@ jobs:
         run: |
           ! grep -R -n -E "automatic paid generation|automatic public publishing|external_cost_usd[^\n]*> 0" \
             src/application/local_video src/operations/local_video_worker.py migrations/0099_p114_local_video_renderers.sql
+          ! grep -R -n 'client.post("/interrupt")' src/application/local_video src/operations/local_video_worker.py
+          ! grep -n "VALUES ('video','ai_generated','approved'" src/operations/local_video_worker.py
           grep -q "P114_LOCAL_VIDEO_ENABLED=false" config/local.env.example
+          grep -q "P114_WORKFLOW_ROOT=config/local-video-workflows" config/local.env.example
