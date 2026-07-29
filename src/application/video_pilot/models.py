@@ -65,7 +65,15 @@ class PilotRunStartRequest(BaseModel):
     software_snapshot: dict[str, Any] | None = None
 
 
+class PilotItemCreateRequest(BaseModel):
+    item_key: str = Field(min_length=2, max_length=100, pattern=r"^[a-z0-9][a-z0-9._-]+$")
+    title: str = Field(min_length=3, max_length=300)
+    portfolio_content_id: UUID | None = None
+    target_duration_seconds: Decimal = Field(default=Decimal("120"), ge=Decimal("10"), le=Decimal("150"))
+
+
 class PilotCaseCreateRequest(BaseModel):
+    pilot_item_id: UUID
     case_key: str = Field(min_length=2, max_length=100, pattern=r"^[a-z0-9][a-z0-9._-]+$")
     title: str = Field(min_length=3, max_length=300)
     shot_class: PilotShotClass
