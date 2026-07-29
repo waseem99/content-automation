@@ -28,9 +28,9 @@ def test_creator_studio_exposes_fail_closed_snapshot_continuation() -> None:
     index = read(UI / "index.html")
     source = read(ASSETS / "studio-v2-p100-snapshot.js")
 
-    assert 'src="/assets/studio-v2-p100-snapshot.js"' in index
-    assert index.index('src="/assets/studio-v2-extensions.js"') < index.index(
-        'src="/assets/studio-v2-p100-snapshot.js"'
+    assert 'src="/assets/studio-v2-p100-snapshot.js?v=' in index
+    assert index.index('src="/assets/studio-v2-extensions.js?v=') < index.index(
+        'src="/assets/studio-v2-p100-snapshot.js?v='
     )
     assert "/evidence-preview" in source
     assert "/snapshot-evidence" in source
