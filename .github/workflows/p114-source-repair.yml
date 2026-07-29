@@ -5,6 +5,10 @@ on:
     branches: [feat/p114-local-video-renderers-v2]
     paths:
       - ".github/workflows/p114-source-repair.yml"
+  pull_request:
+    branches: [test]
+    paths:
+      - ".github/workflows/p114-source-repair.yml"
 
 permissions:
   contents: write
