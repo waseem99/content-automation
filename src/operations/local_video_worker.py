@@ -93,6 +93,7 @@ class LocalVideoGenerationWorker:
                 "ok": True,
                 "claimed": True,
                 "job_id": str(job["id"]),
+                "attempt_id": str(attempt["id"]),
                 "job_type": job["job_type"],
                 "output": output,
             }
@@ -119,6 +120,7 @@ class LocalVideoGenerationWorker:
                 "ok": False,
                 "claimed": True,
                 "job_id": str(job["id"]),
+                "attempt_id": str(attempt["id"]),
                 "error": f"{type(exc).__name__}: {exc}",
             }
 
@@ -133,6 +135,7 @@ class LocalVideoGenerationWorker:
         context = self._load_context(payload)
         request = LocalVideoRequest(
             generation_job_id=job["id"],
+            generation_attempt_id=attempt["id"],
             pilot_case_id=UUID(str(payload["pilot_case_id"])) if payload.get("pilot_case_id") else None,
             provider_key=str(context["workflow"]["provider_key"]),
             model_key=str(context["workflow"]["model_key"]),
@@ -150,7 +153,7 @@ class LocalVideoGenerationWorker:
             fps=int(payload.get("fps") or context["workflow"]["default_fps"]),
             frame_count=int(payload["frame_count"]),
             inference_steps=int(payload.get("inference_steps") or context["workflow"]["default_steps"]),
-            output_prefix=f"p114-video/{job['id']}",
+            output_prefix=f"p114-video/{job['id']}/{attempt['id']}",
         )
         self.provider.health()
         started = time.monotonic()
@@ -196,7 +199,13 @@ class LocalVideoGenerationWorker:
         if current.status != LocalVideoJobStatus.SUCCEEDED:
             raise RuntimeError(current.error or f"local video ended as {current.status.value}")
 
-        output_dir = self.artifact_root / "jobs" / str(job["id"])
+        output_dir = (
+            self.artifact_root
+            / "jobs"
+            / str(job["id"])
+            / "attempts"
+            / str(attempt["id"])
+        )
         output_path = output_dir / "clip.mp4"
         self.provider.download(current, output_path)
         asset_id = self._register_asset(job=job, request=request, output_path=output_path)
@@ -206,16 +215,21 @@ class LocalVideoGenerationWorker:
             output_asset_id=asset_id,
             wall_clock_ms=wall_clock_ms,
         )
+        storage_uri = (
+            f"local-artifact://jobs/{job['id']}/attempts/"
+            f"{attempt['id']}/clip.mp4"
+        )
         return {
             "kind": "local_comfyui_video",
             "provider": self.provider.name,
             "provider_request_id": current.provider_job_id,
+            "generation_attempt_id": str(attempt["id"]),
             "model_id": request.model_key,
             "workflow_key": request.workflow_key,
             "workflow_sha256": request.workflow_sha256,
             "checkpoint_sha256": request.checkpoint_sha256,
             "storage_path": str(output_path),
-            "storage_uri": f"local-artifact://jobs/{job['id']}/clip.mp4",
+            "storage_uri": storage_uri,
             "sha256": _sha256(output_path),
             "mime_type": "video/mp4",
             "size_bytes": output_path.stat().st_size,
@@ -384,6 +398,10 @@ class LocalVideoGenerationWorker:
 
     def _register_asset(self, *, job: dict[str, Any], request: LocalVideoRequest, output_path: Path) -> UUID:
         digest = _sha256(output_path)
+        storage_uri = (
+            f"local-artifact://jobs/{job['id']}/attempts/"
+            f"{request.generation_attempt_id}/clip.mp4"
+        )
         with self.database.transaction() as conn:
             existing = conn.execute(
                 "SELECT id FROM football_brief.assets WHERE sha256=%s",
@@ -399,12 +417,13 @@ class LocalVideoGenerationWorker:
                    RETURNING id""",
                 (
                     output_path.name,
-                    f"local-artifact://jobs/{job['id']}/clip.mp4",
+                    storage_uri,
                     digest,
                     output_path.stat().st_size,
                     json.dumps(
                         {
                             "generation_job_id": str(job["id"]),
+                            "generation_attempt_id": str(request.generation_attempt_id),
                             "provider": self.provider.name,
                             "model_id": request.model_key,
                             "workflow_sha256": request.workflow_sha256,
