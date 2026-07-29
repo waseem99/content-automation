@@ -14,6 +14,7 @@ class GenerationJobType(StrEnum):
     NARRATION = "narration"
     KEYFRAME = "keyframe"
     PREVIEW = "preview"
+    LOCAL_CLIP = "local_clip"
     PREMIUM_CLIP = "premium_clip"
     ASSEMBLY = "assembly"
     CAPTION = "caption"
