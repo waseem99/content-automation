@@ -6,9 +6,13 @@ on:
     paths:
       - "migrations/0093_p110_four_brand_multiplatform.sql"
       - "migrations/0094_p110_content_family_defaults.sql"
+      - "migrations/0095_p111_super_admin_evidence_override.sql"
+      - "src/application/scripts/automatic_evidence.py"
       - "src/operations/local_onboarding.py"
       - "src/operations/local_onboarding_v2.py"
+      - "src/operations/local_worker_aligned.py"
       - "src/operator_api/p110_runtime.py"
+      - "src/operator_api/p111_runtime_patch.py"
       - "src/operator_api/runtime_factory.py"
       - "web/static-creator-ui/index.html"
       - "web/static-creator-ui/assets/studio-v2-api.js"
@@ -56,7 +60,7 @@ jobs:
       KOKORO_ENERGETIC_VOICE: af_bella
       KOKORO_SERIOUS_VOICE: am_adam
       OPS_ENVIRONMENT: staging
-      OPS_MIGRATION_HEAD: 0094_p110_content_family_defaults.sql
+      OPS_MIGRATION_HEAD: 0095_p111_super_admin_evidence_override.sql
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -138,10 +142,21 @@ jobs:
                       "SELECT count(*)::int AS value FROM football_brief.portfolio_content WHERE content_family_id=id AND variant_type='master'"
                   ).fetchone()
                   assert int(content["value"]) >= 4
+                  columns = conn.execute(
+                      """SELECT column_name FROM information_schema.columns
+                         WHERE table_schema='football_brief'
+                           AND table_name='script_review_decisions'
+                           AND column_name IN ('unsupported_claim_override','unsupported_claim_count','unsupported_claim_snapshot')"""
+                  ).fetchall()
+                  assert {row["column_name"] for row in columns} == {
+                      "unsupported_claim_override",
+                      "unsupported_claim_count",
+                      "unsupported_claim_snapshot",
+                  }
           finally:
               database.close()
           PY
-      - name: Focused P110 contracts
+      - name: Focused P110 and P111 contracts
         run: python -m pytest -q tests/unit/test_p110_four_brand_multiplatform.py
       - name: Existing role and script regressions
         run: >-
@@ -155,4 +170,5 @@ jobs:
           ! grep -R -n -E "OPERATOR_API_KEYS_JSON=.*(token|secret)|ngrok.*authtoken.*=" \
             scripts/windows config/local.env.example
           ! grep -R -n -E "copied cookies|private endpoint|automatic public publishing" \
-            src/operator_api/p110_runtime.py web/static-creator-ui/assets/studio-v2-p110.js
+            src/operator_api/p110_runtime.py src/operator_api/p111_runtime_patch.py \
+            web/static-creator-ui/assets/studio-v2-p110.js
