@@ -9,6 +9,8 @@ from pathlib import Path
 from typing import Any
 from uuid import UUID
 
+import httpx
+
 from src.application.generation_jobs.models import (
     GenerationJobCompletion,
     GenerationJobFailure,
@@ -19,6 +21,8 @@ from src.application.local_video import (
     ComfyUILocalVideoProvider,
     LocalVideoJobStatus,
     LocalVideoRequest,
+    verify_comfyui_commit,
+    verify_model_bundle,
 )
 from src.application.video_pilot.models import DistributionScope, ModelUsePreflightRequest
 from src.application.video_pilot.policy import evaluate_model_policy
@@ -57,6 +61,8 @@ class LocalVideoGenerationWorker:
         self.workflow_root = Path(
             os.getenv("P114_WORKFLOW_ROOT", "config/local-video-workflows")
         ).resolve()
+        self.model_root = Path(os.getenv("P114_MODEL_ROOT", "D:/ComfyUI/App/models")).resolve()
+        self.comfyui_root = Path(os.getenv("P114_COMFYUI_ROOT", "D:/ComfyUI/App")).resolve()
         self.provider = ComfyUILocalVideoProvider(
             base_url=os.getenv("P114_COMFYUI_BASE_URL", "http://127.0.0.1:8188")
         )
@@ -99,7 +105,8 @@ class LocalVideoGenerationWorker:
             }
         except Exception as exc:
             self._mark_execution_failed(attempt_id=attempt["id"], error=exc)
-            self.jobs.fail(
+            retryable = self._is_retryable_error(exc)
+            failure = self.jobs.fail(
                 GenerationJobFailure(
                     job_id=job["id"],
                     attempt_id=attempt["id"],
@@ -107,7 +114,7 @@ class LocalVideoGenerationWorker:
                     worker_id=self.worker_id,
                     error_code="local_video_execution_failed",
                     error_message=f"{type(exc).__name__}: {exc}"[:5000],
-                    retryable=isinstance(exc, (TimeoutError, ConnectionError, OSError)),
+                    retryable=retryable,
                     actual_cost_usd=0,
                     error_details={
                         "job_type": job["job_type"],
@@ -116,13 +123,37 @@ class LocalVideoGenerationWorker:
                     },
                 )
             )
+            retried = False
+            retry_error = None
+            if retryable and not bool(failure.get("dead_lettered")):
+                try:
+                    self.jobs.retry(
+                        job_id=job["id"],
+                        actor=self.worker_id,
+                        delay_seconds=max(5, int(os.getenv("P114_RETRY_DELAY_SECONDS", "20"))),
+                    )
+                    retried = True
+                except Exception as retry_exc:
+                    retry_error = f"{type(retry_exc).__name__}: {retry_exc}"
             return {
                 "ok": False,
                 "claimed": True,
                 "job_id": str(job["id"]),
                 "attempt_id": str(attempt["id"]),
                 "error": f"{type(exc).__name__}: {exc}",
+                "retryable": retryable,
+                "retried": retried,
+                "retry_error": retry_error,
             }
+
+    @staticmethod
+    def _is_retryable_error(error: Exception) -> bool:
+        if isinstance(error, (TimeoutError, ConnectionError, OSError, httpx.TransportError)):
+            return True
+        if isinstance(error, httpx.HTTPStatusError):
+            status_code = error.response.status_code
+            return status_code in {408, 409, 425, 429} or status_code >= 500
+        return False
 
     def _execute(
         self,
@@ -156,6 +187,12 @@ class LocalVideoGenerationWorker:
             output_prefix=f"p114-video/{job['id']}/{attempt['id']}",
         )
         self._validate_request_against_workflow(request, context["workflow"])
+        capabilities = dict(context["workflow"].get("capabilities") or {})
+        context["comfyui_checkout"] = verify_comfyui_commit(
+            self.comfyui_root,
+            str(capabilities.get("tested_comfyui_commit") or ""),
+        )
+        context["model_manifest"] = self._verify_model_bundle(context["workflow"])
         self._record_execution(
             job=job,
             attempt=attempt,
@@ -164,12 +201,20 @@ class LocalVideoGenerationWorker:
             provider_request_id=None,
         )
         self.provider.health()
+        required_nodes = {
+            str(value)
+            for value in dict(context["workflow"].get("capabilities") or {}).get("required_nodes", ())
+            if str(value).strip()
+        }
+        if required_nodes:
+            self.provider.validate_nodes(required_nodes)
         started = time.monotonic()
         submitted = self.provider.submit(request)
         self._bind_provider_request(
             attempt_id=attempt["id"],
             provider_request_id=submitted.provider_job_id,
         )
+        self._mark_execution_running(attempt["id"])
 
         deadline = time.monotonic() + int(job.get("timeout_seconds") or 3600)
         current = submitted
@@ -215,10 +260,14 @@ class LocalVideoGenerationWorker:
         self.provider.download(current, output_path)
         asset_id = self._register_asset(job=job, request=request, output_path=output_path)
         wall_clock_ms = int((time.monotonic() - started) * 1000)
+        gpu_active_ms = None
+        if current.metrics and current.metrics.get("gpu_active_ms") is not None:
+            gpu_active_ms = int(current.metrics["gpu_active_ms"])
         self._complete_execution(
             attempt_id=attempt["id"],
             output_asset_id=asset_id,
             wall_clock_ms=wall_clock_ms,
+            gpu_active_ms=gpu_active_ms,
         )
         storage_uri = (
             f"local-artifact://jobs/{job['id']}/attempts/"
@@ -244,6 +293,10 @@ class LocalVideoGenerationWorker:
             "fps": request.fps,
             "frame_count": request.frame_count,
             "inference_steps": request.inference_steps,
+            "wall_clock_ms": wall_clock_ms,
+            "gpu_active_ms": gpu_active_ms,
+            "model_manifest": context["model_manifest"],
+            "comfyui_checkout": context["comfyui_checkout"],
             "external_fee_incurred": False,
             "actual_cost_usd": 0,
             "review_status": "pending",
@@ -391,6 +444,9 @@ class LocalVideoGenerationWorker:
         if duration_seconds < minimum or duration_seconds > maximum:
             raise RuntimeError("requested duration is outside the active workflow bounds")
 
+    def _verify_model_bundle(self, workflow: dict[str, Any]) -> dict[str, Any]:
+        return verify_model_bundle(workflow, model_root=self.model_root)
+
     def _asset_path(self, asset: dict[str, Any]) -> Path:
         metadata = dict(asset.get("metadata") or {})
         explicit = metadata.get("storage_path")
@@ -454,6 +510,11 @@ class LocalVideoGenerationWorker:
                             ),
                             "idempotency_key": request.idempotency_key,
                             "output_prefix": request.output_prefix,
+                            "model_manifest": context["model_manifest"],
+                            "comfyui_checkout": context["comfyui_checkout"],
+                            "required_nodes": dict(context["workflow"].get("capabilities") or {}).get(
+                                "required_nodes", []
+                            ),
                         },
                         default=str,
                     ),
@@ -481,14 +542,21 @@ class LocalVideoGenerationWorker:
                 (attempt_id,),
             )
 
-    def _complete_execution(self, *, attempt_id: UUID, output_asset_id: UUID, wall_clock_ms: int) -> None:
+    def _complete_execution(
+        self,
+        *,
+        attempt_id: UUID,
+        output_asset_id: UUID,
+        wall_clock_ms: int,
+        gpu_active_ms: int | None,
+    ) -> None:
         with self.database.transaction() as conn:
             conn.execute(
                 """UPDATE football_brief.local_video_executions
                    SET status='succeeded',completed_at=now(),output_asset_id=%s,wall_clock_ms=%s,
-                       external_cost_usd=0
+                       gpu_active_ms=%s,external_cost_usd=0
                    WHERE generation_attempt_id=%s AND status IN ('submitted','running')""",
-                (output_asset_id, wall_clock_ms, attempt_id),
+                (output_asset_id, wall_clock_ms, gpu_active_ms, attempt_id),
             )
 
     def _mark_execution_failed(self, *, attempt_id: UUID, error: Exception) -> None:
