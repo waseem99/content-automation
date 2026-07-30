@@ -105,6 +105,7 @@ class LocalVideoJob:
     submitted_at: str
     output_descriptor: dict[str, Any] | None = None
     error: str | None = None
+    metrics: dict[str, Any] | None = None
 
 
 def _sha256(path: Path | None) -> str | None:

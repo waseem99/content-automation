@@ -8,11 +8,19 @@ on:
       - "src/application/generation_jobs/models.py"
       - "src/application/local_video/**"
       - "src/operations/local_video_worker.py"
+      - "src/operations/p114_wan22_activation.py"
+      - "src/operations/local_pipeline.py"
+      - "src/operations/always_on_pipeline.py"
+      - "src/operations/local_worker_v2.py"
       - "src/operations/local_onboarding_v2.py"
+      - "scripts/windows/activate_p114_wan22.ps1"
+      - "scripts/windows/supervise_local_production.ps1"
       - "scripts/windows/deploy_remote_content_automation.ps1"
+      - "config/local-video-workflows/**"
       - "config/local.env.example"
       - "tests/unit/test_p113_video_pilot_contracts.py"
       - "tests/unit/test_p114_local_video_contracts.py"
+      - "tests/unit/test_p114_wan22_production_contracts.py"
       - ".github/workflows/p114-local-video-renderers.yml"
   workflow_dispatch:
 
@@ -116,7 +124,10 @@ jobs:
               database.close()
           PY
       - name: Focused P114 contracts
-        run: python -m pytest -q tests/unit/test_p114_local_video_contracts.py
+        run: >-
+          python -m pytest -q
+          tests/unit/test_p114_local_video_contracts.py
+          tests/unit/test_p114_wan22_production_contracts.py
       - name: Existing queue, renderer, routing and pilot regressions
         run: >-
           python -m pytest -q
@@ -128,8 +139,10 @@ jobs:
         shell: bash
         run: |
           ! grep -R -n -E "automatic paid generation|automatic public publishing|external_cost_usd[^\n]*> 0" \
-            src/application/local_video src/operations/local_video_worker.py migrations/0099_p114_local_video_renderers.sql
+            src/application/local_video src/operations/local_video_worker.py src/operations/p114_wan22_activation.py migrations/0099_p114_local_video_renderers.sql
           ! grep -R -n 'client.post("/interrupt")' src/application/local_video src/operations/local_video_worker.py
           ! grep -n "VALUES ('video','ai_generated','approved'" src/operations/local_video_worker.py
           grep -q "P114_LOCAL_VIDEO_ENABLED=false" config/local.env.example
           grep -q "P114_WORKFLOW_ROOT=config/local-video-workflows" config/local.env.example
+          grep -q '"hunyuan_enabled": false' config/local-video-workflows/wan22-ti2v-5b.manifest.json
+          grep -q '"automatic_publishing": false' config/local-video-workflows/wan22-ti2v-5b.manifest.json

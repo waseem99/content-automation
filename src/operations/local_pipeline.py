@@ -50,10 +50,12 @@ class LocalPipelineService:
         self.kokoro_model = os.getenv("KOKORO_MODEL_ID", "hexgrad/Kokoro-82M")
         self.visual_model = os.getenv("LOCAL_VISUAL_MODEL_ID", "sdxl-base-1.0")
         self.preview_model = os.getenv("LOCAL_PREVIEW_MODEL_ID", "ffmpeg-slideshow-v1")
+        self.local_video_model = os.getenv("P113_WAN_MODEL_KEY", "Wan2.2-TI2V-5B")
 
     def status(self, *, brand_ids: Iterable[UUID] | None = None) -> dict[str, Any]:
         scoped = self._normalize_brands(brand_ids)
         brand_sql, brand_values = self._brand_filter(scoped, column="mp.brand_id")
+        preview_render_mode = "animated_local_clips" if self._p114_enabled() else "static_keyframes"
         with self.database.connection() as conn:
             eligible_scripts = conn.execute(
                 f"""SELECT count(*) AS count
@@ -99,9 +101,10 @@ class LocalPipelineService:
                         WHERE gj.portfolio_content_id=pc.id
                           AND gj.content_version=pc.version
                           AND gj.job_type='preview'
+                          AND COALESCE(gj.input_payload->>'render_mode','static_keyframes')=%s
                           AND gj.status IN ('queued','running','succeeded','failed')
                     ) {brand_sql}""",
-                tuple(brand_values),
+                (preview_render_mode, *brand_values),
             ).fetchone()["count"]
             jobs = conn.execute(
                 f"""SELECT job_type,status,count(*) AS count
@@ -116,6 +119,7 @@ class LocalPipelineService:
                         GenerationJobType.SCRIPT.value,
                         GenerationJobType.NARRATION.value,
                         GenerationJobType.KEYFRAME.value,
+                        GenerationJobType.LOCAL_CLIP.value,
                         GenerationJobType.PREVIEW.value,
                     ],
                     ["queued", "running", "failed", "dead_letter"],
@@ -238,10 +242,11 @@ class LocalPipelineService:
         brand_ids: Iterable[UUID] | None = None,
         include_audio: bool = True,
         include_visuals: bool = True,
+        include_local_clips: bool = True,
         include_previews: bool = True,
     ) -> dict[str, Any]:
         limit = self._bounded_limit(limit)
-        if not include_audio and not include_visuals and not include_previews:
+        if not include_audio and not include_visuals and not include_local_clips and not include_previews:
             return self._empty_continuation()
         scoped = self._normalize_brands(brand_ids)
         brand_sql, brand_values = self._brand_filter(scoped, column="mp.brand_id")
@@ -359,6 +364,12 @@ class LocalPipelineService:
                         }
                     )
 
+        local_clips: list[dict[str, Any]] = []
+        if include_local_clips and self._p114_enabled():
+            clip_result = self._enqueue_local_clips(limit=limit, actor=actor, brand_ids=scoped)
+            local_clips.extend(clip_result["enqueued"])
+            blocked.extend(clip_result["blocked"])
+
         previews: list[dict[str, Any]] = []
         if include_previews:
             preview_result = self._enqueue_previews(limit=limit, actor=actor, brand_ids=scoped)
@@ -370,11 +381,153 @@ class LocalPipelineService:
             "kind": "local_approved_continuation",
             "audio_initialized": audio,
             "visuals_initialized": visuals,
+            "local_clips_enqueued": local_clips,
             "previews_enqueued": previews,
             "blocked": blocked,
             "automatic_approval": False,
             "live_publishing": False,
         }
+
+    def _enqueue_local_clips(
+        self,
+        *,
+        limit: int,
+        actor: str,
+        brand_ids: list[UUID] | None,
+    ) -> dict[str, Any]:
+        brand_sql, brand_values = self._brand_filter(brand_ids, column="mp.brand_id")
+        with self.database.connection() as conn:
+            workflow = conn.execute(
+                """SELECT * FROM football_brief.local_video_workflows
+                   WHERE provider_key='wan-ai' AND model_key=%s AND status='active'
+                   ORDER BY version DESC LIMIT 1""",
+                (self.local_video_model,),
+            ).fetchone()
+            if not workflow:
+                return {
+                    "enqueued": [],
+                    "blocked": [{"stage": "local_clip", "code": "active_p114_workflow_required"}],
+                }
+            rows = conn.execute(
+                f"""SELECT pc.id AS portfolio_content_id,pc.version AS content_version,
+                           pw.id AS production_workflow_id,pw.current_version_id AS production_workflow_version_id,
+                           vp.id AS visual_project_id,vs.id AS visual_shot_id,vs.sequence,
+                           vc.id AS visual_candidate_id,vc.asset_id,vc.generation_job_id AS keyframe_job_id,
+                           vc.seed,vc.width,vc.height,vc.prompt_snapshot,vc.negative_prompt_snapshot,
+                           spe.target_duration_seconds
+                    FROM football_brief.visual_shots vs
+                    JOIN football_brief.visual_projects vp ON vp.id=vs.visual_project_id
+                    JOIN football_brief.portfolio_content pc ON pc.id=vp.portfolio_content_id
+                    JOIN football_brief.monthly_content_plans mp ON mp.id=pc.plan_id
+                    LEFT JOIN football_brief.production_workflows pw
+                      ON pw.portfolio_content_id=pc.id AND pw.status='active'
+                    JOIN football_brief.visual_candidates vc ON vc.id=vs.selected_candidate_id
+                    JOIN football_brief.assets a ON a.id=vc.asset_id
+                    JOIN football_brief.script_scene_plan_entries spe ON spe.id=vs.scene_plan_entry_id
+                    WHERE vs.status='approved' AND vc.status='selected'
+                      AND a.asset_type='image' AND a.lifecycle_status='approved'
+                      AND NOT EXISTS (
+                          SELECT 1 FROM football_brief.generation_jobs gj
+                          WHERE gj.job_type='local_clip'
+                            AND gj.input_payload->>'input_keyframe_asset_id'=vc.asset_id::text
+                            AND gj.input_payload->>'local_video_workflow_id'=%s
+                            AND gj.status IN ('queued','running','succeeded','failed','dead_letter')
+                      ) {brand_sql}
+                    ORDER BY vs.updated_at,vs.id LIMIT %s""",
+                (str(workflow["id"]), *brand_values, limit),
+            ).fetchall()
+
+        supported = list(workflow.get("supported_resolutions") or ())
+        fps = int(workflow["default_fps"])
+        frame_count = int(dict(workflow.get("capabilities") or {}).get("default_frame_count") or 49)
+        steps = int(workflow["default_steps"])
+        motion_suffix = os.getenv(
+            "P114_MOTION_PROMPT_SUFFIX",
+            "Preserve the approved subject and composition. Add subtle natural motion and a slow controlled camera move. No cuts.",
+        ).strip()
+        worker_id = os.getenv("LOCAL_VIDEO_WORKER_OPERATOR_ID", "local-video-worker")
+        enqueued: list[dict[str, Any]] = []
+        blocked: list[dict[str, Any]] = []
+        for row in rows:
+            portrait = int(row["height"]) >= int(row["width"])
+            choices = [
+                (int(item["width"]), int(item["height"]))
+                for item in supported
+                if isinstance(item, dict) and "width" in item and "height" in item
+            ]
+            matching = [item for item in choices if (item[1] >= item[0]) == portrait]
+            if not (matching or choices):
+                blocked.append(
+                    {
+                        "content_id": str(row["portfolio_content_id"]),
+                        "stage": "local_clip",
+                        "code": "active_p114_resolution_required",
+                    }
+                )
+                continue
+            width, height = (matching or choices)[0]
+            payload = {
+                "local_video_workflow_id": str(workflow["id"]),
+                "input_keyframe_asset_id": str(row["asset_id"]),
+                "visual_project_id": str(row["visual_project_id"]),
+                "visual_shot_id": str(row["visual_shot_id"]),
+                "visual_candidate_id": str(row["visual_candidate_id"]),
+                "prompt": f"{str(row['prompt_snapshot']).strip()} {motion_suffix}".strip(),
+                "negative_prompt": str(row["negative_prompt_snapshot"] or ""),
+                "seed": int(row["seed"]),
+                "width": width,
+                "height": height,
+                "fps": fps,
+                "frame_count": frame_count,
+                "inference_steps": steps,
+                "distribution_scope": "internal",
+                "release_territories": [],
+                "target_scene_duration_seconds": float(row["target_duration_seconds"]),
+                "automatic_approval": False,
+                "automatic_publishing": False,
+            }
+            request = GenerationJobEnqueue(
+                portfolio_content_id=row["portfolio_content_id"],
+                content_version=int(row["content_version"]),
+                production_workflow_id=row["production_workflow_id"],
+                production_workflow_version_id=row["production_workflow_version_id"],
+                job_type=GenerationJobType.LOCAL_CLIP,
+                provider="local-comfyui-video",
+                model_id=self.local_video_model,
+                preferred_worker_id=worker_id,
+                priority=30,
+                idempotency_key=(
+                    f"p114-wan22:{row['asset_id']}:{workflow['workflow_sha256']}:"
+                    f"{width}x{height}:{frame_count}:{steps}"
+                ),
+                input_payload=payload,
+                timeout_seconds=int(os.getenv("P114_JOB_TIMEOUT_SECONDS", "14400")),
+                max_attempts=int(os.getenv("P114_MAX_ATTEMPTS", "2")),
+                estimated_cost_usd=Decimal("0"),
+                reserved_cost_usd=Decimal("0"),
+                dependency_job_ids=(row["keyframe_job_id"],) if row["keyframe_job_id"] else (),
+                legacy_source={"p114": True, "automatic_continuation": True},
+            )
+            try:
+                job = self.jobs.enqueue(request, actor=actor)
+                enqueued.append(
+                    {
+                        "id": str(job["id"]),
+                        "content_id": str(row["portfolio_content_id"]),
+                        "visual_shot_id": str(row["visual_shot_id"]),
+                        "reused": bool(job.get("reused")),
+                    }
+                )
+            except GenerationJobError as exc:
+                blocked.append(
+                    {
+                        "content_id": str(row["portfolio_content_id"]),
+                        "stage": "local_clip",
+                        "code": exc.code,
+                        "details": exc.details,
+                    }
+                )
+        return {"enqueued": enqueued, "blocked": blocked}
 
     def _enqueue_previews(
         self,
@@ -386,6 +539,7 @@ class LocalPipelineService:
         if not self._ffmpeg_configured():
             return {"enqueued": [], "blocked": [{"stage": "preview", "code": "ffmpeg_not_configured"}]}
         brand_sql, brand_values = self._brand_filter(brand_ids, column="mp.brand_id")
+        render_mode = "animated_local_clips" if self._p114_enabled() else "static_keyframes"
         with self.database.connection() as conn:
             rows = conn.execute(
                 f"""SELECT pc.id,pc.version,ap.id AS audio_production_id,
@@ -403,15 +557,17 @@ class LocalPipelineService:
                         WHERE gj.portfolio_content_id=pc.id
                           AND gj.content_version=pc.version
                           AND gj.job_type='preview'
+                          AND COALESCE(gj.input_payload->>'render_mode','static_keyframes')=%s
                           AND gj.status IN ('queued','running','succeeded','failed')
                     ) {brand_sql}
                     ORDER BY pc.scheduled_for NULLS LAST,pc.created_at,pc.id
                     LIMIT %s""",
-                (*brand_values, limit),
+                (render_mode, *brand_values, limit),
             ).fetchall()
         enqueued: list[dict[str, Any]] = []
         blocked: list[dict[str, Any]] = []
         for row in rows:
+            row_render_mode = render_mode
             with self.database.connection() as conn:
                 audio_jobs = conn.execute(
                     """SELECT ast.generation_job_id
@@ -424,15 +580,30 @@ class LocalPipelineService:
                     (row["audio_production_id"],),
                 ).fetchall()
                 scenes = conn.execute(
-                    """SELECT vc.generation_job_id,vs.sequence,spe.target_duration_seconds
+                    """SELECT vc.generation_job_id,vs.sequence,spe.target_duration_seconds,
+                              CASE WHEN clip.status='succeeded' THEN clip.id END AS local_clip_job_id,
+                              clip.status AS local_clip_status
                        FROM football_brief.visual_shots vs
                        JOIN football_brief.visual_candidates vc ON vc.id=vs.selected_candidate_id
                        JOIN football_brief.generation_jobs gj ON gj.id=vc.generation_job_id
                        JOIN football_brief.script_scene_plan_entries spe ON spe.id=vs.scene_plan_entry_id
+                       LEFT JOIN LATERAL (
+                           SELECT lc.id,lc.status FROM football_brief.generation_jobs lc
+                           WHERE lc.job_type='local_clip'
+                             AND lc.provider='local-comfyui-video'
+                             AND lc.model_id=%s
+                             AND lc.input_payload->>'input_keyframe_asset_id'=vc.asset_id::text
+                             AND lc.input_payload->>'local_video_workflow_id'=(
+                                 SELECT lvw.id::text FROM football_brief.local_video_workflows lvw
+                                 WHERE lvw.provider_key='wan-ai' AND lvw.model_key=%s AND lvw.status='active'
+                                 ORDER BY lvw.version DESC LIMIT 1
+                             )
+                           ORDER BY lc.queued_at DESC,lc.id DESC LIMIT 1
+                       ) clip ON true
                        WHERE vs.visual_project_id=%s AND vs.status='approved'
                          AND vc.status='selected' AND gj.status='succeeded'
                        ORDER BY vs.sequence""",
-                    (row["visual_project_id"],),
+                    (self.local_video_model, self.local_video_model, row["visual_project_id"]),
                 ).fetchall()
             if not audio_jobs or not scenes:
                 blocked.append(
@@ -443,6 +614,39 @@ class LocalPipelineService:
                     }
                 )
                 continue
+            if self._p114_enabled():
+                pending_statuses = {None, "queued", "running"}
+                if any(item["local_clip_status"] in pending_statuses for item in scenes):
+                    blocked.append(
+                        {
+                            "content_id": str(row["id"]),
+                            "stage": "preview",
+                            "code": "local_clips_pending",
+                        }
+                    )
+                    continue
+                animated_scene_count = sum(
+                    1 for item in scenes if item["local_clip_job_id"] is not None
+                )
+                if animated_scene_count == len(scenes):
+                    row_render_mode = "animated_local_clips"
+                elif animated_scene_count > 0:
+                    row_render_mode = "hybrid_local_clips"
+                else:
+                    row_render_mode = "static_keyframes_fallback"
+            scene_lineage = [
+                {
+                    "generation_job_id": str(item["generation_job_id"]),
+                    "local_clip_job_id": (
+                        str(item["local_clip_job_id"]) if item["local_clip_job_id"] else None
+                    ),
+                    "local_clip_status": item["local_clip_status"],
+                }
+                for item in scenes
+            ]
+            scene_lineage_sha256 = hashlib.sha256(
+                json.dumps(scene_lineage, sort_keys=True, separators=(",", ":")).encode("utf-8")
+            ).hexdigest()
             request = GenerationJobEnqueue(
                 portfolio_content_id=row["id"],
                 content_version=int(row["version"]),
@@ -452,18 +656,24 @@ class LocalPipelineService:
                 preferred_worker_id=self.worker_id,
                 priority=20,
                 idempotency_key=(
-                    f"local-preview:{row['id']}:v{row['version']}:"
-                    f"{row['current_mix_version_id']}:{row['visual_project_id']}"
+                    f"local-preview:{row_render_mode}:{row['id']}:v{row['version']}:"
+                    f"{row['current_mix_version_id']}:{row['visual_project_id']}:"
+                    f"{scene_lineage_sha256}"
                 ),
                 input_payload={
                     "audio_production_id": str(row["audio_production_id"]),
                     "audio_mix_version_id": str(row["current_mix_version_id"]),
                     "visual_project_id": str(row["visual_project_id"]),
+                    "render_mode": row_render_mode,
+                    "scene_lineage_sha256": scene_lineage_sha256,
                     "audio_job_ids": [str(item["generation_job_id"]) for item in audio_jobs],
                     "scenes": [
                         {
                             "sequence": int(item["sequence"]),
                             "generation_job_id": str(item["generation_job_id"]),
+                            "local_clip_job_id": (
+                                str(item["local_clip_job_id"]) if item["local_clip_job_id"] else None
+                            ),
                             "duration_seconds": float(item["target_duration_seconds"]),
                         }
                         for item in scenes
@@ -538,6 +748,12 @@ class LocalPipelineService:
             return False
 
     @staticmethod
+    def _p114_enabled() -> bool:
+        return os.getenv("P114_LOCAL_VIDEO_ENABLED", "false").strip().lower() in {
+            "1", "true", "yes", "on"
+        }
+
+    @staticmethod
     def _ffmpeg_configured() -> bool:
         from shutil import which
 
@@ -551,6 +767,7 @@ class LocalPipelineService:
             "kind": "local_approved_continuation",
             "audio_initialized": [],
             "visuals_initialized": [],
+            "local_clips_enqueued": [],
             "previews_enqueued": [],
             "blocked": [],
             "automatic_approval": False,
