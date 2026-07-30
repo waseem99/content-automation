@@ -194,10 +194,9 @@ class AlwaysOnLocalGenerationWorker(LocalGenerationWorker):
 
         output_dir = self.artifact_root / "jobs" / str(job["id"])
         output_dir.mkdir(parents=True, exist_ok=True)
-        audio_paths = [self._dependency_path(job_id, expected_kind="local_kokoro_narration") for job_id in audio_ids]
-        image_paths = [
-            self._dependency_path(UUID(item["generation_job_id"]), expected_kind="local_comfyui_keyframe")
-            for item in scenes
+        audio_paths = [
+            self._dependency_path(job_id, expected_kind="local_kokoro_narration")
+            for job_id in audio_ids
         ]
 
         audio_manifest = output_dir / "audio-concat.txt"
@@ -207,18 +206,6 @@ class AlwaysOnLocalGenerationWorker(LocalGenerationWorker):
             shutil.copy2(source, output_dir / name)
             audio_lines.append(f"file '{name}'")
         audio_manifest.write_text("\n".join(audio_lines) + "\n", encoding="utf-8")
-
-        scene_manifest = output_dir / "scene-concat.txt"
-        scene_lines: list[str] = []
-        total_duration = 0.0
-        for ordinal, (source, item) in enumerate(zip(image_paths, scenes, strict=True), start=1):
-            name = f"scene-{ordinal:03d}{source.suffix.lower() or '.png'}"
-            shutil.copy2(source, output_dir / name)
-            duration = max(0.25, min(float(item["duration_seconds"]), 3600.0))
-            total_duration += duration
-            scene_lines.extend((f"file '{name}'", f"duration {duration:.3f}"))
-        scene_lines.append(f"file 'scene-{len(image_paths):03d}{image_paths[-1].suffix.lower() or '.png'}'")
-        scene_manifest.write_text("\n".join(scene_lines) + "\n", encoding="utf-8")
 
         narration = output_dir / "narration.wav"
         silent_video = output_dir / "silent-preview.mp4"
@@ -230,19 +217,87 @@ class AlwaysOnLocalGenerationWorker(LocalGenerationWorker):
             cwd=output_dir,
             timeout=timeout,
         )
+
         width = int(payload.get("width") or 704)
         height = int(payload.get("height") or 1280)
         fps = int(payload.get("fps") or 30)
         filter_graph = (
             f"scale={width}:{height}:force_original_aspect_ratio=decrease,"
-            f"pad={width}:{height}:(ow-iw)/2:(oh-ih)/2:black,format=yuv420p"
+            f"pad={width}:{height}:(ow-iw)/2:(oh-ih)/2:black,"
+            f"fps={fps},format=yuv420p"
         )
+        scene_manifest = output_dir / "scene-concat.txt"
+        scene_lines: list[str] = []
+        total_duration = 0.0
+        local_clip_job_ids: list[str] = []
+        visual_job_ids: list[str] = []
+
+        for ordinal, item in enumerate(scenes, start=1):
+            visual_job_id = UUID(str(item["generation_job_id"]))
+            visual_job_ids.append(str(visual_job_id))
+            local_clip_value = item.get("local_clip_job_id")
+            if local_clip_value:
+                source = self._dependency_path(
+                    UUID(str(local_clip_value)),
+                    expected_kind="local_comfyui_video",
+                )
+                local_clip_job_ids.append(str(local_clip_value))
+                input_args = ["-stream_loop", "-1", "-i"]
+            else:
+                source = self._dependency_path(
+                    visual_job_id,
+                    expected_kind="local_comfyui_keyframe",
+                )
+                input_args = ["-loop", "1", "-i"]
+
+            source_name = f"scene-source-{ordinal:03d}{source.suffix.lower()}"
+            shutil.copy2(source, output_dir / source_name)
+            scene_name = f"scene-{ordinal:03d}.mp4"
+            duration = max(0.25, min(float(item["duration_seconds"]), 3600.0))
+            total_duration += duration
+            self._run_ffmpeg(
+                ffmpeg,
+                [
+                    "-y",
+                    *input_args,
+                    source_name,
+                    "-t",
+                    f"{duration:.3f}",
+                    "-vf",
+                    filter_graph,
+                    "-an",
+                    "-c:v",
+                    "libx264",
+                    "-preset",
+                    "veryfast",
+                    "-crf",
+                    "21",
+                    "-pix_fmt",
+                    "yuv420p",
+                    "-movflags",
+                    "+faststart",
+                    scene_name,
+                ],
+                cwd=output_dir,
+                timeout=timeout,
+            )
+            scene_lines.append(f"file '{scene_name}'")
+
+        scene_manifest.write_text("\n".join(scene_lines) + "\n", encoding="utf-8")
         self._run_ffmpeg(
             ffmpeg,
             [
-                "-y", "-f", "concat", "-safe", "0", "-i", scene_manifest.name,
-                "-vf", filter_graph, "-r", str(fps), "-c:v", "libx264",
-                "-preset", "veryfast", "-crf", "21", "-an", silent_video.name,
+                "-y",
+                "-f",
+                "concat",
+                "-safe",
+                "0",
+                "-i",
+                scene_manifest.name,
+                "-c",
+                "copy",
+                "-an",
+                silent_video.name,
             ],
             cwd=output_dir,
             timeout=timeout,
@@ -250,9 +305,21 @@ class AlwaysOnLocalGenerationWorker(LocalGenerationWorker):
         self._run_ffmpeg(
             ffmpeg,
             [
-                "-y", "-i", silent_video.name, "-i", narration.name,
-                "-c:v", "copy", "-c:a", "aac", "-b:a", "192k",
-                "-shortest", "-movflags", "+faststart", preview.name,
+                "-y",
+                "-i",
+                silent_video.name,
+                "-i",
+                narration.name,
+                "-c:v",
+                "copy",
+                "-c:a",
+                "aac",
+                "-b:a",
+                "192k",
+                "-shortest",
+                "-movflags",
+                "+faststart",
+                preview.name,
             ],
             cwd=output_dir,
             timeout=timeout,
@@ -274,7 +341,11 @@ class AlwaysOnLocalGenerationWorker(LocalGenerationWorker):
             "provider": "ffmpeg-local",
             "model_id": job.get("model_id"),
             "audio_job_ids": [str(value) for value in audio_ids],
-            "visual_job_ids": [str(item["generation_job_id"]) for item in scenes],
+            "visual_job_ids": visual_job_ids,
+            "local_clip_job_ids": local_clip_job_ids,
+            "animated_scene_count": len(local_clip_job_ids),
+            "render_mode": str(payload.get("render_mode") or "static_keyframes"),
+            "scene_lineage_sha256": payload.get("scene_lineage_sha256"),
             "external_fee_incurred": False,
             "human_review_required": True,
             "automatic_approval": False,
@@ -476,18 +547,21 @@ class AlwaysOnLocalGenerationWorker(LocalGenerationWorker):
         include_audio = GenerationJobType.NARRATION in self.allowed_job_types
         include_visuals = GenerationJobType.KEYFRAME in self.allowed_job_types
         include_previews = GenerationJobType.PREVIEW in self.allowed_job_types
-        if not include_audio and not include_visuals and not include_previews:
+        include_local_clips = self.pipeline._p114_enabled() and (include_visuals or include_previews)
+        if not include_audio and not include_visuals and not include_local_clips and not include_previews:
             return None
         result = self.pipeline.continue_approved(
             limit=self.auto_continue_limit,
             actor=self.worker_id,
             include_audio=include_audio,
             include_visuals=include_visuals,
+            include_local_clips=include_local_clips,
             include_previews=include_previews,
         )
         if (
             not result["audio_initialized"]
             and not result["visuals_initialized"]
+            and not result["local_clips_enqueued"]
             and not result["previews_enqueued"]
             and not result["blocked"]
         ):
