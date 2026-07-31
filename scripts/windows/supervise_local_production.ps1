@@ -51,6 +51,13 @@ function Test-ApiReady {
   } catch { return $false }
 }
 
+function Test-ComfyUIReady {
+  try {
+    $health = Invoke-RestMethod -Uri "$($env:P114_COMFYUI_BASE_URL.TrimEnd('/'))/system_stats" -TimeoutSec 5
+    return $null -ne $health
+  } catch { return $false }
+}
+
 function Invoke-NativeQuiet([string]$FilePath, [string[]]$Arguments) {
   $previousPreference = $ErrorActionPreference
   try {
@@ -134,11 +141,12 @@ function Rotate-Log([string]$Path) {
   }
 }
 
-function New-ManagedState([string]$Name, [string]$FilePath, [string[]]$Arguments) {
+function New-ManagedState([string]$Name, [string]$FilePath, [string[]]$Arguments, [string]$WorkingDirectory = $Root) {
   return [ordered]@{
     name = $Name
     file = $FilePath
     arguments = $Arguments
+    working_directory = $WorkingDirectory
     process = $null
     restart_count = 0
     next_start = Get-Date
@@ -152,7 +160,7 @@ function Start-ManagedProcess($State) {
   Rotate-Log $out
   Rotate-Log $err
   Write-SupervisorLog "Starting $($State.name)"
-  $State.process = Start-Process -FilePath $State.file -ArgumentList $State.arguments -WorkingDirectory $Root `
+  $State.process = Start-Process -FilePath $State.file -ArgumentList $State.arguments -WorkingDirectory $State.working_directory `
     -WindowStyle Hidden -RedirectStandardOutput $out -RedirectStandardError $err -PassThru
   $State.started_at = Get-Date
   $State.restart_count = [int]$State.restart_count + 1
@@ -202,10 +210,21 @@ $api = New-ManagedState "api" $Python @("-m", "uvicorn", "src.operator_api.entry
 $textWorker = New-ManagedState "text-audio-worker" $Python @("-m", "src.operations.local_worker_aligned", "--job-types", "script,narration", "--poll-seconds", "3")
 $visualWorker = New-ManagedState "visual-worker" $Python @("-m", "src.operations.local_worker_aligned", "--job-types", "keyframe", "--poll-seconds", "3")
 $previewWorker = New-ManagedState "preview-worker" $Python @("-m", "src.operations.local_worker_aligned", "--job-types", "preview", "--poll-seconds", "3")
+$localVideoWorker = New-ManagedState "local-video-worker" $Python @("-m", "src.operations.local_video_worker", "--poll-seconds", "3")
 $higgsfieldWorker = New-ManagedState "higgsfield-worker" $Python @("-m", "src.operations.higgsfield_worker", "--poll-seconds", "5")
 $ngrok = New-ManagedState "ngrok" "ngrok" @("http", [string]$ApiPort)
 $ngrokEnabled = $ExposeWithNgrok -or ($env:LOCAL_NGROK_ENABLED -match '^(1|true|yes|on)$')
 $higgsfieldEnabled = $env:HIGGSFIELD_ENABLED -match '^(1|true|yes|on)$'
+$localVideoEnabled = $env:P114_LOCAL_VIDEO_ENABLED -match '^(1|true|yes|on)$'
+$comfyRoot = [string]$env:P114_COMFYUI_ROOT
+if (-not $comfyRoot) { $comfyRoot = "D:\ComfyUI\App" }
+$comfyPython = [string]$env:P114_COMFYUI_PYTHON
+if (-not $comfyPython) { $comfyPython = Join-Path $comfyRoot ".venv\Scripts\python.exe" }
+$comfyUri = [uri]$env:P114_COMFYUI_BASE_URL
+if ($localVideoEnabled -and ($comfyUri.Scheme -ne "http" -or $comfyUri.Host -notin @("127.0.0.1", "localhost", "::1"))) {
+  throw "P114_COMFYUI_BASE_URL must be a loopback HTTP endpoint."
+}
+$comfyUI = New-ManagedState "comfyui" $comfyPython @("main.py", "--listen", "127.0.0.1", "--port", [string]$comfyUri.Port, "--disable-auto-launch") $comfyRoot
 $apiNotReadyChecks = 0
 $apiStartupGraceSeconds = 300
 $apiUnreadyCheckLimit = 60
@@ -216,6 +235,24 @@ try {
     Ensure-ManagedProcess $textWorker
     Ensure-ManagedProcess $visualWorker
     Ensure-ManagedProcess $previewWorker
+
+    $comfyReady = $false
+    if ($localVideoEnabled) {
+      $comfyReady = Test-ComfyUIReady
+      if (-not $comfyReady) {
+        if (-not (Test-Path -LiteralPath $comfyPython -PathType Leaf) -or -not (Test-Path -LiteralPath (Join-Path $comfyRoot "main.py") -PathType Leaf)) {
+          throw "P114 is enabled but the configured ComfyUI installation is unavailable."
+        }
+        Ensure-ManagedProcess $comfyUI
+        Start-Sleep -Seconds 1
+        $comfyReady = Test-ComfyUIReady
+      }
+      if ($comfyReady) {
+        Ensure-ManagedProcess $localVideoWorker
+      } else {
+        Stop-ManagedProcess $localVideoWorker
+      }
+    }
 
     if ($higgsfieldEnabled) {
       if (Get-Command higgsfield -ErrorAction SilentlyContinue) {
@@ -257,7 +294,17 @@ try {
         text_audio_worker = Process-Snapshot $textWorker
         visual_worker = Process-Snapshot $visualWorker
         preview_worker = Process-Snapshot $previewWorker
+        comfyui = Process-Snapshot $comfyUI
+        local_video_worker = Process-Snapshot $localVideoWorker
         higgsfield_worker = Process-Snapshot $higgsfieldWorker
+      }
+      local_video = [ordered]@{
+        enabled = [bool]$localVideoEnabled
+        comfyui_ready = [bool]$comfyReady
+        comfyui_base_url = [string]$env:P114_COMFYUI_BASE_URL
+        external_fee_possible = $false
+        automatic_approval = $false
+        automatic_publishing = $false
       }
       higgsfield = [ordered]@{
         enabled = [bool]$higgsfieldEnabled
@@ -277,6 +324,8 @@ try {
 } finally {
   Stop-ManagedProcess $ngrok
   Stop-ManagedProcess $higgsfieldWorker
+  Stop-ManagedProcess $localVideoWorker
+  Stop-ManagedProcess $comfyUI
   Stop-ManagedProcess $previewWorker
   Stop-ManagedProcess $visualWorker
   Stop-ManagedProcess $textWorker

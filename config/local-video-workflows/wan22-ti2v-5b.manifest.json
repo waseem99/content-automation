@@ -1,0 +1,86 @@
+{
+  "activation": {
+    "automatic_approval": false,
+    "automatic_publishing": false,
+    "hunyuan_enabled": false,
+    "initial_review_status": "pending"
+  },
+  "default_fps": 24,
+  "default_frame_count": 49,
+  "default_steps": 12,
+  "license": {
+    "allowed_scopes": [
+      "internal",
+      "territory_limited",
+      "global_public"
+    ],
+    "commercial_use_allowed": true,
+    "name": "Apache License 2.0",
+    "spdx": "Apache-2.0",
+    "terms_url": "https://github.com/Wan-Video/Wan2.2/blob/main/LICENSE.txt"
+  },
+  "max_duration_seconds": 5.0,
+  "min_duration_seconds": 2.0,
+  "model_bundle_sha256": "228930fb595f98d665fe07b1a823d8feebe4208ac329f1d05b5f6e604cc75168",
+  "model_display_name": "Wan2.2 TI2V-5B",
+  "model_files": [
+    {
+      "path": "diffusion_models/wan2.2_ti2v_5B_fp16.safetensors",
+      "sha256": "456f901338bd9eadbded3828b819109a9b68e8a525ca5cf8d0049a69fcfeca1e",
+      "size_bytes": 9999658848
+    },
+    {
+      "path": "text_encoders/umt5_xxl_fp8_e4m3fn_scaled.safetensors",
+      "sha256": "c3355d30191f1f066b26d93fba017ae9809dce6c627dda5f6a66eaa651204f68",
+      "size_bytes": 6735906897
+    },
+    {
+      "path": "vae/wan2.2_vae.safetensors",
+      "sha256": "e40321bd36b9709991dae2530eb4ac303dd168276980d3e9bc4b6e2b75fed156",
+      "size_bytes": 1409400960
+    }
+  ],
+  "model_key": "Wan2.2-TI2V-5B",
+  "official_ui_template_sha256": "50390798a133757075d750ab78b26274e3bf3e4a09f46aaa2f08d9559e62750b",
+  "operation": "image_to_video",
+  "provider_display_name": "Wan AI local ComfyUI",
+  "provider_key": "wan-ai",
+  "required_nodes": [
+    "UNETLoader",
+    "CLIPLoader",
+    "VAELoader",
+    "ModelSamplingSD3",
+    "CLIPTextEncode",
+    "Wan22ImageToVideoLatent",
+    "LoadImage",
+    "KSampler",
+    "VAEDecode",
+    "CreateVideo",
+    "SaveVideo"
+  ],
+  "schema_version": 1,
+  "supported_formats": [
+    "mp4",
+    "video/mp4"
+  ],
+  "supported_resolutions": [
+    {
+      "height": 832,
+      "width": 480
+    },
+    {
+      "height": 480,
+      "width": 832
+    }
+  ],
+  "tested_comfyui_commit": "a8c44f9b2a0678ac4082e3529a3f43db7472acfe",
+  "tested_workstation": {
+    "gpu": "NVIDIA GeForce GTX 1080",
+    "system_ram_gib": 32,
+    "torch": "2.11.0+cu126",
+    "vram_gib": 8
+  },
+  "workflow_key": "wan22-ti2v-5b-production",
+  "workflow_path": "config/local-video-workflows/wan22-ti2v-5b-api.json",
+  "workflow_sha256": "1a1b06ccbc470aa83de9a8aca2ffffbb5219cb9ae0a2a0ff6209598154fc903f"
+}
