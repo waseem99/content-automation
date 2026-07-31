@@ -28,6 +28,11 @@ COPY web ./web
 COPY docs/operations/P100_ACCEPTANCE_PILOT_RUNBOOK.md ./docs/operations/P100_ACCEPTANCE_PILOT_RUNBOOK.md
 
 RUN useradd --create-home --shell /usr/sbin/nologin appuser
+# Keep security-fixed Python bootstrap packages in the final runtime image.
+RUN python -m pip install --no-cache-dir --upgrade \
+    "msgpack==1.2.1" \
+    "setuptools==83.0.0" \
+    && python -c "import importlib.metadata as m; assert m.version('msgpack') == '1.2.1'; assert m.version('setuptools') == '83.0.0'"
 USER appuser
 
 EXPOSE 8000
