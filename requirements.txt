@@ -16,3 +16,5 @@ Pillow>=12.3.0,<13.0
 PyYAML>=6.0.0
 psycopg[binary]>=3.2.0,<4.0
 psycopg-pool>=3.2.0,<4.0
+msgpack==1.2.1
+setuptools==83.0.0
