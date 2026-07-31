@@ -19,7 +19,7 @@ def test_p7_container_file_points_to_runtime_entrypoint() -> None:
     content = DOCKERFILE.read_text(encoding="utf-8")
 
     required_terms = [
-        "FROM python:3.11-slim",
+        "FROM python:3.11.15-slim-trixie",
         "WORKDIR /app",
         "COPY requirements.txt ./requirements.txt",
         "pip install --no-cache-dir -r requirements.txt",
