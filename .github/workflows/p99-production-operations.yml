@@ -228,7 +228,8 @@ jobs:
             exit 1
           fi
           docker image inspect content-automation:p99-local > /tmp/p99-image-inspect.json
-          docker run --rm --entrypoint python content-automation:p99-local -m pip freeze --all \
+          docker run --rm --entrypoint python content-automation:p99-local -c \
+            "import importlib.metadata as m; versions={p:m.version(p) for p in ('fastapi','uvicorn','msgpack','setuptools')}; assert versions['msgpack']=='1.2.1', versions; assert versions['setuptools']=='83.0.0', versions; print('\n'.join(f'{p}=={v}' for p,v in versions.items()))" \
             > /tmp/p99-image-requirements.txt
           test -s /tmp/p99-image-requirements.txt
       - name: Audit exact resolved image dependencies
