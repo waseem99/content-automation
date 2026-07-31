@@ -1,9 +1,16 @@
-FROM python:3.11-slim
+FROM python:3.11.15-slim-trixie
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
 
 WORKDIR /app
+
+# Apply Debian security updates available at image-build time. Trivy scans the
+# exact resolved image after this layer and the workflow blocks HIGH/CRITICAL
+# findings with a machine-readable policy step.
+RUN apt-get update \
+    && apt-get upgrade -y --no-install-recommends \
+    && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt ./requirements.txt
 RUN python -m pip install --no-cache-dir --upgrade \
