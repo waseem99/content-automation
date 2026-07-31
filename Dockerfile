@@ -17,7 +17,10 @@ RUN python -m pip install --no-cache-dir --upgrade \
         pip \
         "setuptools>=83.0.0,<84.0.0" \
         "wheel>=0.46.2,<0.47.0" \
-    && python -m pip install --no-cache-dir -r requirements.txt
+    && python -m pip install --no-cache-dir -r requirements.txt \
+    && python -m pip install --no-cache-dir --upgrade \
+        "msgpack>=1.2.1,<2.0.0" \
+        "setuptools>=83.0.0,<84.0.0"
 
 COPY src ./src
 COPY migrations ./migrations
