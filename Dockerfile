@@ -28,20 +28,30 @@ COPY web ./web
 COPY docs/operations/P100_ACCEPTANCE_PILOT_RUNBOOK.md ./docs/operations/P100_ACCEPTANCE_PILOT_RUNBOOK.md
 
 RUN useradd --create-home --shell /usr/sbin/nologin appuser
-# Force secure Python package versions and remove superseded metadata
-# so the final runtime image contains no duplicate vulnerable records.
+# Keep secure runtime packages, then remove build-only Python bootstrap tooling.
+# pip vendors its own msgpack copy and ensurepip carries an older setuptools
+# wheel; neither is required by the running application.
 RUN python -m pip install --no-cache-dir --force-reinstall --no-deps \
         "msgpack==1.2.1" \
         "setuptools==83.0.0" \
+    && python -c "import importlib.metadata as m; assert m.version('msgpack') == '1.2.1'; assert m.version('setuptools') == '83.0.0'" \
+    && rm -rf \
+        /usr/local/lib/python3.11/site-packages/pip \
+        /usr/local/lib/python3.11/site-packages/pip-*.dist-info \
+        /usr/local/lib/python3.11/ensurepip \
+    && rm -f \
+        /usr/local/bin/pip \
+        /usr/local/bin/pip3 \
+        /usr/local/bin/pip3.11 \
     && find /usr/local/lib/python3.11/site-packages \
         -maxdepth 1 -type d \
         \( -name "msgpack-*.dist-info" -o -name "setuptools-*.dist-info" \) \
         ! -name "msgpack-1.2.1.dist-info" \
         ! -name "setuptools-83.0.0.dist-info" \
         -exec rm -rf {} + \
-    && python -c "import importlib.metadata as m; assert m.version('msgpack') == '1.2.1'; assert m.version('setuptools') == '83.0.0'" \
-    && test -d /usr/local/lib/python3.11/site-packages/msgpack-1.2.1.dist-info \
-    && test -d /usr/local/lib/python3.11/site-packages/setuptools-83.0.0.dist-info
+    && python -c "import msgpack, importlib.metadata as m; assert m.version('msgpack') == '1.2.1'; assert m.version('setuptools') == '83.0.0'" \
+    && test ! -e /usr/local/lib/python3.11/site-packages/pip \
+    && test ! -e /usr/local/lib/python3.11/ensurepip
 USER appuser
 
 EXPOSE 8000
