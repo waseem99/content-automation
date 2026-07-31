@@ -28,11 +28,20 @@ COPY web ./web
 COPY docs/operations/P100_ACCEPTANCE_PILOT_RUNBOOK.md ./docs/operations/P100_ACCEPTANCE_PILOT_RUNBOOK.md
 
 RUN useradd --create-home --shell /usr/sbin/nologin appuser
-# Keep security-fixed Python bootstrap packages in the final runtime image.
-RUN python -m pip install --no-cache-dir --upgrade \
-    "msgpack==1.2.1" \
-    "setuptools==83.0.0" \
-    && python -c "import importlib.metadata as m; assert m.version('msgpack') == '1.2.1'; assert m.version('setuptools') == '83.0.0'"
+# Force secure Python package versions and remove superseded metadata
+# so the final runtime image contains no duplicate vulnerable records.
+RUN python -m pip install --no-cache-dir --force-reinstall --no-deps \
+        "msgpack==1.2.1" \
+        "setuptools==83.0.0" \
+    && find /usr/local/lib/python3.11/site-packages \
+        -maxdepth 1 -type d \
+        \( -name "msgpack-*.dist-info" -o -name "setuptools-*.dist-info" \) \
+        ! -name "msgpack-1.2.1.dist-info" \
+        ! -name "setuptools-83.0.0.dist-info" \
+        -exec rm -rf {} + \
+    && python -c "import importlib.metadata as m; assert m.version('msgpack') == '1.2.1'; assert m.version('setuptools') == '83.0.0'" \
+    && test -d /usr/local/lib/python3.11/site-packages/msgpack-1.2.1.dist-info \
+    && test -d /usr/local/lib/python3.11/site-packages/setuptools-83.0.0.dist-info
 USER appuser
 
 EXPOSE 8000
