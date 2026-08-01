@@ -35,7 +35,7 @@ def test_p130_service_enforces_scope_locking_and_bulk_execution() -> None:
 def test_p130_acceptance_is_exactly_one_thousand_and_sheet_free() -> None:
     runner = (ROOT / "src/operations/mass_operations_acceptance.py").read_text()
     assert "items: int = 1_000" in runner
-    assert "snapshot[\"item_count\"] == items" in runner
+    assert "int(snapshot[\"item_count\"]) == items" in runner
     assert "result_rows == items" in runner
     assert "grouped_before == items" in runner
     assert "grouped_after == 0" in runner
