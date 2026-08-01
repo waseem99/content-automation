@@ -1,0 +1,123 @@
+name: P126 Hybrid Scene Routing
+
+on:
+  pull_request:
+    branches: [test]
+    paths:
+      - "migrations/0103_p126_hybrid_scene_routing.sql"
+      - "src/application/hybrid_routing/**"
+      - "src/operator_api/p126_hybrid_routing_runtime.py"
+      - "src/operator_api/runtime_factory.py"
+      - "scripts/ci/p126_hybrid_lifecycle.py"
+      - "scripts/windows/deploy_remote_content_automation.ps1"
+      - "scripts/windows/deploy_always_on_local_production.ps1"
+      - "config/local.env.example"
+      - "tests/unit/test_p126_hybrid_routing_contracts.py"
+      - "docs/implementation/P126_HYBRID_SCENE_ROUTING.md"
+      - ".github/workflows/p126-hybrid-scene-routing.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: p126-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lifecycle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: content_automation
+          POSTGRES_USER: postgres
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d content_automation"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://postgres@localhost:5432/content_automation
+      DATABASE_REQUIRE_SCHEMA: "false"
+      DATABASE_MIGRATIONS_DIR: migrations
+      LOCAL_SUPER_ADMIN_OPERATOR_ID: local-super-admin
+      LOCAL_ADMIN_OPERATOR_ID: local-admin
+      LOCAL_REVIEWER_OPERATOR_ID: local-reviewer
+      LOCAL_PLAN_MONTH: 2026-08-01
+      LOCAL_ARTIFACT_ROOT: .runtime/artifacts
+      PORTFOLIO_MEDIA_ROOT: .runtime/artifacts
+      LOCAL_RUNTIME_ROOT: .runtime
+      KOKORO_PRIMARY_VOICE: af_heart
+      KOKORO_ENERGETIC_VOICE: af_bella
+      KOKORO_SERIOUS_VOICE: am_adam
+      HYBRID_ROUTING_ENABLED: "true"
+      HYBRID_PAID_EXECUTION_ENABLED: "false"
+      HYBRID_PUBLIC_PUBLISHING_ENABLED: "false"
+      OPS_ENVIRONMENT: staging
+      OPS_MIGRATION_HEAD: 0103_p126_hybrid_scene_routing.sql
+      OPS_MAX_REQUEST_BODY_BYTES: 67108864
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install dependencies
+        run: python -m pip install -r requirements.txt
+      - name: Compile application and lifecycle
+        run: >-
+          python -m compileall -q
+          src/application/hybrid_routing
+          src/operator_api/p126_hybrid_routing_runtime.py
+          src/operator_api/runtime_factory.py
+          scripts/ci/p126_hybrid_lifecycle.py
+          tests/unit/test_p126_hybrid_routing_contracts.py
+      - name: Parse deployment scripts
+        shell: pwsh
+        run: |
+          $paths = @(
+            "scripts/windows/deploy_remote_content_automation.ps1",
+            "scripts/windows/deploy_always_on_local_production.ps1"
+          )
+          foreach ($path in $paths) {
+            $tokens = $null
+            $errors = $null
+            [System.Management.Automation.Language.Parser]::ParseFile($path, [ref]$tokens, [ref]$errors) | Out-Null
+            if ($errors.Count -gt 0) {
+              $errors | ForEach-Object { Write-Error "${path}: $($_.Message)" }
+              exit 1
+            }
+          }
+      - name: Apply complete migration chain
+        run: python -m src.infrastructure.database.cli migrate
+      - name: Run canonical onboarding twice
+        run: |
+          python -m src.operations.local_onboarding_v2
+          python -m src.operations.local_onboarding_v2
+      - name: Exercise exact 120-second hybrid lifecycle
+        run: PYTHONPATH=. python scripts/ci/p126_hybrid_lifecycle.py
+      - name: Focused contracts
+        run: python -m pytest -q tests/unit/test_p126_hybrid_routing_contracts.py
+      - name: Product and spend boundaries
+        shell: bash
+        run: |
+          grep -q "OPS_MIGRATION_HEAD=0103_p126_hybrid_scene_routing.sql" config/local.env.example
+          grep -q "HYBRID_ROUTING_ENABLED=true" config/local.env.example
+          grep -q "HYBRID_PAID_EXECUTION_ENABLED=false" config/local.env.example
+          grep -q "HYBRID_PUBLIC_PUBLISHING_ENABLED=false" config/local.env.example
+          grep -q '"provider_submission": False' src/application/hybrid_routing/service.py
+          grep -q '"generation_job_created": False' src/application/hybrid_routing/service.py
+          grep -q "explicit_spend_approval_required" src/application/hybrid_routing/service.py
+          grep -q "billing_key text NOT NULL UNIQUE" migrations/0103_p126_hybrid_scene_routing.sql
+          ! grep -R -n -E "request.urlopen|httpx\.|OpenAI\(|client\.generate|provider_request" \
+            src/application/hybrid_routing \
+            src/operator_api/p126_hybrid_routing_runtime.py
