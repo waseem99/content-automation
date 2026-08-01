@@ -32,6 +32,7 @@ from src.operator_api.operations_validated_runtime import install_operations_rou
 from src.operator_api.p110_runtime import install_p110_routes
 from src.operator_api.p111_runtime_patch import install_p111_super_admin_override_patch
 from src.operator_api.p119_campaign_runtime import install_p119_campaign_routes
+from src.operator_api.p120_pre_generation_runtime import install_p120_pre_generation_routes
 from src.operator_api.performance_runtime import install_performance_routes
 from src.operator_api.production_workflow_runtime import install_production_workflow_routes
 from src.operator_api.releases_validated_runtime import install_release_routes
@@ -73,6 +74,7 @@ def create_configured_app(
     install_script_routes(app, database=database, auth_settings=auth)
     install_p110_routes(app, database=database, auth_settings=auth)
     install_p119_campaign_routes(app, database=database, auth_settings=auth)
+    install_p120_pre_generation_routes(app, database=database, auth_settings=auth)
     install_audio_routes(app, database=database, auth_settings=auth)
     install_visual_routes(app, database=database, auth_settings=auth)
     install_review_workspace_routes(app, database=database, auth_settings=auth)
