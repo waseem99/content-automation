@@ -36,4 +36,4 @@ Write-Host "Creator Studio: http://127.0.0.1:8000/"
 Write-Host "Operator keys: .runtime\operator-keys.json"
 Write-Host "Supervisor status: .runtime\supervisor-heartbeat.json"
 Write-Host "Pre-generation autopilot: ContentAutomation-PreGeneration scheduled task"
-Write-Host "Final video generation remains disabled until the hybrid phase." -ForegroundColor Yellow
+Write-Host "Hybrid route planning is available; provider execution and publishing remain disabled." -ForegroundColor Yellow
