@@ -100,7 +100,7 @@ def run() -> None:
                 actor="local-reviewer",
                 max_steps=1,
             )
-            assert outcome.get("waiting") is True
+            assert outcome.get("waiting") is True, outcome
 
         scripts = ScriptReviewService(database)
         with database.connection() as conn:
