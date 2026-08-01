@@ -1,0 +1,254 @@
+from __future__ import annotations
+
+from datetime import date
+from pathlib import Path
+from uuid import UUID
+
+from src.application.assets.hashing import inspect_file
+from src.application.campaign_storage.service import CampaignStorageService
+from src.application.campaigns.models import (
+    CampaignCreateRequest,
+    CampaignItemInput,
+    CampaignItemsAddRequest,
+)
+from src.application.campaigns.validated_service import ValidatedCampaignService
+from src.application.pre_generation.validated_service import ValidatedPreGenerationService
+from src.application.scripts.models import (
+    ClaimSourceDraft,
+    ClaimSupportType,
+    ScriptAdapterMode,
+    ScriptGenerateRequest,
+    SourceDraft,
+    SourceRightsDeclaration,
+    SourceSupportUpdateRequest,
+    SourceType,
+)
+from src.application.scripts.runtime_patch import install_validated_script_service
+from src.application.scripts.service import ScriptReviewService
+from src.infrastructure.database.connection import Database
+from src.infrastructure.database.settings import get_database_settings
+
+
+def run() -> None:
+    install_validated_script_service()
+    database = Database(get_database_settings())
+    database.open(require_schema=True)
+    try:
+        with database.connection() as conn:
+            brand = conn.execute(
+                """SELECT b.id,b.primary_platform
+                   FROM football_brief.brands b
+                   JOIN football_brief.brand_profiles p ON p.brand_id=b.id AND p.status='active'
+                   WHERE b.active=true ORDER BY b.slug LIMIT 1"""
+            ).fetchone()
+        assert brand
+        campaign_service = ValidatedCampaignService(database)
+        created = campaign_service.create_campaign(
+            CampaignCreateRequest(
+                campaign_key="p120-ci-autopilot",
+                brand_id=UUID(str(brand["id"])),
+                name="P120 Automatic Package",
+            ),
+            actor="local-admin",
+        )
+        campaign_id = UUID(str(created["campaign"]["id"]))
+        version_id = UUID(str(created["versions"][0]["id"]))
+        primary = str(brand["primary_platform"])
+        campaign_service.add_items(
+            campaign_version_id=version_id,
+            request=CampaignItemsAddRequest(
+                items=[
+                    CampaignItemInput(
+                        item_key="ready-item",
+                        title="A supported automatic explainer",
+                        topic="Explain a clear mechanism using explicit source evidence.",
+                        primary_platform=primary,
+                        target_platforms=[primary],
+                        target_duration_seconds=45,
+                        scheduled_for=date(2026, 8, 2),
+                    ),
+                    CampaignItemInput(
+                        item_key="blocked-item",
+                        title="An unsupported automatic explainer",
+                        topic="Explain a factual mechanism without attaching evidence.",
+                        primary_platform=primary,
+                        target_platforms=[primary],
+                        target_duration_seconds=45,
+                        scheduled_for=date(2026, 8, 3),
+                    ),
+                ]
+            ),
+            actor="local-admin",
+        )
+        assert campaign_service.validate_version(
+            campaign_version_id=version_id,
+            actor="local-admin",
+        )["ok"] is True
+        campaign_service.activate_version(
+            campaign_version_id=version_id,
+            actor="local-admin",
+        )
+
+        pre = ValidatedPreGenerationService(database)
+        pre.ensure_runs(campaign_id=campaign_id, actor="local-reviewer")
+        claimed = pre.claim(owner="p120-ci-expansion", limit=2, lease_seconds=300)
+        assert len(claimed) == 2
+        for run_row in claimed:
+            outcome = pre.process_claim(
+                run_id=UUID(str(run_row["id"])),
+                lease_token=UUID(str(run_row["lease_token"])),
+                actor="local-reviewer",
+                max_steps=1,
+            )
+            assert outcome.get("waiting") is True
+
+        scripts = ScriptReviewService(database)
+        with database.connection() as conn:
+            item_rows = conn.execute(
+                """SELECT item.item_key,item.id,run.id AS run_id,run.portfolio_content_id
+                   FROM football_brief.production_campaign_items item
+                   JOIN football_brief.pre_generation_runs run ON run.campaign_item_id=item.id
+                   WHERE item.campaign_version_id=%s ORDER BY item.item_key""",
+                (version_id,),
+            ).fetchall()
+        by_key = {str(row["item_key"]): dict(row) for row in item_rows}
+        assert all(row["portfolio_content_id"] for row in item_rows)
+        for key, row in by_key.items():
+            scripts.initialize(
+                content_id=UUID(str(row["portfolio_content_id"])),
+                request=ScriptGenerateRequest(
+                    platform=primary,
+                    format="vertical_short",
+                    language="en-US",
+                    target_duration_seconds=45,
+                    adapter_mode=ScriptAdapterMode.DETERMINISTIC,
+                    seed=21 if key == "ready-item" else 22,
+                ),
+                actor="local-admin",
+            )
+
+        ready_detail = scripts.document_for_content(
+            content_id=UUID(str(by_key["ready-item"]["portfolio_content_id"]))
+        )
+        claims = [
+            row
+            for row in ready_detail["claims"]
+            if str(row["script_version_id"])
+            == str(ready_detail["document"]["current_version_id"])
+        ]
+        source = SourceDraft(
+            source_key="official-ci-source",
+            source_type=SourceType.GOVERNMENT,
+            title="Official evidence for the P120 lifecycle",
+            publisher="Content Automation Test Authority",
+            canonical_url="https://example.gov/evidence/p120",
+            quality_score=95,
+            rights_declaration=SourceRightsDeclaration.PUBLICLY_ACCESSIBLE,
+            permitted_use="Factual verification and citation.",
+            evidence_digest="a" * 64,
+        )
+        links = [
+            ClaimSourceDraft(
+                claim_key=str(claim["claim_key"]),
+                source_key=source.source_key,
+                support_type=ClaimSupportType.DIRECT,
+                locator="Lifecycle evidence",
+                support_note="Directly supports the deterministic lifecycle claim.",
+            )
+            for claim in claims
+        ]
+        scripts.update_source_support(
+            document_id=UUID(str(ready_detail["document"]["id"])),
+            request=SourceSupportUpdateRequest(
+                expected_lock_version=int(ready_detail["document"]["lock_version"]),
+                sources=[source],
+                claim_sources=links,
+                supported_claim_keys=[str(claim["claim_key"]) for claim in claims],
+            ),
+            actor="local-admin",
+        )
+
+        with database.transaction() as conn:
+            conn.execute(
+                """UPDATE football_brief.pre_generation_runs
+                   SET status='queued',next_attempt_at=now(),lease_owner=NULL,
+                       lease_token=NULL,lease_expires_at=NULL
+                   WHERE id=ANY(%s::uuid[])""",
+                ([row["run_id"] for row in item_rows],),
+            )
+        claimed = pre.claim(owner="p120-ci-package", limit=2, lease_seconds=300)
+        assert len(claimed) == 2
+        outcomes: dict[str, dict] = {}
+        for run_row in claimed:
+            with database.connection() as conn:
+                key = conn.execute(
+                    """SELECT item.item_key FROM football_brief.pre_generation_runs run
+                       JOIN football_brief.production_campaign_items item ON item.id=run.campaign_item_id
+                       WHERE run.id=%s""",
+                    (run_row["id"],),
+                ).fetchone()["item_key"]
+            outcomes[str(key)] = pre.process_claim(
+                run_id=UUID(str(run_row["id"])),
+                lease_token=UUID(str(run_row["lease_token"])),
+                actor="local-reviewer",
+                max_steps=12,
+            )
+        assert outcomes["ready-item"]["status"] == "ready"
+        assert outcomes["blocked-item"]["status"] == "hard_block"
+        assert outcomes["blocked-item"]["exception_code"] == "source_block"
+
+        dashboard = pre.dashboard(campaign_id=campaign_id)
+        assert dashboard["metrics"]["ready"] == 1
+        assert dashboard["metrics"]["hard_block"] == 1
+        groups = pre.exception_groups(campaign_id=campaign_id)
+        assert any(
+            row["exception_code"] == "source_block" and row["count"] == 1
+            for row in groups
+        )
+        package = pre.package_for_item(
+            campaign_id=campaign_id,
+            item_id=UUID(str(by_key["ready-item"]["id"])),
+        )["package"]
+        assert package["package"]["schema"] == "ready-for-final-video-generation/v1"
+        assert package["package"]["routing_constraints"]["automatic_paid_spend"] is False
+        assert package["package"]["routing_constraints"]["automatic_public_publishing"] is False
+
+        artifact = Path(".runtime/artifacts/p120-storage-proof.txt")
+        artifact.parent.mkdir(parents=True, exist_ok=True)
+        artifact.write_text("canonical local storage proof\n", encoding="utf-8")
+        inspected = inspect_file(artifact.resolve())
+        with database.transaction() as conn:
+            asset = conn.execute(
+                """INSERT INTO football_brief.assets
+                   (asset_type,source_type,lifecycle_status,original_filename,storage_uri,
+                    sha256,mime_type,size_bytes,created_by)
+                   VALUES ('document','owned','approved',%s,%s,%s,%s,%s,'local-admin')
+                   RETURNING id""",
+                (
+                    artifact.name,
+                    artifact.resolve().as_uri(),
+                    inspected.sha256,
+                    inspected.mime_type,
+                    inspected.size_bytes,
+                ),
+            ).fetchone()
+        storage = CampaignStorageService(database)
+        location = storage.register_local(
+            asset_id=UUID(str(asset["id"])),
+            path=artifact,
+            actor="local-admin",
+        )["location"]
+        assert location["provider"] == "local"
+        reconciliation = storage.reconcile(
+            actor="local-admin",
+            provider="local",
+            limit=100,
+        )
+        assert reconciliation["counts"]["available"] >= 1
+        assert reconciliation["counts"]["mismatch"] == 0
+    finally:
+        database.close()
+
+
+if __name__ == "__main__":
+    run()
