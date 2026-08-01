@@ -78,7 +78,7 @@ def _profile_and_family(
         family = conn.execute(
             """SELECT id,content_family_id,parent_content_id,variant_type,primary_platform,
                       target_platforms,target_duration_seconds,short_cut_index,adaptation_profile,
-                      scheduled_for,status,version
+                      scheduled_for,stage,version
                FROM football_brief.portfolio_content
                WHERE content_family_id=%s
                ORDER BY CASE variant_type WHEN 'master' THEN 0 WHEN 'adaptation' THEN 1 ELSE 2 END,
