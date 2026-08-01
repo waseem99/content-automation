@@ -1,0 +1,141 @@
+name: P128 Campaign DAG Acceptance
+
+on:
+  pull_request:
+    branches: [test]
+    paths:
+      - "migrations/0105_p128_campaign_dag_workers.sql"
+      - "src/application/campaign_dag/**"
+      - "src/operations/dag_acceptance.py"
+      - "src/operations/dag_acceptance_entry.py"
+      - "tests/unit/test_p128_campaign_dag_contracts.py"
+      - "docs/operations/P128_CAMPAIGN_DAG_ACCEPTANCE.md"
+      - ".github/workflows/p128-campaign-dag-acceptance.yml"
+  workflow_dispatch:
+    inputs:
+      tasks:
+        description: Retained synthetic DAG tasks
+        required: true
+        default: "1000000"
+      workers:
+        description: Capability-aware workers
+        required: true
+        default: "100"
+      campaigns:
+        description: Fair-scheduling campaign graphs
+        required: true
+        default: "10"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: p128-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  acceptance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: content_automation
+          POSTGRES_USER: postgres
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d content_automation"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://postgres@localhost:5432/content_automation
+      DATABASE_REQUIRE_SCHEMA: "false"
+      DATABASE_MIGRATIONS_DIR: migrations
+      DATABASE_STATEMENT_TIMEOUT_MS: "900000"
+      DATABASE_POOL_MAX_SIZE: "20"
+      LOCAL_SUPER_ADMIN_OPERATOR_ID: local-super-admin
+      LOCAL_ADMIN_OPERATOR_ID: local-admin
+      LOCAL_REVIEWER_OPERATOR_ID: local-reviewer
+      LOCAL_PLAN_MONTH: 2026-08-01
+      LOCAL_ARTIFACT_ROOT: .runtime/artifacts
+      PORTFOLIO_MEDIA_ROOT: .runtime/artifacts
+      LOCAL_RUNTIME_ROOT: .runtime
+      KOKORO_PRIMARY_VOICE: af_heart
+      KOKORO_ENERGETIC_VOICE: af_bella
+      KOKORO_SERIOUS_VOICE: am_adam
+      OPS_ENVIRONMENT: staging
+      OPS_MIGRATION_HEAD: 0105_p128_campaign_dag_workers.sql
+      DAG_TASKS: ${{ github.event_name == 'workflow_dispatch' && inputs.tasks || '1000000' }}
+      DAG_WORKERS: ${{ github.event_name == 'workflow_dispatch' && inputs.workers || '100' }}
+      DAG_CAMPAIGNS: ${{ github.event_name == 'workflow_dispatch' && inputs.campaigns || '10' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install dependencies
+        run: python -m pip install -r requirements.txt
+      - name: Compile DAG code
+        run: >-
+          python -m compileall -q
+          src/application/campaign_dag
+          src/operations/dag_acceptance.py
+          src/operations/dag_acceptance_entry.py
+          tests/unit/test_p128_campaign_dag_contracts.py
+      - name: Apply complete migration chain
+        run: python -m src.infrastructure.database.cli migrate
+      - name: Run canonical onboarding twice
+        run: |
+          python -m src.operations.local_onboarding_v2
+          python -m src.operations.local_onboarding_v2
+      - name: Run full DAG acceptance
+        run: >-
+          python -m src.operations.dag_acceptance_entry
+          --tasks "$DAG_TASKS"
+          --workers "$DAG_WORKERS"
+          --campaigns "$DAG_CAMPAIGNS"
+          --acceptance-key "p128-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+      - name: Verify retained DAG evidence
+        run: |
+          python - <<'PY'
+          import os
+          from src.infrastructure.database.connection import Database
+          from src.infrastructure.database.settings import get_database_settings
+
+          database = Database(get_database_settings())
+          database.open(require_schema=True)
+          try:
+              with database.connection() as conn:
+                  row = conn.execute(
+                      "SELECT * FROM football_brief.dag_acceptance_runs ORDER BY created_at DESC,id DESC LIMIT 1"
+                  ).fetchone()
+              assert row and row["status"] == "passed"
+              assert row["requested_tasks"] == int(os.environ["DAG_TASKS"])
+              assert row["requested_workers"] == int(os.environ["DAG_WORKERS"])
+              assert row["campaign_count"] == int(os.environ["DAG_CAMPAIGNS"])
+              assert row["terminal_tasks"] == row["requested_tasks"]
+              assert row["succeeded_tasks"] == row["requested_tasks"]
+              assert row["duplicate_terminal_attempts"] == 0
+              assert row["recovered_leases"] >= 100
+              assert row["fairness_spread"] <= 1
+              assert row["paused_claims"] == 0
+              assert row["environment"]["paid_execution"] is False
+              assert row["environment"]["publishing"] is False
+          finally:
+              database.close()
+          PY
+      - name: Focused contracts
+        run: python -m pytest -q tests/unit/test_p128_campaign_dag_contracts.py
+      - name: Product boundaries
+        shell: bash
+        run: |
+          grep -q "FOR UPDATE OF task SKIP LOCKED" src/application/campaign_dag/service.py
+          grep -q "tasks: int = 1_000_000" src/operations/dag_acceptance.py
+          grep -q "workers: int = 100" src/operations/dag_acceptance.py
+          ! grep -R -n -E "redis|nats|kafka|OpenAI\(|httpx\.|publish_manifest|GenerationJobService" \
+            src/application/campaign_dag src/operations/dag_acceptance.py src/operations/dag_acceptance_entry.py
