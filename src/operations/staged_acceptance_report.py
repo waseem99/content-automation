@@ -248,6 +248,7 @@ def main() -> int:
     args = parser.parse_args()
     report = build_report(load_manifest(args.manifest))
     if args.markdown:
+        args.markdown.parent.mkdir(parents=True, exist_ok=True)
         args.markdown.write_text(render_markdown(report), encoding="utf-8")
     if args.retain:
         database = Database(get_database_settings())
