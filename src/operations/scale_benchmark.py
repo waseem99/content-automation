@@ -23,6 +23,7 @@ from src.infrastructure.database.settings import get_database_settings
 
 T = TypeVar("T")
 MAX_ITEMS_PER_REQUEST = 10_000
+CHECK_INSERT_RUN_BATCH = 250
 
 
 def _utc_key() -> str:
@@ -103,6 +104,74 @@ def _add_item_chunks(
     }
 
 
+def _campaign_run_ids(database: Database, *, campaign_version_id: UUID) -> list[UUID]:
+    """Return the campaign's durable runs in stable order for bounded retention batches."""
+
+    with database.connection() as conn:
+        rows = conn.execute(
+            """SELECT run.id
+               FROM football_brief.pre_generation_runs run
+               JOIN football_brief.production_campaign_items item
+                 ON item.id=run.campaign_item_id
+               WHERE item.campaign_version_id=%s
+               ORDER BY run.id""",
+            (campaign_version_id,),
+        ).fetchall()
+    return [UUID(str(row["id"])) for row in rows]
+
+
+def _insert_retained_checks_in_batches(
+    database: Database,
+    *,
+    run_ids: list[UUID],
+    checks_per_run: int,
+    run_batch_size: int = CHECK_INSERT_RUN_BATCH,
+) -> dict[str, int]:
+    """Insert deterministic synthetic checks in bounded, independently committed batches.
+
+    PostgreSQL validates the foreign key for every retained check. A single
+    million-row statement can legitimately exceed the production statement
+    timeout even though the control plane is healthy. Batching by stable run IDs
+    preserves the exact dataset and idempotency contract while bounding lock and
+    statement duration.
+    """
+
+    if run_batch_size < 1:
+        raise ValueError("check insert run batch size must be positive")
+    if checks_per_run < 1:
+        return {"inserted": 0, "batches": 0, "run_batch_size": run_batch_size}
+
+    inserted_total = 0
+    batch_count = 0
+    for run_batch in _chunks(run_ids, run_batch_size):
+        with database.transaction() as conn:
+            inserted_total += int(
+                conn.execute(
+                    """WITH selected AS (
+                           SELECT unnest(%s::uuid[]) AS id
+                       ), inserted AS (
+                           INSERT INTO football_brief.pre_generation_checks
+                           (run_id,stage,check_key,rule_version,status,score,evidence)
+                           SELECT selected.id,'scale_benchmark',
+                                  'retention-' || series.value::text,
+                                  'p125-retention-v1','passed',100,
+                                  jsonb_build_object('synthetic',true,'ordinal',series.value)
+                           FROM selected
+                           CROSS JOIN generate_series(1,%s) AS series(value)
+                           ON CONFLICT (run_id,stage,check_key,rule_version) DO NOTHING
+                           RETURNING 1
+                       ) SELECT count(*)::bigint AS value FROM inserted""",
+                    (run_batch, checks_per_run),
+                ).fetchone()["value"]
+            )
+        batch_count += 1
+    return {
+        "inserted": inserted_total,
+        "batches": batch_count,
+        "run_batch_size": run_batch_size,
+    }
+
+
 def run_benchmark(
     *,
     items: int,
@@ -159,6 +228,7 @@ def run_benchmark(
                             "control_plane_only": True,
                             "final_video_generation_measured": False,
                             "maximum_items_per_request": MAX_ITEMS_PER_REQUEST,
+                            "check_insert_run_batch": CHECK_INSERT_RUN_BATCH,
                         }
                     ),
                 ),
@@ -230,63 +300,43 @@ def run_benchmark(
             campaign_id=campaign_id,
             actor=actor,
         )
+        run_ids = _timed(
+            timings,
+            "load_run_ids",
+            _campaign_run_ids,
+            database,
+            campaign_version_id=version_id,
+        )
+        if len(run_ids) != items:
+            raise RuntimeError(
+                f"expected {items} durable runs before retention benchmark, found {len(run_ids)}"
+            )
 
         inserted_checks = 0
         duplicate_check_inserts = 0
+        check_insert_batches = 0
+        check_replay_batches = 0
         if checks_per_run:
-            with database.transaction() as conn:
-                started = time.perf_counter()
-                inserted_checks = int(
-                    conn.execute(
-                        """WITH selected AS (
-                               SELECT run.id
-                               FROM football_brief.pre_generation_runs run
-                               JOIN football_brief.production_campaign_items item
-                                 ON item.id=run.campaign_item_id
-                               WHERE item.campaign_version_id=%s
-                           ), inserted AS (
-                               INSERT INTO football_brief.pre_generation_checks
-                               (run_id,stage,check_key,rule_version,status,score,evidence)
-                               SELECT selected.id,'scale_benchmark',
-                                      'retention-' || series.value::text,
-                                      'p125-retention-v1','passed',100,
-                                      jsonb_build_object('synthetic',true,'ordinal',series.value)
-                               FROM selected
-                               CROSS JOIN generate_series(1,%s) AS series(value)
-                               ON CONFLICT (run_id,stage,check_key,rule_version) DO NOTHING
-                               RETURNING 1
-                           ) SELECT count(*)::bigint AS value FROM inserted""",
-                        (version_id, checks_per_run),
-                    ).fetchone()["value"]
-                )
-                timings["insert_checks"] = round((time.perf_counter() - started) * 1000, 3)
-                started = time.perf_counter()
-                duplicate_check_inserts = int(
-                    conn.execute(
-                        """WITH selected AS (
-                               SELECT run.id
-                               FROM football_brief.pre_generation_runs run
-                               JOIN football_brief.production_campaign_items item
-                                 ON item.id=run.campaign_item_id
-                               WHERE item.campaign_version_id=%s
-                           ), inserted AS (
-                               INSERT INTO football_brief.pre_generation_checks
-                               (run_id,stage,check_key,rule_version,status,score,evidence)
-                               SELECT selected.id,'scale_benchmark',
-                                      'retention-' || series.value::text,
-                                      'p125-retention-v1','passed',100,
-                                      jsonb_build_object('synthetic',true,'ordinal',series.value)
-                               FROM selected
-                               CROSS JOIN generate_series(1,%s) AS series(value)
-                               ON CONFLICT (run_id,stage,check_key,rule_version) DO NOTHING
-                               RETURNING 1
-                           ) SELECT count(*)::bigint AS value FROM inserted""",
-                        (version_id, checks_per_run),
-                    ).fetchone()["value"]
-                )
-                timings["idempotent_check_replay"] = round(
-                    (time.perf_counter() - started) * 1000, 3
-                )
+            inserted = _timed(
+                timings,
+                "insert_checks",
+                _insert_retained_checks_in_batches,
+                database,
+                run_ids=run_ids,
+                checks_per_run=checks_per_run,
+            )
+            inserted_checks = int(inserted["inserted"])
+            check_insert_batches = int(inserted["batches"])
+            replayed = _timed(
+                timings,
+                "idempotent_check_replay",
+                _insert_retained_checks_in_batches,
+                database,
+                run_ids=run_ids,
+                checks_per_run=checks_per_run,
+            )
+            duplicate_check_inserts = int(replayed["inserted"])
+            check_replay_batches = int(replayed["batches"])
 
         claimed: list[dict[str, Any]] = []
         if claim_sample:
@@ -331,8 +381,10 @@ def run_benchmark(
             counters["items"] == items
             and counters["runs"] == items
             and counters["checks"] == requested_checks
+            and inserted_checks == requested_checks
             and duplicate_item_rows == 0
             and duplicate_check_inserts == 0
+            and len(claimed) == min(claim_sample, items)
             and validation["counts"]["invalid_item_count"] == 0
         )
         result = {
@@ -346,10 +398,13 @@ def run_benchmark(
                 "runs": counters["runs"],
                 "checks": inserted_checks,
                 "item_chunks": first_add["chunks"],
+                "check_batches": check_insert_batches,
+                "check_run_batch_size": CHECK_INSERT_RUN_BATCH,
             },
             "idempotency": {
                 "items_after_replay": second_add["counts"]["item_count"],
                 "replay_chunks": second_add["chunks"],
+                "check_replay_batches": check_replay_batches,
                 "duplicate_item_rows": duplicate_item_rows,
                 "duplicate_check_rows": duplicate_check_inserts,
             },
@@ -379,7 +434,14 @@ def run_benchmark(
                     result["idempotency"]["duplicate_item_rows"],
                     result["idempotency"]["duplicate_check_rows"],
                     _json(timings),
-                    _json(counters),
+                    _json(
+                        {
+                            **counters,
+                            "check_batches": check_insert_batches,
+                            "check_replay_batches": check_replay_batches,
+                            "check_run_batch_size": CHECK_INSERT_RUN_BATCH,
+                        }
+                    ),
                     benchmark_id,
                 ),
             )
