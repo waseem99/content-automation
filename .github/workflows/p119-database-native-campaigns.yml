@@ -69,18 +69,19 @@ jobs:
         run: |
           python -m src.operations.local_onboarding_v2
           python -m src.operations.local_onboarding_v2
-      - name: Exercise campaign lifecycle
+      - name: Exercise campaign and policy lifecycle
         run: |
           python - <<'PY'
           from datetime import date
           from uuid import UUID
 
-          from src.application.campaigns.models import (
+          from src.application.campaigns import (
+              AutopilotPolicyCreateRequest,
               CampaignCreateRequest,
               CampaignItemInput,
               CampaignItemsAddRequest,
+              CampaignService,
           )
-          from src.application.campaigns.service import CampaignService
           from src.infrastructure.database.connection import Database
           from src.infrastructure.database.settings import get_database_settings
 
@@ -92,11 +93,12 @@ jobs:
                       "SELECT id FROM football_brief.brands WHERE active=true ORDER BY slug LIMIT 1"
                   ).fetchone()
               assert brand
+              brand_id = UUID(str(brand["id"]))
               service = CampaignService(database)
               created = service.create_campaign(
                   CampaignCreateRequest(
                       campaign_key="p119-ci-campaign",
-                      brand_id=UUID(str(brand["id"])),
+                      brand_id=brand_id,
                       name="P119 CI Campaign",
                   ),
                   actor="local-admin",
@@ -128,6 +130,33 @@ jobs:
                   actor="local-admin",
               )
               assert validated["ok"] is True
+
+              revised_policy = service.create_policy(
+                  brand_id=brand_id,
+                  request=AutopilotPolicyCreateRequest(
+                      policy_key="revised-autopilot",
+                      minimum_auto_score=75,
+                  ),
+                  actor="local-admin",
+              )
+              assert revised_policy["rebound_campaign_versions"] == 1
+              with database.connection() as conn:
+                  rebound = conn.execute(
+                      """SELECT v.status,v.autopilot_policy_id,array_agg(i.state ORDER BY i.ordinal) AS states
+                           FROM football_brief.production_campaign_versions v
+                           JOIN football_brief.production_campaign_items i ON i.campaign_version_id=v.id
+                           WHERE v.id=%s GROUP BY v.id""",
+                      (version_id,),
+                  ).fetchone()
+              assert rebound["status"] == "draft"
+              assert str(rebound["autopilot_policy_id"]) == str(revised_policy["policy"]["id"])
+              assert rebound["states"] == ["draft", "draft"]
+
+              revalidated = service.validate_version(
+                  campaign_version_id=version_id,
+                  actor="local-admin",
+              )
+              assert revalidated["ok"] is True
               activated = service.activate_version(
                   campaign_version_id=version_id,
                   actor="local-admin",
