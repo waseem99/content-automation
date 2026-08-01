@@ -8,7 +8,10 @@ from src.application.campaigns.models import (
     CampaignStatus,
     CampaignVersionStatus,
 )
-from src.application.campaigns.service import CampaignError, CampaignService
+from src.application.campaigns.service import CampaignError
+from src.application.campaigns.validated_service import ValidatedCampaignService
+
+CampaignService = ValidatedCampaignService
 
 __all__ = [
     "ALLOWED_PLATFORMS",
@@ -21,4 +24,5 @@ __all__ = [
     "CampaignService",
     "CampaignStatus",
     "CampaignVersionStatus",
+    "ValidatedCampaignService",
 ]
