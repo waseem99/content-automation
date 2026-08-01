@@ -1,0 +1,141 @@
+name: P129 Storage Scale and Recovery
+
+on:
+  pull_request:
+    branches: [test]
+    paths:
+      - "migrations/0106_p129_storage_scale_recovery.sql"
+      - "src/application/campaign_storage/download_patch.py"
+      - "src/application/campaign_storage/recovery.py"
+      - "src/operations/storage_scale_acceptance.py"
+      - "src/operations/storage_scale_acceptance_entry.py"
+      - "tests/unit/test_p129_storage_scale_contracts.py"
+      - "docs/operations/P129_STORAGE_SCALE_RECOVERY.md"
+      - ".github/workflows/p129-storage-scale-recovery.yml"
+  workflow_dispatch:
+    inputs:
+      assets:
+        description: Canonical assets
+        required: true
+        default: "50000"
+      locations:
+        description: Local and Drive location records
+        required: true
+        default: "100000"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: p129-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  acceptance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: content_automation
+          POSTGRES_USER: postgres
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d content_automation"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://postgres@localhost:5432/content_automation
+      DATABASE_REQUIRE_SCHEMA: "false"
+      DATABASE_MIGRATIONS_DIR: migrations
+      DATABASE_STATEMENT_TIMEOUT_MS: "600000"
+      LOCAL_SUPER_ADMIN_OPERATOR_ID: local-super-admin
+      LOCAL_ADMIN_OPERATOR_ID: local-admin
+      LOCAL_REVIEWER_OPERATOR_ID: local-reviewer
+      LOCAL_PLAN_MONTH: 2026-08-01
+      LOCAL_ARTIFACT_ROOT: .runtime/artifacts
+      PORTFOLIO_MEDIA_ROOT: .runtime/artifacts
+      LOCAL_RUNTIME_ROOT: .runtime
+      KOKORO_PRIMARY_VOICE: af_heart
+      KOKORO_ENERGETIC_VOICE: af_bella
+      KOKORO_SERIOUS_VOICE: am_adam
+      OPS_ENVIRONMENT: staging
+      OPS_MIGRATION_HEAD: 0106_p129_storage_scale_recovery.sql
+      STORAGE_ASSETS: ${{ github.event_name == 'workflow_dispatch' && inputs.assets || '50000' }}
+      STORAGE_LOCATIONS: ${{ github.event_name == 'workflow_dispatch' && inputs.locations || '100000' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install dependencies
+        run: python -m pip install -r requirements.txt
+      - name: Compile storage acceptance code
+        run: >-
+          python -m compileall -q
+          src/application/campaign_storage/download_patch.py
+          src/application/campaign_storage/recovery.py
+          src/operations/storage_scale_acceptance.py
+          src/operations/storage_scale_acceptance_entry.py
+          tests/unit/test_p129_storage_scale_contracts.py
+      - name: Apply complete migration chain
+        run: python -m src.infrastructure.database.cli migrate
+      - name: Run canonical onboarding twice
+        run: |
+          python -m src.operations.local_onboarding_v2
+          python -m src.operations.local_onboarding_v2
+      - name: Run full storage acceptance
+        run: >-
+          python -m src.operations.storage_scale_acceptance_entry
+          --assets "$STORAGE_ASSETS"
+          --locations "$STORAGE_LOCATIONS"
+          --acceptance-key "p129-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+      - name: Verify retained storage evidence
+        run: |
+          python - <<'PY'
+          import os
+          from src.infrastructure.database.connection import Database
+          from src.infrastructure.database.settings import get_database_settings
+
+          database = Database(get_database_settings())
+          database.open(require_schema=True)
+          try:
+              with database.connection() as conn:
+                  row = conn.execute(
+                      "SELECT * FROM football_brief.storage_scale_acceptance_runs ORDER BY created_at DESC,id DESC LIMIT 1"
+                  ).fetchone()
+                  recoveries = conn.execute(
+                      "SELECT count(*)::int AS value FROM football_brief.asset_storage_recovery_events WHERE status='succeeded'"
+                  ).fetchone()["value"]
+              assert row and row["status"] == "passed"
+              assert row["requested_assets"] == int(os.environ["STORAGE_ASSETS"])
+              assert row["requested_locations"] == int(os.environ["STORAGE_LOCATIONS"])
+              assert row["retained_assets"] == row["requested_assets"]
+              assert row["retained_locations"] == row["requested_locations"]
+              assert row["duplicate_locations"] == 0
+              assert row["mismatches_detected"] >= 1
+              assert row["missing_detected"] >= 1
+              assert row["recovered_local_copies"] >= 1
+              assert row["canonical_identity_changes"] == 0
+              assert row["drive_outage_local_failures"] == 0
+              assert recoveries >= 1
+              assert row["environment"]["external_drive_network"] is False
+          finally:
+              database.close()
+          PY
+      - name: Focused contracts
+        run: python -m pytest -q tests/unit/test_p129_storage_scale_contracts.py
+      - name: Product boundaries
+        shell: bash
+        run: |
+          grep -q "assets: int = 50_000" src/operations/storage_scale_acceptance.py
+          grep -q "locations: int = 100_000" src/operations/storage_scale_acceptance.py
+          grep -q "drive_recovery_full_sha256" src/application/campaign_storage/recovery.py
+          grep -q "p129_acceptance',%s::text" src/operations/storage_scale_acceptance_entry.py
+          ! grep -R -n -E "s3|S3|MinIO|redis|kafka|publish_manifest" \
+            src/application/campaign_storage/recovery.py src/operations/storage_scale_acceptance.py
