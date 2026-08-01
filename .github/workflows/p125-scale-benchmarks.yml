@@ -2,7 +2,7 @@ name: P125 Database Scale Benchmarks
 
 on:
   pull_request:
-    branches: [test, agent/p120-pre-generation-autopilot]
+    branches: [test]
     paths:
       - "migrations/0102_p125_scale_benchmarks.sql"
       - "src/operations/scale_benchmark.py"
@@ -62,9 +62,9 @@ jobs:
       KOKORO_SERIOUS_VOICE: am_adam
       OPS_ENVIRONMENT: staging
       OPS_MIGRATION_HEAD: 0102_p125_scale_benchmarks.sql
-      BENCHMARK_ITEMS: ${{ github.event_name == 'workflow_dispatch' && inputs.items || '1000' }}
-      BENCHMARK_CHECKS_PER_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.checks_per_run || '10' }}
-      BENCHMARK_CLAIM_SAMPLE: ${{ github.event_name == 'workflow_dispatch' && inputs.claim_sample || '100' }}
+      BENCHMARK_ITEMS: ${{ github.event_name == 'workflow_dispatch' && inputs.items || '10000' }}
+      BENCHMARK_CHECKS_PER_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.checks_per_run || '100' }}
+      BENCHMARK_CLAIM_SAMPLE: ${{ github.event_name == 'workflow_dispatch' && inputs.claim_sample || '500' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
