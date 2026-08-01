@@ -1,5 +1,7 @@
 name: P130 Alternate Focused Validation
 
+# Final rerun validates the current semantic contract file after the runtime and
+# retained-evidence path already passed at the exact 1,000-item target.
 on:
   pull_request:
     branches: [validation/p130-final-base]
