@@ -15,7 +15,7 @@ $RemoteStatus = Join-Path $Runtime "remote-access.json"
 $EnvPath = Join-Path $Root ".env.local"
 $Python = Join-Path $Root ".venv\Scripts\python.exe"
 
-function Sync-P119Environment([string]$Path) {
+function Sync-P120Environment([string]$Path) {
   if (-not (Test-Path -LiteralPath $Path)) { return }
   $values = [ordered]@{}
   foreach ($line in Get-Content -LiteralPath $Path) {
@@ -38,7 +38,14 @@ function Sync-P119Environment([string]$Path) {
   if (-not $values.Contains("P113_WAN_MODEL_KEY")) { $values["P113_WAN_MODEL_KEY"] = "Wan2.2-TI2V-5B" }
   if (-not $values.Contains("P113_HUNYUAN_PROVIDER_KEY")) { $values["P113_HUNYUAN_PROVIDER_KEY"] = "tencent-hunyuan" }
   if (-not $values.Contains("P113_HUNYUAN_MODEL_KEY")) { $values["P113_HUNYUAN_MODEL_KEY"] = "HunyuanVideo-1.5-480p-I2V-Step-Distilled" }
-  $values["OPS_MIGRATION_HEAD"] = "0100_p119_database_native_campaigns.sql"
+  if (-not $values.Contains("PRE_GENERATION_AUTOPILOT_ENABLED")) { $values["PRE_GENERATION_AUTOPILOT_ENABLED"] = "true" }
+  if (-not $values.Contains("PRE_GENERATION_WORKER_OPERATOR_ID")) { $values["PRE_GENERATION_WORKER_OPERATOR_ID"] = "local-reviewer" }
+  if (-not $values.Contains("PRE_GENERATION_BATCH_SIZE")) { $values["PRE_GENERATION_BATCH_SIZE"] = "25" }
+  if (-not $values.Contains("PRE_GENERATION_CONCURRENCY")) { $values["PRE_GENERATION_CONCURRENCY"] = "4" }
+  if (-not $values.Contains("PRE_GENERATION_LEASE_SECONDS")) { $values["PRE_GENERATION_LEASE_SECONDS"] = "600" }
+  if (-not $values.Contains("PRE_GENERATION_MAX_STEPS")) { $values["PRE_GENERATION_MAX_STEPS"] = "12" }
+  if (-not $values.Contains("PRE_GENERATION_POLL_SECONDS")) { $values["PRE_GENERATION_POLL_SECONDS"] = "3" }
+  $values["OPS_MIGRATION_HEAD"] = "0101_p120_pre_generation_autopilot.sql"
   $values["OPS_MAX_REQUEST_BODY_BYTES"] = "67108864"
   [IO.File]::WriteAllLines(
     $Path,
@@ -57,13 +64,12 @@ function Import-LocalEnvironment([string]$Path) {
   }
 }
 
-Sync-P119Environment $EnvPath
+Sync-P120Environment $EnvPath
 
 if (-not (Get-Command ngrok -ErrorAction SilentlyContinue)) {
   throw "ngrok is required. Install ngrok, run 'ngrok config add-authtoken <token>', then rerun."
 }
 
-# A configured account is required. The command reveals no token.
 & ngrok config check 1>$null 2>$null
 if ($LASTEXITCODE -ne 0) {
   throw "ngrok is installed but not configured. Run 'ngrok config add-authtoken <token>' first."
@@ -134,6 +140,9 @@ $status = [ordered]@{
   ollama_exposed = $false
   comfyui_exposed = $false
   artifact_directory_exposed = $false
+  pre_generation_autopilot = $true
+  final_video_generation = $false
+  automatic_publishing = $false
   role_model = @("super_admin", "admin", "reviewer")
   operator_keys_path = ".runtime/operator-keys.json"
 }
@@ -144,4 +153,5 @@ Write-Host "Remote Content Automation is ready." -ForegroundColor Green
 Write-Host "Creator Studio: $publicUrl/app/dashboard" -ForegroundColor Green
 Write-Host "Operator keys:  $Runtime\operator-keys.json"
 Write-Host "Remote status:  $RemoteStatus"
+Write-Host "Pre-generation autopilot is enabled; final video generation remains disabled." -ForegroundColor Yellow
 Write-Host "Share only the HTTPS Creator Studio URL and the intended user's key. Never share the Super Admin key." -ForegroundColor Yellow
