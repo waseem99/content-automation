@@ -1,0 +1,97 @@
+name: P125 Focused Full Target Validation
+
+on:
+  push:
+    branches: [agent/p125-focused-validation]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: p125-focused-validation
+  cancel-in-progress: true
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: content_automation
+          POSTGRES_USER: postgres
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d content_automation"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://postgres@localhost:5432/content_automation
+      DATABASE_REQUIRE_SCHEMA: "false"
+      DATABASE_MIGRATIONS_DIR: migrations
+      LOCAL_SUPER_ADMIN_OPERATOR_ID: local-super-admin
+      LOCAL_ADMIN_OPERATOR_ID: local-admin
+      LOCAL_REVIEWER_OPERATOR_ID: local-reviewer
+      LOCAL_PLAN_MONTH: 2026-08-01
+      KOKORO_PRIMARY_VOICE: af_heart
+      KOKORO_ENERGETIC_VOICE: af_bella
+      KOKORO_SERIOUS_VOICE: am_adam
+      OPS_ENVIRONMENT: staging
+      OPS_MIGRATION_HEAD: 0102_p125_scale_benchmarks.sql
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install dependencies
+        run: python -m pip install -r requirements.txt
+      - name: Compile benchmark
+        run: python -m compileall -q src/operations/scale_benchmark.py tests/unit/test_p125_scale_benchmark_contracts.py
+      - name: Apply complete migration chain
+        run: python -m src.infrastructure.database.cli migrate
+      - name: Run canonical onboarding twice
+        run: |
+          python -m src.operations.local_onboarding_v2
+          python -m src.operations.local_onboarding_v2
+      - name: Run full target benchmark
+        run: >-
+          python -m src.operations.scale_benchmark
+          --items 10000
+          --checks-per-run 100
+          --claim-sample 500
+          --actor local-admin
+          --benchmark-key "p125-focused-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+      - name: Verify retained evidence
+        run: |
+          python - <<'PY'
+          from src.infrastructure.database.connection import Database
+          from src.infrastructure.database.settings import get_database_settings
+
+          database = Database(get_database_settings())
+          database.open(require_schema=True)
+          try:
+              with database.connection() as conn:
+                  row = conn.execute(
+                      """SELECT * FROM football_brief.scale_benchmark_runs
+                         ORDER BY created_at DESC,id DESC LIMIT 1"""
+                  ).fetchone()
+              assert row and row["status"] == "passed"
+              assert row["inserted_items"] == 10000
+              assert row["inserted_runs"] == 10000
+              assert row["inserted_checks"] == 1000000
+              assert row["duplicate_checks"] == 0
+              assert row["counters"]["check_batches"] == 40
+              assert row["counters"]["check_replay_batches"] == 40
+              assert row["counters"]["check_run_batch_size"] == 250
+              assert row["environment"]["final_video_generation_measured"] is False
+          finally:
+              database.close()
+          PY
+      - name: Focused contracts
+        run: python -m pytest -q tests/unit/test_p125_scale_benchmark_contracts.py
