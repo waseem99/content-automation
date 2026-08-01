@@ -41,7 +41,7 @@ def test_p130_acceptance_is_exactly_one_thousand_and_sheet_free() -> None:
     runner = (ROOT / "src/operations/mass_operations_acceptance.py").read_text()
     for token in (
         "items: int = 1_000",
-        "snapshot[\"item_count\"] == items",
+        "int(snapshot[\"item_count\"]) == items",
         "result_rows == items",
         "grouped_before == items",
         "grouped_after == 0",
