@@ -1,0 +1,119 @@
+name: P125 Database Scale Benchmarks
+
+on:
+  pull_request:
+    branches: [test, agent/p120-pre-generation-autopilot]
+    paths:
+      - "migrations/0102_p125_scale_benchmarks.sql"
+      - "src/operations/scale_benchmark.py"
+      - "tests/unit/test_p125_scale_benchmark_contracts.py"
+      - "docs/operations/P125_SCALE_BENCHMARKS.md"
+      - ".github/workflows/p125-scale-benchmarks.yml"
+  workflow_dispatch:
+    inputs:
+      items:
+        description: Campaign items to retain
+        required: true
+        default: "10000"
+      checks_per_run:
+        description: Synthetic retained check rows per run
+        required: true
+        default: "100"
+      claim_sample:
+        description: Runs to claim through SKIP LOCKED
+        required: true
+        default: "500"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: p125-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: content_automation
+          POSTGRES_USER: postgres
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d content_automation"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://postgres@localhost:5432/content_automation
+      DATABASE_REQUIRE_SCHEMA: "false"
+      DATABASE_MIGRATIONS_DIR: migrations
+      LOCAL_SUPER_ADMIN_OPERATOR_ID: local-super-admin
+      LOCAL_ADMIN_OPERATOR_ID: local-admin
+      LOCAL_REVIEWER_OPERATOR_ID: local-reviewer
+      LOCAL_PLAN_MONTH: 2026-08-01
+      KOKORO_PRIMARY_VOICE: af_heart
+      KOKORO_ENERGETIC_VOICE: af_bella
+      KOKORO_SERIOUS_VOICE: am_adam
+      OPS_ENVIRONMENT: staging
+      OPS_MIGRATION_HEAD: 0102_p125_scale_benchmarks.sql
+      BENCHMARK_ITEMS: ${{ github.event_name == 'workflow_dispatch' && inputs.items || '1000' }}
+      BENCHMARK_CHECKS_PER_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.checks_per_run || '10' }}
+      BENCHMARK_CLAIM_SAMPLE: ${{ github.event_name == 'workflow_dispatch' && inputs.claim_sample || '100' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install dependencies
+        run: python -m pip install -r requirements.txt
+      - name: Compile benchmark
+        run: python -m compileall -q src/operations/scale_benchmark.py tests/unit/test_p125_scale_benchmark_contracts.py
+      - name: Apply complete migration chain
+        run: python -m src.infrastructure.database.cli migrate
+      - name: Run canonical onboarding twice
+        run: |
+          python -m src.operations.local_onboarding_v2
+          python -m src.operations.local_onboarding_v2
+      - name: Run measured database benchmark
+        run: >-
+          python -m src.operations.scale_benchmark
+          --items "$BENCHMARK_ITEMS"
+          --checks-per-run "$BENCHMARK_CHECKS_PER_RUN"
+          --claim-sample "$BENCHMARK_CLAIM_SAMPLE"
+          --actor local-admin
+          --benchmark-key "p125-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+      - name: Verify retained evidence
+        run: |
+          python - <<'PY'
+          import os
+          from src.infrastructure.database.connection import Database
+          from src.infrastructure.database.settings import get_database_settings
+
+          expected_items = int(os.environ["BENCHMARK_ITEMS"])
+          expected_checks = expected_items * int(os.environ["BENCHMARK_CHECKS_PER_RUN"])
+          database = Database(get_database_settings())
+          database.open(require_schema=True)
+          try:
+              with database.connection() as conn:
+                  row = conn.execute(
+                      """SELECT * FROM football_brief.scale_benchmark_runs
+                         ORDER BY created_at DESC,id DESC LIMIT 1"""
+                  ).fetchone()
+              assert row and row["status"] == "passed"
+              assert row["inserted_items"] == expected_items
+              assert row["inserted_runs"] == expected_items
+              assert row["inserted_checks"] == expected_checks
+              assert row["duplicate_checks"] == 0
+              assert row["environment"]["final_video_generation_measured"] is False
+          finally:
+              database.close()
+          PY
+      - name: Focused contracts
+        run: python -m pytest -q tests/unit/test_p125_scale_benchmark_contracts.py
