@@ -2,7 +2,7 @@ name: P125 Database Scale Benchmarks
 
 on:
   pull_request:
-    branches: [test]
+    branches: [test, agent/p120-pre-generation-autopilot]
     paths:
       - "migrations/0102_p125_scale_benchmarks.sql"
       - "src/operations/scale_benchmark.py"
