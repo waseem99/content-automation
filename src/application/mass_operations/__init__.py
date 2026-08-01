@@ -1,3 +1,6 @@
-from src.application.mass_operations.service import MassOperationError, MassOperationService
+from src.application.mass_operations.service import MassOperationError
+from src.application.mass_operations.final_service import ValidatedMassOperationService
 
-__all__ = ["MassOperationError", "MassOperationService"]
+MassOperationService = ValidatedMassOperationService
+
+__all__ = ["MassOperationError", "MassOperationService", "ValidatedMassOperationService"]
