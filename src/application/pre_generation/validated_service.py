@@ -132,7 +132,7 @@ class ValidatedPreGenerationService(PreGenerationService):
                           exception.rule_version,exception.fingerprint,
                           count(*)::int AS count,min(exception.created_at) AS oldest_at,
                           max(exception.created_at) AS newest_at,
-                          array_agg(exception.campaign_item_id ORDER BY item.ordinal)[:20]
+                          (array_agg(exception.campaign_item_id ORDER BY item.ordinal))[1:20]
                             AS sample_item_ids
                    FROM football_brief.pre_generation_exceptions exception
                    JOIN football_brief.production_campaign_items item
