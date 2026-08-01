@@ -37,7 +37,7 @@ class ValidatedCampaignService(CampaignService):
                    SET autopilot_policy_id=%s,
                        status='draft',
                        validated_at=NULL,
-                       metadata=metadata || %s::jsonb
+                       metadata=v.metadata || %s::jsonb
                    FROM football_brief.production_campaigns c
                    WHERE c.id=v.campaign_id
                      AND c.brand_id=%s
