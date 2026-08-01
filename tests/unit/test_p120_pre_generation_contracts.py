@@ -52,7 +52,10 @@ def test_migration_defines_durable_autopilot_and_grouped_exceptions() -> None:
     assert "CREATE TABLE football_brief.pre_generation_exceptions" in migration
     assert "CREATE TABLE football_brief.production_campaign_actions" in migration
     assert "CREATE TABLE football_brief.asset_storage_reconciliation_runs" in migration
-    assert "ready_for_final_video_generation" not in migration  # state is enforced by the existing 0100 table
+    # The terminal state already exists in migration 0100. Migration 0101 may
+    # document it, but must not redefine the production-campaign item schema.
+    assert "ALTER TABLE football_brief.production_campaign_items" not in migration
+    assert "ADD COLUMN state" not in migration
 
 
 def test_worker_uses_database_leases_and_skip_locked() -> None:
