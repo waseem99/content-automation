@@ -15,7 +15,7 @@ $RemoteStatus = Join-Path $Runtime "remote-access.json"
 $EnvPath = Join-Path $Root ".env.local"
 $Python = Join-Path $Root ".venv\Scripts\python.exe"
 
-function Sync-P110Environment([string]$Path) {
+function Sync-P119Environment([string]$Path) {
   if (-not (Test-Path -LiteralPath $Path)) { return }
   $values = [ordered]@{}
   foreach ($line in Get-Content -LiteralPath $Path) {
@@ -38,7 +38,8 @@ function Sync-P110Environment([string]$Path) {
   if (-not $values.Contains("P113_WAN_MODEL_KEY")) { $values["P113_WAN_MODEL_KEY"] = "Wan2.2-TI2V-5B" }
   if (-not $values.Contains("P113_HUNYUAN_PROVIDER_KEY")) { $values["P113_HUNYUAN_PROVIDER_KEY"] = "tencent-hunyuan" }
   if (-not $values.Contains("P113_HUNYUAN_MODEL_KEY")) { $values["P113_HUNYUAN_MODEL_KEY"] = "HunyuanVideo-1.5-480p-I2V-Step-Distilled" }
-  $values["OPS_MIGRATION_HEAD"] = "0099_p114_local_video_renderers.sql"
+  $values["OPS_MIGRATION_HEAD"] = "0100_p119_database_native_campaigns.sql"
+  $values["OPS_MAX_REQUEST_BODY_BYTES"] = "67108864"
   [IO.File]::WriteAllLines(
     $Path,
     [string[]]@($values.Keys | ForEach-Object { "$_=$($values[$_])" }),
@@ -56,7 +57,7 @@ function Import-LocalEnvironment([string]$Path) {
   }
 }
 
-Sync-P110Environment $EnvPath
+Sync-P119Environment $EnvPath
 
 if (-not (Get-Command ngrok -ErrorAction SilentlyContinue)) {
   throw "ngrok is required. Install ngrok, run 'ngrok config add-authtoken <token>', then rerun."
