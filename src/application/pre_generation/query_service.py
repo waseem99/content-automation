@@ -75,6 +75,35 @@ def _decode_cursor(cursor: str, *, sort: str, direction: str) -> dict[str, Any]:
     return payload
 
 
+def _filters(
+    *,
+    campaign_id: UUID,
+    query: str,
+    states: list[str],
+    exception_codes: list[str],
+) -> tuple[list[str], list[Any]]:
+    conditions = ["version.campaign_id=%s"]
+    values: list[Any] = [campaign_id]
+    if query:
+        conditions.append(
+            "(item.item_key ILIKE %s OR item.title ILIKE %s OR item.topic ILIKE %s "
+            "OR item.objective ILIKE %s OR item.audience ILIKE %s)"
+        )
+        values.extend([f"%{query}%"] * 5)
+    if states:
+        conditions.append("item.state=ANY(%s::text[])")
+        values.append(states)
+    if exception_codes:
+        conditions.append(
+            "EXISTS (SELECT 1 FROM football_brief.pre_generation_exceptions exception_filter "
+            "WHERE exception_filter.campaign_item_id=item.id "
+            "AND exception_filter.status='open' "
+            "AND exception_filter.exception_code=ANY(%s::text[]))"
+        )
+        values.append(exception_codes)
+    return conditions, values
+
+
 class CampaignQueryService(ValidatedPreGenerationService):
     def query_items(
         self,
@@ -106,35 +135,28 @@ class CampaignQueryService(ValidatedPreGenerationService):
 
         definition = SORTS[sort]
         sort_expression = f"COALESCE({definition.expression}, %s::{definition.cast})"
-        conditions = ["version.campaign_id=%s"]
-        values: list[Any] = [campaign_id, definition.null_value]
-        if search:
-            conditions.append(
-                "(item.item_key ILIKE %s OR item.title ILIKE %s OR item.topic ILIKE %s "
-                "OR item.objective ILIKE %s OR item.audience ILIKE %s)"
-            )
-            pattern = f"%{search}%"
-            values.extend([pattern] * 5)
-        if normalized_states:
-            conditions.append("item.state=ANY(%s::text[])")
-            values.append(normalized_states)
-        if normalized_exceptions:
-            conditions.append(
-                "EXISTS (SELECT 1 FROM football_brief.pre_generation_exceptions exception_filter "
-                "WHERE exception_filter.campaign_item_id=item.id "
-                "AND exception_filter.status='open' "
-                "AND exception_filter.exception_code=ANY(%s::text[]))"
-            )
-            values.append(normalized_exceptions)
+        conditions, where_values = _filters(
+            campaign_id=campaign_id,
+            query=search,
+            states=normalized_states,
+            exception_codes=normalized_exceptions,
+        )
         if cursor:
             decoded = _decode_cursor(cursor, sort=sort, direction=direction)
             operator = ">" if direction == "asc" else "<"
             conditions.append(
                 f"({sort_expression},item.id) {operator} (%s::{definition.cast},%s::uuid)"
             )
-            values.extend([definition.null_value, decoded["value"], decoded["item_id"]])
+            where_values.extend([definition.null_value, decoded["value"], decoded["item_id"]])
         order = "ASC" if direction == "asc" else "DESC"
-        values.extend([definition.null_value, limit + 1])
+        # Placeholder order follows SQL text: SELECT expression, WHERE values,
+        # ORDER BY expression, LIMIT.
+        query_values = [
+            definition.null_value,
+            *where_values,
+            definition.null_value,
+            limit + 1,
+        ]
 
         with self.database.connection() as conn:
             campaign = conn.execute(
@@ -167,27 +189,14 @@ class CampaignQueryService(ValidatedPreGenerationService):
                      WHERE {' AND '.join(conditions)}
                      ORDER BY {sort_expression} {order},item.id {order}
                      LIMIT %s""",
-                tuple(values),
+                tuple(query_values),
             ).fetchall()
-            count_values = [campaign_id]
-            count_conditions = ["version.campaign_id=%s"]
-            if search:
-                count_conditions.append(
-                    "(item.item_key ILIKE %s OR item.title ILIKE %s OR item.topic ILIKE %s "
-                    "OR item.objective ILIKE %s OR item.audience ILIKE %s)"
-                )
-                count_values.extend([f"%{search}%"] * 5)
-            if normalized_states:
-                count_conditions.append("item.state=ANY(%s::text[])")
-                count_values.append(normalized_states)
-            if normalized_exceptions:
-                count_conditions.append(
-                    "EXISTS (SELECT 1 FROM football_brief.pre_generation_exceptions exception_filter "
-                    "WHERE exception_filter.campaign_item_id=item.id "
-                    "AND exception_filter.status='open' "
-                    "AND exception_filter.exception_code=ANY(%s::text[]))"
-                )
-                count_values.append(normalized_exceptions)
+            count_conditions, count_values = _filters(
+                campaign_id=campaign_id,
+                query=search,
+                states=normalized_states,
+                exception_codes=normalized_exceptions,
+            )
             filtered_count = int(
                 conn.execute(
                     f"""SELECT count(*)::int AS value
@@ -254,27 +263,14 @@ class CampaignQueryService(ValidatedPreGenerationService):
             {value.strip() for value in exception_codes or [] if value.strip()}
         )
         search = (query or "").strip()
-        conditions = ["version.campaign_id=%s"]
-        values: list[Any] = [campaign_id]
-        if search:
-            conditions.append(
-                "(item.item_key ILIKE %s OR item.title ILIKE %s OR item.topic ILIKE %s "
-                "OR item.objective ILIKE %s OR item.audience ILIKE %s)"
-            )
-            values.extend([f"%{search}%"] * 5)
-        if normalized_states:
-            conditions.append("item.state=ANY(%s::text[])")
-            values.append(normalized_states)
-        else:
+        conditions, values = _filters(
+            campaign_id=campaign_id,
+            query=search,
+            states=normalized_states,
+            exception_codes=normalized_exceptions,
+        )
+        if not normalized_states:
             conditions.append("item.state IN ('human_exception','hard_block')")
-        if normalized_exceptions:
-            conditions.append(
-                "EXISTS (SELECT 1 FROM football_brief.pre_generation_exceptions exception_filter "
-                "WHERE exception_filter.campaign_item_id=item.id "
-                "AND exception_filter.status='open' "
-                "AND exception_filter.exception_code=ANY(%s::text[]))"
-            )
-            values.append(normalized_exceptions)
         values.append(maximum + 1)
         with self.database.transaction() as conn:
             self._require_operator(conn, actor)
