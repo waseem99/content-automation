@@ -88,6 +88,7 @@ jobs:
           --checks-per-run "$BENCHMARK_CHECKS_PER_RUN"
           --claim-sample "$BENCHMARK_CLAIM_SAMPLE"
           --actor local-admin
+          --benchmark-key "p125-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
       - name: Verify retained evidence
         run: |
           python - <<'PY'
