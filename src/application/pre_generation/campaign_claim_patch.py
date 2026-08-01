@@ -20,8 +20,10 @@ def _campaign_scoped_claim(
     """Claim the canonical queue, optionally restricted to one campaign.
 
     Existing worker callers omit ``campaign_id`` and retain the original claim
-    implementation byte-for-byte. Acceptance, recovery and campaign-isolated
-    operations can request one campaign without pausing unrelated work.
+    implementation byte-for-byte. Campaign-scoped acceptance claims exclude
+    waiting runs so an earlier batch cannot be reclaimed while untouched queued
+    items still remain. The acceptance runner explicitly requeues all items after
+    scripts and evidence are prepared.
     """
 
     if campaign_id is None:
@@ -47,7 +49,7 @@ def _campaign_scoped_claim(
                      ON version.id=item.campaign_version_id
                    JOIN football_brief.production_campaigns campaign
                      ON campaign.id=version.campaign_id
-                   WHERE run.status IN ('queued','running','waiting')
+                   WHERE run.status IN ('queued','running')
                      AND run.next_attempt_at<=now()
                      AND (run.lease_expires_at IS NULL OR run.lease_expires_at<now())
                      AND campaign.status='active'
