@@ -2,7 +2,7 @@ name: P130 Mass Operations Acceptance
 
 on:
   pull_request:
-    branches: [test]
+    branches: [validation/p130-base]
     paths:
       - "migrations/0107_p130_mass_operations_acceptance.sql"
       - "src/application/mass_operations/**"
