@@ -1,0 +1,71 @@
+name: P127 Focused Validation
+on:
+  push:
+    branches: [validation/p127-cf1]
+permissions:
+  contents: read
+jobs:
+  acceptance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: content_automation
+          POSTGRES_USER: postgres
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres -d content_automation"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: postgresql://postgres@localhost:5432/content_automation
+      DATABASE_REQUIRE_SCHEMA: "false"
+      DATABASE_MIGRATIONS_DIR: migrations
+      DATABASE_STATEMENT_TIMEOUT_MS: "600000"
+      DATABASE_POOL_MAX_SIZE: "20"
+      LOCAL_SUPER_ADMIN_OPERATOR_ID: local-super-admin
+      LOCAL_ADMIN_OPERATOR_ID: local-admin
+      LOCAL_REVIEWER_OPERATOR_ID: local-reviewer
+      LOCAL_PLAN_MONTH: 2026-08-01
+      LOCAL_ARTIFACT_ROOT: .runtime/artifacts
+      PORTFOLIO_MEDIA_ROOT: .runtime/artifacts
+      LOCAL_RUNTIME_ROOT: .runtime
+      KOKORO_PRIMARY_VOICE: af_heart
+      KOKORO_ENERGETIC_VOICE: af_bella
+      KOKORO_SERIOUS_VOICE: am_adam
+      OPS_ENVIRONMENT: staging
+      OPS_MIGRATION_HEAD: 0104_p127_autopilot_scale_acceptance.sql
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: python -m pip install -r requirements.txt
+      - run: python -m compileall -q src/application/pre_generation src/operations/autopilot_acceptance.py src/operations/autopilot_acceptance_entry.py
+      - run: python -m src.infrastructure.database.cli migrate
+      - run: |
+          python -m src.operations.local_onboarding_v2
+          python -m src.operations.local_onboarding_v2
+      - name: Full 1000-item acceptance
+        run: >-
+          python -m src.operations.autopilot_acceptance_entry
+          --items 1000 --supported-items 950 --concurrency 8
+          --acceptance-key "p127-focused-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+      - name: Verify retained evidence
+        run: |
+          python - <<'PY'
+          from src.infrastructure.database.connection import Database
+          from src.infrastructure.database.settings import get_database_settings
+          db=Database(get_database_settings()); db.open(require_schema=True)
+          try:
+            with db.connection() as c:
+              r=c.execute("SELECT * FROM football_brief.autopilot_acceptance_runs ORDER BY created_at DESC LIMIT 1").fetchone()
+            assert r['status']=='passed'; assert r['ready_items']==950; assert r['hard_block_items']==50
+            assert r['human_exception_items']==0; assert r['content_families']==1000
+            assert r['script_documents']==1000; assert r['reproducible_ready_decisions']==950
+          finally: db.close()
+          PY
+      - run: python -m pytest -q tests/unit/test_p127_autopilot_acceptance_contracts.py
