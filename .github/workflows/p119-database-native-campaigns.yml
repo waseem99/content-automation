@@ -8,6 +8,7 @@ on:
       - "src/application/campaigns/**"
       - "src/operator_api/p119_campaign_runtime.py"
       - "src/operator_api/runtime_factory.py"
+      - "config/local.env.example"
       - "tests/unit/test_p119_database_native_campaigns.py"
       - "docs/operations/DATABASE_NATIVE_CAMPAIGNS.md"
       - ".github/workflows/p119-database-native-campaigns.yml"
@@ -148,3 +149,5 @@ jobs:
           grep -q "final_video_generation_deferred" src/application/campaigns/service.py
           grep -q "automatic_paid_spend.*False" src/application/campaigns/service.py
           grep -q "automatic_public_publishing.*False" src/application/campaigns/service.py
+          grep -q "OPS_MIGRATION_HEAD=0100_p119_database_native_campaigns.sql" config/local.env.example
+          grep -q "OPS_MAX_REQUEST_BODY_BYTES=67108864" config/local.env.example
