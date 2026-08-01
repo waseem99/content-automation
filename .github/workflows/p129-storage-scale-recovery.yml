@@ -2,7 +2,7 @@ name: P129 Storage Scale and Recovery
 
 on:
   pull_request:
-    branches: [test]
+    branches: [validation/p129-base]
     paths:
       - "migrations/0106_p129_storage_scale_recovery.sql"
       - "src/application/campaign_storage/download_patch.py"
