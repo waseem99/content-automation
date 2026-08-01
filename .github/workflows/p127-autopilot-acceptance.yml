@@ -1,0 +1,143 @@
+name: P127 1000-item Autopilot Acceptance
+
+on:
+  pull_request:
+    branches: [test]
+    paths:
+      - "migrations/0104_p127_autopilot_scale_acceptance.sql"
+      - "src/application/pre_generation/campaign_claim_patch.py"
+      - "src/application/pre_generation/__init__.py"
+      - "src/operations/autopilot_acceptance.py"
+      - "tests/unit/test_p127_autopilot_acceptance_contracts.py"
+      - "docs/operations/P127_AUTOPILOT_ACCEPTANCE.md"
+      - ".github/workflows/p127-autopilot-acceptance.yml"
+  workflow_dispatch:
+    inputs:
+      items:
+        description: Total campaign items
+        required: true
+        default: "1000"
+      supported_items:
+        description: Items with complete factual source evidence
+        required: true
+        default: "950"
+      concurrency:
+        description: Concurrent service-path workers
+        required: true
+        default: "8"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: p127-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  acceptance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: content_automation
+          POSTGRES_USER: postgres
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d content_automation"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://postgres@localhost:5432/content_automation
+      DATABASE_REQUIRE_SCHEMA: "false"
+      DATABASE_MIGRATIONS_DIR: migrations
+      LOCAL_SUPER_ADMIN_OPERATOR_ID: local-super-admin
+      LOCAL_ADMIN_OPERATOR_ID: local-admin
+      LOCAL_REVIEWER_OPERATOR_ID: local-reviewer
+      LOCAL_PLAN_MONTH: 2026-08-01
+      LOCAL_ARTIFACT_ROOT: .runtime/artifacts
+      PORTFOLIO_MEDIA_ROOT: .runtime/artifacts
+      LOCAL_RUNTIME_ROOT: .runtime
+      KOKORO_PRIMARY_VOICE: af_heart
+      KOKORO_ENERGETIC_VOICE: af_bella
+      KOKORO_SERIOUS_VOICE: am_adam
+      OPS_ENVIRONMENT: staging
+      OPS_MIGRATION_HEAD: 0104_p127_autopilot_scale_acceptance.sql
+      ACCEPTANCE_ITEMS: ${{ github.event_name == 'workflow_dispatch' && inputs.items || '1000' }}
+      ACCEPTANCE_SUPPORTED: ${{ github.event_name == 'workflow_dispatch' && inputs.supported_items || '950' }}
+      ACCEPTANCE_CONCURRENCY: ${{ github.event_name == 'workflow_dispatch' && inputs.concurrency || '8' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install dependencies
+        run: python -m pip install -r requirements.txt
+      - name: Compile acceptance code
+        run: >-
+          python -m compileall -q
+          src/application/pre_generation/campaign_claim_patch.py
+          src/application/pre_generation/__init__.py
+          src/operations/autopilot_acceptance.py
+          tests/unit/test_p127_autopilot_acceptance_contracts.py
+      - name: Apply complete migration chain
+        run: python -m src.infrastructure.database.cli migrate
+      - name: Run canonical onboarding twice
+        run: |
+          python -m src.operations.local_onboarding_v2
+          python -m src.operations.local_onboarding_v2
+      - name: Run measured automatic acceptance
+        run: >-
+          python -m src.operations.autopilot_acceptance
+          --items "$ACCEPTANCE_ITEMS"
+          --supported-items "$ACCEPTANCE_SUPPORTED"
+          --concurrency "$ACCEPTANCE_CONCURRENCY"
+          --acceptance-key "p127-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+      - name: Verify retained acceptance evidence
+        run: |
+          python - <<'PY'
+          import os
+          from src.infrastructure.database.connection import Database
+          from src.infrastructure.database.settings import get_database_settings
+
+          items = int(os.environ["ACCEPTANCE_ITEMS"])
+          supported = int(os.environ["ACCEPTANCE_SUPPORTED"])
+          database = Database(get_database_settings())
+          database.open(require_schema=True)
+          try:
+              with database.connection() as conn:
+                  row = conn.execute(
+                      """SELECT * FROM football_brief.autopilot_acceptance_runs
+                         ORDER BY created_at DESC,id DESC LIMIT 1"""
+                  ).fetchone()
+              assert row and row["status"] == "passed"
+              assert row["requested_items"] == items
+              assert row["ready_items"] == supported
+              assert row["hard_block_items"] == items - supported
+              assert row["human_exception_items"] == 0
+              assert float(row["automation_rate"]) >= 0.95
+              assert row["grouped_source_blocks"] == (1 if items > supported else 0)
+              assert row["individual_page_approvals"] == 0
+              assert row["content_families"] == items
+              assert row["script_documents"] == items
+              assert row["reproducible_ready_decisions"] == supported
+              assert row["environment"]["final_video_generation"] is False
+              assert row["environment"]["public_publishing"] is False
+          finally:
+              database.close()
+          PY
+      - name: Focused contracts
+        run: python -m pytest -q tests/unit/test_p127_autopilot_acceptance_contracts.py
+      - name: Product boundaries
+        shell: bash
+        run: |
+          grep -q "FOR UPDATE OF run SKIP LOCKED" src/application/pre_generation/campaign_claim_patch.py
+          grep -q "supported_items: int = 950" src/operations/autopilot_acceptance.py
+          grep -q '"individual_page_approvals": 0' src/operations/autopilot_acceptance.py
+          ! grep -R -n -E "GenerationJobService|request.urlopen|httpx\.|OpenAI\(|publish_manifest" \
+            src/operations/autopilot_acceptance.py
