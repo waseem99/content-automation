@@ -15,7 +15,7 @@ $RemoteStatus = Join-Path $Runtime "remote-access.json"
 $EnvPath = Join-Path $Root ".env.local"
 $Python = Join-Path $Root ".venv\Scripts\python.exe"
 
-function Sync-P120Environment([string]$Path) {
+function Sync-P126Environment([string]$Path) {
   if (-not (Test-Path -LiteralPath $Path)) { return }
   $values = [ordered]@{}
   foreach ($line in Get-Content -LiteralPath $Path) {
@@ -45,7 +45,11 @@ function Sync-P120Environment([string]$Path) {
   if (-not $values.Contains("PRE_GENERATION_LEASE_SECONDS")) { $values["PRE_GENERATION_LEASE_SECONDS"] = "600" }
   if (-not $values.Contains("PRE_GENERATION_MAX_STEPS")) { $values["PRE_GENERATION_MAX_STEPS"] = "12" }
   if (-not $values.Contains("PRE_GENERATION_POLL_SECONDS")) { $values["PRE_GENERATION_POLL_SECONDS"] = "3" }
-  $values["OPS_MIGRATION_HEAD"] = "0101_p120_pre_generation_autopilot.sql"
+  if (-not $values.Contains("HYBRID_ROUTING_ENABLED")) { $values["HYBRID_ROUTING_ENABLED"] = "true" }
+  $values["HYBRID_PAID_EXECUTION_ENABLED"] = "false"
+  $values["HYBRID_PUBLIC_PUBLISHING_ENABLED"] = "false"
+  $values["LOCAL_SCRIPT_TIMEOUT_SECONDS"] = "120"
+  $values["OPS_MIGRATION_HEAD"] = "0103_p126_hybrid_scene_routing.sql"
   $values["OPS_MAX_REQUEST_BODY_BYTES"] = "67108864"
   [IO.File]::WriteAllLines(
     $Path,
@@ -64,7 +68,7 @@ function Import-LocalEnvironment([string]$Path) {
   }
 }
 
-Sync-P120Environment $EnvPath
+Sync-P126Environment $EnvPath
 
 if (-not (Get-Command ngrok -ErrorAction SilentlyContinue)) {
   throw "ngrok is required. Install ngrok, run 'ngrok config add-authtoken <token>', then rerun."
@@ -141,6 +145,8 @@ $status = [ordered]@{
   comfyui_exposed = $false
   artifact_directory_exposed = $false
   pre_generation_autopilot = $true
+  hybrid_route_planning = $true
+  paid_provider_execution = $false
   final_video_generation = $false
   automatic_publishing = $false
   role_model = @("super_admin", "admin", "reviewer")
@@ -153,5 +159,5 @@ Write-Host "Remote Content Automation is ready." -ForegroundColor Green
 Write-Host "Creator Studio: $publicUrl/app/dashboard" -ForegroundColor Green
 Write-Host "Operator keys:  $Runtime\operator-keys.json"
 Write-Host "Remote status:  $RemoteStatus"
-Write-Host "Pre-generation autopilot is enabled; final video generation remains disabled." -ForegroundColor Yellow
+Write-Host "Pre-generation and hybrid route planning are enabled; provider execution and publishing remain disabled." -ForegroundColor Yellow
 Write-Host "Share only the HTTPS Creator Studio URL and the intended user's key. Never share the Super Admin key." -ForegroundColor Yellow
