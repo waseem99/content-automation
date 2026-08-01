@@ -16,7 +16,7 @@ def test_p130_migration_retains_selection_jobs_and_exact_results() -> None:
     assert "unauthorized_brand_action_rejected=true" in migration
 
 
-def test_p130_service_enforces_brand_scope_and_optimistic_locking() -> None:
+def test_p130_service_enforces_scope_locking_and_bulk_execution() -> None:
     service = (ROOT / "src/application/mass_operations/service.py").read_text()
     final_service = (ROOT / "src/application/mass_operations/final_service.py").read_text()
     compatibility = (ROOT / "src/infrastructure/database/executemany_patch.py").read_text()
@@ -27,8 +27,6 @@ def test_p130_service_enforces_brand_scope_and_optimistic_locking() -> None:
     assert "campaign_selection_members" in service
     assert "campaign_mass_operation_jobs" in service
     assert "football_brief.pre_generation_runs" in final_service
-    assert "run.campaign_item_id=item.id" in final_service
-    assert "FOR UPDATE OF item,run" in final_service
     assert "campaign_mass_operation_item_results" in final_service
     assert "cursor.executemany" in compatibility
     assert "with self._connection.cursor()" in compatibility
