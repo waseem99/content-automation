@@ -8,6 +8,7 @@ on:
       - "src/application/pre_generation/campaign_claim_patch.py"
       - "src/application/pre_generation/__init__.py"
       - "src/operations/autopilot_acceptance.py"
+      - "src/operations/autopilot_acceptance_entry.py"
       - "tests/unit/test_p127_autopilot_acceptance_contracts.py"
       - "docs/operations/P127_AUTOPILOT_ACCEPTANCE.md"
       - ".github/workflows/p127-autopilot-acceptance.yml"
@@ -84,6 +85,7 @@ jobs:
           src/application/pre_generation/campaign_claim_patch.py
           src/application/pre_generation/__init__.py
           src/operations/autopilot_acceptance.py
+          src/operations/autopilot_acceptance_entry.py
           tests/unit/test_p127_autopilot_acceptance_contracts.py
       - name: Apply complete migration chain
         run: python -m src.infrastructure.database.cli migrate
@@ -93,7 +95,7 @@ jobs:
           python -m src.operations.local_onboarding_v2
       - name: Run measured automatic acceptance
         run: >-
-          python -m src.operations.autopilot_acceptance
+          python -m src.operations.autopilot_acceptance_entry
           --items "$ACCEPTANCE_ITEMS"
           --supported-items "$ACCEPTANCE_SUPPORTED"
           --concurrency "$ACCEPTANCE_CONCURRENCY"
@@ -139,5 +141,6 @@ jobs:
           grep -q "FOR UPDATE OF run SKIP LOCKED" src/application/pre_generation/campaign_claim_patch.py
           grep -q "supported_items: int = 950" src/operations/autopilot_acceptance.py
           grep -q '"individual_page_approvals": 0' src/operations/autopilot_acceptance.py
+          grep -q "callable_fn" src/operations/autopilot_acceptance_entry.py
           ! grep -R -n -E "GenerationJobService|request.urlopen|httpx\.|OpenAI\(|publish_manifest" \
             src/operations/autopilot_acceptance.py
