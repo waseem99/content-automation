@@ -22,8 +22,26 @@ def test_rule_and_services_are_importable() -> None:
 
 
 def test_google_drive_adapter_is_off_by_default() -> None:
-    drive = GoogleDriveStorage(access_token="", root_folder_id="")
+    drive = GoogleDriveStorage(
+        access_token="",
+        refresh_token="",
+        client_id="",
+        client_secret="",
+        root_folder_id="",
+    )
     assert drive.configured is False
+    assert drive.renewable is False
+
+
+def test_google_drive_supports_renewable_oauth_without_database_credentials() -> None:
+    source = (ROOT / "src" / "application" / "campaign_storage" / "google_drive.py").read_text(encoding="utf-8")
+    environment = (ROOT / "config" / "local.env.example").read_text(encoding="utf-8")
+    assert "https://oauth2.googleapis.com/token" in source
+    assert '"grant_type": "refresh_token"' in source
+    assert "GOOGLE_DRIVE_CLIENT_ID=" in environment
+    assert "GOOGLE_DRIVE_CLIENT_SECRET=" in environment
+    assert "GOOGLE_DRIVE_REFRESH_TOKEN=" in environment
+    assert "Credentials remain environment-only" in source
 
 
 def test_migration_defines_durable_autopilot_and_grouped_exceptions() -> None:
@@ -39,11 +57,26 @@ def test_migration_defines_durable_autopilot_and_grouped_exceptions() -> None:
 
 def test_worker_uses_database_leases_and_skip_locked() -> None:
     service = (ROOT / "src" / "application" / "pre_generation" / "service.py").read_text(encoding="utf-8")
+    patch = (ROOT / "src" / "application" / "pre_generation" / "runtime_patch.py").read_text(encoding="utf-8")
     worker = (ROOT / "src" / "operations" / "pre_generation_worker.py").read_text(encoding="utf-8")
     assert "FOR UPDATE OF run SKIP LOCKED" in service
+    assert "%s::text" in patch
     assert "lease_token" in service
     assert "ThreadPoolExecutor" in worker
     assert "PRE_GENERATION_CONCURRENCY" in worker
+
+
+def test_renderer_ready_package_is_frozen_before_generation() -> None:
+    service = (ROOT / "src" / "application" / "pre_generation" / "service.py").read_text(encoding="utf-8")
+    patch = (ROOT / "src" / "application" / "pre_generation" / "runtime_patch.py").read_text(encoding="utf-8")
+    assert "ready-for-final-video-generation/v1" in service
+    assert '"shots": _renderer_shots' in patch
+    assert '"negative_prompt"' in patch
+    assert '"continuity_bindings"' in patch
+    assert '"segments"' in patch
+    assert '"outputs": outputs' in patch
+    assert "correction_count=correction_count+1" in patch
+    assert "unassigned_hybrid_router" in patch
 
 
 def test_product_boundaries_are_explicit() -> None:
