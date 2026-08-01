@@ -113,6 +113,69 @@ def _ensure_autopilot_reviewer(self: PreGenerationService, *, created_by: str) -
     return reviewer
 
 
+def _decide_with_active_policy(
+    self: PreGenerationService,
+    *,
+    document_id: UUID,
+    expected_lock_version: int,
+    reviewer: str,
+    rationale: str,
+) -> tuple[dict[str, Any], str]:
+    """Record an independent approval bound to the exact active brand policy.
+
+    The canonical ScriptReviewService predates the later policy-key columns.
+    This helper uses the same locks, immutable decision table and status
+    transition triggers while supplying the exact active policy key required by
+    migration 0093.
+    """
+
+    with self.database.transaction() as conn:
+        self.scripts._require_active_operator(conn, reviewer)
+        row = self.scripts._locked(conn, document_id, expected_lock_version)
+        if str(row["version_status"]) != "in_review":
+            raise ScriptReviewError("script_version_not_in_review")
+        policy = conn.execute(
+            """SELECT COALESCE(p.policy_key,'independent_review_required') AS policy_key
+               FROM football_brief.script_documents sd
+               JOIN football_brief.portfolio_content pc ON pc.id=sd.portfolio_content_id
+               JOIN football_brief.monthly_content_plans mp ON mp.id=pc.plan_id
+               LEFT JOIN football_brief.brand_review_policies p
+                 ON p.brand_id=mp.brand_id AND p.active=true
+               WHERE sd.id=%s
+               ORDER BY p.version DESC NULLS LAST
+               LIMIT 1""",
+            (document_id,),
+        ).fetchone()
+        policy_key = str(policy["policy_key"] if policy else "independent_review_required")
+        conn.execute(
+            """INSERT INTO football_brief.script_review_decisions
+               (script_document_id,script_version_id,decision,
+                reviewer_operator_id,rationale,document_lock_version,
+                self_review,review_policy_key,override_reason)
+               VALUES (%s,%s,'approved',%s,%s,%s,false,%s,NULL)""",
+            (
+                document_id,
+                row["current_version_id"],
+                reviewer,
+                rationale,
+                expected_lock_version,
+                policy_key,
+            ),
+        )
+        conn.execute(
+            """UPDATE football_brief.script_versions
+               SET status='approved',decided_at=now()
+               WHERE id=%s""",
+            (row["current_version_id"],),
+        )
+        self.scripts._advance_lock(
+            conn,
+            document_id=document_id,
+            expected_lock=expected_lock_version,
+        )
+    return self.scripts.detail(document_id=document_id), policy_key
+
+
 def _automatic_script_approval(
     self: PreGenerationService,
     *,
@@ -125,6 +188,7 @@ def _automatic_script_approval(
     context = self._context(run["id"])
     document_id = UUID(str(context["script_document_id"]))
     reviewer = _ensure_autopilot_reviewer(self, created_by=actor)
+    active_review_policy = ""
     try:
         detail = self.scripts.detail(document_id=document_id)
         status = str(detail["document"]["current_version_status"])
@@ -140,16 +204,16 @@ def _automatic_script_approval(
             lock_version = int(detail["document"]["lock_version"])
             status = str(detail["document"]["current_version_status"])
         if status == "in_review":
-            detail = self.scripts.decide(
+            detail, active_review_policy = _decide_with_active_policy(
+                self,
                 document_id=document_id,
                 expected_lock_version=lock_version,
-                decision=ScriptDecision.APPROVED,
+                reviewer=reviewer,
                 rationale=(
                     "Automatically approved by the independent pre-generation "
-                    f"review identity after policy {context['policy_key']} and "
-                    f"{RULE_VERSION} checks passed."
+                    f"review identity after autopilot policy {context['policy_key']} "
+                    f"and {RULE_VERSION} checks passed."
                 ),
-                reviewer=reviewer,
             )
             status = str(detail["document"]["current_version_status"])
     except ScriptReviewError as exc:
@@ -161,6 +225,16 @@ def _automatic_script_approval(
             category="system",
             severity="human_exception",
             details={"error_code": exc.code, **exc.details},
+        )
+    except Exception as exc:
+        return self._exception(
+            run=run,
+            lease_token=lease_token,
+            actor=actor,
+            code="automatic_script_approval_failed",
+            category="system",
+            severity="human_exception",
+            details={"error_type": type(exc).__name__, "message": str(exc)[:500]},
         )
 
     if status != "approved":
@@ -184,8 +258,9 @@ def _automatic_script_approval(
             status="passed",
             score=100,
             evidence={
-                "policy_id": str(context["autopilot_policy_id"]),
-                "policy_key": context["policy_key"],
+                "autopilot_policy_id": str(context["autopilot_policy_id"]),
+                "autopilot_policy_key": context["policy_key"],
+                "active_brand_review_policy": active_review_policy,
                 "orchestration_worker": actor,
                 "independent_reviewer": reviewer,
                 "review_mode": "non_login_autopilot_identity",
@@ -200,6 +275,7 @@ def _automatic_script_approval(
         details={
             "script_status": "approved",
             "independent_reviewer": reviewer,
+            "active_brand_review_policy": active_review_policy,
         },
     )
 
