@@ -42,17 +42,17 @@ exit `$LASTEXITCODE
 "@
 [IO.File]::WriteAllText($launcher, $launcherContent, (New-Object Text.UTF8Encoding($false)))
 
-$action = New-ScheduledTaskAction \
-  -Execute "powershell.exe" \
-  -Argument "-NoProfile -ExecutionPolicy Bypass -File `"$launcher`"" \
+$action = New-ScheduledTaskAction `
+  -Execute "powershell.exe" `
+  -Argument "-NoProfile -ExecutionPolicy Bypass -File `"$launcher`"" `
   -WorkingDirectory $Root
 $trigger = New-ScheduledTaskTrigger -AtStartup
-$settings = New-ScheduledTaskSettingsSet \
-  -AllowStartIfOnBatteries \
-  -DontStopIfGoingOnBatteries \
-  -StartWhenAvailable \
-  -RestartCount 999 \
-  -RestartInterval (New-TimeSpan -Minutes 1) \
+$settings = New-ScheduledTaskSettingsSet `
+  -AllowStartIfOnBatteries `
+  -DontStopIfGoingOnBatteries `
+  -StartWhenAvailable `
+  -RestartCount 999 `
+  -RestartInterval (New-TimeSpan -Minutes 1) `
   -ExecutionTimeLimit ([TimeSpan]::Zero)
 $principal = New-ScheduledTaskPrincipal -UserId $env:USERNAME -LogonType S4U -RunLevel Highest
 $task = New-ScheduledTask -Action $action -Trigger $trigger -Settings $settings -Principal $principal
