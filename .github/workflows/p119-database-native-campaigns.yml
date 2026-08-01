@@ -9,6 +9,7 @@ on:
       - "src/operator_api/p119_campaign_runtime.py"
       - "src/operator_api/runtime_factory.py"
       - "config/local.env.example"
+      - "scripts/windows/deploy_remote_content_automation.ps1"
       - "tests/unit/test_p119_database_native_campaigns.py"
       - "docs/operations/DATABASE_NATIVE_CAMPAIGNS.md"
       - ".github/workflows/p119-database-native-campaigns.yml"
@@ -151,3 +152,5 @@ jobs:
           grep -q "automatic_public_publishing.*False" src/application/campaigns/service.py
           grep -q "OPS_MIGRATION_HEAD=0100_p119_database_native_campaigns.sql" config/local.env.example
           grep -q "OPS_MAX_REQUEST_BODY_BYTES=67108864" config/local.env.example
+          grep -q 'OPS_MIGRATION_HEAD.*0100_p119_database_native_campaigns.sql' scripts/windows/deploy_remote_content_automation.ps1
+          grep -q 'OPS_MAX_REQUEST_BODY_BYTES.*67108864' scripts/windows/deploy_remote_content_automation.ps1
