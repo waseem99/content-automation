@@ -8,6 +8,7 @@ on:
       - "src/application/campaign_storage/download_patch.py"
       - "src/application/campaign_storage/recovery.py"
       - "src/operations/storage_scale_acceptance.py"
+      - "src/operations/storage_scale_acceptance_entry.py"
       - "tests/unit/test_p129_storage_scale_contracts.py"
       - "docs/operations/P129_STORAGE_SCALE_RECOVERY.md"
       - ".github/workflows/p129-storage-scale-recovery.yml"
@@ -80,6 +81,7 @@ jobs:
           src/application/campaign_storage/download_patch.py
           src/application/campaign_storage/recovery.py
           src/operations/storage_scale_acceptance.py
+          src/operations/storage_scale_acceptance_entry.py
           tests/unit/test_p129_storage_scale_contracts.py
       - name: Apply complete migration chain
         run: python -m src.infrastructure.database.cli migrate
@@ -89,7 +91,7 @@ jobs:
           python -m src.operations.local_onboarding_v2
       - name: Run full storage acceptance
         run: >-
-          python -m src.operations.storage_scale_acceptance
+          python -m src.operations.storage_scale_acceptance_entry
           --assets "$STORAGE_ASSETS"
           --locations "$STORAGE_LOCATIONS"
           --acceptance-key "p129-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
@@ -134,5 +136,6 @@ jobs:
           grep -q "assets: int = 50_000" src/operations/storage_scale_acceptance.py
           grep -q "locations: int = 100_000" src/operations/storage_scale_acceptance.py
           grep -q "drive_recovery_full_sha256" src/application/campaign_storage/recovery.py
+          grep -q "p129_acceptance',%s::text" src/operations/storage_scale_acceptance_entry.py
           ! grep -R -n -E "s3|S3|MinIO|redis|kafka|publish_manifest" \
             src/application/campaign_storage/recovery.py src/operations/storage_scale_acceptance.py
