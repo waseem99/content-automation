@@ -1,0 +1,150 @@
+name: P119 Database Native Campaigns
+
+on:
+  pull_request:
+    branches: [test]
+    paths:
+      - "migrations/0100_p119_database_native_campaigns.sql"
+      - "src/application/campaigns/**"
+      - "src/operator_api/p119_campaign_runtime.py"
+      - "src/operator_api/runtime_factory.py"
+      - "tests/unit/test_p119_database_native_campaigns.py"
+      - "docs/operations/DATABASE_NATIVE_CAMPAIGNS.md"
+      - ".github/workflows/p119-database-native-campaigns.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: p119-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  contracts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: content_automation
+          POSTGRES_USER: postgres
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d content_automation"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://postgres@localhost:5432/content_automation
+      DATABASE_REQUIRE_SCHEMA: "false"
+      DATABASE_MIGRATIONS_DIR: migrations
+      LOCAL_SUPER_ADMIN_OPERATOR_ID: local-super-admin
+      LOCAL_ADMIN_OPERATOR_ID: local-admin
+      LOCAL_REVIEWER_OPERATOR_ID: local-reviewer
+      LOCAL_PLAN_MONTH: 2026-08-01
+      KOKORO_PRIMARY_VOICE: af_heart
+      KOKORO_ENERGETIC_VOICE: af_bella
+      KOKORO_SERIOUS_VOICE: am_adam
+      OPS_ENVIRONMENT: staging
+      OPS_MIGRATION_HEAD: 0100_p119_database_native_campaigns.sql
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install dependencies
+        run: python -m pip install -r requirements.txt
+      - name: Compile Python
+        run: python -m compileall -q src tests
+      - name: Apply complete migration chain
+        run: python -m src.infrastructure.database.cli migrate
+      - name: Run canonical onboarding twice
+        run: |
+          python -m src.operations.local_onboarding_v2
+          python -m src.operations.local_onboarding_v2
+      - name: Exercise campaign lifecycle
+        run: |
+          python - <<'PY'
+          from datetime import date
+          from uuid import UUID
+
+          from src.application.campaigns.models import (
+              CampaignCreateRequest,
+              CampaignItemInput,
+              CampaignItemsAddRequest,
+          )
+          from src.application.campaigns.service import CampaignService
+          from src.infrastructure.database.connection import Database
+          from src.infrastructure.database.settings import get_database_settings
+
+          database = Database(get_database_settings())
+          database.open(require_schema=True)
+          try:
+              with database.connection() as conn:
+                  brand = conn.execute(
+                      "SELECT id FROM football_brief.brands WHERE active=true ORDER BY slug LIMIT 1"
+                  ).fetchone()
+              assert brand
+              service = CampaignService(database)
+              created = service.create_campaign(
+                  CampaignCreateRequest(
+                      campaign_key="p119-ci-campaign",
+                      brand_id=UUID(str(brand["id"])),
+                      name="P119 CI Campaign",
+                  ),
+                  actor="local-admin",
+              )
+              version_id = UUID(str(created["versions"][0]["id"]))
+              added = service.add_items(
+                  campaign_version_id=version_id,
+                  request=CampaignItemsAddRequest(
+                      items=[
+                          CampaignItemInput(
+                              item_key="item-001",
+                              title="First database-native item",
+                              topic="A complete original pre-generation brief.",
+                              scheduled_for=date(2026, 8, 1),
+                          ),
+                          CampaignItemInput(
+                              item_key="item-002",
+                              title="Second database-native item",
+                              topic="A second complete original pre-generation brief.",
+                              scheduled_for=date(2026, 8, 2),
+                          ),
+                      ]
+                  ),
+                  actor="local-admin",
+              )
+              assert added["counts"]["item_count"] == 2
+              validated = service.validate_version(
+                  campaign_version_id=version_id,
+                  actor="local-admin",
+              )
+              assert validated["ok"] is True
+              activated = service.activate_version(
+                  campaign_version_id=version_id,
+                  actor="local-admin",
+              )
+              assert activated["activated_items"] == 2
+              assert activated["campaign"]["status"] == "active"
+          finally:
+              database.close()
+          PY
+      - name: Focused contracts
+        run: python -m pytest -q tests/unit/test_p119_database_native_campaigns.py
+      - name: Product boundaries
+        shell: bash
+        run: |
+          grep -q "provider IN ('local','google_drive')" migrations/0100_p119_database_native_campaigns.sql
+          ! grep -R -n -E "provider IN \('s3'|minio|google_sheets|xlsx" \
+            migrations/0100_p119_database_native_campaigns.sql \
+            src/application/campaigns \
+            src/operator_api/p119_campaign_runtime.py
+          grep -q "final_video_generation_deferred" src/application/campaigns/service.py
+          grep -q "automatic_paid_spend.*False" src/application/campaigns/service.py
+          grep -q "automatic_public_publishing.*False" src/application/campaigns/service.py
