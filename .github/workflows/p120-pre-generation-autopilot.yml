@@ -1,0 +1,127 @@
+name: P120 Pre-generation Autopilot
+
+on:
+  pull_request:
+    branches: [test]
+    paths:
+      - "migrations/0101_p120_pre_generation_autopilot.sql"
+      - "src/application/pre_generation/**"
+      - "src/application/campaign_storage/**"
+      - "src/operations/pre_generation_worker.py"
+      - "src/operator_api/p120_*"
+      - "src/operator_api/runtime_factory.py"
+      - "config/local.env.example"
+      - "scripts/ci/p120_lifecycle.py"
+      - "scripts/windows/*pre_generation*"
+      - "scripts/windows/deploy_remote_content_automation.ps1"
+      - "scripts/windows/deploy_always_on_local_production.ps1"
+      - "web/static-creator-ui/assets/studio-v2-campaigns.js"
+      - "web/static-creator-ui/index.html"
+      - "tests/unit/test_p120_pre_generation_contracts.py"
+      - "tests/unit/test_p120_autopilot_review_contract.py"
+      - ".github/workflows/p120-pre-generation-autopilot.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: p120-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  contracts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: content_automation
+          POSTGRES_USER: postgres
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d content_automation"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://postgres@localhost:5432/content_automation
+      DATABASE_REQUIRE_SCHEMA: "false"
+      DATABASE_MIGRATIONS_DIR: migrations
+      LOCAL_SUPER_ADMIN_OPERATOR_ID: local-super-admin
+      LOCAL_ADMIN_OPERATOR_ID: local-admin
+      LOCAL_REVIEWER_OPERATOR_ID: local-reviewer
+      LOCAL_PLAN_MONTH: 2026-08-01
+      LOCAL_ARTIFACT_ROOT: .runtime/artifacts
+      PORTFOLIO_MEDIA_ROOT: .runtime/artifacts
+      LOCAL_RUNTIME_ROOT: .runtime
+      KOKORO_PRIMARY_VOICE: af_heart
+      KOKORO_ENERGETIC_VOICE: af_bella
+      KOKORO_SERIOUS_VOICE: am_adam
+      PRE_GENERATION_AUTOPILOT_ENABLED: "true"
+      PRE_GENERATION_WORKER_OPERATOR_ID: local-reviewer
+      OPS_ENVIRONMENT: staging
+      OPS_MIGRATION_HEAD: 0101_p120_pre_generation_autopilot.sql
+      OPS_MAX_REQUEST_BODY_BYTES: 67108864
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install dependencies
+        run: python -m pip install -r requirements.txt
+      - name: Compile Python
+        run: python -m compileall -q src tests scripts/ci
+      - name: Validate browser and PowerShell syntax
+        shell: pwsh
+        run: |
+          node --check web/static-creator-ui/assets/studio-v2-campaigns.js
+          $paths = @(
+            "scripts/windows/install_pre_generation_service.ps1",
+            "scripts/windows/deploy_always_on_local_production.ps1",
+            "scripts/windows/deploy_remote_content_automation.ps1"
+          )
+          foreach ($path in $paths) {
+            $tokens = $null
+            $errors = $null
+            [System.Management.Automation.Language.Parser]::ParseFile($path, [ref]$tokens, [ref]$errors) | Out-Null
+            if ($errors.Count -gt 0) {
+              $errors | ForEach-Object { Write-Error "${path}: $($_.Message)" }
+              exit 1
+            }
+          }
+      - name: Apply complete migration chain
+        run: python -m src.infrastructure.database.cli migrate
+      - name: Run canonical onboarding twice
+        run: |
+          python -m src.operations.local_onboarding_v2
+          python -m src.operations.local_onboarding_v2
+      - name: Exercise automatic package, grouped hard block and local storage
+        run: PYTHONPATH=. python scripts/ci/p120_lifecycle.py
+      - name: Focused contracts
+        run: >-
+          python -m pytest -q
+          tests/unit/test_p119_database_native_campaigns.py
+          tests/unit/test_p120_pre_generation_contracts.py
+          tests/unit/test_p120_autopilot_review_contract.py
+      - name: Product boundaries
+        shell: bash
+        run: |
+          grep -q "FOR UPDATE OF run SKIP LOCKED" src/application/pre_generation/service.py
+          grep -q "ready-for-final-video-generation/v1" src/application/pre_generation/service.py
+          grep -q "provider IN ('local','google_drive')" migrations/0100_p119_database_native_campaigns.sql
+          grep -q "PRE_GENERATION_AUTOPILOT_ENABLED=true" config/local.env.example
+          grep -q "OPS_MIGRATION_HEAD=0101_p120_pre_generation_autopilot.sql" config/local.env.example
+          ! grep -R -n -E "google_sheets|xlsx|provider IN \('s3'|minio" \
+            migrations/0101_p120_pre_generation_autopilot.sql \
+            src/application/pre_generation \
+            src/application/campaign_storage \
+            src/operator_api/p120_pre_generation_runtime.py \
+            src/operator_api/p120_storage_runtime.py
