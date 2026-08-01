@@ -1,0 +1,108 @@
+name: P127 Focused 1000-item Acceptance
+
+on:
+  push:
+    branches: [agent/p127-focused-validation]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: p127-focused-validation
+  cancel-in-progress: true
+
+jobs:
+  acceptance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: content_automation
+          POSTGRES_USER: postgres
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d content_automation"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://postgres@localhost:5432/content_automation
+      DATABASE_REQUIRE_SCHEMA: "false"
+      DATABASE_MIGRATIONS_DIR: migrations
+      LOCAL_SUPER_ADMIN_OPERATOR_ID: local-super-admin
+      LOCAL_ADMIN_OPERATOR_ID: local-admin
+      LOCAL_REVIEWER_OPERATOR_ID: local-reviewer
+      LOCAL_PLAN_MONTH: 2026-08-01
+      LOCAL_ARTIFACT_ROOT: .runtime/artifacts
+      PORTFOLIO_MEDIA_ROOT: .runtime/artifacts
+      LOCAL_RUNTIME_ROOT: .runtime
+      KOKORO_PRIMARY_VOICE: af_heart
+      KOKORO_ENERGETIC_VOICE: af_bella
+      KOKORO_SERIOUS_VOICE: am_adam
+      OPS_ENVIRONMENT: staging
+      OPS_MIGRATION_HEAD: 0104_p127_autopilot_scale_acceptance.sql
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install dependencies
+        run: python -m pip install -r requirements.txt
+      - name: Compile acceptance code
+        run: >-
+          python -m compileall -q
+          src/application/pre_generation/campaign_claim_patch.py
+          src/application/pre_generation/__init__.py
+          src/operations/autopilot_acceptance.py
+          tests/unit/test_p127_autopilot_acceptance_contracts.py
+      - name: Apply complete migration chain
+        run: python -m src.infrastructure.database.cli migrate
+      - name: Run canonical onboarding twice
+        run: |
+          python -m src.operations.local_onboarding_v2
+          python -m src.operations.local_onboarding_v2
+      - name: Run full measured automatic acceptance
+        run: >-
+          python -m src.operations.autopilot_acceptance
+          --items 1000
+          --supported-items 950
+          --concurrency 8
+          --acceptance-key "p127-focused-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+      - name: Verify retained acceptance evidence
+        run: |
+          python - <<'PY'
+          from src.infrastructure.database.connection import Database
+          from src.infrastructure.database.settings import get_database_settings
+
+          database = Database(get_database_settings())
+          database.open(require_schema=True)
+          try:
+              with database.connection() as conn:
+                  row = conn.execute(
+                      """SELECT * FROM football_brief.autopilot_acceptance_runs
+                         ORDER BY created_at DESC,id DESC LIMIT 1"""
+                  ).fetchone()
+              assert row and row["status"] == "passed"
+              assert row["requested_items"] == 1000
+              assert row["ready_items"] == 950
+              assert row["hard_block_items"] == 50
+              assert row["human_exception_items"] == 0
+              assert float(row["automation_rate"]) >= 0.95
+              assert row["grouped_source_blocks"] == 1
+              assert row["individual_page_approvals"] == 0
+              assert row["content_families"] == 1000
+              assert row["script_documents"] == 1000
+              assert row["reproducible_ready_decisions"] == 950
+              assert row["environment"]["final_video_generation"] is False
+              assert row["environment"]["public_publishing"] is False
+          finally:
+              database.close()
+          PY
+      - name: Focused contracts
+        run: python -m pytest -q tests/unit/test_p127_autopilot_acceptance_contracts.py
