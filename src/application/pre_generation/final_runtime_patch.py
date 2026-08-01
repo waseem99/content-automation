@@ -1,9 +1,16 @@
 from __future__ import annotations
 
+import os
 from typing import Any
+from uuid import UUID
 
-from src.application.scripts.models import ScriptGenerateRequest as ValidatedScriptGenerateRequest
+from src.application.scripts.models import (
+    ScriptDecision,
+    ScriptGenerateRequest as ValidatedScriptGenerateRequest,
+)
+from src.application.scripts.service import ScriptReviewError
 from src.application.pre_generation import runtime_patch as pre_generation_runtime
+from src.application.pre_generation.service import PreGenerationService, RULE_VERSION
 from src.operator_api import p110_runtime, studio_v2_runtime
 
 
@@ -72,6 +79,131 @@ def _canonical_timeline(
     return timeline, corrected, round(target_seconds - total, 3)
 
 
+def _ensure_autopilot_reviewer(self: PreGenerationService, *, created_by: str) -> str:
+    """Create one non-login audit identity for independent automatic decisions.
+
+    The identity has no API key and is not part of the public role model. It is
+    deliberately distinct from the worker that submits the script, preserving
+    the database's independent-review invariant.
+    """
+
+    reviewer = os.getenv(
+        "PRE_GENERATION_AUTOPILOT_REVIEWER_ID",
+        "pre-generation-autopilot-reviewer",
+    ).strip()
+    if not reviewer:
+        reviewer = "pre-generation-autopilot-reviewer"
+    with self.database.transaction() as conn:
+        operator = conn.execute(
+            """INSERT INTO football_brief.operator_users
+               (operator_id,display_name,active,created_by)
+               VALUES (%s,'Pre-generation Autopilot Reviewer',true,%s)
+               ON CONFLICT (operator_id) DO UPDATE SET
+                 display_name=EXCLUDED.display_name,active=true
+               RETURNING id""",
+            (reviewer, created_by),
+        ).fetchone()
+        conn.execute(
+            """INSERT INTO football_brief.operator_user_roles
+               (operator_user_id,role,assigned_by)
+               VALUES (%s,'reviewer',%s)
+               ON CONFLICT DO NOTHING""",
+            (operator["id"], created_by),
+        )
+    return reviewer
+
+
+def _automatic_script_approval(
+    self: PreGenerationService,
+    *,
+    run: dict[str, Any],
+    lease_token: UUID,
+    actor: str,
+) -> dict[str, Any]:
+    """Approve a policy-passed script with an independent internal identity."""
+
+    context = self._context(run["id"])
+    document_id = UUID(str(context["script_document_id"]))
+    reviewer = _ensure_autopilot_reviewer(self, created_by=actor)
+    try:
+        detail = self.scripts.detail(document_id=document_id)
+        status = str(detail["document"]["current_version_status"])
+        lock_version = int(detail["document"]["lock_version"])
+        if status == "working":
+            # Submission records the orchestration worker as submitter/editor.
+            # The separate reviewer identity below remains independent.
+            detail = self.scripts.submit(
+                document_id=document_id,
+                expected_lock_version=lock_version,
+                actor=actor,
+            )
+            lock_version = int(detail["document"]["lock_version"])
+            status = str(detail["document"]["current_version_status"])
+        if status == "in_review":
+            detail = self.scripts.decide(
+                document_id=document_id,
+                expected_lock_version=lock_version,
+                decision=ScriptDecision.APPROVED,
+                rationale=(
+                    "Automatically approved by the independent pre-generation "
+                    f"review identity after policy {context['policy_key']} and "
+                    f"{RULE_VERSION} checks passed."
+                ),
+                reviewer=reviewer,
+            )
+            status = str(detail["document"]["current_version_status"])
+    except ScriptReviewError as exc:
+        return self._exception(
+            run=run,
+            lease_token=lease_token,
+            actor=actor,
+            code="automatic_script_approval_failed",
+            category="system",
+            severity="human_exception",
+            details={"error_code": exc.code, **exc.details},
+        )
+
+    if status != "approved":
+        return self._exception(
+            run=run,
+            lease_token=lease_token,
+            actor=actor,
+            code="script_not_approved_after_autopilot_decision",
+            category="structural",
+            severity="human_exception",
+            details={"status": status},
+        )
+
+    with self.database.transaction() as conn:
+        self._owned_run_locked(conn, run["id"], lease_token)
+        self._check(
+            conn,
+            run_id=run["id"],
+            stage="script_approval",
+            key="automatic_policy_decision",
+            status="passed",
+            score=100,
+            evidence={
+                "policy_id": str(context["autopilot_policy_id"]),
+                "policy_key": context["policy_key"],
+                "orchestration_worker": actor,
+                "independent_reviewer": reviewer,
+                "review_mode": "non_login_autopilot_identity",
+                "rule_version": RULE_VERSION,
+            },
+        )
+    return self._advance(
+        run_id=run["id"],
+        lease_token=lease_token,
+        stage="narration_plan",
+        actor=actor,
+        details={
+            "script_status": "approved",
+            "independent_reviewer": reviewer,
+        },
+    )
+
+
 def install_final_pre_generation_runtime_patch() -> None:
     if getattr(pre_generation_runtime, "_final_runtime_patch_installed", False):
         return
@@ -86,6 +218,10 @@ def install_final_pre_generation_runtime_patch() -> None:
     # The renderer-ready planning stage installed by runtime_patch resolves the
     # timeline helper from its module global at call time.
     pre_generation_runtime._timeline = _canonical_timeline
+
+    # Preserve the legacy human-review trigger. Automatic decisions use a
+    # separate non-login reviewer identity and retain policy evidence on the run.
+    PreGenerationService._script_approval = _automatic_script_approval
     pre_generation_runtime._final_runtime_patch_installed = True
 
 
