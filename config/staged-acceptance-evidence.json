@@ -1,0 +1,117 @@
+{
+  "report_key": "p131-final-central-ecosystem-v1",
+  "gates": {
+    "campaign_intake": {
+      "conclusion": "success",
+      "pull_request": 849,
+      "merge_commit": "96987e0519c8c771c909349061ca64837ed970ac",
+      "workflow_run": 30704933465,
+      "measurements": {
+        "items": 10000,
+        "duplicate_items": 0,
+        "idempotent_replay": true
+      }
+    },
+    "autopilot": {
+      "conclusion": "success",
+      "pull_request": 856,
+      "merge_commit": "2b313e1aa5bc8443fd7df490a0a8c5a36d04056b",
+      "workflow_run": 30712768461,
+      "measurements": {
+        "items": 1000,
+        "ready": 950,
+        "hard_blocks": 50,
+        "human_exceptions": 0,
+        "reproducible_ready_decisions": 950
+      }
+    },
+    "dag_workers": {
+      "conclusion": "success",
+      "pull_request": 857,
+      "merge_commit": "7d246595bcc5617c3389c08025c20371d537b2c2",
+      "workflow_run": 30711865917,
+      "measurements": {
+        "tasks": 1000000,
+        "workers": 100,
+        "recovered_leases": 100,
+        "duplicate_successes": 0,
+        "fairness_spread": 1
+      }
+    },
+    "storage": {
+      "conclusion": "success",
+      "pull_request": 858,
+      "merge_commit": "90bedeb37c386f4fdf63963386afe65c29fe2d50",
+      "workflow_run": 30713833173,
+      "measurements": {
+        "assets": 50000,
+        "locations": 100000,
+        "duplicate_locations": 0,
+        "mismatches_detected": 1,
+        "missing_detected": 1,
+        "recovered_local_copies": 1,
+        "canonical_identity_changes": 0,
+        "drive_outage_local_failures": 0
+      }
+    },
+    "campaign_grid": {
+      "conclusion": "success",
+      "pull_request": 854,
+      "merge_commit": "3b9502b6bac4830a98d4640ec03df6fb72e747ec",
+      "workflow_run": 30708349818,
+      "measurements": {
+        "records": 1200,
+        "cursor_pagination": true,
+        "matching_retry_limit": 20000
+      }
+    },
+    "mass_operations": {
+      "conclusion": "success",
+      "pull_request": 863,
+      "merge_commit": "e3040f191e0d4b58e39be6f9c7acc780d70d335f",
+      "workflow_run": 30715130725,
+      "measurements": {
+        "items": 1000,
+        "exact_result_rows": 1000,
+        "grouped_exceptions_before": 1000,
+        "grouped_exceptions_after": 0,
+        "optimistic_edit_passed": true,
+        "stale_edit_rejected": true,
+        "unauthorized_brand_action_rejected": true
+      }
+    },
+    "database_scale": {
+      "conclusion": "success",
+      "pull_request": 853,
+      "merge_commit": "3fddad60a6564eb544b66329571214f91fbaaff6",
+      "workflow_run": 30709714778,
+      "measurements": {
+        "items": 10000,
+        "runs": 10000,
+        "checks": 1000000,
+        "duplicate_checks": 0,
+        "claim_sample": 500
+      }
+    },
+    "hybrid_routing": {
+      "conclusion": "success",
+      "pull_request": 855,
+      "merge_commit": "1bd6b7127cf6426cff1edbf84f9d312fde05be31",
+      "workflow_run": 30710664526,
+      "measurements": {
+        "master_seconds": 120,
+        "paid_attempts": 0,
+        "generation_jobs": 0,
+        "exact_edl": true
+      }
+    }
+  },
+  "unresolved_renderer_measurements": [
+    "Measure accepted real generated seconds per GPU hour for every approved local workflow.",
+    "Measure production acceptance and retry rates by local, cloud and premium route on a representative scene mix.",
+    "Measure sustained provider queue latency, availability and failure recovery under production volume.",
+    "Measure cost per accepted completed master and derivative using real generation.",
+    "Specify the total GPU, cloud and provider capacity required for 10,000–20,000 completed videos per month.",
+    "Measure creative false-pass, false-fail and human review minutes on real generated output."
+  ]
+}

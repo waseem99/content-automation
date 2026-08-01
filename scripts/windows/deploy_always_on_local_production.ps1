@@ -8,11 +8,17 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
+$Root = (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path
+$EnvPath = Join-Path $Root ".env.local"
+$SyncP131 = Join-Path $PSScriptRoot "sync_p131_environment.ps1"
 $Start = Join-Path $PSScriptRoot "start_local_production.ps1"
 $StopManual = Join-Path $PSScriptRoot "stop_local_production.ps1"
 $StopAlwaysOn = Join-Path $PSScriptRoot "stop_always_on_local_production.ps1"
 $InstallTask = Join-Path $PSScriptRoot "install_local_production_service.ps1"
 $InstallPreGenerationTask = Join-Path $PSScriptRoot "install_pre_generation_service.ps1"
+
+# Remote and direct deployment both pass through this final schema/feature sync.
+& $SyncP131 -Path $EnvPath
 
 # Make repeated deployment idempotent. Existing database, models, artifacts, and
 # queued jobs are preserved.
@@ -36,4 +42,4 @@ Write-Host "Creator Studio: http://127.0.0.1:8000/"
 Write-Host "Operator keys: .runtime\operator-keys.json"
 Write-Host "Supervisor status: .runtime\supervisor-heartbeat.json"
 Write-Host "Pre-generation autopilot: ContentAutomation-PreGeneration scheduled task"
-Write-Host "Hybrid route planning is available; provider execution and publishing remain disabled." -ForegroundColor Yellow
+Write-Host "Central ecosystem and hybrid route planning are available; provider execution and publishing remain disabled." -ForegroundColor Yellow
