@@ -19,15 +19,19 @@ def test_p130_migration_retains_selection_jobs_and_exact_results() -> None:
 def test_p130_service_enforces_brand_scope_and_optimistic_locking() -> None:
     service = (ROOT / "src/application/mass_operations/service.py").read_text()
     final_service = (ROOT / "src/application/mass_operations/final_service.py").read_text()
+    compatibility = (ROOT / "src/infrastructure/database/executemany_patch.py").read_text()
     assert "identity.can_access_brand" in service
     assert "AccessPermission.RUN_PRODUCTION" in service
     assert "AccessPermission.EDIT_CONTENT" in service
     assert "campaign_item_optimistic_lock_conflict" in service
     assert "campaign_selection_members" in service
     assert "campaign_mass_operation_jobs" in service
-    assert "JOIN football_brief.pre_generation_runs" in final_service
+    assert "football_brief.pre_generation_runs" in final_service
+    assert "run.campaign_item_id=item.id" in final_service
     assert "FOR UPDATE OF item,run" in final_service
     assert "campaign_mass_operation_item_results" in final_service
+    assert "cursor.executemany" in compatibility
+    assert "with self._connection.cursor()" in compatibility
 
 
 def test_p130_acceptance_is_exactly_one_thousand_and_sheet_free() -> None:
