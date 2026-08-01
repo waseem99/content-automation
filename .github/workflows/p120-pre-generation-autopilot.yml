@@ -103,7 +103,7 @@ jobs:
           python -m src.operations.local_onboarding_v2
           python -m src.operations.local_onboarding_v2
       - name: Exercise automatic package, grouped hard block and local storage
-        run: python scripts/ci/p120_lifecycle.py
+        run: PYTHONPATH=. python scripts/ci/p120_lifecycle.py
       - name: Focused contracts
         run: python -m pytest -q tests/unit/test_p119_database_native_campaigns.py tests/unit/test_p120_pre_generation_contracts.py
       - name: Product boundaries
