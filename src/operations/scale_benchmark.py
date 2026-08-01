@@ -7,7 +7,7 @@ import platform
 import socket
 import time
 from datetime import date, datetime, timezone
-from typing import Any
+from typing import Any, Iterable, TypeVar
 from uuid import UUID
 
 from src.application.campaigns.models import (
@@ -21,8 +21,12 @@ from src.infrastructure.database.connection import Database
 from src.infrastructure.database.settings import get_database_settings
 
 
+T = TypeVar("T")
+MAX_ITEMS_PER_REQUEST = 10_000
+
+
 def _utc_key() -> str:
-    return datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
+    return datetime.now(timezone.utc).strftime("%Y%m%dt%H%M%S%fz")
 
 
 def _json(value: Any) -> str:
@@ -34,6 +38,13 @@ def _timed(timings: dict[str, float], key: str, function, *args, **kwargs):
     result = function(*args, **kwargs)
     timings[key] = round((time.perf_counter() - started) * 1000, 3)
     return result
+
+
+def _chunks(values: list[T], size: int = MAX_ITEMS_PER_REQUEST) -> Iterable[list[T]]:
+    if size < 1:
+        raise ValueError("chunk size must be positive")
+    for start in range(0, len(values), size):
+        yield values[start : start + size]
 
 
 def _items(count: int, *, platform_name: str) -> list[CampaignItemInput]:
@@ -57,6 +68,39 @@ def _items(count: int, *, platform_name: str) -> list[CampaignItemInput]:
         )
         for ordinal in range(1, count + 1)
     ]
+
+
+def _add_item_chunks(
+    service: ValidatedCampaignService,
+    *,
+    campaign_version_id: UUID,
+    items: list[CampaignItemInput],
+    actor: str,
+) -> dict[str, Any]:
+    changed = 0
+    submitted = 0
+    counts: dict[str, int] = {
+        "item_count": 0,
+        "valid_item_count": 0,
+        "invalid_item_count": 0,
+    }
+    chunk_count = 0
+    for chunk in _chunks(items):
+        result = service.add_items(
+            campaign_version_id=campaign_version_id,
+            request=CampaignItemsAddRequest(items=chunk),
+            actor=actor,
+        )
+        chunk_count += 1
+        submitted += int(result["submitted"])
+        changed += int(result["changed"])
+        counts = dict(result["counts"])
+    return {
+        "submitted": submitted,
+        "changed": changed,
+        "counts": counts,
+        "chunks": chunk_count,
+    }
 
 
 def run_benchmark(
@@ -114,6 +158,7 @@ def run_benchmark(
                             "git_sha": os.getenv("GITHUB_SHA") or os.getenv("OPS_GIT_SHA"),
                             "control_plane_only": True,
                             "final_video_generation_measured": False,
+                            "maximum_items_per_request": MAX_ITEMS_PER_REQUEST,
                         }
                     ),
                 ),
@@ -143,21 +188,22 @@ def run_benchmark(
         )
         campaign_id = UUID(str(created["campaign"]["id"]))
         version_id = UUID(str(created["versions"][0]["id"]))
-        request = CampaignItemsAddRequest(items=item_payload)
         first_add = _timed(
             timings,
             "insert_items",
-            campaign_service.add_items,
+            _add_item_chunks,
+            campaign_service,
             campaign_version_id=version_id,
-            request=request,
+            items=item_payload,
             actor=actor,
         )
         second_add = _timed(
             timings,
             "idempotent_item_replay",
-            campaign_service.add_items,
+            _add_item_chunks,
+            campaign_service,
             campaign_version_id=version_id,
-            request=request,
+            items=item_payload,
             actor=actor,
         )
         validation = _timed(
@@ -280,10 +326,12 @@ def run_benchmark(
                     (version_id, version_id, version_id),
                 ).fetchone()
             )
+        duplicate_item_rows = max(0, int(counters["items"]) - items)
         passed = (
             counters["items"] == items
             and counters["runs"] == items
             and counters["checks"] == requested_checks
+            and duplicate_item_rows == 0
             and duplicate_check_inserts == 0
             and validation["counts"]["invalid_item_count"] == 0
         )
@@ -297,10 +345,12 @@ def run_benchmark(
                 "items": first_add["counts"]["item_count"],
                 "runs": counters["runs"],
                 "checks": inserted_checks,
+                "item_chunks": first_add["chunks"],
             },
             "idempotency": {
                 "items_after_replay": second_add["counts"]["item_count"],
-                "duplicate_item_rows": max(0, items - (second_add["counts"]["item_count"] - first_add["counts"]["item_count"])),
+                "replay_chunks": second_add["chunks"],
+                "duplicate_item_rows": duplicate_item_rows,
                 "duplicate_check_rows": duplicate_check_inserts,
             },
             "claim_sample": len(claimed),
