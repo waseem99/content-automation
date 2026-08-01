@@ -1,0 +1,131 @@
+name: P130 Mass Operations Acceptance
+
+on:
+  pull_request:
+    branches: [test]
+    paths:
+      - "migrations/0107_p130_mass_operations_acceptance.sql"
+      - "src/application/mass_operations/**"
+      - "src/operations/mass_operations_acceptance.py"
+      - "src/operations/mass_operations_acceptance_entry.py"
+      - "tests/unit/test_p130_mass_operations_contracts.py"
+      - "docs/operations/P130_MASS_OPERATIONS_ACCEPTANCE.md"
+      - ".github/workflows/p130-mass-operations-acceptance.yml"
+  workflow_dispatch:
+    inputs:
+      items:
+        description: Selected campaign items
+        required: true
+        default: "1000"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: p130-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  acceptance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: content_automation
+          POSTGRES_USER: postgres
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d content_automation"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://postgres@localhost:5432/content_automation
+      DATABASE_REQUIRE_SCHEMA: "false"
+      DATABASE_MIGRATIONS_DIR: migrations
+      DATABASE_STATEMENT_TIMEOUT_MS: "600000"
+      LOCAL_SUPER_ADMIN_OPERATOR_ID: local-super-admin
+      LOCAL_ADMIN_OPERATOR_ID: local-admin
+      LOCAL_REVIEWER_OPERATOR_ID: local-reviewer
+      LOCAL_PLAN_MONTH: 2026-08-01
+      LOCAL_ARTIFACT_ROOT: .runtime/artifacts
+      PORTFOLIO_MEDIA_ROOT: .runtime/artifacts
+      LOCAL_RUNTIME_ROOT: .runtime
+      KOKORO_PRIMARY_VOICE: af_heart
+      KOKORO_ENERGETIC_VOICE: af_bella
+      KOKORO_SERIOUS_VOICE: am_adam
+      OPS_ENVIRONMENT: staging
+      OPS_MIGRATION_HEAD: 0107_p130_mass_operations_acceptance.sql
+      MASS_ITEMS: ${{ github.event_name == 'workflow_dispatch' && inputs.items || '1000' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install dependencies
+        run: python -m pip install -r requirements.txt
+      - name: Compile mass operation code
+        run: >-
+          python -m compileall -q
+          src/application/mass_operations
+          src/operations/mass_operations_acceptance.py
+          src/operations/mass_operations_acceptance_entry.py
+          tests/unit/test_p130_mass_operations_contracts.py
+      - name: Apply complete migration chain
+        run: python -m src.infrastructure.database.cli migrate
+      - name: Run canonical onboarding twice
+        run: |
+          python -m src.operations.local_onboarding_v2
+          python -m src.operations.local_onboarding_v2
+      - name: Run full mass-operation acceptance
+        run: >-
+          python -m src.operations.mass_operations_acceptance_entry
+          --items "$MASS_ITEMS"
+          --acceptance-key "p130-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+      - name: Verify retained mass-operation evidence
+        run: |
+          python - <<'PY'
+          import os
+          from src.infrastructure.database.connection import Database
+          from src.infrastructure.database.settings import get_database_settings
+
+          database = Database(get_database_settings())
+          database.open(require_schema=True)
+          try:
+              with database.connection() as conn:
+                  row = conn.execute(
+                      "SELECT * FROM football_brief.mass_operations_acceptance_runs ORDER BY created_at DESC,id DESC LIMIT 1"
+                  ).fetchone()
+              assert row and row["status"] == "passed"
+              assert row["requested_items"] == int(os.environ["MASS_ITEMS"])
+              assert row["snapshot_items"] == row["requested_items"]
+              assert row["succeeded_items"] == row["requested_items"]
+              assert row["skipped_items"] == 0
+              assert row["failed_items"] == 0
+              assert row["exact_result_rows"] == row["requested_items"]
+              assert row["grouped_exceptions_before"] == row["requested_items"]
+              assert row["grouped_exceptions_after"] == 0
+              assert row["optimistic_edit_passed"] is True
+              assert row["stale_edit_rejected"] is True
+              assert row["authorized_brand_action_passed"] is True
+              assert row["unauthorized_brand_action_rejected"] is True
+              assert row["environment"]["spreadsheet_dependency"] is False
+          finally:
+              database.close()
+          PY
+      - name: Focused contracts
+        run: python -m pytest -q tests/unit/test_p130_mass_operations_contracts.py
+      - name: Product boundaries
+        shell: bash
+        run: |
+          grep -q "items: int = 1_000" src/operations/mass_operations_acceptance.py
+          grep -q "active brands" src/operations/mass_operations_acceptance_entry.py
+          grep -q "campaign_item_optimistic_lock_conflict" src/application/mass_operations/service.py
+          grep -q "campaign_mass_operation_item_results" src/application/mass_operations/final_service.py
+          ! grep -R -n -E "csv|spreadsheet|Google Sheets|publish_manifest|OpenAI\(|httpx\." \
+            src/application/mass_operations src/operations/mass_operations_acceptance.py
