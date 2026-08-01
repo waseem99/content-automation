@@ -1,0 +1,140 @@
+name: P131 Staged Acceptance Closeout
+
+on:
+  pull_request:
+    branches: [test]
+    paths:
+      - "migrations/0108_p131_staged_acceptance_closeout.sql"
+      - "config/staged-acceptance-evidence.json"
+      - "config/local.env.example"
+      - "src/operations/staged_acceptance_report.py"
+      - "docs/operations/P131_FINAL_ACCEPTANCE_REPORT.md"
+      - "tests/unit/test_p131_staged_acceptance_contracts.py"
+      - "scripts/windows/deploy_remote_content_automation.ps1"
+      - "scripts/windows/deploy_always_on_local_production.ps1"
+      - ".github/workflows/p131-staged-closeout.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: p131-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  closeout:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: content_automation
+          POSTGRES_USER: postgres
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d content_automation"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://postgres@localhost:5432/content_automation
+      DATABASE_REQUIRE_SCHEMA: "false"
+      DATABASE_MIGRATIONS_DIR: migrations
+      DATABASE_STATEMENT_TIMEOUT_MS: "600000"
+      LOCAL_SUPER_ADMIN_OPERATOR_ID: local-super-admin
+      LOCAL_ADMIN_OPERATOR_ID: local-admin
+      LOCAL_REVIEWER_OPERATOR_ID: local-reviewer
+      LOCAL_PLAN_MONTH: 2026-08-01
+      LOCAL_ARTIFACT_ROOT: .runtime/artifacts
+      PORTFOLIO_MEDIA_ROOT: .runtime/artifacts
+      LOCAL_RUNTIME_ROOT: .runtime
+      KOKORO_PRIMARY_VOICE: af_heart
+      KOKORO_ENERGETIC_VOICE: af_bella
+      KOKORO_SERIOUS_VOICE: am_adam
+      OPS_ENVIRONMENT: staging
+      OPS_MIGRATION_HEAD: 0108_p131_staged_acceptance_closeout.sql
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install dependencies
+        run: python -m pip install -r requirements.txt
+      - name: Compile closeout code
+        run: >-
+          python -m compileall -q
+          src/operations/staged_acceptance_report.py
+          tests/unit/test_p131_staged_acceptance_contracts.py
+      - name: Parse deployment scripts
+        shell: pwsh
+        run: |
+          [void][System.Management.Automation.Language.Parser]::ParseFile(
+            (Resolve-Path scripts/windows/deploy_remote_content_automation.ps1),
+            [ref]$null,
+            [ref]$null
+          )
+          [void][System.Management.Automation.Language.Parser]::ParseFile(
+            (Resolve-Path scripts/windows/deploy_always_on_local_production.ps1),
+            [ref]$null,
+            [ref]$null
+          )
+      - name: Apply complete migration chain
+        run: python -m src.infrastructure.database.cli migrate
+      - name: Run canonical onboarding twice
+        run: |
+          python -m src.operations.local_onboarding_v2
+          python -m src.operations.local_onboarding_v2
+      - name: Generate and retain final report
+        run: >-
+          python -m src.operations.staged_acceptance_report
+          --manifest config/staged-acceptance-evidence.json
+          --markdown .runtime/P131_FINAL_ACCEPTANCE_REPORT.md
+          --retain
+      - name: Verify checked report is reproducible
+        run: diff -u docs/operations/P131_FINAL_ACCEPTANCE_REPORT.md .runtime/P131_FINAL_ACCEPTANCE_REPORT.md
+      - name: Verify retained closeout evidence
+        run: |
+          python - <<'PY'
+          from src.infrastructure.database.connection import Database
+          from src.infrastructure.database.settings import get_database_settings
+
+          database = Database(get_database_settings())
+          database.open(require_schema=True)
+          try:
+              with database.connection() as conn:
+                  row = conn.execute(
+                      "SELECT * FROM football_brief.staged_acceptance_reports ORDER BY created_at DESC,id DESC LIMIT 1"
+                  ).fetchone()
+              assert row and row["status"] == "passed"
+              assert row["central_ecosystem_verdict"] == "proven"
+              assert row["monthly_renderer_verdict"] == "not_yet_proven"
+              assert row["control_plane_items"] >= 10000
+              assert row["control_plane_checks"] >= 1000000
+              assert row["dag_tasks"] >= 1000000
+              assert row["dag_workers"] >= 100
+              assert row["autopilot_items"] >= 1000
+              assert row["autopilot_ready"] >= 950
+              assert row["storage_locations"] >= 100000
+              assert row["mass_operation_items"] >= 1000
+              assert float(row["hybrid_master_seconds"]) >= 120
+              assert len(row["unresolved_renderer_measurements"]) >= 5
+              assert row["management_summary"]["automatic_paid_generation"] is False
+              assert row["management_summary"]["automatic_public_publishing"] is False
+          finally:
+              database.close()
+          PY
+      - name: Focused contracts
+        run: python -m pytest -q tests/unit/test_p131_staged_acceptance_contracts.py
+      - name: Product boundaries
+        shell: bash
+        run: |
+          grep -q "monthly_renderer_verdict.*not_yet_proven" src/operations/staged_acceptance_report.py
+          grep -q "OPS_MIGRATION_HEAD=0108_p131_staged_acceptance_closeout.sql" config/local.env.example
+          grep -q '0108_p131_staged_acceptance_closeout.sql' scripts/windows/deploy_remote_content_automation.ps1
+          ! grep -R -n -E 'monthly_renderer_verdict.*"proven"|automatic_paid_generation.*true|automatic_public_publishing.*true' \
+            config/staged-acceptance-evidence.json docs/operations/P131_FINAL_ACCEPTANCE_REPORT.md
