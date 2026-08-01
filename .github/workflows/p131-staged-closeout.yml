@@ -10,6 +10,7 @@ on:
       - "src/operations/staged_acceptance_report.py"
       - "docs/operations/P131_FINAL_ACCEPTANCE_REPORT.md"
       - "tests/unit/test_p131_staged_acceptance_contracts.py"
+      - "scripts/windows/sync_p131_environment.ps1"
       - "scripts/windows/deploy_remote_content_automation.ps1"
       - "scripts/windows/deploy_always_on_local_production.ps1"
       - ".github/workflows/p131-staged-closeout.yml"
@@ -73,16 +74,19 @@ jobs:
       - name: Parse deployment scripts
         shell: pwsh
         run: |
-          [void][System.Management.Automation.Language.Parser]::ParseFile(
-            (Resolve-Path scripts/windows/deploy_remote_content_automation.ps1),
-            [ref]$null,
-            [ref]$null
-          )
-          [void][System.Management.Automation.Language.Parser]::ParseFile(
-            (Resolve-Path scripts/windows/deploy_always_on_local_production.ps1),
-            [ref]$null,
-            [ref]$null
-          )
+          foreach ($path in @(
+            "scripts/windows/sync_p131_environment.ps1",
+            "scripts/windows/deploy_remote_content_automation.ps1",
+            "scripts/windows/deploy_always_on_local_production.ps1"
+          )) {
+            $errors = $null
+            [void][System.Management.Automation.Language.Parser]::ParseFile(
+              (Resolve-Path $path),
+              [ref]$null,
+              [ref]$errors
+            )
+            if ($errors.Count) { throw "PowerShell parse failed for $path" }
+          }
       - name: Apply complete migration chain
         run: python -m src.infrastructure.database.cli migrate
       - name: Run canonical onboarding twice
@@ -135,6 +139,7 @@ jobs:
         run: |
           grep -q "monthly_renderer_verdict.*not_yet_proven" src/operations/staged_acceptance_report.py
           grep -q "OPS_MIGRATION_HEAD=0108_p131_staged_acceptance_closeout.sql" config/local.env.example
-          grep -q '0108_p131_staged_acceptance_closeout.sql' scripts/windows/deploy_remote_content_automation.ps1
+          grep -q '0108_p131_staged_acceptance_closeout.sql' scripts/windows/sync_p131_environment.ps1
+          grep -q 'sync_p131_environment.ps1' scripts/windows/deploy_always_on_local_production.ps1
           ! grep -R -n -E 'monthly_renderer_verdict.*"proven"|automatic_paid_generation.*true|automatic_public_publishing.*true' \
             config/staged-acceptance-evidence.json docs/operations/P131_FINAL_ACCEPTANCE_REPORT.md
