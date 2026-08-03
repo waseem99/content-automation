@@ -3,6 +3,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from src.operations.settings import OperationsSettings
+
 ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -52,3 +54,36 @@ def test_browser_suite_contains_required_acceptance_surfaces() -> None:
         "@smoke",
     ):
         assert marker in tests
+
+
+def test_static_creator_ui_does_not_consume_the_api_rate_window() -> None:
+    settings = OperationsSettings()
+    assert "/app" in settings.rate_limit_exempt_paths
+    assert "/favicon.ico" in settings.rate_limit_exempt_paths
+    assert "/app/" in settings.rate_limit_exempt_prefixes
+    assert "/assets/" in settings.rate_limit_exempt_prefixes
+    assert "/access/me" not in settings.rate_limit_exempt_paths
+    assert not any("/access/me".startswith(prefix) for prefix in settings.rate_limit_exempt_prefixes)
+
+    middleware = (ROOT / "src/operator_api/operations_middleware.py").read_text(encoding="utf-8")
+    assert "if not self._rate_limit_exempt(path):" in middleware
+    assert "self.settings.rate_limit_exempt_prefixes" in middleware
+
+
+def test_campaign_extension_direct_routes_reconcile_after_core_router_boot() -> None:
+    index = (ROOT / "web/static-creator-ui/index.html").read_text(encoding="utf-8")
+    bridge = (ROOT / "web/static-creator-ui/assets/studio-v2-route-bridge.js").read_text(encoding="utf-8")
+    assert '<link rel="icon" href="data:,">' in index
+    assert "studio-v2-route-bridge.js" in index
+    assert 'title === "Page not found"' in bridge
+    assert "#campaigns-nav-link" in bridge
+    assert "link.click()" in bridge
+
+
+def test_browser_monitor_classifies_expected_http_failures_without_hiding_javascript_errors() -> None:
+    support = (ROOT / "tests/e2e/support.js").read_text(encoding="utf-8")
+    assert "clientErrors" in support
+    assert "allowedClientErrors" in support
+    assert "Unexpected client HTTP errors" in support
+    assert "navigateApp" in support
+    assert "Failed to load resource" in support
