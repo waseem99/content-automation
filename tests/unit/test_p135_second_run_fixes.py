@@ -2,9 +2,15 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from urllib.request import Request
 
+import pytest
 from fastapi import FastAPI
 
+from src.application.campaign_storage.secure_https import (
+    SecureHttpsError,
+    _validate_https_url,
+)
 from src.operations.settings import OperationsSettings
 from src.operator_api.auth import OperatorAuthSettings
 from src.operator_api.operations_monitoring_patch import install_operations_monitoring_route
@@ -59,6 +65,40 @@ def test_operations_monitoring_get_route_is_registered_without_mutation() -> Non
 
     route = next(route for route in app.routes if route.path == "/operations/monitoring")
     assert route.methods == {"GET"}
+
+
+def test_storage_transport_accepts_only_allowlisted_standard_https() -> None:
+    _validate_https_url(
+        "https://www.googleapis.com/drive/v3/files/abc",
+        allowed_hosts={"www.googleapis.com"},
+    )
+
+    for unsafe_url in (
+        "http://www.googleapis.com/drive/v3/files/abc",
+        "file:///etc/passwd",
+        "https://evil.example/drive/v3/files/abc",
+        "https://user:secret@www.googleapis.com/drive/v3/files/abc",
+        "https://www.googleapis.com:444/drive/v3/files/abc",
+    ):
+        with pytest.raises(SecureHttpsError):
+            _validate_https_url(
+                unsafe_url,
+                allowed_hosts={"www.googleapis.com"},
+            )
+
+
+def test_drive_uses_secure_transport_instead_of_urllib_urlopen() -> None:
+    drive = (
+        ROOT / "src/application/campaign_storage/google_drive.py"
+    ).read_text(encoding="utf-8")
+    recovery = (
+        ROOT / "src/application/campaign_storage/download_patch.py"
+    ).read_text(encoding="utf-8")
+
+    assert "open_allowlisted_https(" in drive
+    assert "open_allowlisted_https(" in recovery
+    assert "from urllib.request import Request, urlopen" not in drive
+    assert "from urllib.request import Request, urlopen" not in recovery
 
 
 def test_runtime_installs_security_and_monitoring_patches() -> None:
