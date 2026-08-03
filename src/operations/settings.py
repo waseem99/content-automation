@@ -26,7 +26,13 @@ class OperationsSettings(BaseSettings):
     structured_logs: bool = True
     max_request_body_bytes: int = Field(default=8 * 1024 * 1024, ge=1024, le=1024 * 1024 * 1024)
     requests_per_minute: int = Field(default=120, ge=1, le=100_000)
-    rate_limit_exempt_paths: tuple[str, ...] = ("/health", "/runtime/ready")
+    rate_limit_exempt_paths: tuple[str, ...] = (
+        "/app",
+        "/favicon.ico",
+        "/health",
+        "/runtime/ready",
+    )
+    rate_limit_exempt_prefixes: tuple[str, ...] = ("/app/", "/assets/")
     storage_capacity_bytes: int = Field(default=50 * 1024 * 1024 * 1024, gt=0)
     backup_directory: Path = Path(".runtime/backups")
     backup_retention_days: int = Field(default=14, ge=1, le=3650)
@@ -37,7 +43,7 @@ class OperationsSettings(BaseSettings):
     def normalize_text(cls, value: str) -> str:
         return value.strip()
 
-    @field_validator("rate_limit_exempt_paths", mode="before")
+    @field_validator("rate_limit_exempt_paths", "rate_limit_exempt_prefixes", mode="before")
     @classmethod
     def normalize_paths(cls, values) -> tuple[str, ...]:
         if isinstance(values, str):
@@ -78,6 +84,7 @@ class OperationsSettings(BaseSettings):
             "max_request_body_bytes": self.max_request_body_bytes,
             "requests_per_minute": self.requests_per_minute,
             "rate_limit_exempt_paths": list(self.rate_limit_exempt_paths),
+            "rate_limit_exempt_prefixes": list(self.rate_limit_exempt_prefixes),
             "storage_capacity_bytes": self.storage_capacity_bytes,
             "backup_retention_days": self.backup_retention_days,
             "allow_destructive_restore_drill": self.allow_destructive_restore_drill,
