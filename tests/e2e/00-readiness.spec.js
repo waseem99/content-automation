@@ -20,9 +20,10 @@ test.describe('runtime and deployment acceptance', () => {
   test('@smoke release evidence identifies the deployed commit', async ({ request }, testInfo) => {
     testInfo.annotations.push({ type: 'severity', description: 'P2' });
     testInfo.annotations.push({ type: 'improvement', description: 'Populate OPS_GIT_SHA and the configuration digest from the deployed checkout instead of all-zero placeholders.' });
+    const expectedGitSha = process.env.PLATFORM_EXPECTED_GIT_SHA;
+    expect(expectedGitSha).toMatch(/^[0-9a-f]{40}$/);
     const payload = await (await request.get('/runtime/ready')).json();
-    expect(payload.release?.git_sha).toMatch(/^[0-9a-f]{40}$/);
-    expect(payload.release?.git_sha).not.toBe('0'.repeat(40));
+    expect(payload.release?.git_sha).toBe(expectedGitSha);
     expect(payload.release?.configuration_digest).toMatch(/^[0-9a-f]{64}$/);
     expect(payload.release?.configuration_digest).not.toBe('0'.repeat(64));
   });
@@ -46,7 +47,9 @@ test.describe('runtime and deployment acceptance', () => {
     try {
       const response = await context.get('/runtime/ready');
       expect(response.ok()).toBeTruthy();
-      expect((await response.json()).ok).toBe(true);
+      const payload = await response.json();
+      expect(payload.ok).toBe(true);
+      expect(payload.release?.git_sha).toBe(process.env.PLATFORM_EXPECTED_GIT_SHA);
     } finally {
       await context.dispose();
     }
