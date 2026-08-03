@@ -39,6 +39,13 @@ function Assert-Disabled([hashtable]$Values, [string]$Name) {
   }
 }
 
+function Assert-TaskRunning([string]$TaskName) {
+  $task = Get-ScheduledTask -TaskName $TaskName -ErrorAction SilentlyContinue
+  if (-not $task) { throw "Required scheduled task is missing: $TaskName" }
+  if ([string]$task.State -ne "Running") { throw "Required scheduled task is not running: $TaskName ($($task.State))" }
+  return $task
+}
+
 if (-not (Test-Path -LiteralPath $KeyPath)) { throw "Operator keys are missing: $KeyPath" }
 if (-not (Test-Path -LiteralPath $EnvPath)) { throw "Local environment is missing: $EnvPath" }
 $values = Read-DotEnv $EnvPath
@@ -46,12 +53,46 @@ Assert-Disabled $values "PROVIDER_PAID_EXECUTION_ENABLED"
 Assert-Disabled $values "HYBRID_PAID_EXECUTION_ENABLED"
 Assert-Disabled $values "HYBRID_PUBLIC_PUBLISHING_ENABLED"
 
+$taskEvidence = @(
+  Assert-TaskRunning "ContentAutomationLocal"
+  Assert-TaskRunning "ContentAutomation-PreGeneration"
+) | Select-Object TaskName, State
+$providerTask = Get-ScheduledTask -TaskName "ContentAutomation-ProviderWorkers" -ErrorAction SilentlyContinue
+if ($providerTask -and [string]$providerTask.State -eq "Running") {
+  throw "Provider workers are running while no-cost acceptance requires provider execution to be disabled. Stop them first."
+}
+
 $ready = Invoke-RestMethod -Uri "$BaseUrl/runtime/ready" -TimeoutSec 15
 if (-not $ready.ok) { throw "Local runtime readiness is false." }
+if ($Mutating) {
+  try {
+    Invoke-RestMethod -Uri "http://127.0.0.1:11434/api/version" -TimeoutSec 10 | Out-Null
+  } catch {
+    throw "Ollama is required for the mutating content lifecycle but is not reachable on 127.0.0.1:11434."
+  }
+}
 if ($RemoteUrl) {
   $remote = Invoke-RestMethod -Uri "$RemoteUrl/runtime/ready" -Headers @{ "ngrok-skip-browser-warning" = "true" } -TimeoutSec 20
   if (-not $remote.ok) { throw "Remote runtime readiness is false." }
 }
+
+$preflight = [ordered]@{
+  kind = "platform_acceptance_windows_preflight"
+  generated_at = (Get-Date).ToUniversalTime().ToString("o")
+  run_id = $RunId
+  local_url = $BaseUrl
+  remote_url = $RemoteUrl
+  mutating = [bool]$Mutating
+  smoke = [bool]$Smoke
+  cross_browser = [bool]$CrossBrowser
+  scheduled_tasks = @($taskEvidence)
+  provider_worker_task_state = if ($providerTask) { [string]$providerTask.State } else { "not_installed" }
+  provider_paid_execution = [string]$values["PROVIDER_PAID_EXECUTION_ENABLED"]
+  hybrid_paid_execution = [string]$values["HYBRID_PAID_EXECUTION_ENABLED"]
+  public_publishing = [string]$values["HYBRID_PUBLIC_PUBLISHING_ENABLED"]
+  readiness = $ready
+}
+$preflight | ConvertTo-Json -Depth 12 | Set-Content -LiteralPath (Join-Path $RunDir "windows-preflight.json") -Encoding utf8
 
 $keys = Get-Content -LiteralPath $KeyPath -Raw | ConvertFrom-Json
 $admin = [string]$keys.'local-admin'
