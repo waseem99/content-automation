@@ -34,6 +34,15 @@ function Import-Environment {
   }
 }
 
+function Import-ProviderSecrets {
+  foreach ($name in @("FAL_KEY", "VIDU_API_KEY")) {
+    $value = [Environment]::GetEnvironmentVariable($name, "User")
+    if (-not [string]::IsNullOrWhiteSpace($value)) {
+      [Environment]::SetEnvironmentVariable($name, $value, "Process")
+    }
+  }
+}
+
 function Test-Flag([string]$Name) {
   $value = [Environment]::GetEnvironmentVariable($Name, "Process")
   return $value -match '^(1|true|yes|on)$'
@@ -104,6 +113,7 @@ function Snapshot($State) {
 }
 
 Import-Environment
+Import-ProviderSecrets
 if (-not (Test-Path -LiteralPath $Python -PathType Leaf)) { throw "The local Python environment is missing." }
 if (-not (Test-Flag "PROVIDER_PAID_EXECUTION_ENABLED")) {
   throw "Provider execution is disabled. Run setup_provider_first_rendering.ps1 with -EnablePaidExecution after approving budgets."
@@ -116,6 +126,7 @@ Write-Log "Provider worker supervisor started PID $PID"
 try {
   while (-not (Test-Path -LiteralPath $StopMarker)) {
     Import-Environment
+    Import-ProviderSecrets
     $master = Test-Flag "PROVIDER_PAID_EXECUTION_ENABLED"
     $falEnabled = $master -and (Test-Flag "FAL_RENDERER_ENABLED")
     $viduEnabled = $master -and (Test-Flag "VIDU_RENDERER_ENABLED")
