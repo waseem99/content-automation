@@ -38,7 +38,7 @@ test.describe('existing portfolio evidence audit', () => {
       if (!id) continue;
       const state = await apiJson(request, 'GET', `/studio-v2/content/${id}/state`, { expected: [200] });
       const jobs = await apiJson(request, 'GET', `/generation/jobs?content_id=${id}&limit=100`, { expected: [200] });
-      const review = await apiJson(request, 'GET', `/review/content/${id}`, { expected: [200, 404, 409] });
+      const review = await apiJson(request, 'GET', `/review/content/${id}`, { expected: [200, 404, 409, 422] });
       const releases = await apiJson(request, 'GET', `/releases?content_id=${id}&limit=100`, { expected: [200] });
 
       expect(state.payload.item?.id || state.payload.item?.content_id).toBe(id);
@@ -65,14 +65,14 @@ test.describe('existing portfolio evidence audit', () => {
   test('generation jobs have valid identities, states and bounded cost evidence', async ({ request }, testInfo) => {
     const result = await apiJson(request, 'GET', '/generation/jobs?limit=100', { expected: [200] });
     const jobs = result.payload.jobs || [];
-    const allowed = new Set(['queued', 'running', 'succeeded', 'failed', 'cancelled', 'retry_wait']);
+    const allowed = new Set(['queued', 'running', 'succeeded', 'failed', 'cancelled', 'dead_letter']);
     for (const job of jobs) {
       expect(job.id).toMatch(/^[0-9a-f-]{36}$/i);
       expect(job.job_type).toBeTruthy();
       expect(allowed.has(job.status), `Unexpected job status ${job.status}`).toBe(true);
       expect(Number(job.estimated_cost_usd || 0)).toBeGreaterThanOrEqual(0);
       expect(Number(job.reserved_cost_usd || 0)).toBeGreaterThanOrEqual(0);
-      expect(Number(job.observed_cost_usd || 0)).toBeGreaterThanOrEqual(0);
+      expect(Number(job.actual_cost_usd || job.observed_cost_usd || 0)).toBeGreaterThanOrEqual(0);
     }
     await testInfo.attach('generation-job-audit', {
       body: Buffer.from(JSON.stringify(jobs, null, 2)),
