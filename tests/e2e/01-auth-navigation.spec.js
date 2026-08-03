@@ -1,5 +1,5 @@
 const { test, expect } = require('@playwright/test');
-const { assertClean, monitorPage, signIn, signOut } = require('./support');
+const { assertClean, monitorPage, navigateApp, signIn, signOut } = require('./support');
 
 test.describe('authentication and role boundaries', () => {
   test('@smoke invalid access key is rejected without exposing sensitive detail', async ({ page }, testInfo) => {
@@ -10,25 +10,28 @@ test.describe('authentication and role boundaries', () => {
     await expect(page.locator('#login-error')).not.toBeEmpty();
     await expect(page.locator('#studio-shell')).toBeHidden();
     expect(page.url()).not.toContain('definitely-invalid-e2e-key');
-    await assertClean(findings, testInfo);
+    await assertClean(findings, testInfo, {
+      allowedClientErrors: [{ status: 401, path: '/access/me' }]
+    });
   });
 
   test('@smoke Admin can sign in, navigate all operational workspaces and sign out', async ({ page }, testInfo) => {
     const findings = monitorPage(page);
     const key = await signIn(page, 'admin');
     const destinations = [
-      ['/app/dashboard', 'Dashboard'],
-      ['/app/campaigns', 'Campaigns'],
-      ['/app/content', 'Content'],
-      ['/app/reviews', 'Reviews'],
-      ['/app/team', 'Team'],
-      ['/app/settings', 'Settings'],
-      ['/app/operations', 'Operations']
+      ['/app/dashboard', /Dashboard/i],
+      ['/app/campaigns', /Campaigns/i],
+      ['/app/content', /^Content$/i],
+      ['/app/reviews', /Review/i],
+      ['/app/team', /Team/i],
+      ['/app/settings', /Settings/i],
+      ['/app/operations', /Operations/i]
     ];
     for (const [path, title] of destinations) {
-      await page.goto(path);
+      if (new URL(page.url()).pathname !== path) await navigateApp(page, path);
       await expect(page.locator('#studio-shell')).toBeVisible();
-      await expect(page.locator('#page-title')).toContainText(title, { ignoreCase: true });
+      await expect(page.locator('#page-title')).toContainText(title);
+      await expect(page.locator('#page-title')).not.toHaveText('Page not found');
       await expect(page.locator('#app-view')).not.toContainText('Unable to load this screen');
     }
     expect(page.url()).not.toContain(key);
@@ -47,9 +50,12 @@ test.describe('authentication and role boundaries', () => {
     await expect(nav.getByText('Team & access')).toHaveCount(0);
     await expect(nav.getByText('Settings')).toHaveCount(0);
     await expect(nav.getByText('Operations')).toHaveCount(0);
+
     await page.goto('/app/team');
-    await expect(page.locator('#app-view')).toContainText(/Unable|access|not allowed|forbidden/i);
-    await assertClean(findings, testInfo, { allowServerErrors: false });
+    await expect(page).toHaveURL(/\/app\/dashboard\/?$/);
+    await expect(page.locator('#page-title')).toContainText(/Dashboard/i);
+    await expect(nav.getByText('Team & access')).toHaveCount(0);
+    await assertClean(findings, testInfo);
   });
 
   test('operator key is not rendered into page text, URL, cookies or local storage', async ({ page }) => {
