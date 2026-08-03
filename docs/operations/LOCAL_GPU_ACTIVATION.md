@@ -1,28 +1,29 @@
 # Local GPU Activation — First Canonical MP4
 
-This runbook executes issue #828 under epic #833. It is the only approved path for activating the first real local video workflow.
+This runbook executes issue #828 under epic #833. It is the approved path for activating the first real local video workflow.
 
-## Outcome
+## Required outcome
 
-Convert one approved keyframe into one canonical internal MP4 through the existing PostgreSQL/P87 local-clip queue with:
+Convert one approved keyframe into one canonical internal MP4 through the PostgreSQL/P87 `local_clip` queue with:
 
-- exact workflow and checkpoint hashes;
+- exact workflow, model and checkpoint hashes;
 - ComfyUI and custom-node versions;
-- prompt, seed, dimensions, frame count, FPS, steps and GPU timing;
+- prompt, seed, dimensions, FPS, frame count and steps;
+- wall-clock and GPU timing;
+- canonical MP4 SHA-256, size and MIME type;
 - `external_fee_usd = 0`;
-- local/Google Drive asset lineage;
-- explicit human review;
+- `internal_only` lifecycle and pending human review;
 - no paid-provider call and no public release.
 
 ## Hard boundaries
 
-- Use Wan2.2 as the global-public candidate.
-- Keep Hunyuan disabled unless territory and licence clearance are recorded.
-- ComfyUI must remain loopback-only.
-- Register the workflow inactive first.
-- Do not activate a guessed or placeholder graph.
-- Do not enable automatic paid generation or publishing.
-- Generated media, models, credentials and evidence files remain outside Git.
+- Wan2.2 is the global-public local candidate.
+- Hunyuan stays disabled unless territory and licence clearance are recorded.
+- ComfyUI remains loopback-only.
+- PostgreSQL remains the only workflow/status system of record.
+- Generated files remain local or in registered Google Drive locations.
+- Never activate a guessed workflow or placeholder checkpoint.
+- Automatic paid generation, final approval and public publishing remain disabled.
 
 ## 1. Update and preserve the workstation
 
@@ -53,104 +54,111 @@ powershell -NoProfile -ExecutionPolicy Bypass `
   -File .\scripts\windows\check_production_readiness.ps1
 ```
 
-## 2. Export the real ComfyUI package
+## 2. Prepare the real ComfyUI package
 
-From the workstation graph that actually renders:
+Use the workstation graph that actually renders:
 
-1. Export the API-format workflow JSON.
-2. Record every checkpoint/model filename used by the graph.
-3. Record every required custom-node repository.
-4. Do not edit node identifiers after export.
-5. Keep ComfyUI at `127.0.0.1`; do not expose port 8188 publicly.
+1. Export API-format workflow JSON.
+2. Record every checkpoint/model filename.
+3. Record required custom-node repositories and commits.
+4. Keep ComfyUI on `127.0.0.1:8188`.
+5. Do not edit node identifiers after export.
 
-## 3. Collect immutable workstation evidence
+The repository manifest and API workflow must match the actual workstation files exactly.
+
+## 3. Select the proof item
+
+Use a simple 3–5 second local-motion shot whose immutable package is `ready_for_final_video_generation` and has:
+
+- an approved selected keyframe;
+- source and rights evidence;
+- supported duration, resolution and territory;
+- no paid reservation.
+
+## 4. Run the supervised proof
+
+The command below performs GPU validation, workstation evidence collection, live ComfyUI node/input schema validation, canonical activation, one P87 → P114 render and strict MP4 evidence verification:
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass `
-  -File .\scripts\windows\collect_p114_workstation_evidence.ps1 `
-  -ComfyUIRoot "C:\ComfyUI" `
-  -WorkflowPath "C:\secure\wan22-ti2v-api.json" `
-  -ModelPaths @(
-    "C:\ComfyUI\models\diffusion_models\<wan-model-file>",
-    "C:\ComfyUI\models\vae\<vae-file>",
-    "C:\ComfyUI\models\text_encoders\<encoder-file>"
-  ) `
-  -OutputPath ".runtime\p114-workstation-evidence.json"
+  -File .\scripts\windows\prove_p114_first_local_mp4.ps1 `
+  -ComfyUIRoot "D:\ComfyUI\App"
 ```
 
-Review the JSON before onboarding. Missing files, unresolved Git commits or a non-loopback ComfyUI URL block activation.
+It requires a 24 GB-class GPU by default. The threshold may be changed only for a separately approved hardware experiment.
 
-## 4. Onboard inactive first
+Optional prompt validation with a known approved keyframe:
 
-In Creator Studio as Super Admin/Admin:
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass `
+  -File .\scripts\windows\prove_p114_first_local_mp4.ps1 `
+  -ComfyUIRoot "D:\ComfyUI\App" `
+  -ProbePrompt `
+  -DiagnosticInputImage "C:\secure\approved-keyframe.png"
+```
 
-1. Open **Settings → Renderers**.
-2. Add the exact Wan2.2 renderer/model/operation.
-3. Attach commercial-use and global-territory evidence.
-4. Add the exact workflow JSON SHA-256 and checkpoint SHA-256 values.
-5. Keep the workflow and local-video worker inactive.
-6. Run preflight against the workstation files.
-7. Activate only when every configured hash matches.
+Prompt probing is opt-in because a valid `/prompt` request may begin execution before queue deletion. The normal proof itself uses the canonical P87 worker path.
 
-Hunyuan remains inactive unless its approved territory covers the intended release destinations.
+## 5. Diagnostic evidence
 
-## 5. Select one proof item
+Evidence is written under:
 
-Use one item whose immutable package is already `ready_for_final_video_generation` and whose selected shot has:
+```text
+.runtime/p114-first-local-mp4/
+.runtime/p114-readiness.json
+.runtime/logs/p114-activation/
+```
 
-- approved keyframe asset;
-- rights/source evidence;
-- local-motion route;
-- supported duration, dimensions and territory;
-- no paid reservation.
+The live-schema diagnostic reports:
 
-The first proof should be a simple 3–5 second shot, not a difficult hero sequence.
+- missing node classes;
+- missing required inputs;
+- unknown inputs;
+- invalid literal option values;
+- workflow/manifest SHA mismatch;
+- queue state.
 
-## 6. Controlled worker activation
+The canonical worker preserves the complete ComfyUI JSON/text rejection body when `/prompt` returns HTTP 400 instead of recording only a generic status message.
 
-1. Enable the dedicated local-video worker for the supervised proof window only.
-2. Submit the selected shot through the canonical P87 `local_clip` queue.
-3. Keep Creator Studio open for monitoring, but do not depend on the browser remaining open.
-4. Confirm only the named job is submitted; never use global ComfyUI interruption.
-5. On failure, use bounded retry classes and preserve the failed attempt.
+Do not disable workflow, model, licence, territory or hash validation to make the proof pass.
 
-## 7. Required result
+## 6. Required database and file evidence
 
-The completed attempt must retain:
+The proof command fails unless the latest local-video execution has:
 
-- P87 job, attempt and provider request identifiers;
-- exact input keyframe asset and SHA-256;
-- prompt and negative constraints;
-- seed, sampler/steps, width, height, FPS and frame count;
-- workflow, model and custom-node versions/hashes;
-- wall-clock and GPU timing;
-- canonical MP4 SHA-256, size and MIME type;
-- `external_fee_usd = 0`;
-- `internal_only` visibility;
-- `review_status = pending` before human review.
+- succeeded job, attempt and execution states;
+- provider request ID;
+- canonical output asset ID;
+- real `.mp4` file and `video/mp4` MIME type;
+- matching database/file size and SHA-256;
+- zero job and execution cost;
+- `internal_only` lifecycle;
+- `review_status = pending`;
+- human review required;
+- automatic approval and publishing disabled.
 
-## 8. Human review
+## 7. Human review
 
 Review the MP4 for:
 
 - subject and continuity consistency;
 - anatomy, faces/hands and object integrity;
 - flicker, warping, frozen motion and temporal instability;
-- watermarks, unwanted text and compression artifacts;
-- framing, camera motion and exact duration;
+- unwanted text, watermarks and compression artifacts;
+- framing, camera motion and duration;
 - rights, territory and model-policy compliance.
 
 Record approve, request changes or reject. Approval does not authorize publishing.
 
-## 9. Close #828 only with evidence
+## 8. Close #828 only with evidence
 
-Attach or reference:
+Reference:
 
-- `.runtime/p114-workstation-evidence.json` without secrets;
-- exact workflow/checkpoint hashes;
+- workstation and GPU evidence;
+- exact workflow/checkpoint/custom-node hashes;
 - P87 job and attempt lineage;
 - canonical MP4 asset record;
 - human review decision;
 - confirmation of zero paid-provider calls and zero public releases.
 
-After #828 closes, begin #827 calibration: at least 30 terminal attempts and three completed videos.
+After #828 closes, begin #827 calibration: at least 30 terminal attempts and three completed pilot videos with accepted seconds/GPU hour, retries, VRAM, temperature, storage, edit time and cost/video.
