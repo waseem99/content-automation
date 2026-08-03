@@ -56,11 +56,17 @@ def test_browser_suite_contains_required_acceptance_surfaces() -> None:
 
 def test_static_creator_ui_does_not_consume_the_api_rate_window() -> None:
     settings = (ROOT / "src/operations/settings.py").read_text(encoding="utf-8")
+    environment = (ROOT / "config/local.env.example").read_text(encoding="utf-8")
+    sync = (ROOT / "scripts/windows/sync_p131_environment.ps1").read_text(encoding="utf-8")
     assert '"/app",' in settings
     assert '"/favicon.ico",' in settings
     assert "rate_limit_exempt_prefixes" in settings
     assert '"/app/"' in settings
     assert '"/assets/"' in settings
+    assert 'OPS_RATE_LIMIT_EXEMPT_PATHS=["/app","/favicon.ico","/health","/runtime/ready"]' in environment
+    assert 'OPS_RATE_LIMIT_EXEMPT_PREFIXES=["/app/","/assets/"]' in environment
+    assert '$values["OPS_RATE_LIMIT_EXEMPT_PATHS"]' in sync
+    assert '$values["OPS_RATE_LIMIT_EXEMPT_PREFIXES"]' in sync
 
     middleware = (ROOT / "src/operator_api/operations_middleware.py").read_text(encoding="utf-8")
     assert "if not self._rate_limit_exempt(path):" in middleware
