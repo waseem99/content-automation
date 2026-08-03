@@ -51,7 +51,7 @@ jobs:
           --health-retries 10
     env:
       DATABASE_URL: postgresql://postgres@localhost:5432/content_automation
-      DATABASE_REQUIRE_SCHEMA: "false"
+      DATABASE_REQUIRE_SCHEMA: false
       DATABASE_MIGRATIONS_DIR: migrations
       LOCAL_SUPER_ADMIN_OPERATOR_ID: local-super-admin
       LOCAL_ADMIN_OPERATOR_ID: local-admin
@@ -62,7 +62,7 @@ jobs:
       KOKORO_ENERGETIC_VOICE: af_bella
       KOKORO_SERIOUS_VOICE: am_adam
       OPS_ENVIRONMENT: staging
-      OPS_MIGRATION_HEAD: 0099_p114_local_video_renderers.sql
+      OPS_MIGRATION_HEAD: 0108_p131_staged_acceptance_closeout.sql
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
