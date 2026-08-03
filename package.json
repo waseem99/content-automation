@@ -2,14 +2,24 @@
   "name": "content-automation-static-creator-ui",
   "version": "0.0.0",
   "private": true,
-  "description": "Static Creator UI build contract for Vercel deployment.",
+  "description": "Static Creator UI build and automated platform acceptance contracts.",
   "scripts": {
     "build": "node scripts/build-static-creator-ui.js",
-    "vercel-build": "npm run build"
+    "vercel-build": "npm run build",
+    "test:e2e": "playwright test",
+    "test:e2e:smoke": "playwright test --grep @smoke",
+    "test:e2e:full": "playwright test",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:list": "playwright test --list",
+    "test:e2e:report": "playwright show-report"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   },
   "dependencies": {},
-  "devDependencies": {}
+  "devDependencies": {
+    "@axe-core/playwright": "4.12.1",
+    "@playwright/test": "1.62.1"
+  }
 }
