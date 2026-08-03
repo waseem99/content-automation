@@ -118,7 +118,8 @@ jobs:
           grep -q "ready-for-final-video-generation/v1" src/application/pre_generation/service.py
           grep -q "provider IN ('local','google_drive')" migrations/0100_p119_database_native_campaigns.sql
           grep -q "PRE_GENERATION_AUTOPILOT_ENABLED=true" config/local.env.example
-          grep -q "OPS_MIGRATION_HEAD=0101_p120_pre_generation_autopilot.sql" config/local.env.example
+          grep -q "OPS_MIGRATION_HEAD=0108_p131_staged_acceptance_closeout.sql" config/local.env.example
+          test -f migrations/0101_p120_pre_generation_autopilot.sql
           ! grep -R -n -E "google_sheets|xlsx|provider IN \('s3'|minio" \
             migrations/0101_p120_pre_generation_autopilot.sql \
             src/application/pre_generation \
