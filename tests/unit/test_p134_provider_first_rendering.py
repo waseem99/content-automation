@@ -40,6 +40,18 @@ def test_data_uri_rejects_raw_input_that_would_exceed_safe_json_body(tmp_path: P
     assert error.value.code == "provider_input_size_invalid"
 
 
+def test_downloaded_video_signature_must_match_supported_container(tmp_path: Path) -> None:
+    mp4 = tmp_path / "clip.mp4"
+    mp4.write_bytes(b"\x00\x00\x00\x18ftypisom00000000")
+    ManagedHttpAdapter._validate_video_signature(mp4)
+
+    html = tmp_path / "error.mp4"
+    html.write_text("<html>provider error</html>", encoding="utf-8")
+    with pytest.raises(ManagedProviderError) as error:
+        ManagedHttpAdapter._validate_video_signature(html)
+    assert error.value.code == "provider_output_signature_invalid"
+
+
 def test_fal_submission_uses_official_queue_schema_and_returns_request_id(tmp_path: Path) -> None:
     image = tmp_path / "frame.jpg"
     image.write_bytes(b"image")
