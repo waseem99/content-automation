@@ -1,6 +1,6 @@
 # Content Automation Platform
 
-A local-first, multi-brand content production system. PostgreSQL is the only workflow/state system of record; generated media is stored on the local workstation and optional Google Drive locations.
+A local-control, provider-capable, multi-brand content production system. PostgreSQL is the only workflow/state system of record; generated media is stored on the controlled workstation and optional Google Drive locations.
 
 ## Current production model
 
@@ -12,29 +12,30 @@ native campaign
 → narration, scene, caption and platform planning
 → grouped hard blockers only
 → immutable ready-for-final-video-generation package
-→ local GPU / deterministic / manual render execution
+→ deterministic composition plus approved managed video generation
 → human creative review
 → final QA and immutable release
 → explicit delivery or publishing action
 ```
 
-The central pre-generation ecosystem has passed its staged acceptance gates for 10,000 campaign items, 1,000 automatic pre-generation items, 1,000,000 checks/tasks, 100 workers, 100,000 local/Drive locations and 1,000-item mass operations. Real 10,000–20,000 completed-video monthly renderer capacity is not yet proven.
+The central pre-generation ecosystem has passed its staged acceptance gates for 10,000 campaign items, 1,000 automatic pre-generation items, 1,000,000 checks/tasks, 100 workers, 100,000 local/Drive locations and 1,000-item mass operations. Real high-volume completed-video throughput is not yet proven.
 
 See [Final staged acceptance report](docs/operations/P131_FINAL_ACCEPTANCE_REPORT.md).
 
 ## Immediate production objective
 
-The active workstream is [#833 — Local GPU production and low-cost hybrid rendering](https://github.com/waseem99/content-automation/issues/833).
+The active workstream is provider-first video production because the current 8 GB workstation cannot run the approved 24 GB-class Wan2.2 proof safely.
 
 Execution order:
 
-1. [#828](https://github.com/waseem99/content-automation/issues/828) — validate the actual ComfyUI/Wan2.2 workstation package and produce the first reviewed local MP4 with zero external fee.
-2. [#827](https://github.com/waseem99/content-automation/issues/827) — run the measured 30-attempt / three-video workstation calibration.
-3. [#829](https://github.com/waseem99/content-automation/issues/829) — complete reusable templates and deterministic composition execution.
-4. [#832](https://github.com/waseem99/content-automation/issues/832) — measure batch capacity, QA and cost per accepted video.
-5. [#830](https://github.com/waseem99/content-automation/issues/830) and [#831](https://github.com/waseem99/content-automation/issues/831) — add cloud or premium overflow only after local evidence.
+1. Configure official fal and Vidu accounts, exact pricing and usage evidence without spending credits.
+2. Produce one canonical internal provider-generated MP4 through the existing P87/P93/P94 controls.
+3. Run at least 30 attempts and complete three pilot videos with measured quality, latency and cost.
+4. Complete reusable composition templates and deterministic editing.
+5. Run a six-video creative pilot, then 20-video and 40–50-video measured batches.
+6. Add self-hosted cloud GPU or rare premium hero routes only where measured economics justify them.
 
-Use [Local GPU activation](docs/operations/LOCAL_GPU_ACTIVATION.md) for the first workstation proof.
+Use [Provider-first video production](docs/operations/PROVIDER_FIRST_VIDEO_PRODUCTION.md) for activation. The existing [Local GPU activation](docs/operations/LOCAL_GPU_ACTIVATION.md) remains an optional future cost-optimization path, not a production dependency.
 
 ## Public roles
 
@@ -66,21 +67,23 @@ Normal production must not require spreadsheets, raw UUID entry or direct databa
 - Renderer-ready packages with exact shot timings, prompts, negative constraints, continuity bindings, narration segments, captions and output adaptations.
 - Restart-safe jobs, DAG tasks, attempts, leases, retries and idempotency.
 - Local Ollama-compatible scripts, Kokoro narration, Whisper alignment, ComfyUI keyframes and FFmpeg assembly.
+- Official managed-render execution for fal and Vidu with exact spend reservation, request-ID recovery, immediate checksum ingestion and pending human review.
+- Existing official Higgsfield specialist route under separate account/model/terms activation.
 - Local and Google Drive asset locations with checksum reconciliation and recovery.
 - Renderer catalogue, routing evidence, quotes, spend reservations and cost lineage.
 - Final QA, immutable releases, simulated delivery and private-first YouTube support.
 
 ## Deliberately blocked by default
 
-- Automatic paid generation.
+- Paid provider execution until explicitly enabled after account, pricing, terms and budget review.
 - Automatic final creative approval.
 - Automatic public publishing.
 - Browser automation, copied provider sessions or undocumented endpoints.
-- Treating database throughput as real GPU rendering throughput.
+- Treating database throughput as real video-production throughput.
 
 ## Start locally
 
-Prerequisites: Windows 10/11, Python 3.11+, Docker Desktop, Ollama, ffmpeg and optional NVIDIA/ComfyUI support.
+Prerequisites: Windows 10/11, Python 3.11+, Docker Desktop, Ollama and ffmpeg. NVIDIA/ComfyUI is optional for keyframes or future local video optimization.
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass `
@@ -94,21 +97,24 @@ For authenticated remote access:
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass `
   -File .\scripts\windows\deploy_remote_content_automation.ps1 `
-  -AcceptComfyModelLicense
+  -SkipComfyUI `
+  -SkipInstall `
+  -SkipModelPull
 ```
 
-Only Creator Studio/API may be exposed. PostgreSQL, Ollama, ComfyUI, workers, artifacts, models and credentials remain private.
+Only Creator Studio/API may be exposed. PostgreSQL, Ollama, ComfyUI, provider workers, artifacts, models and credentials remain private.
 
 ## Repository map
 
 ```text
-src/application/          production domain services
+src/application/          production domain services and provider adapters
 src/operator_api/         authenticated API and Creator Studio serving
 src/operations/           workers, onboarding, recovery and acceptance tools
 web/static-creator-ui/    browser application
 migrations/               append-only PostgreSQL migrations
-scripts/windows/          workstation deployment and validation
+scripts/windows/          workstation deployment and provider activation
 deploy/                   worker packaging
+config/                   non-secret runtime examples and workflow manifests
 docs/operations/          operator runbooks and acceptance evidence
 ```
 
