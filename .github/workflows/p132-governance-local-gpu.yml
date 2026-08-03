@@ -1,0 +1,47 @@
+name: P132 Governance and Local GPU Activation
+
+on:
+  pull_request:
+    branches: [test]
+    paths:
+      - README.md
+      - docs/operations/LOCAL_GPU_ACTIVATION.md
+      - scripts/windows/collect_p114_workstation_evidence.ps1
+      - .github/workflows/p132-governance-local-gpu.yml
+
+jobs:
+  contracts:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Parse PowerShell collector
+        shell: pwsh
+        run: |
+          $errors = $null
+          [void][System.Management.Automation.Language.Parser]::ParseFile(
+            (Resolve-Path "scripts/windows/collect_p114_workstation_evidence.ps1"),
+            [ref]$null,
+            [ref]$errors
+          )
+          if ($errors.Count) {
+            $errors | Format-List | Out-String | Write-Error
+            exit 1
+          }
+
+      - name: Verify governance hierarchy
+        shell: bash
+        run: |
+          grep -F "#833 — Local GPU production and low-cost hybrid rendering" README.md
+          grep -F "#828" README.md
+          grep -F "#827" README.md
+          grep -F "LOCAL_GPU_ACTIVATION.md" README.md
+
+      - name: Verify activation boundaries
+        shell: bash
+        run: |
+          grep -F "external_fee_usd = 0" docs/operations/LOCAL_GPU_ACTIVATION.md
+          grep -F "ComfyUI must remain loopback-only" scripts/windows/collect_p114_workstation_evidence.ps1
+          grep -F 'automatic_paid_generation = $false' scripts/windows/collect_p114_workstation_evidence.ps1
+          grep -F 'automatic_public_publishing = $false' scripts/windows/collect_p114_workstation_evidence.ps1
+          ! grep -R "Invoke-WebRequest.*api.*generate" scripts/windows/collect_p114_workstation_evidence.ps1
