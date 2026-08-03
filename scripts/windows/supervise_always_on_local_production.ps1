@@ -8,6 +8,8 @@ param(
 $ErrorActionPreference = "Stop"
 $Root = (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path
 $Runtime = Join-Path $Root ".runtime"
+$EnvPath = Join-Path $Root ".env.local"
+$SyncP131 = Join-Path $PSScriptRoot "sync_p131_environment.ps1"
 $Python = Join-Path $Root ".venv\Scripts\python.exe"
 $CoreSupervisor = Join-Path $PSScriptRoot "supervise_local_production.ps1"
 $StopMarker = Join-Path $Runtime "stop.request"
@@ -26,6 +28,11 @@ try {
   Write-Host "Another always-on Content Automation supervisor already owns this runtime."
   exit 0
 }
+
+# Recompute the serving checkout SHA and non-secret configuration digest every
+# time the scheduled task starts. This closes the gap between deployment-time
+# configuration and the process that actually serves Creator Studio.
+& $SyncP131 -Path $EnvPath
 
 function Start-CoreSupervisor {
   $arguments = @("-NoProfile", "-ExecutionPolicy", "Bypass", "-File", $CoreSupervisor, "-ApiPort", [string]$ApiPort, "-PostgresPort", [string]$PostgresPort)

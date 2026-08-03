@@ -10,7 +10,12 @@ from pathlib import Path
 from typing import Any, BinaryIO
 from urllib.error import HTTPError, URLError
 from urllib.parse import quote, urlencode, urlparse
-from urllib.request import Request, urlopen
+from urllib.request import Request
+
+from src.application.campaign_storage.secure_https import (
+    SecureHttpsError,
+    open_allowlisted_https,
+)
 
 
 class GoogleDriveError(RuntimeError):
@@ -126,22 +131,30 @@ class GoogleDriveStorage:
             },
         )
         try:
-            with urlopen(request, timeout=60) as response:
+            with open_allowlisted_https(
+                request,
+                timeout=60,
+                allowed_hosts={self.api_host},
+            ) as response:
                 session_url = response.headers.get("Location")
         except HTTPError as exc:
             if exc.code == 401 and self.renewable:
                 token = self._token(force_refresh=True)
                 request.headers["Authorization"] = f"Bearer {token}"
                 try:
-                    with urlopen(request, timeout=60) as response:
+                    with open_allowlisted_https(
+                        request,
+                        timeout=60,
+                        allowed_hosts={self.api_host},
+                    ) as response:
                         session_url = response.headers.get("Location")
-                except (HTTPError, URLError, TimeoutError, OSError) as retry_exc:
+                except (SecureHttpsError, HTTPError, URLError, TimeoutError, OSError) as retry_exc:
                     raise GoogleDriveError(
                         f"Could not create Google Drive resumable session after token refresh: {retry_exc}"
                     ) from retry_exc
             else:
                 raise GoogleDriveError(f"Could not create Google Drive resumable session: {exc}") from exc
-        except (URLError, TimeoutError, OSError) as exc:
+        except (SecureHttpsError, URLError, TimeoutError, OSError) as exc:
             raise GoogleDriveError(f"Could not create Google Drive resumable session: {exc}") from exc
         if not session_url:
             raise GoogleDriveError("Google Drive did not return a resumable upload URL")
@@ -188,7 +201,11 @@ class GoogleDriveStorage:
                 headers={"Authorization": f"Bearer {self._token(force_refresh=attempt == 1)}"},
             )
             try:
-                with urlopen(request, timeout=300) as response:
+                with open_allowlisted_https(
+                    request,
+                    timeout=300,
+                    allowed_hosts={self.api_host},
+                ) as response:
                     while True:
                         chunk = response.read(self.chunk_bytes)
                         if not chunk:
@@ -204,7 +221,7 @@ class GoogleDriveStorage:
                     size = 0
                     continue
                 raise GoogleDriveError(f"Google Drive download failed: {exc}") from exc
-            except (URLError, TimeoutError, OSError) as exc:
+            except (SecureHttpsError, URLError, TimeoutError, OSError) as exc:
                 raise GoogleDriveError(f"Google Drive download failed: {exc}") from exc
         raise GoogleDriveError("Google Drive download authorization failed after token refresh")
 
@@ -215,7 +232,11 @@ class GoogleDriveStorage:
                 headers={"Authorization": f"Bearer {self._token(force_refresh=attempt == 1)}"},
             )
             try:
-                with urlopen(request, timeout=timeout) as response:
+                with open_allowlisted_https(
+                    request,
+                    timeout=timeout,
+                    allowed_hosts={self.api_host},
+                ) as response:
                     return json.load(response)
             except HTTPError as exc:
                 if exc.code == 404:
@@ -223,7 +244,7 @@ class GoogleDriveStorage:
                 if exc.code == 401 and self.renewable and attempt == 0:
                     continue
                 raise GoogleDriveError(str(exc)) from exc
-            except (URLError, TimeoutError, OSError, ValueError) as exc:
+            except (SecureHttpsError, URLError, TimeoutError, OSError, ValueError) as exc:
                 raise GoogleDriveError(str(exc)) from exc
         raise GoogleDriveError("Google Drive authorization failed after token refresh")
 
@@ -248,10 +269,15 @@ class GoogleDriveStorage:
                 data=body,
                 headers={"Content-Type": "application/x-www-form-urlencoded"},
             )
+            token_host = urlparse(self.token_url).hostname or ""
             try:
-                with urlopen(request, timeout=30) as response:
+                with open_allowlisted_https(
+                    request,
+                    timeout=30,
+                    allowed_hosts={token_host},
+                ) as response:
                     payload = json.load(response)
-            except (HTTPError, URLError, TimeoutError, OSError, ValueError) as exc:
+            except (SecureHttpsError, HTTPError, URLError, TimeoutError, OSError, ValueError) as exc:
                 raise GoogleDriveError(f"Google OAuth token refresh failed: {exc}") from exc
             token = str(payload.get("access_token") or "").strip()
             if not token:

@@ -28,6 +28,7 @@ from src.operator_api.generation_jobs_runtime import install_generation_job_rout
 from src.operator_api.observability import observability_contract
 from src.operator_api.app import create_app
 from src.operator_api.operations_middleware import OperationsSafetyMiddleware
+from src.operator_api.operations_monitoring_patch import install_operations_monitoring_route
 from src.operator_api.operations_validated_runtime import install_operations_routes
 from src.operator_api.p110_runtime import install_p110_routes
 from src.operator_api.p111_runtime_patch import install_p111_super_admin_override_patch
@@ -96,6 +97,12 @@ def create_configured_app(
         database=database,
         auth_settings=auth,
         operations_settings=route_operations,
+    )
+    install_operations_monitoring_route(
+        app,
+        database=database,
+        auth_settings=auth,
+        operations_settings=operations,
     )
     install_acceptance_routes(app, database=database, auth_settings=auth)
     install_acceptance_readiness_routes(app, database=database, auth_settings=auth)

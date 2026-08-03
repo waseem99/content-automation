@@ -4,9 +4,13 @@ import os
 from pathlib import Path
 from urllib.error import HTTPError, URLError
 from urllib.parse import quote
-from urllib.request import Request, urlopen
+from urllib.request import Request
 
 from src.application.campaign_storage.google_drive import GoogleDriveError, GoogleDriveStorage
+from src.application.campaign_storage.secure_https import (
+    SecureHttpsError,
+    open_allowlisted_https,
+)
 
 
 def _download_file(self: GoogleDriveStorage, file_id: str, destination: Path) -> Path:
@@ -30,7 +34,11 @@ def _download_file(self: GoogleDriveStorage, file_id: str, destination: Path) ->
                 headers={"Authorization": f"Bearer {self._token(force_refresh=attempt == 1)}"},
             )
             try:
-                with urlopen(request, timeout=300) as response, temporary.open("wb") as stream:
+                with open_allowlisted_https(
+                    request,
+                    timeout=300,
+                    allowed_hosts={self.api_host},
+                ) as response, temporary.open("wb") as stream:
                     while True:
                         chunk = response.read(self.chunk_bytes)
                         if not chunk:
@@ -46,7 +54,7 @@ def _download_file(self: GoogleDriveStorage, file_id: str, destination: Path) ->
                 if exc.code == 401 and self.renewable and attempt == 0:
                     continue
                 raise GoogleDriveError(f"Google Drive recovery download failed: {exc}") from exc
-            except (URLError, TimeoutError, OSError) as exc:
+            except (SecureHttpsError, URLError, TimeoutError, OSError) as exc:
                 raise GoogleDriveError(f"Google Drive recovery download failed: {exc}") from exc
         raise GoogleDriveError("Google Drive recovery authorization failed after token refresh")
     finally:
