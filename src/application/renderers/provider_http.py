@@ -167,7 +167,8 @@ class ManagedHttpAdapter:
         return candidate[:2000]
 
     @staticmethod
-    def data_uri(path: Path, *, maximum_bytes: int = 19 * 1024 * 1024) -> str:
+    def data_uri(path: Path, *, maximum_bytes: int = 14 * 1024 * 1024) -> str:
+        """Encode a reviewed image while keeping the base64 JSON body below 20 MB."""
         source = path.resolve(strict=True)
         size = source.stat().st_size
         if size <= 0 or size > maximum_bytes:
