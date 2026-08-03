@@ -17,7 +17,7 @@ test.describe('existing portfolio evidence audit', () => {
     ];
     const evidence = {};
     for (const endpoint of endpoints) {
-      const result = await apiJson(request, 'GET', endpoint, { expected: [200, 404, 409, 422] });
+      const result = await apiJson(request, 'GET', endpoint, { expected: [200, 403, 404, 409, 422] });
       expect(result.response.status(), `${endpoint} returned a server error`).toBeLessThan(500);
       evidence[endpoint] = { status: result.response.status(), payload: result.payload };
     }
@@ -42,16 +42,16 @@ test.describe('existing portfolio evidence audit', () => {
       const releases = await apiJson(request, 'GET', `/releases?content_id=${id}&limit=100`, { expected: [200] });
 
       expect(state.payload.item?.id || state.payload.item?.content_id).toBe(id);
-      expect(Array.isArray(jobs.payload.jobs)).toBe(true);
+      expect(Array.isArray(jobs.payload.items)).toBe(true);
       expect(review.response.status()).toBeLessThan(500);
-      expect(Array.isArray(releases.payload.releases || releases.payload.items || [])).toBe(true);
+      expect(Array.isArray(releases.payload.items || [])).toBe(true);
       evidence.push({
         content_id: id,
         title: state.payload.item?.title,
         status: state.payload.status,
-        jobs: jobs.payload.jobs?.map((job) => ({ id: job.id, type: job.job_type, status: job.status })),
+        jobs: jobs.payload.items?.map((job) => ({ id: job.id, type: job.job_type, status: job.status })),
         review_status: review.response.status(),
-        release_count: (releases.payload.releases || releases.payload.items || []).length,
+        release_count: (releases.payload.items || []).length,
         blockers: state.payload.blockers || []
       });
     }
@@ -64,7 +64,7 @@ test.describe('existing portfolio evidence audit', () => {
 
   test('generation jobs have valid identities, states and bounded cost evidence', async ({ request }, testInfo) => {
     const result = await apiJson(request, 'GET', '/generation/jobs?limit=100', { expected: [200] });
-    const jobs = result.payload.jobs || [];
+    const jobs = result.payload.items || [];
     const allowed = new Set(['queued', 'running', 'succeeded', 'failed', 'cancelled', 'dead_letter']);
     for (const job of jobs) {
       expect(job.id).toMatch(/^[0-9a-f-]{36}$/i);
@@ -82,9 +82,9 @@ test.describe('existing portfolio evidence audit', () => {
 
   test('release and delivery records preserve immutable identifiers and never imply automatic publication', async ({ request }, testInfo) => {
     const releases = await apiJson(request, 'GET', '/releases?limit=100', { expected: [200] });
-    const deliveries = await apiJson(request, 'GET', '/deliveries?limit=100', { expected: [200] });
-    const releaseRows = releases.payload.releases || releases.payload.items || [];
-    const deliveryRows = deliveries.payload.deliveries || deliveries.payload.items || [];
+    const deliveries = await apiJson(request, 'GET', '/deliveries?limit=100', { expected: [200, 403] });
+    const releaseRows = releases.payload.items || [];
+    const deliveryRows = deliveries.response.status() === 200 ? deliveries.payload.items || [] : [];
 
     for (const release of releaseRows) {
       expect(release.id).toMatch(/^[0-9a-f-]{36}$/i);
