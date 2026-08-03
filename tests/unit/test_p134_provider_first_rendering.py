@@ -32,6 +32,14 @@ def test_data_uri_accepts_only_reviewed_image_formats(tmp_path: Path) -> None:
     assert error.value.code == "provider_input_format_invalid"
 
 
+def test_data_uri_rejects_raw_input_that_would_exceed_safe_json_body(tmp_path: Path) -> None:
+    image = tmp_path / "oversized.png"
+    image.write_bytes(b"0" * (14 * 1024 * 1024 + 1))
+    with pytest.raises(ManagedProviderError) as error:
+        ManagedHttpAdapter.data_uri(image)
+    assert error.value.code == "provider_input_size_invalid"
+
+
 def test_fal_submission_uses_official_queue_schema_and_returns_request_id(tmp_path: Path) -> None:
     image = tmp_path / "frame.jpg"
     image.write_bytes(b"image")
@@ -142,12 +150,15 @@ def test_setup_stores_secrets_outside_files_and_never_generates() -> None:
     assert "queue.fal.run/" not in source
 
 
-def test_provider_supervisor_is_explicit_and_cannot_approve_or_publish() -> None:
+def test_provider_supervisor_loads_user_secrets_and_cannot_approve_or_publish() -> None:
     source = SUPERVISOR.read_text(encoding="utf-8")
     assert "PROVIDER_PAID_EXECUTION_ENABLED" in source
     assert "FAL_RENDERER_ENABLED" in source
     assert "VIDU_RENDERER_ENABLED" in source
     assert "src.operations.provider_managed_worker" in source
+    assert 'GetEnvironmentVariable($name, "User")' in source
+    assert 'SetEnvironmentVariable($name, $value, "Process")' in source
+    assert "Import-ProviderSecrets" in source
     assert "automatic_spend_approval = $false" in source
     assert "automatic_creative_approval = $false" in source
     assert "automatic_publishing = $false" in source
