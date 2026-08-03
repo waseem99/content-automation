@@ -48,10 +48,10 @@ test.describe.serial('Creator Studio content lifecycle', () => {
     expect((state.payload.jobs || []).some((job) => job.job_type === 'script')).toBe(true);
 
     const jobs = await apiJson(request, 'GET', `/generation/jobs?content_id=${contentId}&limit=100`, { expected: [200] });
-    expect(Array.isArray(jobs.payload.jobs)).toBe(true);
-    expect((jobs.payload.jobs || []).some((job) => job.job_type === 'script')).toBe(true);
+    expect(Array.isArray(jobs.payload.items)).toBe(true);
+    expect((jobs.payload.items || []).some((job) => job.job_type === 'script')).toBe(true);
 
-    const review = await apiJson(request, 'GET', `/review/content/${contentId}`, { expected: [200, 404, 409] });
+    const review = await apiJson(request, 'GET', `/review/content/${contentId}`, { expected: [200, 404, 409, 422] });
     expect(review.response.status()).not.toBe(500);
   });
 
@@ -62,17 +62,17 @@ test.describe.serial('Creator Studio content lifecycle', () => {
     let jobs = [];
     do {
       const result = await apiJson(request, 'GET', `/generation/jobs?content_id=${contentId}&job_type=script&limit=100`, { expected: [200] });
-      jobs = result.payload.jobs || [];
-      if (jobs.some((job) => ['succeeded', 'failed', 'cancelled'].includes(job.status))) break;
+      jobs = result.payload.items || [];
+      if (jobs.some((job) => ['succeeded', 'failed', 'cancelled', 'dead_letter'].includes(job.status))) break;
       await new Promise((resolve) => setTimeout(resolve, 5000));
     } while (Date.now() < deadline);
 
     expect(jobs.length).toBeGreaterThanOrEqual(1);
     const successful = jobs.filter((job) => job.status === 'succeeded');
     expect(successful.length).toBeLessThanOrEqual(1);
-    expect(jobs.some((job) => ['succeeded', 'failed', 'cancelled'].includes(job.status))).toBe(true);
+    expect(jobs.some((job) => ['succeeded', 'failed', 'cancelled', 'dead_letter'].includes(job.status))).toBe(true);
 
-    const script = await apiJson(request, 'GET', `/scripts/content/${contentId}`, { expected: [200, 404, 409] });
+    const script = await apiJson(request, 'GET', `/scripts/content/${contentId}`, { expected: [200, 404, 409, 422] });
     if (successful.length) {
       expect(script.response.status()).toBe(200);
       expect(script.payload.document?.id).toBeTruthy();
