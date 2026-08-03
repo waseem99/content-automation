@@ -79,6 +79,17 @@ def test_scheduled_runtime_refreshes_release_identity_before_start() -> None:
     assert supervisor.index(sync_call) < supervisor.index("$core = Start-CoreSupervisor")
 
 
+def test_acceptance_runner_rejects_a_stale_runtime() -> None:
+    runner = (
+        ROOT / "scripts/windows/run_platform_acceptance.ps1"
+    ).read_text(encoding="utf-8")
+    readiness = (ROOT / "tests/e2e/00-readiness.spec.js").read_text(encoding="utf-8")
+
+    assert "PLATFORM_EXPECTED_GIT_SHA" in runner
+    assert "The runtime is stale" in runner
+    assert "payload.release?.git_sha).toBe(expectedGitSha)" in readiness
+
+
 def test_playwright_uses_document_title_assertion() -> None:
     readiness = (ROOT / "tests/e2e/00-readiness.spec.js").read_text(encoding="utf-8")
 
