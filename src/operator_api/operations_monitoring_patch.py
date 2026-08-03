@@ -6,6 +6,7 @@ import psycopg
 from fastapi import Depends, FastAPI, HTTPException
 
 from src.infrastructure.database.connection import Database
+from src.operations.models import OperationsEnvironment
 from src.operations.service import OperationsError
 from src.operations.settings import OperationsSettings
 from src.operations.validated_service import ValidatedOperationsService
@@ -54,6 +55,7 @@ def install_operations_monitoring_route(
         if database is None or service is None:
             raise HTTPException(status_code=503, detail="database_not_configured")
 
+        environment = OperationsEnvironment(operations_settings.environment)
         health = database.health_check(operations_settings.migrations_dir)
         api_healthy = bool(
             health.database_reachable
@@ -62,7 +64,7 @@ def install_operations_monitoring_route(
         )
         try:
             snapshot = service.snapshot(
-                environment=operations_settings.environment,
+                environment=environment,
                 api_healthy=api_healthy,
                 storage_capacity_bytes=operations_settings.storage_capacity_bytes,
             )
@@ -84,7 +86,7 @@ def install_operations_monitoring_route(
             "ok": api_healthy,
             "kind": "operations_monitoring_snapshot",
             "operator": operator.operator_id,
-            "environment": operations_settings.environment,
+            "environment": environment.value,
             "snapshot": snapshot,
             "read_only": True,
         }
