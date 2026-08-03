@@ -94,6 +94,8 @@ Normal production must not require spreadsheets, raw UUID entry or direct databa
 
 Prerequisites: Windows 10/11, Python 3.11+, Docker Desktop, Ollama and ffmpeg. NVIDIA/ComfyUI is optional for keyframes or future local video optimization.
 
+Use [LOCAL_PRODUCTION_RUNBOOK.md](docs/operations/LOCAL_PRODUCTION_RUNBOOK.md) for workstation startup, recovery and normal day-to-day operation.
+
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass `
   -File .\scripts\windows\start_local_production.ps1
