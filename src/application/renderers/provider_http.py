@@ -79,10 +79,23 @@ class ManagedHttpAdapter:
         try:
             with self.client.stream("GET", state.output_url, timeout=None) as response:
                 response.raise_for_status()
+                content_type = response.headers.get("content-type", "").split(";", 1)[0].strip().lower()
+                if content_type and not (
+                    content_type.startswith("video/")
+                    or content_type in {"application/octet-stream", "binary/octet-stream"}
+                ):
+                    raise ManagedProviderError(
+                        f"{self.provider_key}_download_not_video",
+                        f"The completed {self.provider_key} output did not return video content.",
+                        retryable=True,
+                        details={"content_type": content_type},
+                    )
                 with destination.open("wb") as handle:
                     for block in response.iter_bytes(1024 * 1024):
                         if block:
                             handle.write(block)
+        except ManagedProviderError:
+            raise
         except (httpx.TimeoutException, httpx.NetworkError) as exc:
             raise ManagedProviderError(
                 f"{self.provider_key}_download_unavailable",
@@ -107,6 +120,7 @@ class ManagedHttpAdapter:
                 f"The downloaded {self.provider_key} output is empty.",
                 retryable=True,
             )
+        self._validate_video_signature(destination)
         return destination
 
     def _json_request(
@@ -184,6 +198,32 @@ class ManagedHttpAdapter:
             )
         encoded = base64.b64encode(source.read_bytes()).decode("ascii")
         return f"data:{mime};base64,{encoded}"
+
+    @staticmethod
+    def _validate_video_signature(path: Path) -> None:
+        with path.open("rb") as handle:
+            header = handle.read(16)
+        suffix = path.suffix.lower()
+        is_iso_media = len(header) >= 8 and header[4:8] == b"ftyp"
+        is_webm = header.startswith(b"\x1aE\xdf\xa3")
+        if suffix in {".mp4", ".mov"} and not is_iso_media:
+            raise ManagedProviderError(
+                "provider_output_signature_invalid",
+                "The provider output has an invalid MP4/MOV file signature.",
+                retryable=True,
+            )
+        if suffix == ".webm" and not is_webm:
+            raise ManagedProviderError(
+                "provider_output_signature_invalid",
+                "The provider output has an invalid WebM file signature.",
+                retryable=True,
+            )
+        if suffix not in {".mp4", ".mov", ".webm"} or not (is_iso_media or is_webm):
+            raise ManagedProviderError(
+                "provider_output_signature_invalid",
+                "The provider output is not a supported video container.",
+                retryable=True,
+            )
 
     @classmethod
     def _first_text(cls, payload: Any, keys: tuple[str, ...]) -> str | None:
