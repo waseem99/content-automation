@@ -37,6 +37,15 @@ Execution order:
 
 Use [Provider-first video production](docs/operations/PROVIDER_FIRST_VIDEO_PRODUCTION.md) for activation. The existing [Local GPU activation](docs/operations/LOCAL_GPU_ACTIVATION.md) remains an optional future cost-optimization path, not a production dependency.
 
+## Governance continuity
+
+The proven **P84–P107** Creator Studio, workflow, review, routing, spend, storage, release and delivery chain remains authoritative. Provider-first execution changes the rendering engine, not the control plane or its human gates.
+
+- **#833 — Local GPU production and low-cost hybrid rendering** remains the parent governance record while its execution strategy is updated to provider-first production.
+- **#828** remains open/deferred because no canonical local 24 GB GPU MP4 has been produced; it is not being represented as complete.
+- **#827** remains the calibration gate, now requiring measured provider attempts and completed pilot videos before scale claims.
+- `LOCAL_GPU_ACTIVATION.md` remains retained for a future approved local or self-hosted cost-optimization experiment.
+
 ## Public roles
 
 - **Super Admin** — system, environment, credentials, roles and infrastructure.
