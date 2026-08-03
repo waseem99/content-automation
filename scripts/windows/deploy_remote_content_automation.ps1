@@ -49,7 +49,7 @@ function Sync-P126Environment([string]$Path) {
   $values["HYBRID_PAID_EXECUTION_ENABLED"] = "false"
   $values["HYBRID_PUBLIC_PUBLISHING_ENABLED"] = "false"
   $values["LOCAL_SCRIPT_TIMEOUT_SECONDS"] = "120"
-  $values["OPS_MIGRATION_HEAD"] = "0103_p126_hybrid_scene_routing.sql"
+  $values["OPS_MIGRATION_HEAD"] = "0108_p131_staged_acceptance_closeout.sql"
   $values["OPS_MAX_REQUEST_BODY_BYTES"] = "67108864"
   [IO.File]::WriteAllLines(
     $Path,
