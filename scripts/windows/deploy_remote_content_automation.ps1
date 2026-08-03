@@ -15,7 +15,7 @@ $RemoteStatus = Join-Path $Runtime "remote-access.json"
 $EnvPath = Join-Path $Root ".env.local"
 $Python = Join-Path $Root ".venv\Scripts\python.exe"
 
-function Sync-P126Environment([string]$Path) {
+function Sync-P110Environment([string]$Path) {
   if (-not (Test-Path -LiteralPath $Path)) { return }
   $values = [ordered]@{}
   foreach ($line in Get-Content -LiteralPath $Path) {
@@ -49,7 +49,7 @@ function Sync-P126Environment([string]$Path) {
   $values["HYBRID_PAID_EXECUTION_ENABLED"] = "false"
   $values["HYBRID_PUBLIC_PUBLISHING_ENABLED"] = "false"
   $values["LOCAL_SCRIPT_TIMEOUT_SECONDS"] = "120"
-  $values["OPS_MIGRATION_HEAD"] = "0103_p126_hybrid_scene_routing.sql"
+  $values["OPS_MIGRATION_HEAD"] = "0108_p131_staged_acceptance_closeout.sql"
   $values["OPS_MAX_REQUEST_BODY_BYTES"] = "67108864"
   [IO.File]::WriteAllLines(
     $Path,
@@ -68,7 +68,7 @@ function Import-LocalEnvironment([string]$Path) {
   }
 }
 
-Sync-P126Environment $EnvPath
+Sync-P110Environment $EnvPath
 
 if (-not (Get-Command ngrok -ErrorAction SilentlyContinue)) {
   throw "ngrok is required. Install ngrok, run 'ngrok config add-authtoken <token>', then rerun."

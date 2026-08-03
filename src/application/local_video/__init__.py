@@ -13,7 +13,7 @@ from src.application.local_video.models import (
     LocalVideoJobStatus,
     LocalVideoRequest,
 )
-from src.application.local_video.provider import ComfyUILocalVideoProvider
+from src.application.local_video.safe_provider import ComfyUILocalVideoProvider
 
 __all__ = [
     "ComfyUILocalVideoProvider",

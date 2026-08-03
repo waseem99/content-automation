@@ -202,7 +202,7 @@ def test_worker_and_configuration_fail_closed_by_default() -> None:
     onboarding = ONBOARDING.read_text(encoding="utf-8")
     assert "P114_LOCAL_VIDEO_ENABLED=false" in config
     assert "P114_WORKFLOW_ROOT=config/local-video-workflows" in config
-    assert "OPS_MIGRATION_HEAD=0099_p114_local_video_renderers.sql" in config
+    assert "OPS_MIGRATION_HEAD=0108_p131_staged_acceptance_closeout.sql" in config
     assert 'os.getenv("P114_LOCAL_VIDEO_ENABLED", "false")' in worker
     assert "P114 local video worker is disabled" in worker
     assert "outside the approved workflow root" in worker

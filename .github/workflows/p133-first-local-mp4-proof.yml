@@ -1,0 +1,75 @@
+name: P133 First Local MP4 Proof
+
+on:
+  pull_request:
+    branches: [test]
+    paths:
+      - "src/application/local_video/__init__.py"
+      - "src/application/local_video/safe_provider.py"
+      - "src/operations/p114_comfyui_diagnostics.py"
+      - "src/operations/p114_latest_keyframe.py"
+      - "src/operations/p114_first_mp4_evidence.py"
+      - "scripts/windows/prove_p114_first_local_mp4.ps1"
+      - "tests/unit/test_p133_first_local_mp4_contracts.py"
+      - ".github/workflows/p133-first-local-mp4-proof.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: p133-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  contracts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install focused dependencies
+        run: >-
+          python -m pip install
+          httpx pytest psycopg[binary] psycopg-pool
+          pydantic pydantic-settings
+      - name: Compile proof tooling
+        run: >-
+          python -m compileall -q
+          src/application/local_video/safe_provider.py
+          src/application/local_video/__init__.py
+          src/operations/p114_comfyui_diagnostics.py
+          src/operations/p114_latest_keyframe.py
+          src/operations/p114_first_mp4_evidence.py
+          tests/unit/test_p133_first_local_mp4_contracts.py
+      - name: Run focused contracts
+        run: python -m pytest -q tests/unit/test_p133_first_local_mp4_contracts.py
+      - name: Parse Windows proof command
+        shell: pwsh
+        run: |
+          $errors = $null
+          [void][System.Management.Automation.Language.Parser]::ParseFile(
+            (Resolve-Path "scripts/windows/prove_p114_first_local_mp4.ps1"),
+            [ref]$null,
+            [ref]$errors
+          )
+          if ($errors.Count) {
+            $errors | Format-List | Out-String | Write-Error
+            throw "PowerShell parse failed"
+          }
+      - name: Product boundaries
+        shell: bash
+        run: |
+          grep -q "ComfyUI rejected the local video prompt" src/application/local_video/safe_provider.py
+          grep -q "human_review_still_required = \$true" scripts/windows/prove_p114_first_local_mp4.ps1
+          grep -q "automatic_paid_generation = \$false" scripts/windows/prove_p114_first_local_mp4.ps1
+          grep -q "automatic_approval = \$false" scripts/windows/prove_p114_first_local_mp4.ps1
+          grep -q "automatic_public_publishing = \$false" scripts/windows/prove_p114_first_local_mp4.ps1
+          ! grep -R -n -E 'automatic_(approval|publishing|paid_generation).*true|external_fee_possible.*true' \
+            src/application/local_video/safe_provider.py \
+            src/operations/p114_comfyui_diagnostics.py \
+            src/operations/p114_first_mp4_evidence.py \
+            scripts/windows/prove_p114_first_local_mp4.ps1
