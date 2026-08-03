@@ -90,6 +90,7 @@ if ($uri.Host -notin @("127.0.0.1", "localhost", "::1")) {
 $resolvedRoot = Resolve-Path -LiteralPath $ComfyUIRoot -ErrorAction Stop
 $workflow = Get-RequiredFileEvidence -Path $WorkflowPath
 $models = @($ModelPaths | ForEach-Object { Get-RequiredFileEvidence -Path $_ })
+$comfyRepo = Get-GitRepositoryEvidence -Path $resolvedRoot.Path
 
 $customNodesRoot = Join-Path $resolvedRoot.Path "custom_nodes"
 $customNodes = @()
@@ -110,6 +111,9 @@ if ($null -ne $nvidiaSmi) {
     $gpu = @(
         foreach ($row in $gpuRows) {
             $parts = $row -split ",\s*"
+            if ($parts.Count -lt 5) {
+                continue
+            }
             [ordered]@{
                 name = $parts[0]
                 driver_version = $parts[1]
@@ -127,6 +131,7 @@ $comfyHealth = [ordered]@{
     reachable = $false
     status_code = $null
     checked_at_utc = (Get-Date).ToUniversalTime().ToString("o")
+    error = $null
 }
 try {
     $response = Invoke-WebRequest -Uri "$ComfyUIBaseUrl/system_stats" -UseBasicParsing -TimeoutSec 10
@@ -135,6 +140,13 @@ try {
 } catch {
     $comfyHealth.error = $_.Exception.Message
 }
+
+$readyForActivation = (
+    $comfyHealth.reachable -and
+    [bool]$comfyRepo.is_git_repository -and
+    -not [bool]$comfyRepo.dirty -and
+    ($models.Count -gt 0)
+)
 
 $evidence = [ordered]@{
     schema = "p114-workstation-evidence/v1"
@@ -149,7 +161,7 @@ $evidence = [ordered]@{
         gpu = $gpu
     }
     comfyui = [ordered]@{
-        repository = Get-GitRepositoryEvidence -Path $resolvedRoot.Path
+        repository = $comfyRepo
         health = $comfyHealth
         custom_nodes = $customNodes
     }
@@ -160,20 +172,9 @@ $evidence = [ordered]@{
         external_fee_usd = 0
         automatic_paid_generation = $false
         automatic_public_publishing = $false
-        ready_for_activation = (
-            $comfyHealth.reachable -and
-            -not $evidence.comfyui.repository.dirty -and
-            ($models.Count -gt 0)
-        )
+        ready_for_activation = $readyForActivation
     }
 }
-
-# Recompute without self-reference for compatibility with strict PowerShell modes.
-$evidence.activation.ready_for_activation = (
-    $comfyHealth.reachable -and
-    -not [bool]$evidence.comfyui.repository.dirty -and
-    ($models.Count -gt 0)
-)
 
 $outputParent = Split-Path -Parent $OutputPath
 if ($outputParent) {
@@ -186,8 +187,8 @@ Write-Host "Workflow SHA-256: $($workflow.sha256)"
 Write-Host "Model files: $($models.Count)"
 Write-Host "Custom-node repositories: $($customNodes.Count)"
 Write-Host "ComfyUI reachable: $($comfyHealth.reachable)"
-Write-Host "Ready for controlled activation: $($evidence.activation.ready_for_activation)"
+Write-Host "Ready for controlled activation: $readyForActivation"
 
-if (-not $evidence.activation.ready_for_activation) {
+if (-not $readyForActivation) {
     exit 2
 }
