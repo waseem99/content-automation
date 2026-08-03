@@ -1,0 +1,75 @@
+name: P134 provider-first rendering
+
+on:
+  pull_request:
+    branches: [test]
+    paths:
+      - "src/application/renderers/provider_http.py"
+      - "src/application/renderers/fal_api.py"
+      - "src/application/renderers/vidu_api.py"
+      - "src/operations/provider_managed_worker.py"
+      - "src/operations/provider_worker_onboarding.py"
+      - "scripts/windows/*provider*"
+      - "config/local.env.example"
+      - "docs/operations/PROVIDER_FIRST_VIDEO_PRODUCTION.md"
+      - "tests/unit/test_p134_provider_first_rendering.py"
+      - ".github/workflows/p134-provider-first-rendering.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: p134-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  focused-contracts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install focused dependencies
+        run: >-
+          python -m pip install
+          httpx pytest psycopg[binary] psycopg-pool
+          pydantic pydantic-settings
+      - name: Compile provider tooling
+        run: >-
+          python -m compileall -q
+          src/application/renderers/provider_http.py
+          src/application/renderers/fal_api.py
+          src/application/renderers/vidu_api.py
+          src/operations/provider_managed_worker.py
+          src/operations/provider_worker_onboarding.py
+          tests/unit/test_p134_provider_first_rendering.py
+      - name: Run focused contracts
+        run: python -m pytest -q tests/unit/test_p134_provider_first_rendering.py
+
+  powershell-parse:
+    runs-on: windows-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Parse provider scripts
+        shell: pwsh
+        run: |
+          $errors = @()
+          Get-ChildItem scripts/windows/*provider*.ps1 | ForEach-Object {
+            $tokens = $null
+            $parseErrors = $null
+            [void][System.Management.Automation.Language.Parser]::ParseFile(
+              $_.FullName,
+              [ref]$tokens,
+              [ref]$parseErrors
+            )
+            if ($parseErrors) { $errors += $parseErrors }
+          }
+          if ($errors) {
+            $errors | Format-List | Out-String | Write-Error
+            throw "PowerShell parse failed"
+          }
