@@ -62,8 +62,18 @@ if ($providerTask -and [string]$providerTask.State -eq "Running") {
   throw "Provider workers are running while no-cost acceptance requires provider execution to be disabled. Stop them first."
 }
 
+$expectedGitSha = [string](& git -C $Root rev-parse --verify HEAD 2>$null)
+$expectedGitSha = $expectedGitSha.Trim().ToLowerInvariant()
+if ($LASTEXITCODE -ne 0 -or $expectedGitSha -notmatch '^[0-9a-f]{40}$') {
+  throw "The acceptance runner could not resolve the checked-out Git commit."
+}
+
 $ready = Invoke-RestMethod -Uri "$BaseUrl/runtime/ready" -TimeoutSec 15
 if (-not $ready.ok) { throw "Local runtime readiness is false." }
+$servedGitSha = ([string]$ready.release.git_sha).Trim().ToLowerInvariant()
+if ($servedGitSha -ne $expectedGitSha) {
+  throw "The runtime is stale. Checked-out HEAD is $expectedGitSha but /runtime/ready reports $servedGitSha. Redeploy before testing."
+}
 if ($Mutating) {
   try {
     Invoke-RestMethod -Uri "http://127.0.0.1:11434/api/version" -TimeoutSec 10 | Out-Null
@@ -74,6 +84,10 @@ if ($Mutating) {
 if ($RemoteUrl) {
   $remote = Invoke-RestMethod -Uri "$RemoteUrl/runtime/ready" -Headers @{ "ngrok-skip-browser-warning" = "true" } -TimeoutSec 20
   if (-not $remote.ok) { throw "Remote runtime readiness is false." }
+  $remoteGitSha = ([string]$remote.release.git_sha).Trim().ToLowerInvariant()
+  if ($remoteGitSha -ne $expectedGitSha) {
+    throw "The remote runtime is stale. Checked-out HEAD is $expectedGitSha but the ngrok runtime reports $remoteGitSha."
+  }
 }
 
 $preflight = [ordered]@{
@@ -82,6 +96,7 @@ $preflight = [ordered]@{
   run_id = $RunId
   local_url = $BaseUrl
   remote_url = $RemoteUrl
+  expected_git_sha = $expectedGitSha
   mutating = [bool]$Mutating
   smoke = [bool]$Smoke
   cross_browser = [bool]$CrossBrowser
@@ -124,6 +139,7 @@ $env:PLATFORM_REMOTE_URL = $RemoteUrl.TrimEnd("/")
 $env:PLATFORM_ADMIN_KEY = $admin
 $env:PLATFORM_SUPER_ADMIN_KEY = $superAdmin
 $env:PLATFORM_REVIEWER_KEY = $reviewer
+$env:PLATFORM_EXPECTED_GIT_SHA = $expectedGitSha
 $env:PLATFORM_E2E_RUN_ID = $RunId
 $env:PLATFORM_E2E_RUN_DIR = $RunDir
 $env:PLATFORM_E2E_MUTATING = if ($Mutating) { "true" } else { "false" }
@@ -146,6 +162,7 @@ try {
   Remove-Item Env:PLATFORM_ADMIN_KEY -ErrorAction SilentlyContinue
   Remove-Item Env:PLATFORM_SUPER_ADMIN_KEY -ErrorAction SilentlyContinue
   Remove-Item Env:PLATFORM_REVIEWER_KEY -ErrorAction SilentlyContinue
+  Remove-Item Env:PLATFORM_EXPECTED_GIT_SHA -ErrorAction SilentlyContinue
 }
 
 Write-Host "Acceptance evidence: $RunDir" -ForegroundColor Cyan
