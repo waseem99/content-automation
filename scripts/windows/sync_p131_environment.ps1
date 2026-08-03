@@ -23,6 +23,10 @@ $values["HYBRID_PUBLIC_PUBLISHING_ENABLED"] = "false"
 $values["PRE_GENERATION_AUTOPILOT_ENABLED"] = "true"
 $values["LOCAL_SCRIPT_TIMEOUT_SECONDS"] = "120"
 $values["OPS_MAX_REQUEST_BODY_BYTES"] = "67108864"
+# The browser shell and versioned static assets are not protected API calls.
+# Keep authentication, operations and every other API route inside the rate window.
+$values["OPS_RATE_LIMIT_EXEMPT_PATHS"] = '["/app","/favicon.ico","/health","/runtime/ready"]'
+$values["OPS_RATE_LIMIT_EXEMPT_PREFIXES"] = '["/app/","/assets/"]'
 
 # Release evidence must identify the checkout that is actually serving Creator Studio.
 # Failure to resolve Git is non-destructive: an existing valid SHA is retained.
