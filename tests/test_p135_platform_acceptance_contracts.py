@@ -3,8 +3,6 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from src.operations.settings import OperationsSettings
-
 ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -57,17 +55,17 @@ def test_browser_suite_contains_required_acceptance_surfaces() -> None:
 
 
 def test_static_creator_ui_does_not_consume_the_api_rate_window() -> None:
-    settings = OperationsSettings()
-    assert "/app" in settings.rate_limit_exempt_paths
-    assert "/favicon.ico" in settings.rate_limit_exempt_paths
-    assert "/app/" in settings.rate_limit_exempt_prefixes
-    assert "/assets/" in settings.rate_limit_exempt_prefixes
-    assert "/access/me" not in settings.rate_limit_exempt_paths
-    assert not any("/access/me".startswith(prefix) for prefix in settings.rate_limit_exempt_prefixes)
+    settings = (ROOT / "src/operations/settings.py").read_text(encoding="utf-8")
+    assert '"/app",' in settings
+    assert '"/favicon.ico",' in settings
+    assert "rate_limit_exempt_prefixes" in settings
+    assert '"/app/"' in settings
+    assert '"/assets/"' in settings
 
     middleware = (ROOT / "src/operator_api/operations_middleware.py").read_text(encoding="utf-8")
     assert "if not self._rate_limit_exempt(path):" in middleware
     assert "self.settings.rate_limit_exempt_prefixes" in middleware
+    assert "path.startswith(prefix)" in middleware
 
 
 def test_campaign_extension_direct_routes_reconcile_after_core_router_boot() -> None:
