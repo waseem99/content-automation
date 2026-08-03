@@ -104,13 +104,16 @@ def test_creator_studio_has_native_campaign_route() -> None:
     assert "Final video generation is not connected" in javascript
 
 
-def test_windows_deployment_advances_to_0101_and_installs_worker() -> None:
+def test_windows_deployment_keeps_p120_worker_on_current_schema_head() -> None:
     environment = (ROOT / "config" / "local.env.example").read_text(encoding="utf-8")
     deploy = (ROOT / "scripts" / "windows" / "deploy_always_on_local_production.ps1").read_text(encoding="utf-8")
     remote = (ROOT / "scripts" / "windows" / "deploy_remote_content_automation.ps1").read_text(encoding="utf-8")
+    sync = (ROOT / "scripts" / "windows" / "sync_p131_environment.ps1").read_text(encoding="utf-8")
     task = (ROOT / "scripts" / "windows" / "install_pre_generation_service.ps1").read_text(encoding="utf-8")
-    assert "OPS_MIGRATION_HEAD=0101_p120_pre_generation_autopilot.sql" in environment
+    assert "OPS_MIGRATION_HEAD=0108_p131_staged_acceptance_closeout.sql" in environment
     assert "PRE_GENERATION_AUTOPILOT_ENABLED=true" in environment
     assert "install_pre_generation_service.ps1" in deploy
-    assert "0101_p120_pre_generation_autopilot.sql" in remote
+    assert "sync_p131_environment.ps1" in deploy
+    assert "0108_p131_staged_acceptance_closeout.sql" in remote
+    assert "0108_p131_staged_acceptance_closeout.sql" in sync
     assert "New-ScheduledTask" in task

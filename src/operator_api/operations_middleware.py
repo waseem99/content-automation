@@ -8,7 +8,7 @@ import re
 import time
 from collections import defaultdict, deque
 from dataclasses import dataclass
-from typing import Any, Awaitable, Callable
+from typing import Any
 from uuid import uuid4
 
 from starlette.types import ASGIApp, Message, Receive, Scope, Send
@@ -46,7 +46,7 @@ class OperationsSafetyMiddleware:
         method = str(scope.get("method") or "GET")
         client_hash = self._client_hash(scope)
 
-        if path not in self.settings.rate_limit_exempt_paths:
+        if not self._rate_limit_exempt(path):
             allowed, retry_after = await self._allow_request(client_hash)
             if not allowed:
                 await self._json_response(
@@ -157,6 +157,11 @@ class OperationsSafetyMiddleware:
                 client_hash=client_hash,
                 request_bytes=received_bytes,
             )
+
+    def _rate_limit_exempt(self, path: str) -> bool:
+        if path in self.settings.rate_limit_exempt_paths:
+            return True
+        return any(path.startswith(prefix) for prefix in self.settings.rate_limit_exempt_prefixes)
 
     async def _allow_request(self, client_hash: str) -> tuple[bool, int]:
         now = time.monotonic()

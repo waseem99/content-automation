@@ -1,5 +1,5 @@
 const { test, expect } = require('@playwright/test');
-const { assertClean, authHeaders, monitorPage, signIn } = require('./support');
+const { assertClean, authHeaders, monitorPage, navigateApp, signIn } = require('./support');
 
 test.describe('spend, publishing and security safety contracts', () => {
   test('@smoke unauthenticated protected APIs reject access', async ({ request }) => {
@@ -12,9 +12,14 @@ test.describe('spend, publishing and security safety contracts', () => {
   test('@smoke browser never calls provider or publishing origins during no-cost acceptance', async ({ page }, testInfo) => {
     const findings = monitorPage(page);
     await signIn(page, 'admin');
-    for (const route of ['/app/dashboard', '/app/campaigns', '/app/content', '/app/reviews', '/app/publishing', '/app/operations']) {
-      await page.goto(route);
-      await page.waitForTimeout(300);
+    await expect(page.locator('#primary-nav a[href="/app/campaigns"]')).toBeVisible();
+    const routes = await page.locator('#primary-nav a[href^="/app/"]').evaluateAll((links) => [
+      ...new Set(links.map((link) => link.getAttribute('href')).filter(Boolean))
+    ]);
+    for (const route of routes) {
+      if (new URL(page.url()).pathname !== route) await navigateApp(page, route);
+      await expect(page.locator('#page-title')).not.toHaveText('Page not found');
+      await page.waitForTimeout(150);
     }
     await assertClean(findings, testInfo);
   });
@@ -22,6 +27,7 @@ test.describe('spend, publishing and security safety contracts', () => {
   test('campaign workspace explicitly states paid generation and publishing are unavailable', async ({ page }) => {
     await signIn(page, 'admin');
     await page.goto('/app/campaigns');
+    await expect(page.locator('#page-title')).toContainText(/Campaigns/i);
     await expect(page.locator('#app-view')).toContainText(/Rendering and publishing remain off|Paid generation and public publishing/i);
   });
 

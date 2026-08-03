@@ -17,7 +17,19 @@ async function signIn(page, role = 'admin') {
   const dialog = page.locator('#login-dialog');
   if (await dialog.isVisible().catch(() => false)) {
     await page.locator('#operator-key').fill(key);
+    const accessResponse = page.waitForResponse((response) => {
+      const url = new URL(response.url());
+      return url.pathname === '/access/me' && [200, 401, 403, 429].includes(response.status());
+    });
     await page.locator('#login-form button[type="submit"]').click();
+    const response = await accessResponse;
+    if (response.status() === 429) {
+      const retryAfter = response.headers()['retry-after'] || 'unknown';
+      throw new Error(`Creator Studio sign-in was rate limited. Retry-After: ${retryAfter} seconds.`);
+    }
+    if (response.status() !== 200) {
+      throw new Error(`Creator Studio sign-in failed with HTTP ${response.status()}.`);
+    }
   }
   await expect(page.locator('#studio-shell')).toBeVisible();
   await expect(page.locator('#page-title')).toBeVisible();
@@ -29,14 +41,35 @@ async function signOut(page) {
   await expect(page.locator('#login-dialog')).toBeVisible();
 }
 
+async function navigateApp(page, path) {
+  const link = page.locator(`#primary-nav a[href="${path}"]`).first();
+  await expect(link, `Navigation link is missing for ${path}`).toBeVisible();
+  await link.click();
+  await expect(page).toHaveURL(new RegExp(`${escapeRegex(path)}(?:/)?$`));
+  await expect(page.locator('#studio-shell')).toBeVisible();
+  await expect(page.locator('#page-title')).toBeVisible();
+}
+
 function monitorPage(page) {
-  const findings = { consoleErrors: [], pageErrors: [], serverErrors: [], externalRequests: [] };
+  const findings = {
+    consoleErrors: [],
+    pageErrors: [],
+    clientErrors: [],
+    serverErrors: [],
+    externalRequests: []
+  };
   page.on('console', (message) => {
-    if (message.type() === 'error') findings.consoleErrors.push(message.text());
+    const text = message.text();
+    if (message.type() === 'error' && !/^Failed to load resource: the server responded with a status of \d{3}/i.test(text)) {
+      findings.consoleErrors.push(text);
+    }
   });
   page.on('pageerror', (error) => findings.pageErrors.push(error.message));
   page.on('response', (response) => {
-    if (response.status() >= 500) findings.serverErrors.push(`${response.status()} ${response.url()}`);
+    const status = response.status();
+    const item = { status, method: response.request().method(), url: response.url() };
+    if (status >= 400 && status < 500) findings.clientErrors.push(item);
+    if (status >= 500) findings.serverErrors.push(item);
   });
   page.on('request', (request) => {
     const url = request.url();
@@ -52,7 +85,16 @@ async function assertClean(findings, testInfo, options = {}) {
     body: Buffer.from(JSON.stringify(findings, null, 2)),
     contentType: 'application/json'
   });
+  const allowedClientErrors = options.allowedClientErrors || [];
+  const unexpectedClientErrors = findings.clientErrors.filter((item) => !allowedClientErrors.some((rule) => {
+    const path = new URL(item.url).pathname;
+    const statusMatches = rule.status === undefined || rule.status === item.status;
+    const pathMatches = rule.path === undefined || rule.path === path;
+    const prefixMatches = rule.pathPrefix === undefined || path.startsWith(rule.pathPrefix);
+    return statusMatches && pathMatches && prefixMatches;
+  }));
   if (!options.allowServerErrors) expect(findings.serverErrors, 'Unexpected server errors').toEqual([]);
+  if (!options.allowClientErrors) expect(unexpectedClientErrors, 'Unexpected client HTTP errors').toEqual([]);
   if (!options.allowConsoleErrors) expect(findings.consoleErrors, 'Unexpected browser console errors').toEqual([]);
   expect(findings.pageErrors, 'Unhandled browser errors').toEqual([]);
   expect(findings.externalRequests, 'Browser initiated a paid-provider or publishing request').toEqual([]);
@@ -131,6 +173,10 @@ async function createQaCampaign(request) {
   return { brand, campaign, version, campaignKey };
 }
 
+function escapeRegex(value) {
+  return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 module.exports = {
   assertClean,
   authHeaders,
@@ -138,6 +184,7 @@ module.exports = {
   envKey,
   firstBrand,
   monitorPage,
+  navigateApp,
   runId,
   signIn,
   signOut,

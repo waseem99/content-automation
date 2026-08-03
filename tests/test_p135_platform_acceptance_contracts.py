@@ -52,3 +52,42 @@ def test_browser_suite_contains_required_acceptance_surfaces() -> None:
         "@smoke",
     ):
         assert marker in tests
+
+
+def test_static_creator_ui_does_not_consume_the_api_rate_window() -> None:
+    settings = (ROOT / "src/operations/settings.py").read_text(encoding="utf-8")
+    environment = (ROOT / "config/local.env.example").read_text(encoding="utf-8")
+    sync = (ROOT / "scripts/windows/sync_p131_environment.ps1").read_text(encoding="utf-8")
+    assert '"/app",' in settings
+    assert '"/favicon.ico",' in settings
+    assert "rate_limit_exempt_prefixes" in settings
+    assert '"/app/"' in settings
+    assert '"/assets/"' in settings
+    assert 'OPS_RATE_LIMIT_EXEMPT_PATHS=["/app","/favicon.ico","/health","/runtime/ready"]' in environment
+    assert 'OPS_RATE_LIMIT_EXEMPT_PREFIXES=["/app/","/assets/"]' in environment
+    assert '$values["OPS_RATE_LIMIT_EXEMPT_PATHS"]' in sync
+    assert '$values["OPS_RATE_LIMIT_EXEMPT_PREFIXES"]' in sync
+
+    middleware = (ROOT / "src/operator_api/operations_middleware.py").read_text(encoding="utf-8")
+    assert "if not self._rate_limit_exempt(path):" in middleware
+    assert "self.settings.rate_limit_exempt_prefixes" in middleware
+    assert "path.startswith(prefix)" in middleware
+
+
+def test_campaign_extension_direct_routes_reconcile_after_core_router_boot() -> None:
+    index = (ROOT / "web/static-creator-ui/index.html").read_text(encoding="utf-8")
+    bridge = (ROOT / "web/static-creator-ui/assets/studio-v2-route-bridge.js").read_text(encoding="utf-8")
+    assert '<link rel="icon" href="data:,">' in index
+    assert "studio-v2-route-bridge.js" in index
+    assert 'title === "Page not found"' in bridge
+    assert "#campaigns-nav-link" in bridge
+    assert "link.click()" in bridge
+
+
+def test_browser_monitor_classifies_expected_http_failures_without_hiding_javascript_errors() -> None:
+    support = (ROOT / "tests/e2e/support.js").read_text(encoding="utf-8")
+    assert "clientErrors" in support
+    assert "allowedClientErrors" in support
+    assert "Unexpected client HTTP errors" in support
+    assert "navigateApp" in support
+    assert "Failed to load resource" in support
