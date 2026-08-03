@@ -30,7 +30,7 @@ test.describe('runtime and deployment acceptance', () => {
   test('@smoke Creator Studio shell and static assets load without browser errors', async ({ page }, testInfo) => {
     const findings = monitorPage(page);
     await page.goto('/app/dashboard');
-    await expect(page.locator('title')).toHaveText(/Content Engine Studio/);
+    await expect(page).toHaveTitle(/Content Engine Studio/);
     await expect(page.locator('#login-dialog')).toBeVisible();
     await expect(page.locator('#operator-key')).toBeVisible();
     await assertClean(findings, testInfo);
