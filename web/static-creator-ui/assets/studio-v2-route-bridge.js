@@ -18,11 +18,17 @@
       || /Production campaigns|Unable to load campaigns|Automatic pre-generation control center/i.test(view.textContent || "");
   }
 
+  function requestCampaignRender() {
+    const renderCurrentRoute = window.StudioCampaignRoutes?.renderCurrentRoute;
+    if (typeof renderCurrentRoute !== "function") return false;
+    void renderCurrentRoute();
+    return true;
+  }
+
   function reconcileCampaignRoute() {
     if (!onCampaignRoute() || campaignViewReady() || queued) return;
     const shell = $("#studio-shell");
-    const link = $("#campaigns-nav-link") || $('#primary-nav a[href="/app/campaigns"]');
-    if (!shell || shell.hidden || !link) return;
+    if (!shell || shell.hidden) return;
 
     const now = Date.now();
     if (now - lastRecoveryAt < 100) return;
@@ -30,7 +36,8 @@
     queued = true;
     queueMicrotask(() => {
       queued = false;
-      if (onCampaignRoute() && !campaignViewReady()) link.click();
+      if (!onCampaignRoute() || campaignViewReady()) return;
+      if (!requestCampaignRender()) window.setTimeout(reconcileCampaignRoute, 50);
     });
   }
 
