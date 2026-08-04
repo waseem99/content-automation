@@ -51,6 +51,12 @@ For each provider, retain:
 
 Do not send API keys through WhatsApp, Creator Studio or GitHub.
 
+## Pricing representation
+
+The approved fal Wan 2.2 catalogue entry uses `per_request_usd`. Its fixed request charge is reserved once per accepted preflight and is not multiplied by video duration. Vidu remains represented by its reviewed billing unit, currently `per_second_usd` plus optional credit reconciliation.
+
+Deployment safely migrates an existing active fal Wan entry from the legacy duration field to a versioned fixed-request entry. The migration creates no provider request and keeps paid execution disabled. If no positive reviewed price exists, deployment fails closed and requires provider setup to be rerun with the reviewed fixed request charge.
+
 ## Configure providers
 
 Keep Creator Studio and PostgreSQL running. Open PowerShell as Administrator from the repository root.
@@ -60,7 +66,7 @@ Example for both providers:
 ```powershell
 & .\scripts\windows\setup_provider_first_rendering.ps1 `
   -Provider both `
-  -FalPricePerSecondUsd <reviewed-fal-price> `
+  -FalPricePerRequestUsd <reviewed-fal-fixed-request-charge> `
   -FalUsageTermsUrl "<official-fal-terms-url>" `
   -FalUsageEvidenceFile "C:\secure\fal-terms-and-pricing.txt" `
   -ViduPricePerSecondUsd <reviewed-vidu-price> `
@@ -78,7 +84,7 @@ Only after budgets and the first shot are approved:
 ```powershell
 & .\scripts\windows\setup_provider_first_rendering.ps1 `
   -Provider both `
-  -FalPricePerSecondUsd <reviewed-fal-price> `
+  -FalPricePerRequestUsd <reviewed-fal-fixed-request-charge> `
   -FalUsageTermsUrl "<official-fal-terms-url>" `
   -FalUsageEvidenceFile "C:\secure\fal-terms-and-pricing.txt" `
   -ViduPricePerSecondUsd <reviewed-vidu-price> `
