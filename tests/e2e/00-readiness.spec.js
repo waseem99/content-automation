@@ -17,9 +17,7 @@ test.describe('runtime and deployment acceptance', () => {
     expect(payload.release?.migration_head).toMatch(/^0108_p131_staged_acceptance_closeout\.sql$/);
   });
 
-  test('@smoke release evidence identifies the deployed commit', async ({ request }, testInfo) => {
-    testInfo.annotations.push({ type: 'severity', description: 'P2' });
-    testInfo.annotations.push({ type: 'improvement', description: 'Populate OPS_GIT_SHA and the configuration digest from the deployed checkout instead of all-zero placeholders.' });
+  test('@smoke release evidence identifies the deployed commit', async ({ request }) => {
     const expectedGitSha = process.env.PLATFORM_EXPECTED_GIT_SHA;
     expect(expectedGitSha).toMatch(/^[0-9a-f]{40}$/);
     const payload = await (await request.get('/runtime/ready')).json();
