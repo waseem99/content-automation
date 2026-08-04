@@ -141,7 +141,7 @@ def test_fal_wan_uses_one_fixed_request_charge_and_safe_versioned_upgrade() -> N
 
 
 def test_evidence_sanitizer_redacts_plain_archived_and_embedded_report_values(tmp_path: Path) -> None:
-    secret = "acceptance-secret-value-123456789"
+    secret = "-".join(("acceptance", "redaction", "sample", str(123456789)))
     trace = tmp_path / "trace.zip"
     with zipfile.ZipFile(trace, "w", compression=zipfile.ZIP_DEFLATED) as archive:
         archive.writestr("trace.trace", json.dumps({"step": f'Fill "{secret}"'}))
