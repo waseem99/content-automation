@@ -69,7 +69,11 @@ def create_configured_app(
         )
     auth = auth_settings or OperatorAuthSettings()
     app = create_app(database=database, auth_settings=auth)
-    app.add_middleware(OperationsSafetyMiddleware, settings=operations)
+    app.add_middleware(
+        OperationsSafetyMiddleware,
+        settings=operations,
+        trusted_operator_keys=frozenset(auth.api_keys),
+    )
     install_operator_access(app, database=database, auth_settings=auth)
     install_brand_profile_routes(app, database=database, auth_settings=auth)
     install_production_workflow_routes(app, database=database, auth_settings=auth)
@@ -155,7 +159,8 @@ def create_configured_app(
                 "worker_job_ids": True,
                 "rate_limit": {
                     "requests_per_minute": operations.requests_per_minute,
-                    "scope": "per_instance_client_hash",
+                    "authenticated_requests_per_minute": operations.authenticated_requests_per_minute,
+                    "scope": "per_instance_client_or_valid_operator_hash",
                 },
                 "max_request_body_bytes": operations.max_request_body_bytes,
             },
