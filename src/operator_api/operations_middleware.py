@@ -227,7 +227,10 @@ class OperationsSafetyMiddleware:
                 return _RateIdentity(
                     key=bounded_key,
                     scope="authenticated_operator",
-                    requests_per_minute=self.settings.authenticated_requests_per_minute,
+                    requests_per_minute=max(
+                        self.settings.requests_per_minute,
+                        self.settings.authenticated_requests_per_minute,
+                    ),
                 )
 
         return _RateIdentity(
