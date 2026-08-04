@@ -31,10 +31,18 @@ test.describe.serial('Creator Studio content lifecycle', () => {
     await expect(page.locator('#app-view')).toContainText('Confirm and generate');
     await expect(page.locator('#app-view')).toContainText('Nothing is automatically approved or published');
 
+    const createResponse = page.waitForResponse((response) => {
+      const url = new URL(response.url());
+      return response.request().method() === 'POST' && url.pathname === '/p110/content';
+    });
     await page.locator('#wizard-create').click();
-    await expect(page).toHaveURL(/\/app\/content\/[0-9a-f-]{36}\/script/i, { timeout: 60_000 });
-    contentId = page.url().match(/\/app\/content\/([0-9a-f-]{36})/i)?.[1];
-    expect(contentId).toBeTruthy();
+    const response = await createResponse;
+    const payload = await response.json().catch(() => ({}));
+    expect(response.status(), `POST /p110/content failed: ${JSON.stringify(payload)}`).toBe(200);
+    expect(payload.content_id, `POST /p110/content did not return content_id: ${JSON.stringify(payload)}`).toMatch(/^[0-9a-f-]{36}$/i);
+
+    await expect(page).toHaveURL(new RegExp(`/app/content/${payload.content_id}/script$`, 'i'), { timeout: 60_000 });
+    contentId = payload.content_id;
     await expect(page.locator('#page-title')).toContainText(`E2E Creator Studio ${id}`);
     await expect(page.locator('#app-view')).toContainText(/Generating|Script|queued|draft/i);
     await assertClean(findings, testInfo);
