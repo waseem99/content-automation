@@ -11,11 +11,37 @@ function envKey(role) {
   return value;
 }
 
+async function waitForStudioEntry(page) {
+  const handle = await page.waitForFunction(() => {
+    const shell = document.querySelector('#studio-shell');
+    const dialog = document.querySelector('#login-dialog');
+    const boot = document.querySelector('#boot-screen');
+    const bootMessage = document.querySelector('#boot-message');
+    const loading = boot?.querySelector('.loading-bar');
+
+    if (shell && !shell.hidden) return { state: 'authenticated' };
+    if (dialog && dialog.open) return { state: 'login' };
+    if (boot && !boot.hidden && loading?.hidden) {
+      return {
+        state: 'boot-error',
+        message: String(bootMessage?.textContent || 'Creator Studio boot failed.').trim()
+      };
+    }
+    return false;
+  }, null, { timeout: 15000 });
+  return handle.jsonValue();
+}
+
 async function signIn(page, role = 'admin') {
   const key = envKey(role);
   await page.goto('/app/dashboard');
-  const dialog = page.locator('#login-dialog');
-  if (await dialog.isVisible().catch(() => false)) {
+
+  const entry = await waitForStudioEntry(page);
+  if (entry.state === 'boot-error') {
+    throw new Error(`Creator Studio did not reach an authentication state: ${entry.message}`);
+  }
+
+  if (entry.state === 'login') {
     await page.locator('#operator-key').fill(key);
     const accessResponse = page.waitForResponse((response) => {
       const url = new URL(response.url());
@@ -31,7 +57,14 @@ async function signIn(page, role = 'admin') {
       throw new Error(`Creator Studio sign-in failed with HTTP ${response.status()}.`);
     }
   }
-  await expect(page.locator('#studio-shell')).toBeVisible();
+
+  try {
+    await expect(page.locator('#studio-shell')).toBeVisible();
+  } catch (error) {
+    const loginError = String(await page.locator('#login-error').textContent().catch(() => '') || '').trim();
+    if (loginError) throw new Error(`Creator Studio sign-in did not open the workspace: ${loginError}`);
+    throw error;
+  }
   await expect(page.locator('#page-title')).toBeVisible();
   return key;
 }
@@ -188,5 +221,6 @@ module.exports = {
   runId,
   signIn,
   signOut,
+  waitForStudioEntry,
   apiJson
 };

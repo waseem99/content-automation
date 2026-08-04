@@ -135,3 +135,21 @@ def test_playwright_uses_document_title_assertion() -> None:
 
     assert "expect(page).toHaveTitle(/Content Engine Studio/)" in readiness
     assert "locator('title')" not in readiness
+
+
+def test_playwright_sign_in_waits_for_a_real_entry_state() -> None:
+    support = (ROOT / "tests/e2e/support.js").read_text(encoding="utf-8")
+
+    assert "async function waitForStudioEntry(page)" in support
+    assert "page.waitForFunction" in support
+    assert "dialog && dialog.open" in support
+    assert "shell && !shell.hidden" in support
+    assert "const entry = await waitForStudioEntry(page);" in support
+    assert "if (await dialog.isVisible().catch(() => false))" not in support
+
+
+def test_resolved_release_identity_is_not_reported_as_an_improvement() -> None:
+    readiness = (ROOT / "tests/e2e/00-readiness.spec.js").read_text(encoding="utf-8")
+
+    assert "type: 'improvement'" not in readiness
+    assert "Populate OPS_GIT_SHA" not in readiness
