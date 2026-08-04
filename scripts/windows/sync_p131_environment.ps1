@@ -23,6 +23,11 @@ $values["HYBRID_PUBLIC_PUBLISHING_ENABLED"] = "false"
 $values["PRE_GENERATION_AUTOPILOT_ENABLED"] = "true"
 $values["LOCAL_SCRIPT_TIMEOUT_SECONDS"] = "120"
 $values["OPS_MAX_REQUEST_BODY_BYTES"] = "67108864"
+# Anonymous traffic keeps the strict baseline. A valid operator key receives a
+# separate, still-bounded window sized for the Creator Studio SPA fan-out and
+# deterministic browser acceptance. Unknown keys stay in the anonymous bucket.
+$values["OPS_REQUESTS_PER_MINUTE"] = "120"
+$values["OPS_AUTHENTICATED_REQUESTS_PER_MINUTE"] = "600"
 # The browser shell and versioned static assets are not protected API calls.
 # Keep authentication, operations and every other API route inside the rate window.
 $values["OPS_RATE_LIMIT_EXEMPT_PATHS"] = '["/app","/favicon.ico","/health","/runtime/ready"]'
