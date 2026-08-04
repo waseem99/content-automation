@@ -1,0 +1,7 @@
+:root{
+  --eyebrow-accessible:#175cd3;
+}
+
+.eyebrow{
+  color:var(--eyebrow-accessible);
+}
