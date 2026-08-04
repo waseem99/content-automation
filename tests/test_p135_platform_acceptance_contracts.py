@@ -80,8 +80,9 @@ def test_campaign_extension_direct_routes_reconcile_after_core_router_boot() -> 
     assert '<link rel="icon" href="data:,">' in index
     assert "studio-v2-route-bridge.js" in index
     assert 'title === "Page not found"' in bridge
-    assert "#campaigns-nav-link" in bridge
-    assert "link.click()" in bridge
+    assert 'new PopStateEvent("popstate"' in bridge
+    assert "link.click()" not in bridge
+    assert "history.pushState" not in bridge
 
 
 def test_browser_monitor_classifies_expected_http_failures_without_hiding_javascript_errors() -> None:
