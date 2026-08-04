@@ -14,6 +14,7 @@ on:
       - "scripts/windows/sync_p131_environment.ps1"
       - "scripts/windows/setup_provider_first_rendering.ps1"
       - "scripts/windows/deploy_remote_content_automation.ps1"
+      - "scripts/windows/rotate_local_operator_keys.ps1"
       - "src/application/renderers/validated_service.py"
       - "src/operations/fal_fixed_request_pricing.py"
       - "web/static-creator-ui/**"
@@ -54,7 +55,7 @@ jobs:
             src/application/renderers/validated_service.py \
             tests/test_p135_platform_acceptance_contracts.py \
             tests/unit/test_p135_full_no_cost_browser_fixes.py
-          pwsh -NoProfile -Command '$files = @("scripts/windows/run_platform_acceptance.ps1", "scripts/windows/setup_provider_first_rendering.ps1", "scripts/windows/deploy_remote_content_automation.ps1"); foreach ($file in $files) { [scriptblock]::Create((Get-Content -LiteralPath $file -Raw)) | Out-Null }'
+          pwsh -NoProfile -Command '$files = @("scripts/windows/run_platform_acceptance.ps1", "scripts/windows/setup_provider_first_rendering.ps1", "scripts/windows/deploy_remote_content_automation.ps1", "scripts/windows/rotate_local_operator_keys.ps1"); foreach ($file in $files) { [scriptblock]::Create((Get-Content -LiteralPath $file -Raw)) | Out-Null }'
       - name: Discover all tests
         run: npx playwright test --list
       - name: Run repository acceptance contracts
