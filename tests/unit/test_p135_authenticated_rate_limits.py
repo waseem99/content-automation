@@ -4,8 +4,6 @@ from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-from pydantic import ValidationError
-import pytest
 
 from src.operations.settings import OperationsSettings
 from src.operator_api.operations_middleware import OperationsSafetyMiddleware
@@ -89,13 +87,22 @@ def test_distinct_valid_operators_do_not_share_one_rate_window() -> None:
     assert client.get("/limited", headers={"X-Operator-Key": "operator-b"}).status_code == 429
 
 
-def test_authenticated_limit_is_never_weaker_than_the_client_contract() -> None:
-    with pytest.raises(ValidationError, match="cannot be lower"):
-        OperationsSettings(
-            _env_file=None,
-            requests_per_minute=120,
-            authenticated_requests_per_minute=119,
-        )
+def test_custom_high_client_limit_is_preserved_for_valid_operators() -> None:
+    client = build_rate_limited_client(
+        anonymous_limit=3,
+        authenticated_limit=1,
+        trusted_keys={"trusted-admin"},
+    )
+
+    headers = {"X-Operator-Key": "trusted-admin"}
+    assert [client.get("/limited", headers=headers).status_code for _ in range(3)] == [
+        200,
+        200,
+        200,
+    ]
+    limited = client.get("/limited", headers=headers)
+    assert limited.status_code == 429
+    assert limited.json()["rate_limit_scope"] == "authenticated_operator"
 
 
 def test_runtime_and_environment_expose_the_two_bounded_limits() -> None:
@@ -105,6 +112,7 @@ def test_runtime_and_environment_expose_the_two_bounded_limits() -> None:
     production = (ROOT / "config/production.env.example").read_text(encoding="utf-8")
 
     assert "trusted_operator_keys=frozenset(auth.api_keys)" in runtime
+    assert "effective_authenticated_requests_per_minute" in runtime
     assert 'OPS_AUTHENTICATED_REQUESTS_PER_MINUTE"] = "600"' in sync
     assert "OPS_REQUESTS_PER_MINUTE=120" in staging
     assert "OPS_AUTHENTICATED_REQUESTS_PER_MINUTE=600" in staging
