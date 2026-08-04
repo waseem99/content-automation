@@ -160,6 +160,10 @@ def create_configured_app(
                 "rate_limit": {
                     "requests_per_minute": operations.requests_per_minute,
                     "authenticated_requests_per_minute": operations.authenticated_requests_per_minute,
+                    "effective_authenticated_requests_per_minute": max(
+                        operations.requests_per_minute,
+                        operations.authenticated_requests_per_minute,
+                    ),
                     "scope": "per_instance_client_or_valid_operator_hash",
                 },
                 "max_request_body_bytes": operations.max_request_body_bytes,
