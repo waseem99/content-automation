@@ -140,6 +140,18 @@ def test_fal_wan_uses_one_fixed_request_charge_and_safe_versioned_upgrade() -> N
     assert "src.operations.fal_fixed_request_pricing" in deploy
 
 
+def test_operator_key_rotation_is_atomic_non_printing_and_restart_explicit() -> None:
+    script = (ROOT / "scripts/windows/rotate_local_operator_keys.ps1").read_text(encoding="utf-8")
+    assert "New-OperatorSecret" in script
+    assert "RandomNumberGenerator" in script
+    assert "OPERATOR_API_KEYS_JSON" in script
+    assert "Move-Item -LiteralPath $temporary -Destination $Path -Force" in script
+    assert 'secret_values_recorded = $false' in script
+    assert 'restart_required = $true' in script
+    assert "The replacement values were written only" in script
+    assert "Write-Host $newKey" not in script
+
+
 def test_evidence_sanitizer_redacts_plain_archived_and_embedded_report_values(tmp_path: Path) -> None:
     secret = "-".join(("acceptance", "redaction", "sample", str(123456789)))
     trace = tmp_path / "trace.zip"
