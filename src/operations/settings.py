@@ -53,10 +53,6 @@ class OperationsSettings(BaseSettings):
 
     @model_validator(mode="after")
     def production_safety(self) -> "OperationsSettings":
-        if self.authenticated_requests_per_minute < self.requests_per_minute:
-            raise ValueError(
-                "authenticated_requests_per_minute cannot be lower than requests_per_minute"
-            )
         if self.environment == "production":
             placeholders = {
                 "release_key": self.release_key == "local-unreleased",
@@ -89,6 +85,10 @@ class OperationsSettings(BaseSettings):
             "max_request_body_bytes": self.max_request_body_bytes,
             "requests_per_minute": self.requests_per_minute,
             "authenticated_requests_per_minute": self.authenticated_requests_per_minute,
+            "effective_authenticated_requests_per_minute": max(
+                self.requests_per_minute,
+                self.authenticated_requests_per_minute,
+            ),
             "rate_limit_exempt_paths": list(self.rate_limit_exempt_paths),
             "rate_limit_exempt_prefixes": list(self.rate_limit_exempt_prefixes),
             "storage_capacity_bytes": self.storage_capacity_bytes,
