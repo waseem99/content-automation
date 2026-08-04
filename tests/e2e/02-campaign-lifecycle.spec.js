@@ -31,18 +31,40 @@ test.describe.serial('database-native campaign lifecycle', () => {
     test.skip(!mutating || !fixture, 'Mutating campaign fixture was not created.');
     await signIn(page, 'admin');
     await page.goto(`/app/campaigns/${fixture.campaign.id}`);
+    await expect(page.locator('#page-title')).toContainText('E2E Platform Acceptance');
+    await expect(page.locator('#campaign-pause, #campaign-resume')).toBeVisible();
+
     const before = await apiJson(request, 'GET', `/p119/campaigns/${fixture.campaign.id}`, { expected: [200] });
     const versionIds = (before.payload.versions || []).map((item) => item.id);
 
-    const pause = page.locator('#campaign-pause');
-    if (await pause.isVisible().catch(() => false)) {
-      await pause.click();
-      await expect(page.locator('#campaign-resume')).toBeVisible();
+    if (before.payload.campaign.status !== 'paused') {
+      const pauseResponse = page.waitForResponse((response) => {
+        const url = new URL(response.url());
+        return response.request().method() === 'POST'
+          && url.pathname === `/p120/campaigns/${fixture.campaign.id}/pause`;
+      });
+      await page.locator('#campaign-pause').click();
+      const response = await pauseResponse;
+      const payload = await response.json().catch(() => ({}));
+      expect(response.status(), `Pause failed: ${JSON.stringify(payload)}`).toBe(200);
     }
-    const paused = await apiJson(request, 'GET', `/p119/campaigns/${fixture.campaign.id}`, { expected: [200] });
-    expect(paused.payload.campaign.status).toBe('paused');
 
+    await expect(page.locator('#campaign-resume')).toBeVisible();
+    await expect.poll(async () => {
+      const paused = await apiJson(request, 'GET', `/p119/campaigns/${fixture.campaign.id}`, { expected: [200] });
+      return paused.payload.campaign.status;
+    }).toBe('paused');
+
+    const resumeResponse = page.waitForResponse((response) => {
+      const url = new URL(response.url());
+      return response.request().method() === 'POST'
+        && url.pathname === `/p120/campaigns/${fixture.campaign.id}/resume`;
+    });
     await page.locator('#campaign-resume').click();
+    const response = await resumeResponse;
+    const payload = await response.json().catch(() => ({}));
+    expect(response.status(), `Resume failed: ${JSON.stringify(payload)}`).toBe(200);
+
     await expect(page.locator('#campaign-pause')).toBeVisible();
     const resumed = await apiJson(request, 'GET', `/p119/campaigns/${fixture.campaign.id}`, { expected: [200] });
     expect(resumed.payload.campaign.status).not.toBe('paused');
