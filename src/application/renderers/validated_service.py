@@ -1,20 +1,35 @@
 from __future__ import annotations
 
+from decimal import Decimal
 from typing import Any
 from uuid import UUID
 
 from src.application.renderers.models import (
+    RendererCapabilityRequest,
     RendererHealthRequest,
     RendererRepriceRequest,
 )
 from src.application.renderers.service import (
     RendererCatalogueError,
     RendererCatalogueService,
+    _decimal,
 )
 
 
 class ValidatedRendererCatalogueService(RendererCatalogueService):
-    """Production service with evidence-backed health carry-forward on repricing."""
+    """Production service with evidence-backed health and pricing validation."""
+
+    @staticmethod
+    def _estimate_cost(entry: dict[str, Any], request: RendererCapabilityRequest) -> Decimal:
+        pricing = dict(entry["pricing"] or {})
+        duration = _decimal(request.duration_seconds)
+        megapixels = Decimal(request.width * request.height) / Decimal("1000000")
+        return (
+            _decimal(pricing.get("per_request_usd"))
+            + _decimal(pricing.get("base_usd"))
+            + _decimal(pricing.get("per_second_usd")) * duration
+            + _decimal(pricing.get("per_megapixel_second_usd")) * megapixels * duration
+        ).quantize(Decimal("0.000001"))
 
     def reprice(
         self,

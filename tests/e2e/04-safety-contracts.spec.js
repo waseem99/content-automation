@@ -50,17 +50,18 @@ test.describe('spend, publishing and security safety contracts', () => {
     expect([401, 403], `Reviewer operations access returned ${response.status()}`).toContain(response.status());
   });
 
-  test('configured fal pricing reserves the fixed request charge rather than an unsafe duration conversion', async ({ request }, testInfo) => {
-    testInfo.annotations.push({ type: 'severity', description: 'P1' });
-    testInfo.annotations.push({ type: 'improvement', description: 'Represent fal Wan 2.2 fixed-request billing as per_request_usd and include it in preflight estimation.' });
+  test('configured fal Wan pricing reserves one fixed request charge', async ({ request }) => {
     const response = await request.get('/renderers/catalogue?provider_key=fal', { headers: authHeaders('admin') });
     test.skip(response.status() === 404, 'fal renderer is not configured yet.');
     expect(response.status()).toBe(200);
     const payload = await response.json();
-    const active = (payload.entries || []).find((entry) => entry.status === 'active');
-    test.skip(!active, 'No active fal renderer is configured yet.');
+    const active = (payload.entries || []).find((entry) => (
+      entry.status === 'active' && entry.model_key === 'fal-ai/wan/v2.2-5b/image-to-video'
+    ));
+    test.skip(!active, 'The fal Wan renderer is not configured yet.');
     const pricing = active.pricing || {};
     expect(Number(pricing.per_request_usd || 0)).toBeGreaterThan(0);
+    expect(Number(pricing.per_second_usd || 0)).toBe(0);
   });
 
   test('runtime configuration exposes no operator or provider credentials', async ({ request }) => {

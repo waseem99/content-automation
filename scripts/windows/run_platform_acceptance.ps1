@@ -15,6 +15,8 @@ $Root = (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path
 $Runtime = Join-Path $Root ".runtime"
 $KeyPath = Join-Path $Runtime "operator-keys.json"
 $EnvPath = Join-Path $Root ".env.local"
+$Python = Join-Path $Root ".venv\Scripts\python.exe"
+$EvidenceSanitizer = Join-Path $Root "scripts\sanitize_platform_evidence.py"
 $timestamp = (Get-Date).ToUniversalTime().ToString("yyyyMMddTHHmmssZ")
 $RunId = "platform-$timestamp"
 $RunDir = Join-Path $Runtime "e2e\$RunId"
@@ -48,6 +50,8 @@ function Assert-TaskRunning([string]$TaskName) {
 
 if (-not (Test-Path -LiteralPath $KeyPath)) { throw "Operator keys are missing: $KeyPath" }
 if (-not (Test-Path -LiteralPath $EnvPath)) { throw "Local environment is missing: $EnvPath" }
+if (-not (Test-Path -LiteralPath $Python)) { throw "The local Python environment is missing: $Python" }
+if (-not (Test-Path -LiteralPath $EvidenceSanitizer)) { throw "The platform evidence sanitizer is missing: $EvidenceSanitizer" }
 $values = Read-DotEnv $EnvPath
 Assert-Disabled $values "PROVIDER_PAID_EXECUTION_ENABLED"
 Assert-Disabled $values "HYBRID_PAID_EXECUTION_ENABLED"
@@ -146,6 +150,8 @@ $env:PLATFORM_E2E_MUTATING = if ($Mutating) { "true" } else { "false" }
 $env:PLATFORM_CROSS_BROWSER = if ($CrossBrowser) { "true" } else { "false" }
 $env:PLATFORM_HEADED = if ($Headed) { "true" } else { "false" }
 
+$playwrightExitCode = 1
+$sanitizerExitCode = 1
 Push-Location $Root
 try {
   if (-not (Test-Path (Join-Path $Root "node_modules\@playwright\test"))) {
@@ -156,7 +162,10 @@ try {
   $arguments = @("playwright", "test")
   if ($Smoke) { $arguments += @("--grep", "@smoke") }
   & npx @arguments
-  $exitCode = $LASTEXITCODE
+  $playwrightExitCode = $LASTEXITCODE
+
+  & $Python $EvidenceSanitizer --root $RunDir
+  $sanitizerExitCode = $LASTEXITCODE
 } finally {
   Pop-Location
   Remove-Item Env:PLATFORM_ADMIN_KEY -ErrorAction SilentlyContinue
@@ -168,8 +177,12 @@ try {
 Write-Host "Acceptance evidence: $RunDir" -ForegroundColor Cyan
 Write-Host "Summary: $(Join-Path $RunDir 'summary.md')"
 Write-Host "HTML report: $(Join-Path $RunDir 'playwright-report\index.html')"
-if ($OpenReport -and (Test-Path (Join-Path $RunDir "playwright-report\index.html"))) {
+Write-Host "Evidence sanitization: $(Join-Path $RunDir 'evidence-sanitization.json')"
+if ($OpenReport -and $sanitizerExitCode -eq 0 -and (Test-Path (Join-Path $RunDir "playwright-report\index.html"))) {
   Start-Process (Join-Path $RunDir "playwright-report\index.html")
 }
-if ($exitCode -ne 0) { throw "Platform acceptance failed. Review defects.md and the HTML report." }
+if ($sanitizerExitCode -ne 0) {
+  throw "Platform evidence sanitization failed. Do not share or upload this run directory."
+}
+if ($playwrightExitCode -ne 0) { throw "Platform acceptance failed. Review defects.md and the sanitized HTML report." }
 Write-Host "Platform acceptance passed for the configured scope." -ForegroundColor Green

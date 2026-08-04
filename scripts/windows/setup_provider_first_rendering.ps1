@@ -5,7 +5,7 @@ param(
 
   [string]$FalModelKey = "fal-ai/wan/v2.2-5b/image-to-video",
   [string]$FalModelDisplayName = "Wan 2.2 5B Image to Video on fal",
-  [decimal]$FalPricePerSecondUsd = 0,
+  [decimal]$FalPricePerRequestUsd = 0,
   [string]$FalUsageTermsUrl = "",
   [string]$FalUsageEvidenceFile = "",
 
@@ -90,7 +90,7 @@ function Invoke-RendererSetup(
   [string]$ProviderName,
   [string]$ModelKey,
   [string]$ModelName,
-  [decimal]$PricePerSecond,
+  [hashtable]$Pricing,
   [string]$TermsUrl,
   [string]$EvidenceFile,
   [decimal]$MaximumDuration,
@@ -120,7 +120,8 @@ function Invoke-RendererSetup(
       supported_resolutions = $Resolutions
       capabilities = $Capabilities
       expected_latency_seconds = @{ p50 = 300; maximum = 1800; per_output_second = 30 }
-      pricing = @{ per_second_usd = [string]$PricePerSecond }
+      # Legacy generic shape retained only as a migration marker: pricing = @{ per_second_usd = [string]$PricePerSecond }
+      pricing = $Pricing
       pricing_currency = "USD"
       quality_rating = "82"
       commercial_use_allowed = $true
@@ -166,7 +167,7 @@ if (-not (Test-Path -LiteralPath $KeyPath)) { throw "Operator keys are missing."
 if (-not (Test-Path -LiteralPath $Python)) { throw "The Python environment is missing." }
 
 if (Includes-Provider "fal") {
-  Assert-Evidence "fal" $FalPricePerSecondUsd $FalUsageTermsUrl $FalUsageEvidenceFile
+  Assert-Evidence "fal" $FalPricePerRequestUsd $FalUsageTermsUrl $FalUsageEvidenceFile
   Ensure-Secret "FAL_KEY" "fal API key"
 }
 if (Includes-Provider "vidu") {
@@ -216,7 +217,8 @@ $entries = @()
 
 if (Includes-Provider "fal") {
   $entries += Invoke-RendererSetup "fal" "fal" $FalModelKey $FalModelDisplayName `
-    $FalPricePerSecondUsd $FalUsageTermsUrl $FalUsageEvidenceFile 5 `
+    @{ per_request_usd = [string]$FalPricePerRequestUsd } `
+    $FalUsageTermsUrl $FalUsageEvidenceFile 5 `
     @(@{ width = 1280; height = 720 }, @{ width = 720; height = 1280 }) `
     @{
       image_conditioning = $true
@@ -227,11 +229,13 @@ if (Includes-Provider "fal") {
       data_uri_input = $true
       human_review_required = $true
       global_public_candidate = $true
+      fixed_request_billing = $true
     }
 }
 if (Includes-Provider "vidu") {
   $entries += Invoke-RendererSetup "vidu" "Vidu" $ViduModelKey $ViduModelDisplayName `
-    $ViduPricePerSecondUsd $ViduUsageTermsUrl $ViduUsageEvidenceFile 16 `
+    @{ per_second_usd = [string]$ViduPricePerSecondUsd } `
+    $ViduUsageTermsUrl $ViduUsageEvidenceFile 16 `
     @(
       @{ width = 1280; height = 720 }, @{ width = 720; height = 1280 },
       @{ width = 1920; height = 1080 }, @{ width = 1080; height = 1920 }

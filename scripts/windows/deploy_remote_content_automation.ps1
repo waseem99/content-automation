@@ -98,13 +98,15 @@ if ($deployment.ExitCode -ne 0) {
 }
 
 if (-not (Test-Path -LiteralPath $Python)) {
-  throw "P113 model policy onboarding could not run because the local Python environment is missing."
+  throw "Post-deployment onboarding could not run because the local Python environment is missing."
 }
 Import-LocalEnvironment $EnvPath
 Push-Location $Root
 try {
   & $Python -m src.operations.p113_model_policy_onboarding
   if ($LASTEXITCODE -ne 0) { throw "P113 model policy onboarding failed." }
+  & $Python -m src.operations.fal_fixed_request_pricing
+  if ($LASTEXITCODE -ne 0) { throw "fal fixed-request pricing migration failed." }
 } finally {
   Pop-Location
 }

@@ -3,6 +3,33 @@ const { apiJson, assertClean, createQaCampaign, monitorPage, signIn } = require(
 
 const mutating = /^(1|true|yes)$/i.test(process.env.PLATFORM_E2E_MUTATING || '');
 
+async function waitForCampaignStatus(request, campaignId, expectedStatus) {
+  const deadline = Date.now() + 15_000;
+  let latest;
+  do {
+    latest = await apiJson(request, 'GET', `/p119/campaigns/${campaignId}`, { expected: [200] });
+    if (latest.payload.campaign?.status === expectedStatus) return latest;
+    await new Promise((resolve) => setTimeout(resolve, 250));
+  } while (Date.now() < deadline);
+  expect(latest?.payload?.campaign?.status, `Campaign ${campaignId} did not reach ${expectedStatus}`).toBe(expectedStatus);
+  return latest;
+}
+
+async function clickCampaignStatusAction(page, selector, endpoint, expectedStatus) {
+  const button = page.locator(selector);
+  await expect(button).toBeVisible();
+  const responsePromise = page.waitForResponse((response) => {
+    const url = new URL(response.url());
+    return response.request().method() === 'POST' && url.pathname === endpoint;
+  });
+  await button.click();
+  const response = await responsePromise;
+  const payload = await response.json().catch(() => ({}));
+  expect(response.status(), `POST ${endpoint} returned ${response.status()}: ${JSON.stringify(payload)}`).toBe(200);
+  expect(payload.campaign?.status).toBe(expectedStatus);
+  return payload;
+}
+
 test.describe.serial('database-native campaign lifecycle', () => {
   let fixture;
 
@@ -27,26 +54,36 @@ test.describe.serial('database-native campaign lifecycle', () => {
     await assertClean(findings, testInfo);
   });
 
-  test('pause and resume preserve the campaign and do not create a new version', async ({ page, request }) => {
+  test('pause and resume preserve the campaign and do not create a new version', async ({ page, request }, testInfo) => {
     test.skip(!mutating || !fixture, 'Mutating campaign fixture was not created.');
+    const findings = monitorPage(page);
     await signIn(page, 'admin');
     await page.goto(`/app/campaigns/${fixture.campaign.id}`);
+    await expect(page.locator('#page-title')).toContainText('E2E Platform Acceptance');
+
     const before = await apiJson(request, 'GET', `/p119/campaigns/${fixture.campaign.id}`, { expected: [200] });
     const versionIds = (before.payload.versions || []).map((item) => item.id);
 
-    const pause = page.locator('#campaign-pause');
-    if (await pause.isVisible().catch(() => false)) {
-      await pause.click();
-      await expect(page.locator('#campaign-resume')).toBeVisible();
-    }
-    const paused = await apiJson(request, 'GET', `/p119/campaigns/${fixture.campaign.id}`, { expected: [200] });
-    expect(paused.payload.campaign.status).toBe('paused');
+    await clickCampaignStatusAction(
+      page,
+      '#campaign-pause',
+      `/p120/campaigns/${fixture.campaign.id}/pause`,
+      'paused'
+    );
+    await expect(page.locator('#campaign-resume')).toBeVisible();
+    const paused = await waitForCampaignStatus(request, fixture.campaign.id, 'paused');
+    expect((paused.payload.versions || []).map((item) => item.id)).toEqual(versionIds);
 
-    await page.locator('#campaign-resume').click();
+    await clickCampaignStatusAction(
+      page,
+      '#campaign-resume',
+      `/p120/campaigns/${fixture.campaign.id}/resume`,
+      'active'
+    );
     await expect(page.locator('#campaign-pause')).toBeVisible();
-    const resumed = await apiJson(request, 'GET', `/p119/campaigns/${fixture.campaign.id}`, { expected: [200] });
-    expect(resumed.payload.campaign.status).not.toBe('paused');
+    const resumed = await waitForCampaignStatus(request, fixture.campaign.id, 'active');
     expect((resumed.payload.versions || []).map((item) => item.id)).toEqual(versionIds);
+    await assertClean(findings, testInfo);
   });
 
   test('autopilot dashboard, item grid and grouped exceptions endpoints reconcile', async ({ request }) => {
