@@ -3,6 +3,14 @@ const { apiJson, assertClean, monitorPage, runId, signIn } = require('./support'
 
 const mutating = /^(1|true|yes)$/i.test(process.env.PLATFORM_E2E_MUTATING || '');
 
+function sanitizedPayload(payload) {
+  return JSON.parse(JSON.stringify(payload || {}, (key, value) => {
+    if (/key|token|secret|credential|authorization/i.test(key)) return '<redacted>';
+    if (typeof value === 'string' && /^bearer\s+/i.test(value)) return '<redacted>';
+    return value;
+  }));
+}
+
 test.describe.serial('Creator Studio content lifecycle', () => {
   let contentId;
 
@@ -31,10 +39,26 @@ test.describe.serial('Creator Studio content lifecycle', () => {
     await expect(page.locator('#app-view')).toContainText('Confirm and generate');
     await expect(page.locator('#app-view')).toContainText('Nothing is automatically approved or published');
 
+    const responsePromise = page.waitForResponse((response) => {
+      const url = new URL(response.url());
+      return response.request().method() === 'POST' && url.pathname === '/p110/content';
+    }, { timeout: 90_000 });
     await page.locator('#wizard-create').click();
-    await expect(page).toHaveURL(/\/app\/content\/[0-9a-f-]{36}\/script/i, { timeout: 60_000 });
-    contentId = page.url().match(/\/app\/content\/([0-9a-f-]{36})/i)?.[1];
-    expect(contentId).toBeTruthy();
+    const createResponse = await responsePromise;
+    const createPayload = await createResponse.json().catch(() => ({}));
+    const retainedPayload = sanitizedPayload(createPayload);
+    await testInfo.attach('content-create-response', {
+      body: Buffer.from(JSON.stringify({ status: createResponse.status(), payload: retainedPayload }, null, 2)),
+      contentType: 'application/json'
+    });
+    expect(
+      createResponse.status(),
+      `POST /p110/content returned ${createResponse.status()}: ${JSON.stringify(retainedPayload)}`
+    ).toBe(200);
+
+    contentId = String(createPayload.content_id || '');
+    expect(contentId).toMatch(/^[0-9a-f-]{36}$/i);
+    await expect(page).toHaveURL(new RegExp(`/app/content/${contentId}/script$`, 'i'), { timeout: 30_000 });
     await expect(page.locator('#page-title')).toContainText(`E2E Creator Studio ${id}`);
     await expect(page.locator('#app-view')).toContainText(/Generating|Script|queued|draft/i);
     await assertClean(findings, testInfo);
