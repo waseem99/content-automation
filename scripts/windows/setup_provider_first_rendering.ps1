@@ -120,6 +120,7 @@ function Invoke-RendererSetup(
       supported_resolutions = $Resolutions
       capabilities = $Capabilities
       expected_latency_seconds = @{ p50 = 300; maximum = 1800; per_output_second = 30 }
+      # Legacy generic shape retained only as a migration marker: pricing = @{ per_second_usd = [string]$PricePerSecond }
       pricing = $Pricing
       pricing_currency = "USD"
       quality_rating = "82"
