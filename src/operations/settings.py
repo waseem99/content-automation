@@ -26,6 +26,7 @@ class OperationsSettings(BaseSettings):
     structured_logs: bool = True
     max_request_body_bytes: int = Field(default=8 * 1024 * 1024, ge=1024, le=1024 * 1024 * 1024)
     requests_per_minute: int = Field(default=120, ge=1, le=100_000)
+    authenticated_requests_per_minute: int = Field(default=600, ge=1, le=100_000)
     rate_limit_exempt_paths: tuple[str, ...] = (
         "/app",
         "/favicon.ico",
@@ -52,6 +53,10 @@ class OperationsSettings(BaseSettings):
 
     @model_validator(mode="after")
     def production_safety(self) -> "OperationsSettings":
+        if self.authenticated_requests_per_minute < self.requests_per_minute:
+            raise ValueError(
+                "authenticated_requests_per_minute cannot be lower than requests_per_minute"
+            )
         if self.environment == "production":
             placeholders = {
                 "release_key": self.release_key == "local-unreleased",
@@ -83,6 +88,7 @@ class OperationsSettings(BaseSettings):
             "structured_logs": self.structured_logs,
             "max_request_body_bytes": self.max_request_body_bytes,
             "requests_per_minute": self.requests_per_minute,
+            "authenticated_requests_per_minute": self.authenticated_requests_per_minute,
             "rate_limit_exempt_paths": list(self.rate_limit_exempt_paths),
             "rate_limit_exempt_prefixes": list(self.rate_limit_exempt_prefixes),
             "storage_capacity_bytes": self.storage_capacity_bytes,
