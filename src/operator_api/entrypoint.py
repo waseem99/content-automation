@@ -4,7 +4,10 @@ import json
 import os
 from typing import Any
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.encoders import jsonable_encoder
+from fastapi.responses import JSONResponse, Response
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from src.infrastructure.database.connection import Database
 from src.operator_api.auth import OperatorAuthSettings
@@ -22,6 +25,20 @@ APP_IMPORT_PATH = "src.operator_api.entrypoint:app"
 FACTORY_IMPORT_PATH = "src.operator_api.entrypoint:create_runtime_app"
 
 
+async def _json_safe_http_exception_handler(
+    request: Request,
+    exc: StarletteHTTPException,
+) -> Response:
+    del request
+    if exc.status_code in {204, 304}:
+        return Response(status_code=exc.status_code, headers=exc.headers)
+    return JSONResponse(
+        status_code=exc.status_code,
+        content=jsonable_encoder({"detail": exc.detail}),
+        headers=exc.headers,
+    )
+
+
 def create_runtime_app() -> FastAPI:
     settings = get_operator_runtime_settings()
     database = _open_runtime_database(settings)
@@ -30,6 +47,10 @@ def create_runtime_app() -> FastAPI:
         database=database,
         auth_settings=auth_settings,
         runtime_settings=settings,
+    )
+    application.add_exception_handler(
+        StarletteHTTPException,
+        _json_safe_http_exception_handler,
     )
     apply_studio_v2_schema_patch()
     apply_studio_v2_security_patch()
