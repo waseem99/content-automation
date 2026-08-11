@@ -119,6 +119,7 @@ async function assertClean(findings, testInfo, options = {}) {
     contentType: 'application/json'
   });
   const allowedClientErrors = options.allowedClientErrors || [];
+  const allowedPageErrors = options.allowedPageErrors || [];
   const unexpectedClientErrors = findings.clientErrors.filter((item) => !allowedClientErrors.some((rule) => {
     const path = new URL(item.url).pathname;
     const statusMatches = rule.status === undefined || rule.status === item.status;
@@ -126,10 +127,14 @@ async function assertClean(findings, testInfo, options = {}) {
     const prefixMatches = rule.pathPrefix === undefined || path.startsWith(rule.pathPrefix);
     return statusMatches && pathMatches && prefixMatches;
   }));
+  const unexpectedPageErrors = findings.pageErrors.filter((message) => !allowedPageErrors.some((rule) => {
+    if (rule instanceof RegExp) return rule.test(message);
+    return String(rule) === String(message);
+  }));
   if (!options.allowServerErrors) expect(findings.serverErrors, 'Unexpected server errors').toEqual([]);
   if (!options.allowClientErrors) expect(unexpectedClientErrors, 'Unexpected client HTTP errors').toEqual([]);
   if (!options.allowConsoleErrors) expect(findings.consoleErrors, 'Unexpected browser console errors').toEqual([]);
-  expect(findings.pageErrors, 'Unhandled browser errors').toEqual([]);
+  expect(unexpectedPageErrors, 'Unhandled browser errors').toEqual([]);
   expect(findings.externalRequests, 'Browser initiated a paid-provider or publishing request').toEqual([]);
 }
 
