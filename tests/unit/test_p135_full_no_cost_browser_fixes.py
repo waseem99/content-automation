@@ -58,3 +58,33 @@ def test_changed_browser_assets_are_cache_busted() -> None:
 
     assert "studio-v2-accessibility.css?v=p135-20260804-1" in index
     assert "studio-v2-route-bridge.js?v=p135-20260804-1" in index
+
+
+def test_mutating_content_fixture_is_unique_across_consecutive_acceptance_runs() -> None:
+    lifecycle = (ROOT / "tests/e2e/07-content-lifecycle.spec.js").read_text(encoding="utf-8")
+
+    assert "const id = runId();" in lifecycle
+    assert "for acceptance run ${id}" in lifecycle
+    assert "Automated QA run ${id}" in lifecycle
+
+
+def test_runtime_http_exception_payloads_are_json_safe() -> None:
+    entrypoint = (ROOT / "src/operator_api/entrypoint.py").read_text(encoding="utf-8")
+
+    assert "jsonable_encoder" in entrypoint
+    assert 'jsonable_encoder({"detail": exc.detail})' in entrypoint
+    assert "application.add_exception_handler(" in entrypoint
+    assert "StarletteHTTPException" in entrypoint
+
+
+def test_always_on_parent_imports_environment_before_continuation_worker() -> None:
+    supervisor = (
+        ROOT / "scripts/windows/supervise_always_on_local_production.ps1"
+    ).read_text(encoding="utf-8")
+
+    sync_index = supervisor.index("& $SyncP131 -Path $EnvPath")
+    import_index = supervisor.index("Import-LocalEnvironment $EnvPath")
+    continuation_index = supervisor.index("function Start-Continuation")
+
+    assert sync_index < import_index < continuation_index
+    assert 'SetEnvironmentVariable([string]$parts[0], [string]$parts[1], "Process")' in supervisor
