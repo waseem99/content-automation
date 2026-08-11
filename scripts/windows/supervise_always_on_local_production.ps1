@@ -29,10 +29,26 @@ try {
   exit 0
 }
 
+function Import-LocalEnvironment([string]$Path) {
+  if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) {
+    throw "Local environment file is missing: $Path"
+  }
+  foreach ($line in Get-Content -LiteralPath $Path) {
+    $trimmed = $line.Trim()
+    if (-not $trimmed -or $trimmed.StartsWith("#") -or -not $trimmed.Contains("=")) { continue }
+    $parts = $trimmed.Split("=", 2)
+    [Environment]::SetEnvironmentVariable([string]$parts[0], [string]$parts[1], "Process")
+  }
+}
+
 # Recompute the serving checkout SHA and non-secret configuration digest every
 # time the scheduled task starts. This closes the gap between deployment-time
 # configuration and the process that actually serves Creator Studio.
 & $SyncP131 -Path $EnvPath
+# The continuation worker is launched directly by this parent process rather
+# than by the core supervisor, so import the same local runtime environment
+# here before either child is started.
+Import-LocalEnvironment $EnvPath
 
 function Start-CoreSupervisor {
   $arguments = @("-NoProfile", "-ExecutionPolicy", "Bypass", "-File", $CoreSupervisor, "-ApiPort", [string]$ApiPort, "-PostgresPort", [string]$PostgresPort)
