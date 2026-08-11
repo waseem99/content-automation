@@ -1,17 +1,28 @@
 const { test, expect } = require('@playwright/test');
-const { assertClean, monitorPage, navigateApp, signIn, signOut } = require('./support');
+const { assertClean, monitorPage, navigateApp, signIn, signOut, waitForStudioEntry } = require('./support');
 
 test.describe('authentication and role boundaries', () => {
   test('@smoke invalid access key is rejected without exposing sensitive detail', async ({ page }, testInfo) => {
     const findings = monitorPage(page);
     await page.goto('/app/dashboard');
+    const entry = await waitForStudioEntry(page);
+    expect(entry.state).toBe('login');
+
+    const accessResponse = page.waitForResponse((response) => {
+      const url = new URL(response.url());
+      return url.pathname === '/access/me' && response.status() === 401;
+    });
     await page.locator('#operator-key').fill('definitely-invalid-e2e-key');
     await page.locator('#login-form button[type="submit"]').click();
+    const response = await accessResponse;
+    expect(response.status()).toBe(401);
+
     await expect(page.locator('#login-error')).not.toBeEmpty();
     await expect(page.locator('#studio-shell')).toBeHidden();
     expect(page.url()).not.toContain('definitely-invalid-e2e-key');
     await assertClean(findings, testInfo, {
-      allowedClientErrors: [{ status: 401, path: '/access/me' }]
+      allowedClientErrors: [{ status: 401, path: '/access/me' }],
+      allowedPageErrors: [/^operator key is invalid$/i]
     });
   });
 
