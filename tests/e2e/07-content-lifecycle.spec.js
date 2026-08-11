@@ -28,7 +28,7 @@ test.describe.serial('Creator Studio content lifecycle', () => {
 
     const id = runId();
     await page.locator('#brief-form input[name="title"]').fill(`E2E Creator Studio ${id}`);
-    await page.locator('#brief-form textarea[name="topic"]').fill('Explain why a carefully controlled automated acceptance process reduces production risk. Avoid time-sensitive claims.');
+    await page.locator('#brief-form textarea[name="topic"]').fill(`Explain why a carefully controlled automated acceptance process reduces production risk for acceptance run ${id}. Avoid time-sensitive claims.`);
     await page.locator('#brief-form input[name="objective"]').fill('Validate the complete browser-to-database content creation flow.');
     await page.locator('#brief-form input[name="audience"]').fill('Internal QA reviewers');
     await page.locator('#brief-form select[name="platform"]').selectOption('facebook');
