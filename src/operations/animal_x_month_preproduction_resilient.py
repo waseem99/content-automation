@@ -162,36 +162,17 @@ class ResilientAnimalXMonthPreproduction(AnimalXMonthPreproduction):
             ).fetchall()
         return [dict(row) for row in rows]
 
-    def _mark_ignored_fallback_batches(self, rows: list[dict[str, Any]]) -> int:
-        ignored = [
-            row
+    @staticmethod
+    def _ignored_fallback_count(rows: list[dict[str, Any]]) -> int:
+        return sum(
+            1
             for row in rows
             if str(row.get("status")) != "failed"
             and not (
                 bool(row.get("local_only"))
                 and int(row.get("candidate_count") or 0) == CONCEPT_CANDIDATE_COUNT
             )
-        ]
-        if not ignored:
-            return 0
-        payload = json.dumps(
-            {
-                "animal_x_retry": {
-                    "reason": "nonlocal_or_incomplete_batch_ignored",
-                    "strict_local_required": True,
-                    "status_preserved": True,
-                }
-            },
-            sort_keys=True,
         )
-        with self.database.transaction() as conn:
-            conn.execute(
-                """UPDATE football_brief.concept_generation_batches
-                   SET gap_report=COALESCE(gap_report,'{}'::jsonb) || %s::jsonb
-                   WHERE id=ANY(%s::uuid[])""",
-                (payload, [row["id"] for row in ignored]),
-            )
-        return len(ignored)
 
     def _concept_batch(self, brand: dict[str, Any]) -> dict[str, Any]:
         rows = self._matching_concept_batches(brand)
@@ -205,14 +186,14 @@ class ResilientAnimalXMonthPreproduction(AnimalXMonthPreproduction):
             ),
             None,
         )
-        ignored = self._mark_ignored_fallback_batches(rows)
+        ignored = self._ignored_fallback_count(rows)
         if ignored:
             print(
                 json.dumps(
                     {
                         "event": "animal_x_nonlocal_concept_batches_ignored",
                         "count": ignored,
-                        "database_status_preserved": True,
+                        "database_history_untouched": True,
                     },
                     sort_keys=True,
                 ),
