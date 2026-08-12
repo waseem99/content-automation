@@ -79,6 +79,18 @@ def test_script_job_polling_only_retries_bounded_local_connection_resets() -> No
     assert "apiJson(request, 'GET', path, { expected: [200] })" in lifecycle
 
 
+def test_remote_auth_wait_uses_shared_boot_state_without_weakening_boundary() -> None:
+    support = (ROOT / "tests/e2e/support.js").read_text(encoding="utf-8")
+    remote = (ROOT / "tests/e2e/05-remote-access.spec.js").read_text(encoding="utf-8")
+
+    assert "async function waitForStudioEntry(page, { timeout = 15000 } = {})" in support
+    assert "}, null, { timeout });" in support
+    assert "const { waitForStudioEntry } = require('./support');" in remote
+    assert "waitForStudioEntry(page, { timeout: 30000 })" in remote
+    assert "toEqual({ state: 'login' })" in remote
+    assert "await expect(page.locator('#studio-shell')).toBeHidden();" in remote
+
+
 def test_runtime_http_exception_payloads_are_json_safe() -> None:
     entrypoint = (ROOT / "src/operator_api/entrypoint.py").read_text(encoding="utf-8")
 
