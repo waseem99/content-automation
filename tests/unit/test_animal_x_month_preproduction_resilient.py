@@ -89,12 +89,23 @@ def test_adaptive_local_adapter_retries_single_slot(monkeypatch: pytest.MonkeyPa
     assert attempts == 3
 
 
-def test_stale_fallback_cleanup_preserves_database_state_machine() -> None:
-    source = inspect.getsource(module.ResilientAnimalXMonthPreproduction._mark_ignored_fallback_batches)
-    assert "gap_report=" in source
-    assert "status_preserved" in source
-    assert "SET status='failed'" not in source
-    assert "UPDATE football_brief.concept_generation_batches" in source
+def test_stale_fallback_handling_is_read_only() -> None:
+    source = inspect.getsource(module.ResilientAnimalXMonthPreproduction._ignored_fallback_count)
+    assert "UPDATE football_brief.concept_generation_batches" not in source
+    assert "status" in source
+    assert "local_only" in source
+    assert "candidate_count" in source
+
+
+def test_stale_fallback_is_counted_but_valid_local_batch_is_not() -> None:
+    count = module.ResilientAnimalXMonthPreproduction._ignored_fallback_count(
+        [
+            {"status": "ready_for_review", "local_only": False, "candidate_count": 32},
+            {"status": "ready_for_review", "local_only": True, "candidate_count": 32},
+            {"status": "failed", "local_only": False, "candidate_count": 0},
+        ]
+    )
+    assert count == 1
 
 
 def test_strict_batch_selection_requires_local_candidates() -> None:
