@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import inspect
 from types import SimpleNamespace
 
 import pytest
@@ -86,3 +87,19 @@ def test_adaptive_local_adapter_retries_single_slot(monkeypatch: pytest.MonkeyPa
     )
     assert adapter.generate(context={}, slots=[slot], seed=9) == [slot]
     assert attempts == 3
+
+
+def test_stale_fallback_cleanup_preserves_database_state_machine() -> None:
+    source = inspect.getsource(module.ResilientAnimalXMonthPreproduction._mark_ignored_fallback_batches)
+    assert "gap_report=" in source
+    assert "status_preserved" in source
+    assert "SET status='failed'" not in source
+    assert "UPDATE football_brief.concept_generation_batches" in source
+
+
+def test_strict_batch_selection_requires_local_candidates() -> None:
+    source = inspect.getsource(module.ResilientAnimalXMonthPreproduction._concept_batch)
+    assert "local_only" in source
+    assert "candidate_count" in source
+    assert "ConceptAdapterMode.LOCAL_MODEL" in source
+    assert "adapters != {\"local_model\"}" in source
