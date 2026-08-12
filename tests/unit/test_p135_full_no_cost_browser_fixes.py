@@ -68,6 +68,17 @@ def test_mutating_content_fixture_is_unique_across_consecutive_acceptance_runs()
     assert "Automated QA run ${id}" in lifecycle
 
 
+def test_script_job_polling_only_retries_bounded_local_connection_resets() -> None:
+    lifecycle = (ROOT / "tests/e2e/07-content-lifecycle.spec.js").read_text(encoding="utf-8")
+
+    assert "async function pollScriptJobs(request, contentId)" in lifecycle
+    assert "const maxAttempts = 3;" in lifecycle
+    assert r"/\bECONNRESET\b|socket hang up|forcibly closed/i" in lifecycle
+    assert "if (!transientReset || attempt === maxAttempts) throw error;" in lifecycle
+    assert "const result = await pollScriptJobs(request, contentId);" in lifecycle
+    assert "apiJson(request, 'GET', path, { expected: [200] })" in lifecycle
+
+
 def test_runtime_http_exception_payloads_are_json_safe() -> None:
     entrypoint = (ROOT / "src/operator_api/entrypoint.py").read_text(encoding="utf-8")
 
