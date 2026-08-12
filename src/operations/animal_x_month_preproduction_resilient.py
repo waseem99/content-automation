@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import json
+from datetime import date
+from pathlib import Path
 from typing import Any
-from uuid import UUID
 
 import src.application.concepts.service as concept_service_module
 from src.application.concepts.adapters import (
@@ -12,12 +14,24 @@ from src.application.concepts.adapters import (
 )
 from src.infrastructure.database.connection import Database
 from src.infrastructure.database.settings import get_database_settings
-from src.operations.animal_x_month_preproduction import (
-    CONCEPT_CANDIDATE_COUNT,
-    AnimalXMonthPreproduction,
-    date,
-    next_month_start,
-)
+
+
+def _load_base_tool() -> Any:
+    path = Path(__file__).with_name("animal_x_month_preproduction.py")
+    if not path.is_file():
+        raise RuntimeError(f"Animal X base preproduction tool is missing: {path}")
+    spec = importlib.util.spec_from_file_location("_animal_x_month_preproduction_tool", path)
+    if spec is None or spec.loader is None:
+        raise RuntimeError("Animal X base preproduction tool could not be loaded")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+BASE_TOOL = _load_base_tool()
+CONCEPT_CANDIDATE_COUNT = BASE_TOOL.CONCEPT_CANDIDATE_COUNT
+AnimalXMonthPreproduction = BASE_TOOL.AnimalXMonthPreproduction
+next_month_start = BASE_TOOL.next_month_start
 
 
 class AdaptiveLocalConceptAdapter:
