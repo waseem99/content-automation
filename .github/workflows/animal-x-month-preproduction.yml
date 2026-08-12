@@ -5,7 +5,9 @@ on:
     branches: [test]
     paths:
       - "src/operations/animal_x_month_preproduction.py"
+      - "src/operations/animal_x_month_preproduction_resilient.py"
       - "tests/unit/test_animal_x_month_preproduction.py"
+      - "tests/unit/test_animal_x_month_preproduction_resilient.py"
       - ".github/workflows/animal-x-month-preproduction.yml"
   workflow_dispatch:
 
@@ -28,12 +30,24 @@ jobs:
           cache: pip
       - name: Install dependencies
         run: python -m pip install -r requirements.txt
-      - name: Compile production-prep runner
-        run: python -m compileall -q src/operations/animal_x_month_preproduction.py tests/unit/test_animal_x_month_preproduction.py
+      - name: Compile production-prep runners
+        run: |
+          python -m compileall -q \
+            src/operations/animal_x_month_preproduction.py \
+            src/operations/animal_x_month_preproduction_resilient.py \
+            tests/unit/test_animal_x_month_preproduction.py \
+            tests/unit/test_animal_x_month_preproduction_resilient.py
       - name: Focused contracts
-        run: python -m pytest -q tests/unit/test_animal_x_month_preproduction.py
+        run: |
+          python -m pytest -q \
+            tests/unit/test_animal_x_month_preproduction.py \
+            tests/unit/test_animal_x_month_preproduction_resilient.py
       - name: Preserve no-spend no-publishing boundary
         shell: bash
         run: |
-          ! grep -n -E 'PROVIDER_PAID_EXECUTION_ENABLED=true|HYBRID_PAID_EXECUTION_ENABLED=true|HYBRID_PUBLIC_PUBLISHING_ENABLED=true|P114_LOCAL_VIDEO_ENABLED=true' src/operations/animal_x_month_preproduction.py
-          ! grep -n -E 'ProviderExecutionService\(|HybridRoutingService\(|DeliveryService\(' src/operations/animal_x_month_preproduction.py
+          for file in \
+            src/operations/animal_x_month_preproduction.py \
+            src/operations/animal_x_month_preproduction_resilient.py; do
+            ! grep -n -E 'PROVIDER_PAID_EXECUTION_ENABLED=true|HYBRID_PAID_EXECUTION_ENABLED=true|HYBRID_PUBLIC_PUBLISHING_ENABLED=true|P114_LOCAL_VIDEO_ENABLED=true' "$file"
+            ! grep -n -E 'ProviderExecutionService\(|HybridRoutingService\(|DeliveryService\(' "$file"
+          done
