@@ -1,5 +1,5 @@
 const { test, expect } = require('@playwright/test');
-const { waitForStudioEntry } = require('./support');
+const { waitForStudioEntry, withTransientRemoteRetry } = require('./support');
 
 test.describe('remote access boundary', () => {
   test('@smoke remote Creator Studio requires authentication and exposes only the intended web application', async ({ browser }) => {
@@ -8,7 +8,7 @@ test.describe('remote access boundary', () => {
     const context = await browser.newContext({ extraHTTPHeaders: { 'ngrok-skip-browser-warning': 'true' } });
     const page = await context.newPage();
     try {
-      await page.goto(`${remoteURL}/app/dashboard`);
+      await withTransientRemoteRetry(() => page.goto(`${remoteURL}/app/dashboard`));
       const entry = await waitForStudioEntry(page, { timeout: 30000 });
       expect(entry, `Remote Creator Studio must stop at login for an unauthenticated fresh context: ${JSON.stringify(entry)}`).toEqual({ state: 'login' });
       await expect(page.locator('#login-dialog')).toBeVisible();
