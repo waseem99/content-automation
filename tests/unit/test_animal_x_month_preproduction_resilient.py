@@ -89,6 +89,18 @@ def test_adaptive_local_adapter_retries_single_slot(monkeypatch: pytest.MonkeyPa
     assert attempts == 3
 
 
+def test_request_timeout_stays_within_pydantic_contract_while_adapter_is_resilient() -> None:
+    source = inspect.getsource(module.ResilientAnimalXMonthPreproduction._concept_batch)
+    assert "local_timeout_seconds=120" in source
+    assert "local_timeout_seconds=240" not in source
+    adapter = module.AdaptiveLocalConceptAdapter(
+        endpoint="http://127.0.0.1:11434",
+        model_id="qwen2.5:7b",
+        timeout_seconds=120,
+    )
+    assert adapter.timeout_seconds >= 240
+
+
 def test_stale_fallback_handling_is_read_only() -> None:
     source = inspect.getsource(module.ResilientAnimalXMonthPreproduction._ignored_fallback_count)
     assert "UPDATE football_brief.concept_generation_batches" not in source
