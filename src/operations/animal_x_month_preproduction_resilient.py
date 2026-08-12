@@ -135,11 +135,13 @@ def strict_local_generation(
 
 
 class ResilientAnimalXMonthPreproduction(AnimalXMonthPreproduction):
-    def _retire_nonlocal_batches(self, brand: dict[str, Any]) -> int:
+    """Strict-local Animal X runner that preserves stale fallback audit history."""
+
+    def _matching_concept_batches(self, brand: dict[str, Any]) -> list[dict[str, Any]]:
         seed = int(self.month_start.strftime("%Y%m")) * 100 + 17
-        with self.database.transaction() as conn:
+        with self.database.connection() as conn:
             rows = conn.execute(
-                """SELECT gb.id,gb.status,
+                """SELECT gb.id,gb.status,gb.created_at,
                           count(c.id)::int AS candidate_count,
                           COALESCE(bool_and(COALESCE(c.generation_evidence->>'adapter','')='local_model'),false)
                             AS local_only
@@ -148,8 +150,7 @@ class ResilientAnimalXMonthPreproduction(AnimalXMonthPreproduction):
                    WHERE gb.brand_id=%s AND gb.month_start=%s AND gb.requested_count=%s
                      AND gb.seed=%s AND gb.adapter_mode='local_model'
                      AND COALESCE(gb.local_model_id,'')=%s
-                     AND gb.status<>'failed'
-                   GROUP BY gb.id,gb.status
+                   GROUP BY gb.id,gb.status,gb.created_at
                    ORDER BY gb.created_at DESC,gb.id DESC""",
                 (
                     brand["id"],
@@ -159,45 +160,90 @@ class ResilientAnimalXMonthPreproduction(AnimalXMonthPreproduction):
                     self.ollama_model,
                 ),
             ).fetchall()
-            retired = 0
-            for row in rows:
-                if bool(row["local_only"]) and int(row["candidate_count"] or 0) == CONCEPT_CANDIDATE_COUNT:
-                    continue
-                conn.execute(
-                    """UPDATE football_brief.concept_generation_batches
-                       SET status='failed',completed_at=COALESCE(completed_at,now()),
-                           gap_report=COALESCE(gap_report,'{}'::jsonb) || %s::jsonb
-                       WHERE id=%s""",
-                    (
-                        json.dumps(
-                            {
-                                "animal_x_retry": {
-                                    "reason": "nonlocal_or_incomplete_batch_retired",
-                                    "strict_local_required": True,
-                                }
-                            },
-                            sort_keys=True,
-                        ),
-                        row["id"],
-                    ),
-                )
-                retired += 1
-        return retired
+        return [dict(row) for row in rows]
+
+    def _mark_ignored_fallback_batches(self, rows: list[dict[str, Any]]) -> int:
+        ignored = [
+            row
+            for row in rows
+            if str(row.get("status")) != "failed"
+            and not (
+                bool(row.get("local_only"))
+                and int(row.get("candidate_count") or 0) == CONCEPT_CANDIDATE_COUNT
+            )
+        ]
+        if not ignored:
+            return 0
+        payload = json.dumps(
+            {
+                "animal_x_retry": {
+                    "reason": "nonlocal_or_incomplete_batch_ignored",
+                    "strict_local_required": True,
+                    "status_preserved": True,
+                }
+            },
+            sort_keys=True,
+        )
+        with self.database.transaction() as conn:
+            conn.execute(
+                """UPDATE football_brief.concept_generation_batches
+                   SET gap_report=COALESCE(gap_report,'{}'::jsonb) || %s::jsonb
+                   WHERE id=ANY(%s::uuid[])""",
+                (payload, [row["id"] for row in ignored]),
+            )
+        return len(ignored)
 
     def _concept_batch(self, brand: dict[str, Any]) -> dict[str, Any]:
-        retired = self._retire_nonlocal_batches(brand)
-        if retired:
+        rows = self._matching_concept_batches(brand)
+        reusable = next(
+            (
+                row
+                for row in rows
+                if str(row.get("status")) != "failed"
+                and bool(row.get("local_only"))
+                and int(row.get("candidate_count") or 0) == CONCEPT_CANDIDATE_COUNT
+            ),
+            None,
+        )
+        ignored = self._mark_ignored_fallback_batches(rows)
+        if ignored:
             print(
                 json.dumps(
                     {
-                        "event": "animal_x_nonlocal_concept_batches_retired",
-                        "count": retired,
+                        "event": "animal_x_nonlocal_concept_batches_ignored",
+                        "count": ignored,
+                        "database_status_preserved": True,
                     },
                     sort_keys=True,
                 ),
                 flush=True,
             )
-        return super()._concept_batch(brand)
+        if reusable is not None:
+            return self.concepts.batch_detail(batch_id=BASE_TOOL.UUID(str(reusable["id"])))
+
+        seed = int(self.month_start.strftime("%Y%m")) * 100 + 17
+        request = BASE_TOOL.ConceptBatchRequest(
+            brand_id=BASE_TOOL.UUID(str(brand["id"])),
+            month_start=self.month_start,
+            candidate_count=CONCEPT_CANDIDATE_COUNT,
+            format_mix={"master_video": CONCEPT_CANDIDATE_COUNT},
+            pillar_targets={pillar: BASE_TOOL.CONCEPTS_PER_PILLAR for pillar in BASE_TOOL.PILLARS},
+            seed=seed,
+            adapter_mode=BASE_TOOL.ConceptAdapterMode.LOCAL_MODEL,
+            local_model_id=self.ollama_model,
+            local_endpoint=self.ollama_endpoint,
+            local_timeout_seconds=240,
+        )
+        result = self.concepts.generate_batch(request, actor=self.admin)
+        adapters = {
+            str((row.get("generation_evidence") or {}).get("adapter") or "")
+            for row in result["candidates"]
+        }
+        if adapters != {"local_model"}:
+            raise BASE_TOOL.AnimalXPreproductionError(
+                "strict Animal X concept generation produced a nonlocal candidate"
+            )
+        return result
 
 
 def install_strict_local_generation() -> tuple[Any, Any]:
