@@ -85,8 +85,26 @@ def test_remote_auth_wait_uses_shared_boot_state_without_weakening_boundary() ->
 
     assert "async function waitForStudioEntry(page, { timeout = 15000 } = {})" in support
     assert "}, null, { timeout });" in support
-    assert "const { waitForStudioEntry } = require('./support');" in remote
+    assert "waitForStudioEntry, withTransientRemoteRetry" in remote
     assert "waitForStudioEntry(page, { timeout: 30000 })" in remote
+    assert "toEqual({ state: 'login' })" in remote
+    assert "await expect(page.locator('#studio-shell')).toBeHidden();" in remote
+
+
+def test_remote_transport_retry_is_narrow_bounded_and_preserves_assertions() -> None:
+    support = (ROOT / "tests/e2e/support.js").read_text(encoding="utf-8")
+    readiness = (ROOT / "tests/e2e/00-readiness.spec.js").read_text(encoding="utf-8")
+    remote = (ROOT / "tests/e2e/05-remote-access.spec.js").read_text(encoding="utf-8")
+
+    assert "async function withTransientRemoteRetry(operation, { maxAttempts = 4, delayMs = 2000 } = {})" in support
+    assert r"\bENOTFOUND\b" in support
+    assert "ERR_CONNECTION_CLOSED" in support
+    assert "ERR_CONNECTION_RESET" in support
+    assert "if (!isTransientRemoteNetworkError(error) || attempt === maxAttempts) throw error;" in support
+    assert "withTransientRemoteRetry(() => context.get('/runtime/ready'))" in readiness
+    assert "expect(response.ok()).toBeTruthy();" in readiness
+    assert "expect(payload.release?.git_sha).toBe(process.env.PLATFORM_EXPECTED_GIT_SHA);" in readiness
+    assert "withTransientRemoteRetry(() => page.goto(`${remoteURL}/app/dashboard`))" in remote
     assert "toEqual({ state: 'login' })" in remote
     assert "await expect(page.locator('#studio-shell')).toBeHidden();" in remote
 
