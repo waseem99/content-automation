@@ -1,5 +1,5 @@
 const { test, expect } = require('@playwright/test');
-const { assertClean, monitorPage } = require('./support');
+const { assertClean, monitorPage, withTransientRemoteRetry } = require('./support');
 
 test.describe('runtime and deployment acceptance', () => {
   test('@smoke local runtime, database, schema and migration readiness', async ({ request }) => {
@@ -43,7 +43,7 @@ test.describe('runtime and deployment acceptance', () => {
       extraHTTPHeaders: { 'ngrok-skip-browser-warning': 'true' }
     });
     try {
-      const response = await context.get('/runtime/ready');
+      const response = await withTransientRemoteRetry(() => context.get('/runtime/ready'));
       expect(response.ok()).toBeTruthy();
       const payload = await response.json();
       expect(payload.ok).toBe(true);
