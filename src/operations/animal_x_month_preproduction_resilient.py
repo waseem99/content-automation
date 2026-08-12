@@ -213,7 +213,7 @@ class ResilientAnimalXMonthPreproduction(AnimalXMonthPreproduction):
             adapter_mode=BASE_TOOL.ConceptAdapterMode.LOCAL_MODEL,
             local_model_id=self.ollama_model,
             local_endpoint=self.ollama_endpoint,
-            local_timeout_seconds=240,
+            local_timeout_seconds=120,
         )
         result = self.concepts.generate_batch(request, actor=self.admin)
         adapters = {
