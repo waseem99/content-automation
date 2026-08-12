@@ -11,7 +11,7 @@ function envKey(role) {
   return value;
 }
 
-async function waitForStudioEntry(page) {
+async function waitForStudioEntry(page, { timeout = 15000 } = {}) {
   const handle = await page.waitForFunction(() => {
     const shell = document.querySelector('#studio-shell');
     const dialog = document.querySelector('#login-dialog');
@@ -28,7 +28,7 @@ async function waitForStudioEntry(page) {
       };
     }
     return false;
-  }, null, { timeout: 15000 });
+  }, null, { timeout });
   return handle.jsonValue();
 }
 
