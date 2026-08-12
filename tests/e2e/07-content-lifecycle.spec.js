@@ -11,6 +11,22 @@ function sanitizedPayload(payload) {
   }));
 }
 
+async function pollScriptJobs(request, contentId) {
+  const path = `/generation/jobs?content_id=${contentId}&job_type=script&limit=100`;
+  const maxAttempts = 3;
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    try {
+      return await apiJson(request, 'GET', path, { expected: [200] });
+    } catch (error) {
+      const message = String(error?.message || error || '');
+      const transientReset = /\bECONNRESET\b|socket hang up|forcibly closed/i.test(message);
+      if (!transientReset || attempt === maxAttempts) throw error;
+      await new Promise((resolve) => setTimeout(resolve, 500 * attempt));
+    }
+  }
+  throw new Error('Script job polling exhausted unexpectedly.');
+}
+
 test.describe.serial('Creator Studio content lifecycle', () => {
   let contentId;
 
@@ -85,7 +101,7 @@ test.describe.serial('Creator Studio content lifecycle', () => {
     const deadline = Date.now() + 360_000;
     let jobs = [];
     do {
-      const result = await apiJson(request, 'GET', `/generation/jobs?content_id=${contentId}&job_type=script&limit=100`, { expected: [200] });
+      const result = await pollScriptJobs(request, contentId);
       jobs = result.payload.items || [];
       if (jobs.some((job) => ['succeeded', 'failed', 'cancelled', 'dead_letter'].includes(job.status))) break;
       await new Promise((resolve) => setTimeout(resolve, 5000));
