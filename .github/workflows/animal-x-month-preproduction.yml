@@ -1,0 +1,39 @@
+name: Animal X Month Preproduction
+
+on:
+  pull_request:
+    branches: [test]
+    paths:
+      - "src/operations/animal_x_month_preproduction.py"
+      - "tests/unit/test_animal_x_month_preproduction.py"
+      - ".github/workflows/animal-x-month-preproduction.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: animal-x-month-preproduction-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  contracts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install dependencies
+        run: python -m pip install -r requirements.txt
+      - name: Compile production-prep runner
+        run: python -m compileall -q src/operations/animal_x_month_preproduction.py tests/unit/test_animal_x_month_preproduction.py
+      - name: Focused contracts
+        run: python -m pytest -q tests/unit/test_animal_x_month_preproduction.py
+      - name: Preserve no-spend no-publishing boundary
+        shell: bash
+        run: |
+          ! grep -n -E 'PROVIDER_PAID_EXECUTION_ENABLED=true|HYBRID_PAID_EXECUTION_ENABLED=true|HYBRID_PUBLIC_PUBLISHING_ENABLED=true|P114_LOCAL_VIDEO_ENABLED=true' src/operations/animal_x_month_preproduction.py
+          ! grep -n -E 'ProviderExecutionService\(|HybridRoutingService\(|DeliveryService\(' src/operations/animal_x_month_preproduction.py
