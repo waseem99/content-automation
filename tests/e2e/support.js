@@ -32,6 +32,25 @@ async function waitForStudioEntry(page, { timeout = 15000 } = {}) {
   return handle.jsonValue();
 }
 
+function isTransientRemoteNetworkError(error) {
+  const message = String(error?.message || error || '');
+  return /\bENOTFOUND\b|\bEAI_AGAIN\b|\bECONNRESET\b|\bETIMEDOUT\b|ERR_NAME_NOT_RESOLVED|ERR_CONNECTION_CLOSED|ERR_CONNECTION_RESET|ERR_CONNECTION_ABORTED|ERR_TIMED_OUT|socket hang up|forcibly closed/i.test(message);
+}
+
+async function withTransientRemoteRetry(operation, { maxAttempts = 4, delayMs = 2000 } = {}) {
+  let lastError;
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    try {
+      return await operation();
+    } catch (error) {
+      lastError = error;
+      if (!isTransientRemoteNetworkError(error) || attempt === maxAttempts) throw error;
+      await new Promise((resolve) => setTimeout(resolve, delayMs * attempt));
+    }
+  }
+  throw lastError;
+}
+
 async function signIn(page, role = 'admin') {
   const key = envKey(role);
   await page.goto('/app/dashboard');
@@ -221,11 +240,13 @@ module.exports = {
   createQaCampaign,
   envKey,
   firstBrand,
+  isTransientRemoteNetworkError,
   monitorPage,
   navigateApp,
   runId,
   signIn,
   signOut,
   waitForStudioEntry,
+  withTransientRemoteRetry,
   apiJson
 };
